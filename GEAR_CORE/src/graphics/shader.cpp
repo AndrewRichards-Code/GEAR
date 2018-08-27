@@ -1,7 +1,7 @@
 #include "shader.h"
 
-namespace GEAR {
-namespace GRAPHICS {
+using namespace GEAR;
+using namespace GRAPHICS;
 
 Shader::Shader(const char * vertexPath, const char * fragmentPath)
 	:m_VertexPath(vertexPath), m_FragmentPath(fragmentPath)
@@ -69,7 +69,4 @@ unsigned int Shader::CreateShader(const std::string& vertexshader, const std::st
 	glDeleteShader(fs);
 
 	return program;
-}
-
-}
 }
