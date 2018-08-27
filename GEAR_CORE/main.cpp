@@ -29,6 +29,8 @@ int main()
 	Object stall2("res/obj/stall.obj", shader, texture, Mat4::Translation(Vec3(5.0f, -2.0f, -5.0f)) * Mat4::Rotation((float)pi, Vec3(0, 1, 0)));
 
 	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, shader, Vec3(0.0f, 0.0f, 0.0f));
+	cam_main.DefineProjection((float)DegToRad(90), window.GetRatio(), 0.5f, 50.0f);
+
 	Light light_main(GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), shader);
 	light_main.Specular(32.0f, 1.0f);
 	light_main.Ambient(0.5f);
@@ -163,7 +165,6 @@ int main()
 		std::cout << main.m_LookForward << std::endl;*/
 		
 		cam_main.CalcuateForwardAndUp((float)theta_y, (float)theta_x, (float)theta_z);
-		cam_main.DefineProjection((float)DegToRad(90), window.GetRatio(), 0.5f, 50.0f);
 
 		cam_main.m_Position = Vec3(x, y, z);
 		cam_main.m_ViewMatrix = Mat4::Translation(cam_main.m_Position) * cam_main.m_ViewMatrix;
