@@ -2,6 +2,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+using namespace GEAR;
+using namespace GRAPHICS;
+
 Texture::Texture(const std::string& filepath)
 	:m_RendererID(0), m_FilePath(filepath), m_LocalBuffer(nullptr), m_Width(0), m_Height(0), m_BPP(0)
 {
