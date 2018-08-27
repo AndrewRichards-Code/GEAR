@@ -33,10 +33,18 @@ namespace ARM
 		return (this->x * other.x) + (this->y * other.y) + (this->z * other.z);
 	}
 
-	//floatakes the cross product of the current object and another Vec3.
-	Vec3 Vec3::Cross(const Vec3 & other)
+	//Takes the cross product of the current object and another Vec3.
+	Vec3 Vec3::Cross(const Vec3& other)
 	{
 		Mat3 mat(Vec3(1, 1, 1), Vec3(x, y, z), Vec3(other.x, other.y, other.z));
+		Vec3 output = mat.VecDet();
+		return output;
+	}
+
+	//Takes the cross product of two Vec3s.
+	Vec3 Vec3::Cross(const Vec3& a, const Vec3& b)
+	{
+		Mat3 mat(Vec3(1, 1, 1), Vec3(a.x, a.y, a.z), Vec3(b.x, b.y, b.z));
 		Vec3 output = mat.VecDet();
 		return output;
 	}

@@ -28,7 +28,7 @@ int main()
 	Object stall("res/obj/stall.obj", shader, texture, Mat4::Translation(Vec3(-5.0f, -2.0f, -5.0f)) * Mat4::Rotation((float)pi, Vec3(0, 1, 0)));
 	Object stall2("res/obj/stall.obj", shader, texture, Mat4::Translation(Vec3(5.0f, -2.0f, -5.0f)) * Mat4::Rotation((float)pi, Vec3(0, 1, 0)));
 
-	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, shader, Vec3(0.0f, 0.0f, 0.0f));
+	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f));
 	cam_main.DefineProjection((float)DegToRad(90), window.GetRatio(), 0.5f, 50.0f);
 
 	Light light_main(GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), shader);
@@ -85,7 +85,7 @@ int main()
 		Shader logo_shader("res/shaders/basic.vert", "res/shaders/basic.frag");
 		logo_shader.SetLighting(GEAR_CALC_LIGHT_DIFFUSE);
 
-		Camera logo_cam(GEAR_CAMERA_ORTHOGRAPHIC, logo_shader, Vec3(0.0f, 0.0f, 0.0f));
+		Camera logo_cam(GEAR_CAMERA_ORTHOGRAPHIC, logo_shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f));
 		Light logo_light(GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 5.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), logo_shader);
 
 		logo_shader.Enable();
@@ -134,17 +134,17 @@ int main()
 		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
 		if (window.IsKeyPressed(GLFW_KEY_D))
-			x = x - increment;
+			cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Front)) * increment;
 		if (window.IsKeyPressed(GLFW_KEY_A))
-			x = x + increment;
+			cam_main.m_Position = cam_main.m_Position + Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Front)) * increment;
 		if (window.IsKeyPressed(GLFW_KEY_R))
 			y = y - increment;
 		if (window.IsKeyPressed(GLFW_KEY_F))
 			y = y + increment;
 		if (window.IsKeyPressed(GLFW_KEY_S))
-			z = z - increment;
+			cam_main.m_Position = cam_main.m_Position - cam_main.m_Front * increment;
 		if (window.IsKeyPressed(GLFW_KEY_W))
-			z = z + increment;
+			cam_main.m_Position = cam_main.m_Position + cam_main.m_Front * increment;
 
 		if (window.IsKeyPressed(GLFW_KEY_J))
 			theta_y = theta_y - increment;
@@ -164,11 +164,10 @@ int main()
 		theta_y = -(theta_y - window.GetHeight()/2) * pi/ window.GetHeight();
 		std::cout << main.m_LookForward << std::endl;*/
 		
-		cam_main.CalcuateForwardAndUp((float)theta_y, (float)theta_x, (float)theta_z);
+		//cam_main.CalcuateForwardAndUp((float)theta_y, (float)theta_x, (float)theta_z);
 
-		cam_main.m_Position = Vec3(x, y, z);
-		cam_main.m_ViewMatrix = Mat4::Translation(cam_main.m_Position) * cam_main.m_ViewMatrix;
-		cam_main.CameraPosition();
+		cam_main.UpdateCameraPosition();
+		cam_main.DefineView();
 
 		renderer.Submit(&stall);
 		renderer.Submit(&stall2);

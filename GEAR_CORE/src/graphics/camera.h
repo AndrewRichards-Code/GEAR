@@ -22,26 +22,26 @@ private:
 
 public:
 	ARM::Vec3 m_Position;
-	
-	ARM::Vec3 m_LookForward;
-	ARM::Vec3 m_LookUp;
-	ARM::Vec3 m_LookRight;
+	ARM::Vec3 m_Front;
+	ARM::Vec3 m_Up = ARM::Vec3(0, 1, 0);
+	ARM::Vec3 m_Right;
 	
 	ARM::Mat4 m_ProjectionMatrix;
 	ARM::Mat4 m_ViewMatrix;
-
-private:
-	void DefineView();
-
+	
 public:
-	Camera(int projType, Shader& shader, ARM::Vec3 pos, float yaw = 0, float pitch = 0, float roll = 0);
+	Camera(int projType, Shader& shader, ARM::Vec3 pos, ARM::Vec3 front, float yaw = 0, float pitch = 0, float roll = 0);
 	~Camera();
 
-	void CameraPosition();
+	void UpdateCameraPosition();
 
 	void CalcuateForwardAndUp(float yaw, float pitch, float roll);
+
 	void DefineProjection(float fov, float aspectRatio, float zNear, float zFar);
 	void DefineProjection(float left, float right, float bottom, float top, float near, float far);
+	void DefineView();
+
+	ARM::Mat4 LookAt(const ARM::Vec3& CamPos, const ARM::Vec3& CamLookDir, const ARM::Vec3& Up = ARM::Vec3(0, 1, 0));
 };
 }
 }

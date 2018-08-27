@@ -4,10 +4,10 @@ using namespace GEAR;
 using namespace GRAPHICS;
 using namespace ARM;
 
-Camera::Camera(int projType, Shader& shader, Vec3 position, float yaw, float pitch, float roll)
-	:m_ProjectionType(projType), m_Shader(shader), m_Position(position), m_Yaw(yaw), m_Pitch(pitch), m_Roll(roll)
+Camera::Camera(int projType, Shader& shader, Vec3 position, Vec3 front, float yaw, float pitch, float roll)
+	:m_ProjectionType(projType), m_Shader(shader), m_Position(position), m_Front(front), m_Yaw(yaw), m_Pitch(pitch), m_Roll(roll)
 {
-	CameraPosition();
+	UpdateCameraPosition();
 	DefineView();
 }
 
@@ -15,7 +15,7 @@ Camera::~Camera()
 {
 }
 
-void Camera::CameraPosition()
+void Camera::UpdateCameraPosition()
 {
 	m_Shader.Enable();
 	m_Shader.SetUniform<float>("u_CameraPosition", { m_Position.x,  m_Position.y,  m_Position.z });
@@ -25,14 +25,15 @@ void Camera::CameraPosition()
 
 void Camera::DefineView()
 {
-	m_ViewMatrix = Mat4::Translation(m_Position) * Mat4::Rotation(m_Yaw, Vec3(0, 1, 0))
-		* Mat4::Rotation(m_Pitch, Vec3(1, 0, 0)) * Mat4::Rotation(m_Roll, Vec3(0, 0, 1));
+	m_ViewMatrix = LookAt(m_Position, m_Position + m_Front, m_Up);
+	std::cout << m_ViewMatrix;
+	system("CLS");
 	m_Shader.Enable();
 	m_Shader.SetUniformMatrix<4>("u_View", 1, GL_TRUE, m_ViewMatrix.a);
 	m_Shader.Disable();
 }
 
-void Camera::CalcuateForwardAndUp(float yaw, float pitch, float roll)
+/*void Camera::CalcuateForwardAndUp(float yaw, float pitch, float roll)
 {
 	m_Yaw = yaw; 
 	m_Pitch = pitch; 
@@ -41,7 +42,6 @@ void Camera::CalcuateForwardAndUp(float yaw, float pitch, float roll)
 	//LookForward Vector
 	Vec3 tempYaw;
 	tempYaw.x = sin(m_Yaw);
-	tempYaw.y = cos(m_Yaw);
 	tempYaw.z = cos(m_Yaw);
 
 	Vec3 tempPitch;
@@ -50,7 +50,7 @@ void Camera::CalcuateForwardAndUp(float yaw, float pitch, float roll)
 	tempPitch.z = cos(m_Pitch);
 
 	m_LookForward.x = tempPitch.x * tempYaw.x;
-	m_LookForward.y = tempPitch.y * tempYaw.y;
+	m_LookForward.y = tempPitch.y;
 	m_LookForward.z = tempPitch.z * tempYaw.z;
 
 	m_LookForward = m_LookForward.Normalise();
@@ -68,7 +68,7 @@ void Camera::CalcuateForwardAndUp(float yaw, float pitch, float roll)
 	m_LookRight = m_LookRight.Normalise(m_LookUp.Cross(m_LookForward));
 
 	DefineView();
-}
+}*/
 
 void Camera::DefineProjection(float left, float right, float bottom, float top, float near, float far)
 {
@@ -99,4 +99,19 @@ void Camera::DefineProjection(float fov, float aspectRatio, float zNear, float z
 		std::cout << "ERROR: GEAR::GRAPHICS::Camera: The parameters for DefinieProjection() don't match the projection type." << std::endl;
 		throw;
 	}
+}
+
+Mat4 Camera::LookAt(const Vec3& camPos, const Vec3& camTarget, const Vec3& up)
+{
+	Vec3 m_Position = camPos;
+	Vec3 m_Front = Vec3::Normalise(camPos - camTarget);
+	Vec3 m_Right = Vec3::Normalise(Vec3::Cross(m_Up, m_Front));
+	Vec3 m_Up = Vec3::Normalise(Vec3::Cross(m_Right, m_Front));
+
+	Mat4 output(Vec4(m_Right.x, m_Right.y, m_Right.z, 0),
+		Vec4(m_Up.x, m_Up.y, m_Up.z, 0),
+		Vec4(m_Front.x, m_Front.y, m_Front.z, 0),
+		Vec4(0, 0, 0, 1));
+	output * Mat4::Translation(Vec3(-m_Position.x, -m_Position.y, -m_Position.z));
+	return output;
 }

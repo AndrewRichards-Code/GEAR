@@ -24,9 +24,10 @@ namespace ARM
 
 		float Dot(const Vec3& other);
 		Vec3 Cross(const Vec3& other);
+		static Vec3 Cross(const Vec3& a, const Vec3& b);
 
 		Vec3 Normalise();
-		Vec3 Normalise(const Vec3& other);
+		static Vec3 Normalise(const Vec3& other);
 
 
 		//Angles betweem vectors and normals
