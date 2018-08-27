@@ -4,10 +4,8 @@
 using namespace GEAR;
 using namespace GRAPHICS;
 
+//Declare only in this .cpp file, not in the window class
 void window_resize(GLFWwindow* window, int width, int height);
-void key_callback(GLFWwindow * window, int key, int scancode, int action, int mods);
-void mouse_button_callback(GLFWwindow * window, int button, int action, int mods);
-void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 
 Window::Window(std::string title, int width, int height)
 	:m_Title(title), m_Width(width), m_Height(height)
@@ -135,7 +133,7 @@ void window_resize(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);
 }
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	Window* win = (Window*)glfwGetWindowUserPointer(window);
 	win->m_Keys[key] = action != GLFW_RELEASE;
@@ -169,13 +167,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
-void mouse_button_callback(GLFWwindow * window, int button, int action, int mods)
+void Window::mouse_button_callback(GLFWwindow * window, int button, int action, int mods)
 {
 	Window* win = (Window*)glfwGetWindowUserPointer(window);
 	win->m_MouseButtons[button] = action != GLFW_RELEASE;
 }
 
-void cursor_position_callback(GLFWwindow * window, double xpos, double ypos)
+void Window::cursor_position_callback(GLFWwindow * window, double xpos, double ypos)
 {
 	Window* win = (Window*)glfwGetWindowUserPointer(window);
 	win->mx = xpos;
