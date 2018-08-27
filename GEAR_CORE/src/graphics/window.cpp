@@ -1,8 +1,8 @@
 #include "window.h"
 #include "stb_image.h"
 
-namespace GEAR {
-namespace GRAPHICS {
+using namespace GEAR;
+using namespace GRAPHICS;
 
 void window_resize(GLFWwindow* window, int width, int height);
 void key_callback(GLFWwindow * window, int key, int scancode, int action, int mods);
@@ -180,6 +180,4 @@ void cursor_position_callback(GLFWwindow * window, double xpos, double ypos)
 	Window* win = (Window*)glfwGetWindowUserPointer(window);
 	win->mx = xpos;
 	win->my = ypos;
-}
-}
 }
