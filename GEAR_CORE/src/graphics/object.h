@@ -1,0 +1,47 @@
+#pragma once
+
+#include "GL/glew.h"
+#include "buffer/vertexarray.h"
+#include "buffer/indexbuffer.h"
+#include "shader.h"
+#include "texture.h"
+#include "../utils/fileutils.h"
+#include "../maths/ARMLib.h"
+
+namespace GEAR {
+namespace GRAPHICS {
+class Object
+{
+private:
+	const char* m_ObjFilePath;
+	FileUtils::ObjData m_ObjData;
+
+	std::vector<float> m_Vertices;
+	std::vector<float> m_TextCoords;
+	std::vector<float> m_Normals;
+	std::vector<unsigned int> m_Indices;
+
+	VertexArray* m_VAO;
+	IndexBuffer* m_IBO;
+	Shader& m_Shader;
+	const Texture& m_Texture;
+
+	ARM::Mat4 m_ModlMatrix;
+
+public:
+	Object(const char* objFilePath, Shader& shader, const Texture& texture, const ARM::Mat4& modl);
+	~Object();
+
+	void BindTexture(int slot = 0) const;
+
+	void SetUniformModlMatrix() const;
+	void SetUniformModlMatrix(const ARM::Mat4& modl);
+
+	inline const VertexArray* GetVAO() const { return m_VAO; }
+	inline const IndexBuffer* GetIBO() const { return m_IBO; }
+	inline Shader& GetShader() const { return m_Shader; }
+	inline const Texture& GetTexture() const { return m_Texture; }
+	inline const ARM::Mat4 GetModlMatrix() const { return m_ModlMatrix; }
+};
+}
+}
