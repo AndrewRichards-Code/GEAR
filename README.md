@@ -129,6 +129,6 @@ https://pixabay.com/en/logo-half-gear-letter-k-symbol-27682/
 
 -----------------------------------------------------------------------------
 
-Stall Object and Texture
+Stall Object and Texture:
 Copyright © 2014 ThinMatrix
 https://www.youtube.com/watch?v=KMWUjNE0fYI&index=9&list=PLRIWtICgwaX0u7Rf9zkZhLoLuZVfUksDP
