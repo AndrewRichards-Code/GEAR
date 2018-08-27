@@ -117,5 +117,18 @@ Public Domain
 https://github.com/nothings/stb
 
 -----------------------------------------------------------------------------
+
 ARM:
 Copyright © 2018 Andrew Richards
+
+-----------------------------------------------------------------------------
+
+GEAR Logo:
+CC0 Creative Commons
+https://pixabay.com/en/logo-half-gear-letter-k-symbol-27682/
+
+-----------------------------------------------------------------------------
+
+Stall Object and Texture
+Copyright © 2014 ThinMatrix
+https://www.youtube.com/watch?v=KMWUjNE0fYI&index=9&list=PLRIWtICgwaX0u7Rf9zkZhLoLuZVfUksDP
