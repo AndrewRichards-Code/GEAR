@@ -2,6 +2,8 @@
 #include <string>
 #include "GL/glew.h"
 
+namespace GEAR {
+namespace GRAPHICS {
 class Texture
 {
 private:
@@ -21,3 +23,5 @@ public:
 	inline int GetHeight() const { return m_Height; }
 	inline int GetBPP() const { return m_BPP; }
 };
+}
+}
