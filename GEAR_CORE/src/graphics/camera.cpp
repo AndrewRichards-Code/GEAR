@@ -17,6 +17,7 @@ Camera::~Camera()
 
 void Camera::UpdateCameraPosition()
 {
+	
 	m_Shader.Enable();
 	m_Shader.SetUniform<float>("u_CameraPosition", { m_Position.x,  m_Position.y,  m_Position.z });
 	m_Shader.Disable();
@@ -26,8 +27,6 @@ void Camera::UpdateCameraPosition()
 void Camera::DefineView()
 {
 	m_ViewMatrix = LookAt(m_Position, m_Position + m_Front, m_Up);
-	std::cout << m_ViewMatrix;
-	system("CLS");
 	m_Shader.Enable();
 	m_Shader.SetUniformMatrix<4>("u_View", 1, GL_TRUE, m_ViewMatrix.a);
 	m_Shader.Disable();
@@ -104,14 +103,14 @@ void Camera::DefineProjection(float fov, float aspectRatio, float zNear, float z
 Mat4 Camera::LookAt(const Vec3& camPos, const Vec3& camTarget, const Vec3& up)
 {
 	Vec3 m_Position = camPos;
-	Vec3 m_Front = Vec3::Normalise(camPos - camTarget);
-	Vec3 m_Right = Vec3::Normalise(Vec3::Cross(m_Up, m_Front));
+	Vec3 m_Front = Vec3::Normalise(m_Position - camTarget);
+	Vec3 m_Right = Vec3::Normalise(Vec3::Cross(up, m_Front));
 	Vec3 m_Up = Vec3::Normalise(Vec3::Cross(m_Right, m_Front));
 
 	Mat4 output(Vec4(m_Right.x, m_Right.y, m_Right.z, 0),
 		Vec4(m_Up.x, m_Up.y, m_Up.z, 0),
 		Vec4(m_Front.x, m_Front.y, m_Front.z, 0),
-		Vec4(0, 0, 0, 1));
-	output * Mat4::Translation(Vec3(-m_Position.x, -m_Position.y, -m_Position.z));
+		Vec4(m_Position.x, m_Position.y, m_Position.z, 1));
+	
 	return output;
 }
