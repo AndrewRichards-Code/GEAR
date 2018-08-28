@@ -143,8 +143,8 @@ int main()
 			cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward * increment;
 
 		window.GetMousePosition(theta_x, theta_y);
-		theta_x =  (theta_x - window.GetWidth() /2) * pi/ window.GetWidth();
-		theta_y = -(theta_y - window.GetHeight()/2) * pi/ window.GetHeight();
+		theta_x =  (theta_x - window.GetWidth() /2) * pi * increment/ window.GetWidth();
+		theta_y = -(theta_y - window.GetHeight()/2) * pi * increment/ window.GetHeight();
 		
 
 		cam_main.UpdateCameraPosition();
