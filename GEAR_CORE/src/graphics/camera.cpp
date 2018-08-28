@@ -4,8 +4,8 @@ using namespace GEAR;
 using namespace GRAPHICS;
 using namespace ARM;
 
-Camera::Camera(int projType, Shader& shader, Vec3 position, Vec3 front, float yaw, float pitch, float roll)
-	:m_ProjectionType(projType), m_Shader(shader), m_Position(position), m_Front(front), m_Yaw(yaw), m_Pitch(pitch), m_Roll(roll)
+Camera::Camera(int projType, Shader& shader, Vec3 position, Vec3 forward, float yaw, float pitch, float roll)
+	:m_ProjectionType(projType), m_Shader(shader), m_Position(position), m_Forward(forward), m_Yaw(yaw), m_Pitch(pitch), m_Roll(roll)
 {
 	UpdateCameraPosition();
 	DefineView();
@@ -26,7 +26,7 @@ void Camera::UpdateCameraPosition()
 
 void Camera::DefineView()
 {
-	m_ViewMatrix = LookAt(m_Position, m_Position + m_Front, m_Up);
+	m_ViewMatrix = LookAt(m_Position, m_Position + m_Forward, m_Up);
 	m_Shader.Enable();
 	m_Shader.SetUniformMatrix<4>("u_View", 1, GL_TRUE, m_ViewMatrix.a);
 	m_Shader.Disable();
@@ -102,15 +102,14 @@ void Camera::DefineProjection(float fov, float aspectRatio, float zNear, float z
 
 Mat4 Camera::LookAt(const Vec3& camPos, const Vec3& camTarget, const Vec3& up)
 {
-	Vec3 m_Position = camPos;
-	Vec3 m_Front = Vec3::Normalise(m_Position - camTarget);
-	Vec3 m_Right = Vec3::Normalise(Vec3::Cross(up, m_Front));
-	Vec3 m_Up = Vec3::Normalise(Vec3::Cross(m_Right, m_Front));
+	Vec3 m_Forward = Vec3::Normalise(camTarget - camPos);
+	Vec3 m_Right = Vec3::Normalise(Vec3::Cross(m_Forward, up));
+	Vec3 m_Up = Vec3::Normalise(Vec3::Cross(m_Forward, m_Right));
 
-	Mat4 output(Vec4(m_Right.x, m_Right.y, m_Right.z, 0),
-		Vec4(m_Up.x, m_Up.y, m_Up.z, 0),
-		Vec4(m_Front.x, m_Front.y, m_Front.z, 0),
-		Vec4(m_Position.x, m_Position.y, m_Position.z, 1));
+	Mat4 output(Vec4(m_Right.x, m_Right.y, m_Right.z, -Vec3::Dot(m_Right, camPos)),
+		Vec4(m_Up.x, m_Up.y, m_Up.z, -Vec3::Dot(m_Up, camPos)),
+		Vec4(-m_Forward.x, -m_Forward.y, -m_Forward.z, -Vec3::Dot(m_Forward, camPos)),
+		Vec4(0, 0, 0, 1));
 	
 	return output;
 }

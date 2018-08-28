@@ -22,7 +22,7 @@ private:
 
 public:
 	ARM::Vec3 m_Position;
-	ARM::Vec3 m_Front;
+	ARM::Vec3 m_Forward;
 	ARM::Vec3 m_Up = ARM::Vec3(0, 1, 0);
 	ARM::Vec3 m_Right;
 	
@@ -41,7 +41,7 @@ public:
 	void DefineProjection(float left, float right, float bottom, float top, float near, float far);
 	void DefineView();
 
-	ARM::Mat4 LookAt(const ARM::Vec3& CamPos, const ARM::Vec3& CamLookDir, const ARM::Vec3& Up = ARM::Vec3(0, 1, 0));
+	ARM::Mat4 LookAt(const ARM::Vec3& CamPos, const ARM::Vec3& CamLookDir, const ARM::Vec3& up);
 };
 }
 }

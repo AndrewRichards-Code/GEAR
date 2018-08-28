@@ -27,10 +27,16 @@ namespace ARM
 	//Destructs the Vec3.
 	Vec3::~Vec3() {}
 
-	//floatakes the dot product of the current object and another Vec3.
+	//Takes the dot product of the current object and another Vec3.
 	float Vec3::Dot(const Vec3& other)
 	{
 		return (this->x * other.x) + (this->y * other.y) + (this->z * other.z);
+	}
+
+	//Takes the dot product of two Vec3s.
+	float Vec3::Dot(const Vec3& a, const Vec3& b)
+	{
+		return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
 	}
 
 	//Takes the cross product of the current object and another Vec3.

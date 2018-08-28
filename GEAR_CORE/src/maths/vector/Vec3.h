@@ -23,9 +23,11 @@ namespace ARM
 		~Vec3();
 
 		float Dot(const Vec3& other);
+		static float Dot(const Vec3& a, const Vec3& b);
+		
 		Vec3 Cross(const Vec3& other);
 		static Vec3 Cross(const Vec3& a, const Vec3& b);
-
+		
 		Vec3 Normalise();
 		static Vec3 Normalise(const Vec3& other);
 

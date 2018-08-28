@@ -134,17 +134,17 @@ int main()
 		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
 		if (window.IsKeyPressed(GLFW_KEY_D))
-			cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Front)) * increment;
+			cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * increment;
 		if (window.IsKeyPressed(GLFW_KEY_A))
-			cam_main.m_Position = cam_main.m_Position + Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Front)) * increment;
+			cam_main.m_Position = cam_main.m_Position + Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * increment;
 		if (window.IsKeyPressed(GLFW_KEY_R))
 			y = y - increment;
 		if (window.IsKeyPressed(GLFW_KEY_F))
 			y = y + increment;
 		if (window.IsKeyPressed(GLFW_KEY_S))
-			cam_main.m_Position = cam_main.m_Position - cam_main.m_Front * increment;
+			cam_main.m_Position = cam_main.m_Position - cam_main.m_Forward * increment;
 		if (window.IsKeyPressed(GLFW_KEY_W))
-			cam_main.m_Position = cam_main.m_Position + cam_main.m_Front * increment;
+			cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward * increment;
 
 		if (window.IsKeyPressed(GLFW_KEY_J))
 			theta_y = theta_y - increment;
