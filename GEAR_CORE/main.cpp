@@ -137,36 +137,18 @@ int main()
 			cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * increment;
 		if (window.IsKeyPressed(GLFW_KEY_A))
 			cam_main.m_Position = cam_main.m_Position + Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * increment;
-		if (window.IsKeyPressed(GLFW_KEY_R))
-			y = y - increment;
-		if (window.IsKeyPressed(GLFW_KEY_F))
-			y = y + increment;
-		if (window.IsKeyPressed(GLFW_KEY_S))
-			cam_main.m_Position = cam_main.m_Position - cam_main.m_Forward * increment;
 		if (window.IsKeyPressed(GLFW_KEY_W))
+			cam_main.m_Position = cam_main.m_Position - cam_main.m_Forward * increment;
+		if (window.IsKeyPressed(GLFW_KEY_S))
 			cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward * increment;
 
-		if (window.IsKeyPressed(GLFW_KEY_J))
-			theta_y = theta_y - increment;
-		if (window.IsKeyPressed(GLFW_KEY_L))
-			theta_y = theta_y + increment;
-		if (window.IsKeyPressed(GLFW_KEY_I))
-			theta_x = theta_x - increment;
-		if (window.IsKeyPressed(GLFW_KEY_K))
-			theta_x = theta_x + increment;
-		if (window.IsKeyPressed(GLFW_KEY_O))
-			theta_z = theta_z - increment;
-		if (window.IsKeyPressed(GLFW_KEY_U))
-			theta_z = theta_z + increment;
-
-		/*window.GetMousePosition(theta_x, theta_y);
+		window.GetMousePosition(theta_x, theta_y);
 		theta_x =  (theta_x - window.GetWidth() /2) * pi/ window.GetWidth();
 		theta_y = -(theta_y - window.GetHeight()/2) * pi/ window.GetHeight();
-		std::cout << main.m_LookForward << std::endl;*/
 		
-		//cam_main.CalcuateForwardAndUp((float)theta_y, (float)theta_x, (float)theta_z);
 
 		cam_main.UpdateCameraPosition();
+		cam_main.CalcuateLookAround(theta_x, theta_y, theta_z);
 		cam_main.DefineView();
 
 		renderer.Submit(&stall);

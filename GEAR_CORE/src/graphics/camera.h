@@ -34,12 +34,11 @@ public:
 	~Camera();
 
 	void UpdateCameraPosition();
+	void CalcuateLookAround(float yaw, float pitch, float roll);
 
-	void CalcuateForwardAndUp(float yaw, float pitch, float roll);
-
+	void DefineView();
 	void DefineProjection(float fov, float aspectRatio, float zNear, float zFar);
 	void DefineProjection(float left, float right, float bottom, float top, float near, float far);
-	void DefineView();
 
 	ARM::Mat4 LookAt(const ARM::Vec3& CamPos, const ARM::Vec3& CamLookDir, const ARM::Vec3& up);
 };

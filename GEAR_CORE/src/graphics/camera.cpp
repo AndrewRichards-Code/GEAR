@@ -24,6 +24,20 @@ void Camera::UpdateCameraPosition()
 }
 
 
+void Camera::CalcuateLookAround(float yaw, float pitch, float roll)
+{
+	m_Yaw = yaw; 
+	m_Pitch = pitch; 
+	m_Roll = roll;
+	Vec3 direction;
+
+	direction.x = cos(m_Pitch) * sin(m_Yaw);
+	direction.y = sin(m_Pitch);
+	direction.z = cos(m_Pitch) * -cos(m_Yaw);
+
+	m_Forward = Vec3::Normalise(direction);
+}
+
 void Camera::DefineView()
 {
 	m_ViewMatrix = LookAt(m_Position, m_Position + m_Forward, m_Up);
@@ -31,43 +45,6 @@ void Camera::DefineView()
 	m_Shader.SetUniformMatrix<4>("u_View", 1, GL_TRUE, m_ViewMatrix.a);
 	m_Shader.Disable();
 }
-
-/*void Camera::CalcuateForwardAndUp(float yaw, float pitch, float roll)
-{
-	m_Yaw = yaw; 
-	m_Pitch = pitch; 
-	m_Roll = roll;
-
-	//LookForward Vector
-	Vec3 tempYaw;
-	tempYaw.x = sin(m_Yaw);
-	tempYaw.z = cos(m_Yaw);
-
-	Vec3 tempPitch;
-	tempPitch.x = cos(m_Pitch);
-	tempPitch.y = sin(m_Pitch);
-	tempPitch.z = cos(m_Pitch);
-
-	m_LookForward.x = tempPitch.x * tempYaw.x;
-	m_LookForward.y = tempPitch.y;
-	m_LookForward.z = tempPitch.z * tempYaw.z;
-
-	m_LookForward = m_LookForward.Normalise();
-
-	//LookUp Vector
-	Vec3 tempLookUp;
-	tempLookUp.x = m_LookForward.x;
-	tempLookUp.y = sin(m_Pitch + ((float)pi / 2)) * m_LookForward.y;
-	tempLookUp.z = cos(m_Pitch + ((float)pi / 2)) * m_LookForward.z;
-
-	tempLookUp.x = sin(m_Roll);
-	tempLookUp.y = cos(m_Roll);
-
-	m_LookUp = m_LookUp.Normalise(tempLookUp);
-	m_LookRight = m_LookRight.Normalise(m_LookUp.Cross(m_LookForward));
-
-	DefineView();
-}*/
 
 void Camera::DefineProjection(float left, float right, float bottom, float top, float near, float far)
 {
