@@ -118,6 +118,47 @@ https://github.com/nothings/stb
 
 -----------------------------------------------------------------------------
 
+OpenAL Soft 1.18.2
+GEAR_CORE/Dependencies/OPENAL/
+COPYING.TXT
+
+		  GNU LIBRARY GENERAL PUBLIC LICENSE
+		       Version 2, June 1991
+
+
+ Copyright (C) 1991 Free Software Foundation, Inc.
+                    675 Mass Ave, Cambridge, MA 02139, USA
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
+
+[This is the first released version of the library GPL.  It is
+ numbered 2 because it goes with version 2 of the ordinary GPL.]
+ 
+ http://kcat.strangesoft.net/openal.html
+-----------------------------------------------------------------------------
+
+FreeType 2.9.1:
+GEAR_CORE/Dependencies/FREETYPE/
+FTL.TXT
+GPLv2.TXT
+LICENSE.TXT
+
+	    GNU GENERAL PUBLIC LICENSE
+		       Version 2, June 1991
+
+ Copyright (C) 1989, 1991 Free Software Foundation, Inc.
+     51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ Everyone is permitted to copy and distribute verbatim copies
+ of this license document, but changing it is not allowed.
+ 
+ Main Page:
+ https://www.freetype.org/index.html
+ 
+ Windows Binaries:
+ https://github.com/ubawurinna/freetype-windows-binaries
+
+-----------------------------------------------------------------------------
+
 ARM:
 Copyright © 2018 Andrew Richards
 
