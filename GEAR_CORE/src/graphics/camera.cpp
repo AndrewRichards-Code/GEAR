@@ -4,7 +4,7 @@ using namespace GEAR;
 using namespace GRAPHICS;
 using namespace ARM;
 
-Camera::Camera(int projType, Shader& shader, Vec3 position, Vec3 forward, float yaw, float pitch, float roll)
+Camera::Camera(int projType, Shader& shader, Vec3 position, Vec3 forward, double yaw, double pitch, double roll)
 	:m_ProjectionType(projType), m_Shader(shader), m_Position(position), m_Forward(forward), m_Yaw(yaw), m_Pitch(pitch), m_Roll(roll)
 {
 	UpdateCameraPosition();
@@ -24,7 +24,7 @@ void Camera::UpdateCameraPosition()
 }
 
 
-void Camera::CalcuateLookAround(float yaw, float pitch, float roll)
+void Camera::CalcuateLookAround(double yaw, double pitch, double roll)
 {
 	m_Yaw = yaw; 
 	m_Pitch = pitch; 
@@ -82,7 +82,7 @@ Mat4 Camera::LookAt(const Vec3& camPos, const Vec3& camTarget, const Vec3& up)
 	Vec3 m_Forward = Vec3::Normalise(camTarget - camPos);
 	Vec3 m_Right = Vec3::Normalise(Vec3::Cross(m_Forward, up));
 	Vec3 m_Up = Vec3::Normalise(Vec3::Cross(m_Forward, m_Right));
-
+	
 	Mat4 output(Vec4(m_Right.x, m_Right.y, m_Right.z, -Vec3::Dot(m_Right, camPos)),
 		Vec4(m_Up.x, m_Up.y, m_Up.z, -Vec3::Dot(m_Up, camPos)),
 		Vec4(-m_Forward.x, -m_Forward.y, -m_Forward.z, -Vec3::Dot(m_Forward, camPos)),

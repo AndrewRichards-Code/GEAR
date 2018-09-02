@@ -16,9 +16,9 @@ class Camera
 private:
 	int m_ProjectionType;
 	Shader& m_Shader;
-	float m_Yaw;
-	float m_Pitch;
-	float m_Roll;
+	double m_Yaw;
+	double m_Pitch;
+	double m_Roll;
 
 public:
 	ARM::Vec3 m_Position;
@@ -30,11 +30,11 @@ public:
 	ARM::Mat4 m_ViewMatrix;
 	
 public:
-	Camera(int projType, Shader& shader, ARM::Vec3 pos, ARM::Vec3 front, float yaw = 0, float pitch = 0, float roll = 0);
+	Camera(int projType, Shader& shader, ARM::Vec3 pos, ARM::Vec3 front, double yaw = 0, double pitch = 0, double roll = 0);
 	~Camera();
 
 	void UpdateCameraPosition();
-	void CalcuateLookAround(float yaw, float pitch, float roll);
+	void CalcuateLookAround(double yaw, double pitch, double roll);
 
 	void DefineView();
 	void DefineProjection(float fov, float aspectRatio, float zNear, float zFar);

@@ -27,6 +27,8 @@ private:
 	const GLFWvidmode* m_Mode;
 	bool m_Fullscreen = false;
 
+	double m_CurrentTime, m_PreviousTime = 0.0, m_DeltaTime, m_FPS;
+
 	bool m_Keys[MAX_KEYS];
 	bool m_MouseButtons[MAX_BUTTONS];
 	double mx, my;
@@ -39,6 +41,7 @@ public:
 	void Update();
 	bool Closed() const;
 	void Fullscreen();
+	void ShowFPS();
 
 	inline int GetWidth() const { return m_Width; }
 	inline int GetHeight() const { return m_Height; }

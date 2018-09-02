@@ -1,9 +1,13 @@
 #include "src/graphics/window.h"
-#include "src/graphics/renderer.h"
+#include "src/graphics/renderer/renderer.h"
 #include "src/graphics/texture.h"
 #include "src/maths/ARMLib.h"
 #include "src/graphics/camera.h"
 #include "src/graphics/light.h"
+#include "src/graphics/font.h"
+
+#include "AL/al.h"
+
 
 #if _DEBUG
 #include "src/graphics/debugopengl.h"
@@ -28,6 +32,9 @@ int main()
 	Object stall("res/obj/stall.obj", shader, texture, Mat4::Translation(Vec3(-5.0f, -2.0f, -5.0f)) * Mat4::Rotation((float)pi, Vec3(0, 1, 0)));
 	Object stall2("res/obj/stall.obj", shader, texture, Mat4::Translation(Vec3(5.0f, -2.0f, -5.0f)) * Mat4::Rotation((float)pi, Vec3(0, 1, 0)));
 
+	Texture text2("res/gear_core/GEAR_logo_square.png");
+	Object quad("res/obj/quad.obj", shader, text2, Mat4::Translation(Vec3(0.0f, 0.0f, -1.0f)));
+
 	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f));
 	cam_main.DefineProjection((float)DegToRad(90), window.GetRatio(), 0.5f, 50.0f);
 
@@ -35,16 +42,18 @@ int main()
 	light_main.Specular(32.0f, 1.0f);
 	light_main.Ambient(0.5f);
 
-
 	Renderer renderer;
 
 	float x = 0, y = 0, z = 0;
-	double theta_x = 0;
-	double theta_y = 0;
-	double theta_z = 0;
-	Vec3 axis_x(1, 0, 0);
-	Vec3 axis_y(0, 1, 0);
-	Vec3 axis_z(0, 0, 1);
+	double yaw = 0;
+	double pitch = 0;
+	double roll = 0;
+
+	double pos_x = 0, pos_y = 0;
+	double last_pos_x = window.GetWidth()  / 2.0;
+	double last_pos_y = window.GetHeight() / 2.0;
+	bool initMouse = true;
+
 	float increment = 0.05f;
 
 	//Logo Splashscreen
@@ -142,19 +151,39 @@ int main()
 		if (window.IsKeyPressed(GLFW_KEY_S))
 			cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward * increment;
 
-		window.GetMousePosition(theta_x, theta_y);
-		theta_x =  (theta_x - window.GetWidth() /2) * pi * increment/ window.GetWidth();
-		theta_y = -(theta_y - window.GetHeight()/2) * pi * increment/ window.GetHeight();
+		window.GetMousePosition(pos_x, pos_y);
 		
+		if (initMouse) 
+		{
+			last_pos_x = pos_x;
+			last_pos_y = pos_y;
+			initMouse = false;
+		}
+
+		double offset_pos_x = pos_x - last_pos_x;
+		double offset_pos_y = -pos_y + last_pos_y;
+		last_pos_x = pos_x;
+		last_pos_y = pos_y;
+		offset_pos_x *= increment * increment;
+		offset_pos_y *= increment * increment;
+		yaw += offset_pos_x;
+		pitch += offset_pos_y;
+		if (pitch > 89.0f)
+			pitch = 89.0f;
+		if (pitch < -89.0f)
+			pitch = -89.0f;	
+		
+		//Font("This is a test!", "res/font/consola/consola.ttf", 50, Vec2(640, 360), Vec4(1, 1, 1, 1), window);
 
 		cam_main.UpdateCameraPosition();
-		cam_main.CalcuateLookAround(theta_x, theta_y, theta_z);
+		cam_main.CalcuateLookAround((float)yaw, (float)pitch, (float)roll);
 		cam_main.DefineView();
 
-		renderer.Submit(&stall);
-		renderer.Submit(&stall2);
-		
+		//renderer.Submit(&stall);
+		//renderer.Submit(&stall2);
+		renderer.Submit(&quad);
 		renderer.Flush();
+		
 		window.Update();
 	}
 }

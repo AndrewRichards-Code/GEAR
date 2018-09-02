@@ -14,6 +14,7 @@ private:
 
 public:
 	Texture(const std::string& filepath);
+	Texture(unsigned int fontTextID, unsigned char* buffer, int width, int height); //For Fonts only!
 	~Texture();
 
 	void Bind(unsigned int slot = 0) const;

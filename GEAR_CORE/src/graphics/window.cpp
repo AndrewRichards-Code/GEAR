@@ -64,6 +64,15 @@ void Window::Fullscreen()
 	m_Fullscreen = true;
 }
 
+void Window::ShowFPS()
+{
+	double m_CurrentTime = glfwGetTime();
+	double m_DeltaTime = m_CurrentTime - m_PreviousTime;
+	m_PreviousTime = m_CurrentTime;
+	m_FPS = 1 / m_DeltaTime;
+	std::cout << (float)m_FPS << "FPS" << std::endl;
+}
+
 bool Window::Init()
 {
 	if (!glfwInit())

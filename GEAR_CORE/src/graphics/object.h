@@ -10,6 +10,9 @@
 
 namespace GEAR {
 namespace GRAPHICS {
+
+
+
 class Object
 {
 private:
@@ -28,8 +31,20 @@ private:
 
 	ARM::Mat4 m_ModlMatrix;
 
+	ARM::Vec3 m_Position;
+	ARM::Vec2 m_Size;
+
+public:
+struct VertexData
+{
+	ARM::Vec3 m_Vertex;
+	ARM::Vec2 m_TextCoord;
+	ARM::Vec3 m_Normal;
+};
+
 public:
 	Object(const char* objFilePath, Shader& shader, const Texture& texture, const ARM::Mat4& modl);
+	Object(const char* objFilePath, Shader& shader, const Texture& texture, ARM::Vec3 position, ARM::Vec2 size); //Doesn't fill the VAO or IBO.
 	~Object();
 
 	void BindTexture(int slot = 0) const;

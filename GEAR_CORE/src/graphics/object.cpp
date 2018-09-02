@@ -53,6 +53,43 @@ Object::Object(const char* objFilePath, Shader& shader, const Texture& texture, 
 	
 	SetUniformModlMatrix();
 }
+Object::Object(const char * objFilePath, Shader& shader, const Texture& texture, Vec3 position, Vec2 size)
+	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Texture(texture), m_Position(position), m_Size(size)
+{
+	m_ObjData = FileUtils::read_obj(m_ObjFilePath);
+
+	m_Vertices.reserve(m_ObjData.GetSizeVertices() * 3);
+	for (int i = 0; i < m_ObjData.GetSizeVertices(); i++)
+	{
+		Vec3 temp = m_ObjData.m_Vertices[(unsigned int)m_ObjData.m_UniqueVertices[i].x];
+		m_Vertices.push_back(temp.x);
+		m_Vertices.push_back(temp.y);
+		m_Vertices.push_back(temp.z);
+	}
+
+	m_TextCoords.reserve(m_ObjData.GetSizeVertices() * 2);
+	for (int i = 0; i < m_ObjData.GetSizeVertices(); i++)
+	{
+		Vec2 temp = m_ObjData.m_TexCoords[(unsigned int)m_ObjData.m_UniqueVertices[i].y];
+		m_TextCoords.push_back(temp.x);
+		m_TextCoords.push_back(temp.y);;
+	}
+
+	m_Normals.reserve(m_ObjData.GetSizeVertices() * 3);
+	for (int i = 0; i < m_ObjData.GetSizeVertices(); i++)
+	{
+		Vec3 temp = m_ObjData.m_Normals[(unsigned int)m_ObjData.m_UniqueVertices[i].z];
+		m_Normals.push_back(temp.x);
+		m_Normals.push_back(temp.y);
+		m_Normals.push_back(temp.z);
+	}
+
+	m_Indices.reserve(m_ObjData.GetSizeVertIndices());
+	for (int i = 0; i < m_ObjData.GetSizeVertIndices(); i++)
+	{
+		m_Indices.push_back(m_ObjData.m_VertIndices[i]);
+	}
+}
 Object::~Object()
 {
 	delete m_VAO;
