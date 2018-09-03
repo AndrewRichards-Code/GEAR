@@ -23,7 +23,7 @@ public:
 	void Bind() const;
 	void Unbind() const;
 
-	void AddBuffer(VertexBuffer* vbo, GLuint index) const;
+	void AddBuffer(VertexBuffer* vbo, GLuint index);
 };
 }
 }

@@ -41,18 +41,18 @@ public:
 		std::vector<ARM::Vec3> m_Vertices;
 		std::vector<ARM::Vec2> m_TexCoords;
 		std::vector<ARM::Vec3> m_Normals;
-		std::vector<UINT> m_VertIndices;
-		std::vector<UINT> m_TextIndices;
-		std::vector<UINT> m_NormIndices;
+		std::vector<unsigned int> m_VertIndices;
+		std::vector<unsigned int> m_TextIndices;
+		std::vector<unsigned int> m_NormIndices;
 		std::vector<ARM::Vec3> m_UniqueVertices;
 
-		INT GetSizeVertices() { return m_Vertices.size(); }
-		INT GetSizeTexCoords() { return m_TexCoords.size(); }
-		INT GetSizeNormals() { return m_Normals.size(); }
-		INT GetSizeVertIndices() { return m_VertIndices.size(); }
-		INT GetSizeTextIndices() { return m_TextIndices.size(); }
-		INT GetSizeNormIndices() { return m_NormIndices.size(); }
-		INT GetSizeUniqueVertices() { return m_UniqueVertices.size(); }
+		int GetSizeVertices() { return m_Vertices.size(); }
+		int GetSizeTexCoords() { return m_TexCoords.size(); }
+		int GetSizeNormals() { return m_Normals.size(); }
+		int GetSizeVertIndices() { return m_VertIndices.size(); }
+		int GetSizeTextIndices() { return m_TextIndices.size(); }
+		int GetSizeNormIndices() { return m_NormIndices.size(); }
+		int GetSizeUniqueVertices() { return m_UniqueVertices.size(); }
 	};
 
 	static ObjData read_obj(const char* filepath)
@@ -108,13 +108,13 @@ public:
 
 				for (int i = 0; i < 2; i++)
 				{
-					INT x_pos = x.find('/', 0);
+					int x_pos = x.find('/', 0);
 					x.replace(x_pos, 1, 1, ' ');
 
-					INT y_pos = y.find('/', 0);
+					int y_pos = y.find('/', 0);
 					y.replace(y_pos, 1, 1, ' ');
 
-					INT z_pos = z.find('/', 0);
+					int z_pos = z.find('/', 0);
 					z.replace(z_pos, 1, 1, ' ');
 				}
 
@@ -125,10 +125,10 @@ public:
 				std::stringstream z_ss;
 				z_ss << z;
 
-				INT vert_index;
-				INT text_index;
-				INT norm_index;
-				UINT eoVertices = result.GetSizeVertices();
+				int vert_index;
+				int text_index;
+				int norm_index;
+				unsigned int eoVertices = result.GetSizeVertices();
 
 				x_ss >> vert_index >> text_index >> norm_index;
 				if (vert_index > 0)

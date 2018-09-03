@@ -150,14 +150,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\graphics\renderer\batchrenderer2d.cpp" />
     <ClCompile Include="src\graphics\font.cpp" />
     <ClCompile Include="src\graphics\light.cpp" />
     <ClCompile Include="src\graphics\camera.cpp" />
     <ClCompile Include="src\graphics\buffer\indexbuffer.cpp" />
     <ClCompile Include="src\graphics\buffer\vertexarray.cpp" />
     <ClCompile Include="src\graphics\buffer\vertexbuffer.cpp" />
-    <ClCompile Include="src\graphics\object.cpp" />
+    <ClCompile Include="src\graphics\object\object.cpp" />
+    <ClCompile Include="src\graphics\renderer\batchrenderer2d.cpp" />
     <ClCompile Include="src\graphics\renderer\renderer.cpp" />
     <ClCompile Include="src\graphics\shader.cpp" />
     <ClCompile Include="src\graphics\texture.cpp" />
@@ -171,7 +171,6 @@
     <ClCompile Include="src\maths\vector\Vec4.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\graphics\renderer\batchrenderer2d.h" />
     <ClInclude Include="src\graphics\font.h" />
     <ClInclude Include="src\graphics\light.h" />
     <ClInclude Include="src\graphics\camera.h" />
@@ -179,7 +178,8 @@
     <ClInclude Include="src\graphics\buffer\vertexarray.h" />
     <ClInclude Include="src\graphics\buffer\vertexbuffer.h" />
     <ClInclude Include="src\graphics\debugopengl.h" />
-    <ClInclude Include="src\graphics\object.h" />
+    <ClInclude Include="src\graphics\object\object.h" />
+    <ClInclude Include="src\graphics\renderer\batchrenderer2d.h" />
     <ClInclude Include="src\graphics\renderer\renderer.h" />
     <ClInclude Include="src\graphics\shader.h" />
     <ClInclude Include="src\graphics\texture.h" />

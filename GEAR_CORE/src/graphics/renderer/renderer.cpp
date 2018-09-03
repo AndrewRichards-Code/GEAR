@@ -5,7 +5,7 @@ using namespace GRAPHICS;
 
 void Renderer::Submit(const Object* obj)
 {
-	m_RenderQueue.push_back((Object*) obj);
+	m_RenderQueue.push_back((const Object*) obj);
 }
 
 void Renderer::Flush()
@@ -14,16 +14,16 @@ void Renderer::Flush()
 	{
 		const Object* obj = m_RenderQueue.front();
 
+		obj->BindTexture(0);
+		obj->SetUniformModlMatrix();
+
 		obj->GetShader().Enable();
-		obj->GetTexture().Bind(0);
-		obj->GetShader().SetUniform<int>("u_Texture", { 0 });
-		obj->GetShader().SetUniformMatrix<4>("u_Modl", 1, GL_TRUE, obj->GetModlMatrix().a);
 		obj->GetVAO()->Bind();
 		obj->GetIBO()->Bind();
 		glDrawElements(GL_TRIANGLES, obj->GetIBO()->GetCount(), GL_UNSIGNED_INT, nullptr);
-		obj->GetShader().Disable();
-		obj->GetVAO()->Unbind();
 		obj->GetIBO()->Unbind();
+		obj->GetVAO()->Unbind();
+		obj->GetShader().Disable();
 
 		m_RenderQueue.pop_front();
 	}
@@ -35,21 +35,24 @@ void Renderer::Draw(const VertexArray& vao, const IndexBuffer& ibo, const Shader
 	vao.Bind();
 	ibo.Bind();
 	glDrawElements(GL_TRIANGLES, ibo.GetCount(), GL_UNSIGNED_INT, nullptr);
-	shader.Disable();
-	vao.Unbind();
 	ibo.Unbind();
+	vao.Unbind();
+	shader.Disable();
 
 }
 
 void Renderer::Draw(const Object* obj) const
 {
+	obj->BindTexture(0);
+	obj->SetUniformModlMatrix();
+
 	obj->GetShader().Enable();
 	obj->GetVAO()->Bind();
 	obj->GetIBO()->Bind();
 	glDrawElements(GL_TRIANGLES, obj->GetIBO()->GetCount(), GL_UNSIGNED_INT, nullptr);
-	obj->GetShader().Disable();
-	obj->GetVAO()->Unbind();
 	obj->GetIBO()->Unbind();
+	obj->GetVAO()->Unbind();
+	obj->GetShader().Disable();
 
 }
 

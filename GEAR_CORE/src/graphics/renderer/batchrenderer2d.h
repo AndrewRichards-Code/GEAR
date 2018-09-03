@@ -7,7 +7,7 @@
 #include "../buffer/indexbuffer.h"
 #include "../shader.h"
 
-#define GEAR_RENDERER_MAX_OBJ       65536
+#define GEAR_RENDERER_MAX_OBJ       10000
 #define GEAR_RENDERER_VERTEX_SIZE	sizeof(Object::VertexData)
 #define GEAR_RENDERER_OBJ_SIZE      GEAR_RENDERER_VERTEX_SIZE * 4
 #define GEAR_RENDERER_BUFFER_SIZE   GEAR_RENDERER_OBJ_SIZE * GEAR_RENDERER_MAX_OBJ

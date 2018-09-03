@@ -27,13 +27,13 @@ int main()
 
 	Shader shader("res/shaders/basic.vert", "res/shaders/basic.frag");
 	shader.SetLighting(GEAR_CALC_LIGHT_DIFFUSE + GEAR_CALC_LIGHT_SPECULAR + GEAR_CALC_LIGHT_AMIBIENT);
-	
-	Texture texture("res/img/stallTexture.png");
-	Object stall("res/obj/stall.obj", shader, texture, Mat4::Translation(Vec3(-5.0f, -2.0f, -5.0f)) * Mat4::Rotation((float)pi, Vec3(0, 1, 0)));
-	Object stall2("res/obj/stall.obj", shader, texture, Mat4::Translation(Vec3(5.0f, -2.0f, -5.0f)) * Mat4::Rotation((float)pi, Vec3(0, 1, 0)));
 
-	Texture text2("res/gear_core/GEAR_logo_square.png");
-	Object quad("res/obj/quad.obj", shader, text2, Mat4::Translation(Vec3(0.0f, 0.0f, -1.0f)));
+	Texture texture("res/img/stallTexture.png");
+	Object stall("res/obj/stall.obj", shader, texture, Mat4::Translation(Vec3(5.0f, -2.0f, -5.0f)) * Mat4::Rotation((float)pi, Vec3(0, 1, 0)));
+
+	Texture texture2("res/gear_core/GEAR_logo_square.png");
+	Object quad1("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3( 0.5f, -0.5f, -1.0f))); 
+	Object quad2("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(-1.5f, -0.5f, -1.0f))); 
 
 	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f));
 	cam_main.DefineProjection((float)DegToRad(90), window.GetRatio(), 0.5f, 50.0f);
@@ -50,7 +50,7 @@ int main()
 	double roll = 0;
 
 	double pos_x = 0, pos_y = 0;
-	double last_pos_x = window.GetWidth()  / 2.0;
+	double last_pos_x = window.GetWidth() / 2.0;
 	double last_pos_y = window.GetHeight() / 2.0;
 	bool initMouse = true;
 
@@ -152,15 +152,15 @@ int main()
 			cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward * increment;
 
 		window.GetMousePosition(pos_x, pos_y);
-		
-		if (initMouse) 
+
+		if (initMouse)
 		{
 			last_pos_x = pos_x;
 			last_pos_y = pos_y;
 			initMouse = false;
 		}
 
-		double offset_pos_x = pos_x - last_pos_x;
+		/*double offset_pos_x = pos_x - last_pos_x;
 		double offset_pos_y = -pos_y + last_pos_y;
 		last_pos_x = pos_x;
 		last_pos_y = pos_y;
@@ -171,17 +171,23 @@ int main()
 		if (pitch > 89.0f)
 			pitch = 89.0f;
 		if (pitch < -89.0f)
-			pitch = -89.0f;	
-		
+			pitch = -89.0f;*/
+
 		//Font("This is a test!", "res/font/consola/consola.ttf", 50, Vec2(640, 360), Vec4(1, 1, 1, 1), window);
 
 		cam_main.UpdateCameraPosition();
 		cam_main.CalcuateLookAround((float)yaw, (float)pitch, (float)roll);
 		cam_main.DefineView();
 
-		//renderer.Submit(&stall);
-		//renderer.Submit(&stall2);
-		renderer.Submit(&quad);
+		stall.SetUniformModlMatrix(Mat4::Translation(Vec3(5.0f, -2.0f, -5.0f)) * Mat4::Rotation((float)pi, Vec3(0, 1, 0)));
+		renderer.Submit(&stall);
+		renderer.Flush();
+		
+		stall.SetUniformModlMatrix(Mat4::Translation(Vec3(-5.0f, -2.0f, -5.0f)) * Mat4::Rotation((float)pi, Vec3(0, 1, 0)));
+		renderer.Submit(&stall);
+		
+		renderer.Submit(&quad1);
+		renderer.Submit(&quad2);
 		renderer.Flush();
 		
 		window.Update();

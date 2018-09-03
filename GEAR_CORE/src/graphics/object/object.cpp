@@ -41,19 +41,15 @@ Object::Object(const char* objFilePath, Shader& shader, const Texture& texture, 
 		m_Indices.push_back(m_ObjData.m_VertIndices[i]);
 	}
 
-	m_VAO = new VertexArray();
-	VertexBuffer vbo0(&m_Vertices[0], m_Vertices.size(), 3);
-	VertexBuffer vbo1(&m_TextCoords[0], m_TextCoords.size(), 2);
-	VertexBuffer vbo2(&m_Normals[0], m_Normals.size(), 3);
-	m_VAO->AddBuffer(&vbo0, GEAR_BUFFER_POSITIONS);
-	m_VAO->AddBuffer(&vbo1, GEAR_BUFFER_TEXTCOORDS);
-	m_VAO->AddBuffer(&vbo2, GEAR_BUFFER_NORMALS);
-	
+	m_VAO = new VertexArray;
+	m_VAO->AddBuffer(new VertexBuffer(&m_Vertices[0], m_Vertices.size(), 3), GEAR_BUFFER_POSITIONS);
+	m_VAO->AddBuffer(new VertexBuffer(&m_TextCoords[0], m_TextCoords.size(), 2), GEAR_BUFFER_TEXTCOORDS);
+	m_VAO->AddBuffer(new VertexBuffer(&m_Normals[0], m_Normals.size(), 3), GEAR_BUFFER_NORMALS);
+
 	m_IBO = new IndexBuffer(&m_Indices[0], m_Indices.size());
-	
-	SetUniformModlMatrix();
 }
-Object::Object(const char * objFilePath, Shader& shader, const Texture& texture, Vec3 position, Vec2 size)
+
+Object::Object(const char* objFilePath, Shader& shader, const Texture& texture, Vec3 position, Vec2 size)
 	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Texture(texture), m_Position(position), m_Size(size)
 {
 	m_ObjData = FileUtils::read_obj(m_ObjFilePath);
@@ -62,6 +58,9 @@ Object::Object(const char * objFilePath, Shader& shader, const Texture& texture,
 	for (int i = 0; i < m_ObjData.GetSizeVertices(); i++)
 	{
 		Vec3 temp = m_ObjData.m_Vertices[(unsigned int)m_ObjData.m_UniqueVertices[i].x];
+		temp.x *= size.x;
+		temp.y *= size.y;
+		temp = temp + m_Position;
 		m_Vertices.push_back(temp.x);
 		m_Vertices.push_back(temp.y);
 		m_Vertices.push_back(temp.z);
@@ -90,6 +89,7 @@ Object::Object(const char * objFilePath, Shader& shader, const Texture& texture,
 		m_Indices.push_back(m_ObjData.m_VertIndices[i]);
 	}
 }
+
 Object::~Object()
 {
 	delete m_VAO;
@@ -99,7 +99,7 @@ Object::~Object()
 void Object::BindTexture(int slot) const
 {
 	m_Shader.Enable();
-	m_Texture.Bind(0);
+	m_Texture.Bind(slot);
 	m_Shader.SetUniform<int>("u_Texture", { slot });
 	m_Shader.Disable();
 }
