@@ -43,6 +43,7 @@ int main()
 	light_main.Ambient(0.5f);
 
 	Renderer renderer;
+	Font testFont("This is a test!", "res/font/consola/consola.ttf", 1, Vec2(0.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
 
 	float x = 0, y = 0, z = 0;
 	double yaw = 0;
@@ -173,11 +174,13 @@ int main()
 		if (pitch < -89.0f)
 			pitch = -89.0f;*/
 
-		//Font("This is a test!", "res/font/consola/consola.ttf", 50, Vec2(640, 360), Vec4(1, 1, 1, 1), window);
 
 		cam_main.UpdateCameraPosition();
 		cam_main.CalcuateLookAround((float)yaw, (float)pitch, (float)roll);
 		cam_main.DefineView();
+		cam_main.DefineProjection((float)DegToRad(90), window.GetRatio(), 0.5f, 50.0f);
+
+		//testFont.RenderText();
 
 		stall.SetUniformModlMatrix(Mat4::Translation(Vec3(5.0f, -2.0f, -5.0f)) * Mat4::Rotation((float)pi, Vec3(0, 1, 0)));
 		renderer.Submit(&stall);

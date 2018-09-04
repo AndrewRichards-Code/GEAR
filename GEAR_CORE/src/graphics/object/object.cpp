@@ -49,7 +49,7 @@ Object::Object(const char* objFilePath, Shader& shader, const Texture& texture, 
 	m_IBO = new IndexBuffer(&m_Indices[0], m_Indices.size());
 }
 
-Object::Object(const char* objFilePath, Shader& shader, const Texture& texture, Vec3 position, Vec2 size)
+Object::Object(const char* objFilePath, Shader& shader, const Texture& texture, const Vec3& position, const Vec2& size)
 	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Texture(texture), m_Position(position), m_Size(size)
 {
 	m_ObjData = FileUtils::read_obj(m_ObjFilePath);

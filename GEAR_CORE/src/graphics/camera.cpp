@@ -4,7 +4,7 @@ using namespace GEAR;
 using namespace GRAPHICS;
 using namespace ARM;
 
-Camera::Camera(int projType, Shader& shader, Vec3 position, Vec3 forward, double yaw, double pitch, double roll)
+Camera::Camera(int projType, Shader& shader, const Vec3& position, const Vec3& forward, double yaw, double pitch, double roll)
 	:m_ProjectionType(projType), m_Shader(shader), m_Position(position), m_Forward(forward), m_Yaw(yaw), m_Pitch(pitch), m_Roll(roll)
 {
 	UpdateCameraPosition();

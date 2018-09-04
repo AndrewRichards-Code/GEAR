@@ -63,7 +63,7 @@ public:
 	}
 
 	template<typename T>
-	inline void SetUniformArray(const char* locationInput, const int size, const GLsizei& count, const T& values) const
+	inline void SetUniformArray(const char* locationInput, int size, GLsizei count, const T& values) const
 	{
 		GLint location = glGetUniformLocation(m_ShaderID, locationInput);
 		if (typeid(T) == typeid(float))
@@ -94,7 +94,7 @@ public:
 	}
 
 	template<int N>
-	inline void SetUniformMatrix(const char* locationInput, const GLsizei& count, GLboolean tranpose, const float& values) const
+	inline void SetUniformMatrix(const char* locationInput, GLsizei count, GLboolean tranpose, const float& values) const
 	{
 		GLint location = glGetUniformLocation(m_ShaderID, locationInput);
 		     if (N == 2) glUniformMatrix2fv(location, count, tranpose, &values);

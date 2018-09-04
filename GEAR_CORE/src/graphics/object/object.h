@@ -42,7 +42,7 @@ struct VertexData
 
 public:
 	Object(const char* objFilePath, Shader& shader, const Texture& texture, const ARM::Mat4& modl);
-	Object(const char* objFilePath, Shader& shader, const Texture& texture, ARM::Vec3 position, ARM::Vec2 size); //Doesn't fill the VAO or IBO.
+	Object(const char* objFilePath, Shader& shader, const Texture& texture, const ARM::Vec3& position, const ARM::Vec2& size); //Doesn't fill the VAO or IBO.
 	~Object();
 
 	void BindTexture(int slot = 0) const;

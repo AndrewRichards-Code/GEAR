@@ -27,7 +27,12 @@ private:
 	Shader m_Shader = Shader("res/shaders/font.vert", "res/shaders/font.frag");;
 	ARM::Vec2 m_Position;
 	ARM::Vec4 m_Colour;
-	Window& m_Window;
+	const Window& m_Window;
+
+	VertexArray* VAO;
+	VertexBuffer* VBO;
+	IndexBuffer* IBO;
+	Texture* m_Texture;
 
 	FT_Library m_ftlib;
 	FT_Face m_Face;
@@ -42,13 +47,13 @@ private:
 	std::map<GLchar, Character> m_CharMap;
 
 public:
-	Font(std::string text, const char* filepath, int fontHeight, ARM::Vec2 position, ARM::Vec4 colour, Window& m_Window);
+	Font(const std::string& text, const char* filepath, int fontHeight, const ARM::Vec2& position, const ARM::Vec4& colour, const Window& window);
 	~Font();
+	void RenderText();
 
 private:
 	//void LoadFont();
 	//void GenFontVAOVBO();
-	//void RenderText();
 };
 }
 }

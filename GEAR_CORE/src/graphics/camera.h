@@ -30,7 +30,7 @@ public:
 	ARM::Mat4 m_ViewMatrix;
 	
 public:
-	Camera(int projType, Shader& shader, ARM::Vec3 pos, ARM::Vec3 front, double yaw = 0, double pitch = 0, double roll = 0);
+	Camera(int projType, Shader& shader, const ARM::Vec3& pos, const ARM::Vec3& front, double yaw = 0, double pitch = 0, double roll = 0);
 	~Camera();
 
 	void UpdateCameraPosition();
