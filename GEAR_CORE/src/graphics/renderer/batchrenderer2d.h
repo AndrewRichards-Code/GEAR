@@ -21,11 +21,16 @@ private:
 	GLuint m_VAO;
 	GLuint m_VBO;
 	IndexBuffer* m_IBO;
+	const Object* m_Object;
 	GLsizei m_IndexCount;
 
+	Object::VertexData* m_BatchBuffer;
+	
 public:
-	virtual void Submit(const Object* obj) override;
-	virtual void Flush() override;
+	void OpenMapBuffer();
+	void CloseMapBuffer();
+	void Submit(const Object* obj) override;
+	void Flush() override;
 
 	BatchRenderer2D();
 	~BatchRenderer2D();

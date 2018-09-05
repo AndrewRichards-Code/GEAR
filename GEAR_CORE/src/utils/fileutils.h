@@ -22,7 +22,7 @@ public:
 
 		if (!stream.is_open())
 		{
-			std::cout << "Could not read file " << filepath << ". File does not exist." << std::endl;
+			std::cout << "ERROR: GEAR::FileUtils::read_file: Could not read file " << filepath << ". File does not exist." << std::endl;
 			return "";
 		}
 
@@ -62,7 +62,7 @@ public:
 
 		if (!stream.is_open())
 		{
-			std::cout << "Could not read file " << filepath << ". File does not exist." << std::endl;
+			std::cout << "ERROR: GEAR::FileUtils::read_obj: Could not read file " << filepath << ". File does not exist." << std::endl;
 			return result;
 		}
 		

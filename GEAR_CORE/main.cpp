@@ -1,5 +1,6 @@
 #include "src/graphics/window.h"
 #include "src/graphics/renderer/renderer.h"
+#include "src/graphics/renderer/batchrenderer2d.h"
 #include "src/graphics/texture.h"
 #include "src/maths/ARMLib.h"
 #include "src/graphics/camera.h"
@@ -32,8 +33,14 @@ int main()
 	Object stall("res/obj/stall.obj", shader, texture, Mat4::Translation(Vec3(5.0f, -2.0f, -5.0f)) * Mat4::Rotation((float)pi, Vec3(0, 1, 0)));
 
 	Texture texture2("res/gear_core/GEAR_logo_square.png");
-	Object quad1("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3( 0.5f, -0.5f, -1.0f))); 
-	Object quad2("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(-1.5f, -0.5f, -1.0f))); 
+	Object quad1("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3( 1.5f, 0.0f, -2.0f))); 
+	Object quad2("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(-1.5f, 0.0f, -2.0f)));
+	
+	//For BatchRender2D
+	Object quad3("res/obj/quad.obj", shader, texture2, Vec3(0, 0, -2), Vec2(0.5, 0.5));
+	Object quad4("res/obj/quad.obj", shader, texture2, Vec3(-1.5, 0, -2), Vec2(0.5, 0.5));
+	Object quad5("res/obj/quad.obj", shader, texture2, Vec3(1.5, 0, -2), Vec2(0.5, 0.5));
+
 
 	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f));
 	cam_main.DefineProjection((float)DegToRad(90), window.GetRatio(), 0.5f, 50.0f);
@@ -42,8 +49,10 @@ int main()
 	light_main.Specular(32.0f, 1.0f);
 	light_main.Ambient(0.5f);
 
+	BatchRenderer2D br2d;
 	Renderer renderer;
-	Font testFont("This is a test!", "res/font/consola/consola.ttf", 1, Vec2(0.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+
+	//Font testFont("This is a test!", "res/font/consola/consola.ttf", 1, Vec2(0.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
 
 	float x = 0, y = 0, z = 0;
 	double yaw = 0;
@@ -59,50 +68,14 @@ int main()
 
 	//Logo Splashscreen
 	{
-		float logo_positions[] =
-		{
-			-1.0f, -1.0f,
-			 1.0f, -1.0f,
-			 1.0f,  1.0f,
-			-1.0f,  1.0f
-		};
-		float logo_textCoords[] =
-		{
-			0.0f, 0.0f,
-			1.0f, 0.0f,
-			1.0f, 1.0f,
-			0.0f, 1.0f
-		};
-		float logo_normals[] =
-		{
-			0.0f, 0.0f, 1.0f,
-			0.0f, 0.0f, 1.0f,
-			0.0f, 0.0f, 1.0f,
-			0.0f, 0.0f, 1.0f
-		};
-		unsigned int logo_indicies[]
-		{ 0, 1, 2, 2, 3, 0 };
-
-		VertexArray logo_vao;
-		VertexBuffer vbo0(logo_positions, 8, 2);
-		VertexBuffer vbo1(logo_textCoords, 8, 2);
-		VertexBuffer vbo2(logo_normals, 12, 3);
-		logo_vao.AddBuffer(&vbo0, GEAR_BUFFER_POSITIONS);
-		logo_vao.AddBuffer(&vbo1, GEAR_BUFFER_TEXTCOORDS);
-		logo_vao.AddBuffer(&vbo2, GEAR_BUFFER_NORMALS);
-		IndexBuffer logo_ibo(logo_indicies, 6);
-
 		Shader logo_shader("res/shaders/basic.vert", "res/shaders/basic.frag");
 		logo_shader.SetLighting(GEAR_CALC_LIGHT_DIFFUSE);
 
+		Texture logo_text("res/gear_core/GEAR_logo_square.png");
+		Object logo("res/obj/quad.obj", logo_shader, logo_text, Mat4::Translation(Vec3(0.0f, 0.0f, 0.0f)));
+		
 		Camera logo_cam(GEAR_CAMERA_ORTHOGRAPHIC, logo_shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f));
 		Light logo_light(GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 5.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), logo_shader);
-
-		logo_shader.Enable();
-		Texture logo_text("res/gear_core/GEAR_logo_square.png");
-		logo_text.Bind(0);
-		logo_shader.SetUniform<int>("u_Texture", { 0 });
-		logo_shader.Disable();
 
 		int time = 0;
 		float increment = 0.017f;
@@ -130,7 +103,7 @@ int main()
 			logo_shader.Enable();
 			logo_shader.SetUniformMatrix<4>("u_Modl", 1, GL_TRUE, Mat4::Identity().a);
 
-			renderer.Draw(logo_vao, logo_ibo, logo_shader);
+			renderer.Draw(&logo);
 			window.Update();
 			if (window.IsKeyPressed(GLFW_KEY_ENTER)) break;
 			time++;
@@ -144,13 +117,13 @@ int main()
 		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 
 		if (window.IsKeyPressed(GLFW_KEY_D))
-			cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * increment;
+			cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) *  increment;
 		if (window.IsKeyPressed(GLFW_KEY_A))
-			cam_main.m_Position = cam_main.m_Position + Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * increment;
+			cam_main.m_Position = cam_main.m_Position + Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) *  increment;
 		if (window.IsKeyPressed(GLFW_KEY_W))
-			cam_main.m_Position = cam_main.m_Position - cam_main.m_Forward * increment;
+			cam_main.m_Position = cam_main.m_Position - cam_main.m_Forward *  increment;
 		if (window.IsKeyPressed(GLFW_KEY_S))
-			cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward * increment;
+			cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward *  increment;
 
 		window.GetMousePosition(pos_x, pos_y);
 
@@ -161,7 +134,7 @@ int main()
 			initMouse = false;
 		}
 
-		/*double offset_pos_x = pos_x - last_pos_x;
+		double offset_pos_x = pos_x - last_pos_x;
 		double offset_pos_y = -pos_y + last_pos_y;
 		last_pos_x = pos_x;
 		last_pos_y = pos_y;
@@ -172,13 +145,13 @@ int main()
 		if (pitch > 89.0f)
 			pitch = 89.0f;
 		if (pitch < -89.0f)
-			pitch = -89.0f;*/
+			pitch = -89.0f;
 
 
 		cam_main.UpdateCameraPosition();
 		cam_main.CalcuateLookAround((float)yaw, (float)pitch, (float)roll);
 		cam_main.DefineView();
-		cam_main.DefineProjection((float)DegToRad(90), window.GetRatio(), 0.5f, 50.0f);
+		cam_main.DefineProjection((float)DegToRad(90), window.GetRatio(), 0.5f, 1000.0f);
 
 		//testFont.RenderText();
 
@@ -192,6 +165,13 @@ int main()
 		renderer.Submit(&quad1);
 		renderer.Submit(&quad2);
 		renderer.Flush();
+		
+		br2d.OpenMapBuffer();
+		br2d.Submit(&quad3);
+		br2d.Submit(&quad4);
+		br2d.Submit(&quad5);
+		br2d.CloseMapBuffer();
+		br2d.Flush();
 		
 		window.Update();
 	}
