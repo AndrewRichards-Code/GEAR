@@ -31,7 +31,7 @@ public:
 
 	void SetLighting(int types) const;
 
-	template<typename T>
+	template<typename T> //Consider using switch over if, else if and else statements
 	inline void SetUniform(const char* locationInput, const std::vector<T>& values) const
 	{
 		GLint location = glGetUniformLocation(m_ShaderID, locationInput);
@@ -63,31 +63,31 @@ public:
 	}
 
 	template<typename T>
-	inline void SetUniformArray(const char* locationInput, int size, GLsizei count, const T& values) const
+	inline void SetUniformArray(const char* locationInput, int size, GLsizei count, T* values) const
 	{
 		GLint location = glGetUniformLocation(m_ShaderID, locationInput);
 		if (typeid(T) == typeid(float))
 		{
-				 if (size == 1) glUniform1fv(location, count, &values);
-			else if (size == 2) glUniform2fv(location, count, &values);
-			else if (size == 3) glUniform3fv(location, count, &values);
-			else if (size == 4) glUniform4fv(location, count, &values);
-			else throw;
-		}
-		else if (typeid(T) == typeid(int))
-		{
-				 if (size == 1) glUniform1iv(location, count, &values);
-			else if (size == 2) glUniform2iv(location, count, &values);
-			else if (size == 3) glUniform3iv(location, count, &values);
-			else if (size == 4) glUniform4iv(location, count, &values);
+				 if (size == 1) glUniform1fv(location, count, (float*)values);
+			else if (size == 2) glUniform2fv(location, count, (float*)values);
+			else if (size == 3) glUniform3fv(location, count, (float*)values);
+			else if (size == 4) glUniform4fv(location, count, (float*)values);
+			else throw;										  
+		}													  
+		else if (typeid(T) == typeid(int))					  
+		{													  
+				 if (size == 1) glUniform1iv(location, count, (int*)values);
+			else if (size == 2) glUniform2iv(location, count, (int*)values);
+			else if (size == 3) glUniform3iv(location, count, (int*)values);
+			else if (size == 4) glUniform4iv(location, count, (int*)values);
 			else throw;
 		}
 		else if (typeid(T) == typeid(unsigned int))
 		{
-				 if (size == 1) glUniform1uiv(location, count, &values);
-			else if (size == 2) glUniform2uiv(location, count, &values);
-			else if (size == 3) glUniform3uiv(location, count, &values);
-			else if (size == 4) glUniform4uiv(location, count, &values);
+				 if (size == 1) glUniform1uiv(location, count, (unsigned int*)values);
+			else if (size == 2) glUniform2uiv(location, count, (unsigned int*)values);
+			else if (size == 3) glUniform3uiv(location, count, (unsigned int*)values);
+			else if (size == 4) glUniform4uiv(location, count, (unsigned int*)values);
 			else throw;
 		}
 		else throw;

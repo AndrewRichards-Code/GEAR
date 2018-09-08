@@ -33,13 +33,14 @@ int main()
 	Object stall("res/obj/stall.obj", shader, texture, Mat4::Translation(Vec3(5.0f, -2.0f, -5.0f)) * Mat4::Rotation((float)pi, Vec3(0, 1, 0)));
 
 	Texture texture2("res/gear_core/GEAR_logo_square.png");
+	Texture texture3("res/img/andrew_manga_3_square.png");
 	Object quad1("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3( 1.5f, 0.0f, -2.0f))); 
 	Object quad2("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(-1.5f, 0.0f, -2.0f)));
 	
 	//For BatchRender2D
-	Object quad3("res/obj/quad.obj", shader, texture2, Vec3(0, 0, -2), Vec2(0.5, 0.5));
+	Object quad3("res/obj/quad.obj", shader, texture, Vec3(0, 0, -2), Vec2(0.5, 0.5));
 	Object quad4("res/obj/quad.obj", shader, texture2, Vec3(-1.5, 0, -2), Vec2(0.5, 0.5));
-	Object quad5("res/obj/quad.obj", shader, texture2, Vec3(1.5, 0, -2), Vec2(0.5, 0.5));
+	Object quad5("res/obj/quad.obj", shader, texture3, Vec3(1.5, 0, -2), Vec2(0.5, 0.5));
 
 
 	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f));
@@ -52,7 +53,7 @@ int main()
 	BatchRenderer2D br2d;
 	Renderer renderer;
 
-	//Font testFont("This is a test!", "res/font/consola/consola.ttf", 1, Vec2(0.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont("This is a test!", "res/font/consola/consola.ttf", 40, Vec2(-0.75f, -0.75f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
 
 	float x = 0, y = 0, z = 0;
 	double yaw = 0;
@@ -71,9 +72,9 @@ int main()
 		Shader logo_shader("res/shaders/basic.vert", "res/shaders/basic.frag");
 		logo_shader.SetLighting(GEAR_CALC_LIGHT_DIFFUSE);
 
-		Texture logo_text("res/gear_core/GEAR_logo_square.png");
-		Object logo("res/obj/quad.obj", logo_shader, logo_text, Mat4::Translation(Vec3(0.0f, 0.0f, 0.0f)));
-		
+		Texture logo_texture("res/gear_core/GEAR_logo_square.png");
+		Object logo("res/obj/quad.obj", logo_shader, logo_texture, Mat4::Translation(Vec3(0.0f, 0.0f, 0.0f)));
+
 		Camera logo_cam(GEAR_CAMERA_ORTHOGRAPHIC, logo_shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f));
 		Light logo_light(GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 5.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), logo_shader);
 
@@ -99,9 +100,6 @@ int main()
 				logo_shader.SetUniform<float>("u_LightColour", { 1.0f, 1.0f, 1.0f, 1.0f });
 
 			logo_cam.DefineProjection(-window.GetRatio(), window.GetRatio(), -1.0f, 1.0f, -1.0f, 1.0f);
-
-			logo_shader.Enable();
-			logo_shader.SetUniformMatrix<4>("u_Modl", 1, GL_TRUE, Mat4::Identity().a);
 
 			renderer.Draw(&logo);
 			window.Update();
@@ -149,13 +147,13 @@ int main()
 
 
 		cam_main.UpdateCameraPosition();
-		cam_main.CalcuateLookAround((float)yaw, (float)pitch, (float)roll);
+		//cam_main.CalcuateLookAround((float)yaw, (float)pitch, (float)roll);
 		cam_main.DefineView();
 		cam_main.DefineProjection((float)DegToRad(90), window.GetRatio(), 0.5f, 1000.0f);
 
 		//testFont.RenderText();
 
-		stall.SetUniformModlMatrix(Mat4::Translation(Vec3(5.0f, -2.0f, -5.0f)) * Mat4::Rotation((float)pi, Vec3(0, 1, 0)));
+		/*stall.SetUniformModlMatrix(Mat4::Translation(Vec3(5.0f, -2.0f, -5.0f)) * Mat4::Rotation((float)pi, Vec3(0, 1, 0)));
 		renderer.Submit(&stall);
 		renderer.Flush();
 		
@@ -164,7 +162,7 @@ int main()
 		
 		renderer.Submit(&quad1);
 		renderer.Submit(&quad2);
-		renderer.Flush();
+		renderer.Flush();*/
 		
 		br2d.OpenMapBuffer();
 		br2d.Submit(&quad3);

@@ -2,14 +2,19 @@
 
 layout(location = 0) out vec4 colour;
 
-in vec4 v_Position;
-in vec2 v_TextCoord;
-in vec4 v_Normal;
-in vec4 v_VertexToLight;
-in vec4 v_VertexToCamera;
-in vec4 v_Colour;
+in DATA
+{
+	vec4 v_Position;
+	vec2 v_TextCoord;
+	float v_TextIds;
+	vec4 v_Normal;
+	vec4 v_VertexToLight;
+	vec4 v_VertexToCamera;
+	vec4 v_Colour;
+} fs_in;
 
 uniform sampler2D u_Texture;
+uniform sampler2D u_Textures[32];
 uniform int u_SetLighting;
 uniform vec4 u_LightColour;
 uniform float u_ShineFactor;
@@ -18,9 +23,9 @@ uniform float u_AmbientFactor;
 
 void main()
 {
-	vec4 unitNormal = normalize(v_Normal);
-	vec4 unitVertexToLight = normalize(v_VertexToLight);
-	vec4 unitVertexToCamera = normalize(v_VertexToCamera);
+	vec4 unitNormal = normalize(fs_in.v_Normal);
+	vec4 unitVertexToLight = normalize(fs_in.v_VertexToLight);
+	vec4 unitVertexToCamera = normalize(fs_in.v_VertexToCamera);
 	
 	//Diffuse
 	vec4 diffuse = {0, 0, 0, 0};
@@ -53,5 +58,14 @@ void main()
 	if(u_SetLighting & 0x000f000)
 	{}
 
-	colour = (diffuse + specular + ambient) * texture(u_Texture, v_TextCoord);
+	if(fs_in.v_TextIds > 0)
+	{
+		int tid = int(fs_in.v_TextIds - 0.5);
+		colour = (diffuse + specular + ambient) * texture(u_Textures[tid], fs_in.v_TextCoord);
+		
+	}
+	else
+	{
+		colour = (diffuse + specular + ambient) * texture(u_Texture, fs_in.v_TextCoord);
+	}
 }

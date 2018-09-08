@@ -9,6 +9,8 @@ Object::Object(const char* objFilePath, Shader& shader, const Texture& texture, 
 {
 	LoadObjDataIntoObject();
 	GenVAOandIBO();	
+	BindTexture(0);
+	SetUniformModlMatrix();
 }
 
 Object::Object(const char* objFilePath, Shader& shader, const Texture& texture, const Vec3& position, const Vec2& size)
@@ -57,8 +59,11 @@ Object::Object(const char* objFilePath, Shader& shader, const Texture& texture, 
 
 Object::~Object()
 {
-	delete m_VAO;
-	delete m_IBO;
+	if (forBatchRenderer2D = false)
+	{
+		delete m_VAO;
+		delete m_IBO;
+	}
 }
 
 void Object::BindTexture(int slot) const
@@ -71,10 +76,22 @@ void Object::BindTexture(int slot) const
 
 void Object::UnbindTexture() const
 {
-	m_Shader.Enable();
-	m_Texture.Bind(0);
-	m_Shader.SetUniform<int>("u_Texture", { 0 });
-	m_Shader.Disable();
+	m_Texture.Unbind();
+}
+
+void Object::SetTextureArray(Shader& shader)
+{
+	int m_TextIDs[] = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31 };
+	shader.Enable();
+	shader.SetUniformArray<int>("u_Textures", 1, 32, m_TextIDs);
+	shader.Disable();
+}
+
+void Object::UnsetTextureArray(Shader& shader)
+{
+	shader.Enable();
+	shader.SetUniformArray<int>("u_Textures", 1, 32, nullptr);
+	shader.Disable();
 }
 
 void Object::SetUniformModlMatrix() const

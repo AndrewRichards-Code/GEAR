@@ -41,8 +41,8 @@ Texture::Texture(const std::string& filepath)
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);*/
 }
 
-Texture::Texture(unsigned int fontTextID, unsigned char* buffer, int width, int height)
-	:m_TextureID(fontTextID), m_LocalBuffer(buffer), m_Width(width), m_Height(height), m_BPP(0)
+Texture::Texture(unsigned char* buffer, int width, int height)
+	:m_LocalBuffer(buffer), m_Width(width), m_Height(height), m_BPP(4)
 {
 	glGenTextures(1, &m_TextureID);
 	glBindTexture(GL_TEXTURE_2D, m_TextureID);

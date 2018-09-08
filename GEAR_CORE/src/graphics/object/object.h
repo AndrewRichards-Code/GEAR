@@ -38,6 +38,7 @@ public:
 	{
 		ARM::Vec3 m_Vertex;
 		ARM::Vec2 m_TextCoord;
+		float m_TextId;
 		ARM::Vec3 m_Normal;
 	};
 
@@ -52,7 +53,9 @@ public:
 
 	void BindTexture(int slot = 0) const;
 	void UnbindTexture() const;
-	
+	static void SetTextureArray(Shader& shader);
+	static void UnsetTextureArray(Shader& shader);
+			
 	void SetUniformModlMatrix() const;
 	void SetUniformModlMatrix(const ARM::Mat4& modl);
 		
@@ -60,6 +63,7 @@ public:
 	inline const IndexBuffer* GetIBO() const { return m_IBO; }
 	inline Shader& GetShader() const { return m_Shader; }
 	inline const Texture& GetTexture() const { return m_Texture; }
+	inline const unsigned int GetTextureID() const { return m_Texture.GetTextureID(); }
 	inline const ARM::Mat4 GetModlMatrix() const { return m_ModlMatrix; }
 
 	inline const std::vector<float>& GetVertices() const { return m_Vertices; }

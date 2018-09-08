@@ -43,9 +43,6 @@ void Renderer::Draw(const VertexArray& vao, const IndexBuffer& ibo, const Shader
 
 void Renderer::Draw(const Object* obj) const
 {
-	obj->BindTexture(0);
-	obj->SetUniformModlMatrix();
-
 	obj->GetShader().Enable();
 	obj->GetVAO()->Bind();
 	obj->GetIBO()->Bind();

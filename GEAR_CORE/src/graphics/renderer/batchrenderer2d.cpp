@@ -27,11 +27,13 @@ void BatchRenderer2D::Init()
 
 	glEnableVertexAttribArray(GEAR_BUFFER_POSITIONS);
 	glEnableVertexAttribArray(GEAR_BUFFER_TEXTCOORDS);
+	glEnableVertexAttribArray(GEAR_BUFFER_TEXTIDS);
 	glEnableVertexAttribArray(GEAR_BUFFER_NORMALS);
 
 	glVertexAttribPointer(GEAR_BUFFER_POSITIONS, 3, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)0);
-	glVertexAttribPointer(GEAR_BUFFER_TEXTCOORDS, 3, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)(3 * sizeof(GLfloat)));
-	glVertexAttribPointer(GEAR_BUFFER_NORMALS, 3, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)(5 * sizeof(GLfloat)));
+	glVertexAttribPointer(GEAR_BUFFER_TEXTCOORDS, 2, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer(GEAR_BUFFER_TEXTIDS, 1, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)(5 * sizeof(GLfloat)));
+	glVertexAttribPointer(GEAR_BUFFER_NORMALS, 3, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)((6 * sizeof(GLfloat))));
 	
 	GLuint indicies[GEAR_RENDERER_INDICIES_SIZE];
 	int offset = 0;
@@ -70,10 +72,35 @@ void BatchRenderer2D::Submit(const Object* obj)
 	const char* file = obj->GetObjFileName();
 	bool test = obj->forBatchRenderer2D;
 
-	if (test = true)
+	int textureSlot = 0;
+	unsigned int textureID = obj->GetTextureID();
+
+	if (test == true)
 	{
-		if (file = "res/obj/quad.obj")
+		if (file == "res/obj/quad.obj")
 		{
+			bool found = false;
+			for (int i = 0; i < (int)m_TextureSlots.size(); i++)
+			{
+				if (m_TextureSlots[i] == textureID)
+				{
+					textureSlot = i + 1;
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+			{
+				if (m_TextureSlots.size() >= GEAR_RENDERER_MAX_TEXTURE_SLOTS)
+				{
+					CloseMapBuffer();
+					Flush();
+					OpenMapBuffer();
+				}
+				m_TextureSlots.push_back(textureID);
+				textureSlot = m_TextureSlots.size() - 1;
+			}
+
 			Object::VertexData temp[4];
 
 			int j = 0, k = 0;
@@ -84,6 +111,11 @@ void BatchRenderer2D::Submit(const Object* obj)
 				temp[i].m_Vertex.z = obj->GetVertices()[j + 2];
 				temp[i].m_TextCoord.x = obj->GetTextCoords()[k + 0];
 				temp[i].m_TextCoord.y = obj->GetTextCoords()[k + 1];
+
+				temp[i].m_TextId = textureSlot;
+				//std::cout << "ObjectPtr V: S, I" << std::endl;
+				//std::cout << obj << ", " << i << ": " << textureSlot << ", " << textureID << std::endl << std::endl;
+
 				temp[i].m_Normal.x = obj->GetNormals()[j + 0];
 				temp[i].m_Normal.y = obj->GetNormals()[j + 1];
 				temp[i].m_Normal.z = obj->GetNormals()[j + 2];
@@ -98,20 +130,24 @@ void BatchRenderer2D::Submit(const Object* obj)
 		}
 		else
 		{
-			std::cout << "ERROR: GEAR::GRAPHICS::BatchRender2D: Submitted object does not use 'res/obj/quad.obj' has its mesh data!" << std::endl << "BatchRender2D only supports quad!" << std::endl;
-
+			std::cout << "ERROR: GEAR::GRAPHICS::BatchRender2D: Submitted object does not use 'res/obj/quad.obj' as its mesh data!" << std::endl << "BatchRender2D only supports quads!" << std::endl;
 		}
 	}
 	else
 	{
 		std::cout << "ERROR: GEAR::GRAPHICS::BatchRender2D: Submitted object did not use the correct constructor!" << std::endl;
-
 	}
 }
 
 void BatchRenderer2D::Flush()
 {
-	m_Object->BindTexture(0);
+	for (int i = 0; i < (int)m_TextureSlots.size(); i++)
+	{
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, m_TextureSlots[i]);
+	}
+	
+	Object::SetTextureArray(m_Object->GetShader());
 
 	m_Object->GetShader().Enable();
 	glBindVertexArray(m_VAO);

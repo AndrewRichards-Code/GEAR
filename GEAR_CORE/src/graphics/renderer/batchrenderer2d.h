@@ -7,11 +7,12 @@
 #include "../buffer/indexbuffer.h"
 #include "../shader.h"
 
-#define GEAR_RENDERER_MAX_OBJ       10000
-#define GEAR_RENDERER_VERTEX_SIZE	sizeof(Object::VertexData)
-#define GEAR_RENDERER_OBJ_SIZE      GEAR_RENDERER_VERTEX_SIZE * 4
-#define GEAR_RENDERER_BUFFER_SIZE   GEAR_RENDERER_OBJ_SIZE * GEAR_RENDERER_MAX_OBJ
-#define GEAR_RENDERER_INDICIES_SIZE GEAR_RENDERER_MAX_OBJ * 6
+#define GEAR_RENDERER_MAX_OBJ           10000
+#define GEAR_RENDERER_VERTEX_SIZE	    sizeof(Object::VertexData)
+#define GEAR_RENDERER_OBJ_SIZE          GEAR_RENDERER_VERTEX_SIZE * 4
+#define GEAR_RENDERER_BUFFER_SIZE       GEAR_RENDERER_OBJ_SIZE * GEAR_RENDERER_MAX_OBJ
+#define GEAR_RENDERER_INDICIES_SIZE     GEAR_RENDERER_MAX_OBJ * 6
+#define GEAR_RENDERER_MAX_TEXTURE_SLOTS 32
 
 namespace GEAR {
 namespace GRAPHICS {
@@ -25,6 +26,7 @@ private:
 	GLsizei m_IndexCount;
 
 	Object::VertexData* m_BatchBuffer;
+	std::vector<unsigned int> m_TextureSlots;
 	
 public:
 	void OpenMapBuffer();

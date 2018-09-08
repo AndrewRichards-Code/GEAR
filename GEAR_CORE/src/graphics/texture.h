@@ -14,7 +14,7 @@ private:
 
 public:
 	Texture(const std::string& filepath);
-	Texture(unsigned int fontTextID, unsigned char* buffer, int width, int height); //For Fonts only!
+	Texture(unsigned char* buffer, int width, int height); //For Fonts only!
 	~Texture();
 
 	void Bind(unsigned int slot = 0) const;
@@ -24,6 +24,7 @@ public:
 	inline int GetHeight() const { return m_Height; }
 	inline int GetBPP() const { return m_BPP; }
 	inline unsigned int GetTextureID() const { return m_TextureID; }
+	inline unsigned char* GetLocalBuffer() const { return m_LocalBuffer; }
 };
 }
 }
