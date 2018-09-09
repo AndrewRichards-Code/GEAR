@@ -72,6 +72,9 @@
     <ClCompile Include="src\graphics\font.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\maths\quaternion\Quat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\maths\matrix\Mat2.h">
@@ -156,6 +159,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\graphics\font.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\maths\quaternion\Quat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

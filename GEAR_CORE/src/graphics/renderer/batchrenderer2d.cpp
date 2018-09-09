@@ -112,7 +112,7 @@ void BatchRenderer2D::Submit(const Object* obj)
 				temp[i].m_TextCoord.x = obj->GetTextCoords()[k + 0];
 				temp[i].m_TextCoord.y = obj->GetTextCoords()[k + 1];
 
-				temp[i].m_TextId = textureSlot;
+				temp[i].m_TextId = (float)textureSlot;
 				//std::cout << "ObjectPtr V: S, I" << std::endl;
 				//std::cout << obj << ", " << i << ": " << textureSlot << ", " << textureID << std::endl << std::endl;
 

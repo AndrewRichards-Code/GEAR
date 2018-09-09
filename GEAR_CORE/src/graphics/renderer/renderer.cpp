@@ -27,6 +27,7 @@ void Renderer::Flush()
 
 		m_RenderQueue.pop_front();
 	}
+
 }
 
 void Renderer::Draw(const VertexArray& vao, const IndexBuffer& ibo, const Shader& shader) const

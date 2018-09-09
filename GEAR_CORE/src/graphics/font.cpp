@@ -69,8 +69,6 @@ void Font::RenderText()
 	for (int i = 0 ; i < (int)m_GlyphBuffer.size(); i++)
 	{
 		fontRenderer.Submit(&m_GlyphBuffer[i]);
-		/*std::cout << m_GlyphBuffer[i].GetTexture().GetTextureID() << std::endl << 
-			*(m_GlyphBuffer[i].GetTexture().GetLocalBuffer()) << std::endl;*/
 	}
 	std::cout << std::endl;
 	fontRenderer.CloseMapBuffer();

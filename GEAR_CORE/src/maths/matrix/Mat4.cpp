@@ -98,10 +98,10 @@ namespace ARM
 			           (0), (0), (0),(1));
 	}
 	//Constructs a perspective matrix (Mat4). Input fov is in radians.
-	Mat4 Mat4::Perspective(float fov, float aspectRatio, float near, float far)
+	Mat4 Mat4::Perspective(double fov, float aspectRatio, float near, float far)
 	{
-		return Mat4 ((1 / (aspectRatio * tan(fov / 2))), (0), (0), (0),
-					   (0), (1 / (tan(fov / 2))), (0), (0),
+		return Mat4 ((1 / (aspectRatio * static_cast<float>(tan(fov / 2)))), (0), (0), (0),
+					   (0), (1 / static_cast<float>(tan(fov / 2))), (0), (0),
 					   (0), (0), -((far + near) / (far - near)), -((2 * far * near) / (far - near)),
 					   (0), (0), (-1), (0));
 	}
@@ -117,12 +117,12 @@ namespace ARM
 	}
 
 	//Constructs a rotation matrix (Mat4). Input angle is in radians.
-	Mat4 Mat4::Rotation(float angle, const Vec3& axis)
+	Mat4 Mat4::Rotation(double angle, const Vec3& axis)
 	{
 		Mat4 result(1);
-		float c_angle = cos(angle);
-		float s_angle = sin(angle);
-		float omcos = 1 - c_angle;
+		float c_angle = static_cast<float>(cos(angle));
+		float s_angle = static_cast<float>(sin(angle));
+		float omcos   = static_cast<float>(1 - c_angle);
 
 		float x = axis.x;
 		float y = axis.y;

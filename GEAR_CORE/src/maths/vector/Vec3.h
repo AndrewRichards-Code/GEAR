@@ -4,6 +4,7 @@
 namespace ARM
 {
 	class Mat3;
+	class Quat;
 	class Vec3
 	{
 	public:
@@ -42,7 +43,7 @@ namespace ARM
 		//Euler rotations
 		Vec3 RotEul(float x_theta, float y_theta, float z_theta);
 		//Quaternions
-		Vec3 RotQuat();
+		Vec3 RotQuat(double theta, const Vec3& axis);
 
 		//Equalivence operator==
 		Vec3 operator+ (const Vec3& other) const;

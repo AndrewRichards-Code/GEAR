@@ -150,6 +150,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\maths\quaternion\Quat.cpp" />
     <ClCompile Include="src\graphics\font.cpp" />
     <ClCompile Include="src\graphics\light.cpp" />
     <ClCompile Include="src\graphics\camera.cpp" />
@@ -171,6 +172,7 @@
     <ClCompile Include="src\maths\vector\Vec4.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\maths\quaternion\Quat.h" />
     <ClInclude Include="src\graphics\font.h" />
     <ClInclude Include="src\graphics\light.h" />
     <ClInclude Include="src\graphics\camera.h" />

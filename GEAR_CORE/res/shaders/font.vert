@@ -1,12 +1,12 @@
 #version 400 core
 
 layout(location = 0) in vec4 positions;
-layout(location = 2) in unsigned int textIds;
+layout(location = 2) in float textIds;
 
 out DATA
 {
 	vec2 v_TextCoord;
-	unsigned int v_TextIds;
+	float v_TextIds;
 } vs_out;
 
 uniform mat4 u_Proj;

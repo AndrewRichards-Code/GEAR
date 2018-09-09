@@ -3,6 +3,7 @@
 namespace ARM
 {
 	static const double pi = 3.14151926535;
+	static const double tau = 2 * pi;
 
 	//Coverts degrees to radians.
 	inline double DegToRad(double angle)
