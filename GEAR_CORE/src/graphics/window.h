@@ -26,6 +26,7 @@ private:
 	GLFWwindow* m_Window;
 	const GLFWvidmode* m_Mode;
 	bool m_Fullscreen = false;
+	bool m_VSync = true;
 
 	double m_CurrentTime, m_PreviousTime = 0.0, m_DeltaTime, m_FPS;
 
@@ -41,11 +42,15 @@ public:
 	void Update();
 	bool Closed() const;
 	void Fullscreen();
-	void ShowFPS();
+	void UpdateVSync(bool vSync);
+	void CalculateFPS();
 
 	inline int GetWidth() const { return m_Width; }
 	inline int GetHeight() const { return m_Height; }
 	inline float GetRatio() const { return ((float)m_Width / (float)m_Height); }
+	inline std::string GetTitle() const { return m_Title; }
+	inline std::string GetOpenGLVersion() const { return std::string((const char*)glGetString(GL_VERSION)); }
+	inline std::string GetFPSString() const { return std::to_string(m_FPS); }
 
 	bool IsKeyPressed(unsigned int keycode) const;
 	bool IsMouseButtonPressed(unsigned int button) const;

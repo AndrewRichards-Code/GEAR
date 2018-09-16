@@ -59,11 +59,13 @@ void main()
 	{}
 
 	if(fs_in.v_TextIds > 0)
-	{
-		int tid = int(fs_in.v_TextIds - 0.5);
-		colour = (diffuse + specular + ambient) * texture(u_Textures[tid], fs_in.v_TextCoord);
-		
-	}
+		for (int i = 0; i < 32; i++)
+		{
+			int tid = int(fs_in.v_TextIds - 0.5);
+			if(tid == i)
+			colour = (diffuse + specular + ambient) * texture(u_Textures[tid], fs_in.v_TextCoord);
+		}	
+	
 	else
 	{
 		colour = (diffuse + specular + ambient) * texture(u_Texture, fs_in.v_TextCoord);

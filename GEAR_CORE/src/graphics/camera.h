@@ -47,7 +47,7 @@ private:
 
 public:
 	void UpdateCameraPosition();
-	void CalcuateLookAround(double yaw, double pitch, double roll);
+	void CalcuateLookAround(double yaw, double pitch, double roll, bool invertYAxis = false);
 
 	void DefineView();
 	void DefineProjection(double fov, float aspectRatio, float zNear, float zFar);

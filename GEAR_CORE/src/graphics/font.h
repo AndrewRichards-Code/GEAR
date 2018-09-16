@@ -4,7 +4,6 @@
 #include "ft2build.h"
 #include FT_FREETYPE_H
 
-
 #include "shader.h"
 #include "texture.h"
 #include "renderer/batchrenderer2d.h"
@@ -28,8 +27,9 @@ private:
 	ARM::Vec2 m_InitPosition;
 	ARM::Vec4 m_Colour;
 	const Window& m_Window;
+	float m_WindowWidth = (float)m_Window.GetWidth();
+	float m_WindowHeight = (float)m_Window.GetHeight();
 	Shader m_Shader = Shader("res/shaders/font.vert", "res/shaders/font.frag");
-
 
 	FT_Library m_ftlib;
 	FT_Face m_Face;
@@ -48,10 +48,8 @@ public:
 	Font(const std::string& text, const char* filepath, int fontHeight, const ARM::Vec2& position, const ARM::Vec4& colour, const Window& window);
 	~Font();
 	void RenderText();
+	void UpdateText(const std::string& input);
 
-private:
-	//void LoadFont();
-	//void GenFontVAOVBO();
 };
 }
 }

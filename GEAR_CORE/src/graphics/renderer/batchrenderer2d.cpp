@@ -98,7 +98,7 @@ void BatchRenderer2D::Submit(const Object* obj)
 					OpenMapBuffer();
 				}
 				m_TextureSlots.push_back(textureID);
-				textureSlot = m_TextureSlots.size() - 1;
+				textureSlot = m_TextureSlots.size();
 			}
 
 			Object::VertexData temp[4];

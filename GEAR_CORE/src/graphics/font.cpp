@@ -16,19 +16,20 @@ Font::Font(const std::string& text, const char* filepath, int fontHeight, const 
 	FT_Face m_Face;
 	if (FT_New_Face(m_ftlib, m_FilePath, 0, &m_Face))
 		std::cout << "ERROR: GEAR::GRAPHICS::Font: Failed to load font!" << std::endl;
-	FT_Set_Pixel_Sizes(m_Face, 0, 48);
+	FT_Set_Pixel_Sizes(m_Face, 0, m_FontHeight);
+	FT_Set_Char_Size(m_Face, 0, m_FontHeight * 16, 300, 300);
 
 
 	//void LoadFont();
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	for (GLubyte i = 0; i < 128; i++) //Error in loading '*', when i = 96.
+	for (int i = 0; i < 128; i++)
 	{
 		if (FT_Error error = FT_Load_Char(m_Face, i, FT_LOAD_RENDER))
 		{
 			std::cout << "ERROR: GEAR::GRAPHICS::Font: Failed to load character: " << i << "! Error Code: 0x" << std::hex << error << std::endl;;
 			continue;
 		}
-
+		
 		Character character
 		{
 			new Texture(m_Face->glyph->bitmap.buffer, m_Face->glyph->bitmap.width, m_Face->glyph->bitmap.rows),
@@ -36,22 +37,22 @@ Font::Font(const std::string& text, const char* filepath, int fontHeight, const 
 			Vec2((float)m_Face->glyph->bitmap_left, (float)m_Face->glyph->bitmap_top),
 			(unsigned int)m_Face->glyph->advance.x
 		};
-
+		
 		m_CharMap.insert(std::pair<GLchar, Character>(i, character));
 	}
-
+	
 	std::string::const_iterator it;
 	for (it = m_Text.begin(); it != m_Text.end(); it++)
 	{
 		Character ch = m_CharMap[*it];
-		float scale = (float)m_FontHeight / 10000.0f;
+		float scale = (float)m_FontHeight / 1000.0f;
 		float pos_x = m_Position.x + ch.m_Bearing.x * scale;
 		float pos_y = m_Position.y - (ch.m_Size.y - ch.m_Bearing.y) * scale;
 		float width = ch.m_Size.x * scale;
 		float height = ch.m_Size.y * scale;
 
 		m_GlyphBuffer.emplace_back(Object("res/obj/quad.obj", m_Shader, *ch.m_Texture, Vec3(pos_x, pos_y, 0.0f), Vec2(width, height)));
-		m_Position.x += (ch.m_Advance >> 6) * scale;
+		m_Position.x += (ch.m_Advance >> 6) * m_Window.GetRatio() * scale;
 	}
 }
 
@@ -59,18 +60,18 @@ void Font::RenderText()
 {
 	BatchRenderer2D fontRenderer;
 		
-	Mat4 proj = Mat4::Orthographic(-(float)m_Window.GetRatio(), (float)m_Window.GetRatio(), -1.0f, 1.0f, -1.0f, 1.0f);
+	//Mat4 proj = Mat4::Orthographic(-m_Window.GetRatio(), m_Window.GetRatio(), -1.0f, 1.0f, -1.0f, 1.0f);
+	Mat4 proj = Mat4::Orthographic(0.0f, m_WindowWidth, 0.0f, m_WindowHeight, -1.0f, 1.0f);
 	m_Shader.Enable();
 	m_Shader.SetUniformMatrix<4>("u_Proj", 1, GL_TRUE, proj.a);
 	m_Shader.SetUniform<float>("u_Colour", { m_Colour.r, m_Colour.g, m_Colour.b, m_Colour.a });
 	m_Shader.Disable();
 	
 	fontRenderer.OpenMapBuffer();
-	for (int i = 0 ; i < (int)m_GlyphBuffer.size(); i++)
+	for (int i = 0; i < (int)m_GlyphBuffer.size(); i++)
 	{
 		fontRenderer.Submit(&m_GlyphBuffer[i]);
 	}
-	std::cout << std::endl;
 	fontRenderer.CloseMapBuffer();
 
 	glEnable(GL_BLEND);
@@ -78,7 +79,26 @@ void Font::RenderText()
 	fontRenderer.Flush();
 	glDisable(GL_BLEND);
 
-	m_Position = m_InitPosition ;
+	m_Position = m_InitPosition;
+}
+
+void Font::UpdateText(const std::string & input)
+{
+	m_Text = input; 
+
+	std::string::const_iterator it;
+	for (it = m_Text.begin(); it != m_Text.end(); it++)
+	{
+		Character ch = m_CharMap[*it];
+		float scale = (float)m_FontHeight / 1000.0f;
+		float pos_x = m_Position.x + ch.m_Bearing.x * scale;
+		float pos_y = m_Position.y - (ch.m_Size.y - ch.m_Bearing.y) * scale;
+		float width = ch.m_Size.x * scale;
+		float height = ch.m_Size.y * scale;
+
+		m_GlyphBuffer.emplace_back(Object("res/obj/quad.obj", m_Shader, *ch.m_Texture, Vec3(pos_x, pos_y, 0.0f), Vec2(width, height)));
+		m_Position.x += (ch.m_Advance >> 6) * m_Window.GetRatio() * scale;
+	}
 }
 
 Font::~Font()

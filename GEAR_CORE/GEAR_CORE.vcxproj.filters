@@ -69,10 +69,10 @@
     <ClCompile Include="src\graphics\renderer\batchrenderer2d.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\font.cpp">
+    <ClCompile Include="src\maths\quaternion\Quat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\maths\quaternion\Quat.cpp">
+    <ClCompile Include="src\graphics\font.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -158,10 +158,10 @@
     <ClInclude Include="src\graphics\renderer\batchrenderer2d.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\font.h">
+    <ClInclude Include="src\maths\quaternion\Quat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\maths\quaternion\Quat.h">
+    <ClInclude Include="src\graphics\font.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

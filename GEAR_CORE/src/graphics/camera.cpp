@@ -39,7 +39,7 @@ void Camera::RotateY(double yaw)
 {
 	Vec3 horizonalAxis = Vec3::Normalise(Vec3::Cross(m_Forward, m_yAxis));
 	m_Forward.RotQuat(yaw, m_yAxis);
-	m_Up = Vec3::Normalise(Vec3::Cross(horizonalAxis, m_Forward));
+	m_Up = Vec3::Normalise(Vec3::Cross(m_Forward, horizonalAxis));
 
 }
 
@@ -53,7 +53,6 @@ Mat4 Camera::CameraMatrix(const Vec3& camPos, const Vec3& camTarget, const Vec3&
 				Vec4( m_Up.x,       m_Up.y,       m_Up.z,      -Vec3::Dot(m_Up, camPos)),
 				Vec4(-m_Forward.x, -m_Forward.y, -m_Forward.z,  Vec3::Dot(m_Forward, camPos)),
 				Vec4(0,             0,            0,            1));
-
 	return output;
 }
 
@@ -64,9 +63,13 @@ void Camera::UpdateCameraPosition()
 	m_Shader.SetUniform<float>("u_CameraPosition", { m_Position.x,  m_Position.y,  m_Position.z });
 	m_Shader.Disable();
 }
-void Camera::CalcuateLookAround(double yaw, double pitch, double roll)
+void Camera::CalcuateLookAround(double yaw, double pitch, double roll, bool invertYAxis)
 {
 	m_Yaw = yaw; 
+	if (invertYAxis == true)
+	{
+		m_Pitch = -pitch;
+	}
 	m_Pitch = pitch; 
 	m_Roll = roll;
 	Vec3 direction;

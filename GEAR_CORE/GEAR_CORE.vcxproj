@@ -91,7 +91,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x86\include;$(SolutionDir)Dependencies\STBI\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\STBI\;$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x86\include;$(SolutionDir)Dependencies\STBI\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -105,7 +105,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x64\include;$(SolutionDir)Dependencies\GLFW\x86\include;$(SolutionDir)Dependencies\STBI\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\STBI\;$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x64\include;$(SolutionDir)Dependencies\GLFW\x86\include;$(SolutionDir)Dependencies\STBI\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -121,7 +121,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x86\include;$(SolutionDir)Dependencies\STBI\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\STBI\;$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x86\include;$(SolutionDir)Dependencies\STBI\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -139,7 +139,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x64\include;$(SolutionDir)Dependencies\GLFW\x86\include;$(SolutionDir)Dependencies\STBI\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\STBI\;$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x64\include;$(SolutionDir)Dependencies\GLFW\x86\include;$(SolutionDir)Dependencies\STBI\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -150,8 +150,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\maths\quaternion\Quat.cpp" />
     <ClCompile Include="src\graphics\font.cpp" />
+    <ClCompile Include="src\maths\quaternion\Quat.cpp" />
     <ClCompile Include="src\graphics\light.cpp" />
     <ClCompile Include="src\graphics\camera.cpp" />
     <ClCompile Include="src\graphics\buffer\indexbuffer.cpp" />
@@ -172,8 +172,8 @@
     <ClCompile Include="src\maths\vector\Vec4.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\maths\quaternion\Quat.h" />
     <ClInclude Include="src\graphics\font.h" />
+    <ClInclude Include="src\maths\quaternion\Quat.h" />
     <ClInclude Include="src\graphics\light.h" />
     <ClInclude Include="src\graphics\camera.h" />
     <ClInclude Include="src\graphics\buffer\indexbuffer.h" />

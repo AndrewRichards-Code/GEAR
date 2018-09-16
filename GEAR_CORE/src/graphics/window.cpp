@@ -59,17 +59,22 @@ void Window::Fullscreen()
 {
 	m_Mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 	glfwSetWindowMonitor(m_Window, glfwGetPrimaryMonitor(), 0, 0, m_Mode->width, m_Mode->height, m_Mode->refreshRate);
-	glfwSwapInterval(1);
+	glfwSwapInterval((int)m_VSync);
 	m_Fullscreen = true;
 }
 
-void Window::ShowFPS()
+void Window::UpdateVSync(bool vSync)
+{
+	m_VSync = vSync;
+	glfwSwapInterval((int)m_VSync);
+}
+
+void Window::CalculateFPS()
 {
 	double m_CurrentTime = glfwGetTime();
 	double m_DeltaTime = m_CurrentTime - m_PreviousTime;
 	m_PreviousTime = m_CurrentTime;
 	m_FPS = 1 / m_DeltaTime;
-	std::cout << (float)m_FPS << "FPS" << std::endl;
 }
 
 bool Window::Init()
@@ -95,7 +100,7 @@ bool Window::Init()
 		return 1;
 	}
 	glfwMakeContextCurrent(m_Window);
-	glfwSwapInterval(1);
+	glfwSwapInterval((int)m_VSync);
 	
 	GLFWimage icon[1];
 	icon[0].pixels = stbi_load("res/gear_core/GEAR_logo_icon.png", &icon->width, &icon->height, 0, 4);
@@ -155,14 +160,14 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			win->m_Mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 			glfwSetWindowMonitor(win->m_Window, glfwGetPrimaryMonitor(), 0, 0, win->m_Mode->width, win->m_Mode->height, win->m_Mode->refreshRate);
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			glfwSwapInterval(1);
+			glfwSwapInterval((int)win->m_VSync);
 		}
 
 		if (!win->m_Fullscreen)
 		{
 			glfwSetWindowMonitor(win->m_Window, NULL, 100, 100, win->m_InitWidth, win->m_InitHeight, GL_DONT_CARE);
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			glfwSwapInterval(1);
+			glfwSwapInterval((int)win->m_VSync);
 		}
 	}
 
