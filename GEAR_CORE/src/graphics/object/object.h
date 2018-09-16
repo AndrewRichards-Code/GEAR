@@ -22,8 +22,8 @@ private:
 	std::vector<float> m_Normals;
 	std::vector<unsigned int> m_Indices;
 
-	VertexArray* m_VAO;
-	IndexBuffer* m_IBO;
+	std::shared_ptr<VertexArray> m_VAO;
+	std::shared_ptr<IndexBuffer> m_IBO;
 	Shader& m_Shader;
 	const Texture& m_Texture;
 
@@ -59,8 +59,8 @@ public:
 	void SetUniformModlMatrix() const;
 	void SetUniformModlMatrix(const ARM::Mat4& modl);
 		
-	inline const VertexArray* GetVAO() const { return m_VAO; }
-	inline const IndexBuffer* GetIBO() const { return m_IBO; }
+	inline const std::shared_ptr<VertexArray> GetVAO() const { return m_VAO; }
+	inline const std::shared_ptr<IndexBuffer> GetIBO() const { return m_IBO; }
 	inline Shader& GetShader() const { return m_Shader; }
 	inline const Texture& GetTexture() const { return m_Texture; }
 	inline const unsigned int GetTextureID() const { return m_Texture.GetTextureID(); }

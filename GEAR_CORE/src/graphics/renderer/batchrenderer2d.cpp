@@ -11,7 +11,6 @@ BatchRenderer2D::BatchRenderer2D()
 
 BatchRenderer2D::~BatchRenderer2D()
 {
-	delete m_IBO;
 	glDeleteBuffers(1, &m_VBO);
 	glDeleteVertexArrays(1, &m_VAO);
 }
@@ -48,7 +47,7 @@ void BatchRenderer2D::Init()
 		offset += 4;
 	}
 
-	m_IBO = new IndexBuffer(indicies, GEAR_RENDERER_INDICIES_SIZE);
+	m_IBO = std::make_unique<IndexBuffer>(indicies, GEAR_RENDERER_INDICIES_SIZE);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);

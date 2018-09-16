@@ -165,7 +165,6 @@ int main()
 		testFont3.RenderText();
 		/*testFont4.UpdateText(window.GetFPSString() + "FPS");
 		testFont4.RenderText();*/
-		std::cout << window.GetFPSString() << std::endl;
 
 		stall.SetUniformModlMatrix(Mat4::Translation(Vec3(5.0f, -2.0f, -5.0f)) * Mat4::Rotation(pi, Vec3(0, 1, 0)));
 		renderer.Submit(&stall);

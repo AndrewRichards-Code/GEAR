@@ -12,10 +12,6 @@ VertexArray::VertexArray()
 VertexArray::~VertexArray()
 {
 	glDeleteVertexArrays(1, &m_VertexArrayID);
-	for (int i = 0; i < (int)m_VertexBuffer.size(); i++)
-	{
-		delete m_VertexBuffer[i];
-	}
 }
 
 void VertexArray::Bind() const
@@ -28,7 +24,7 @@ void VertexArray::Unbind() const
 	glBindVertexArray(0);
 }
 
-void VertexArray::AddBuffer(VertexBuffer* vbo, GLuint index)
+void VertexArray::AddBuffer(std::shared_ptr<VertexBuffer> vbo, GLuint index)
 {
 	m_VertexBuffer.push_back(vbo);
 	Bind();

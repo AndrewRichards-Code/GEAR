@@ -21,7 +21,7 @@ class BatchRenderer2D : public Renderer
 private:
 	GLuint m_VAO;
 	GLuint m_VBO;
-	IndexBuffer* m_IBO;
+	std::unique_ptr<IndexBuffer> m_IBO;
 	const Object* m_Object;
 	GLsizei m_IndexCount;
 

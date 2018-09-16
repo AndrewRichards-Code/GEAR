@@ -36,23 +36,28 @@ namespace ARM
 	//Normalises the current object.
 	Quat Quat::Normalise()
 	{
-		double length = sqrt(s * s + i * i + j * j + k * k);
-		s /= static_cast<float>(length);
-		i /= static_cast<float>(length);
-		j /= static_cast<float>(length);
-		k /= static_cast<float>(length);
+		float length = sqrt(s * s + i * i + j * j + k * k);
+		s /= length;
+		i /= length;
+		j /= length;
+		k /= length;
 		return *this;
 	}
 
-	//Nornalises the input object.
+	//Normalises the input object.
 	Quat Quat::Normalise(const Quat& input)
 	{
-		double length = sqrt(input.s * input.s + input.i * input.i + input.j * input.j + input.k * input.k);
+		float length = sqrt(input.s * input.s + input.i * input.i + input.j * input.j + input.k * input.k);
+		float temp_s = input.s;
+		float temp_i = input.i;
+		float temp_j = input.j;
+		float temp_k = input.k;
+		
 		Quat output (
-			(const_cast<float&>(input.s) /= static_cast<float>(length)),
-			(const_cast<float&>(input.i) /= static_cast<float>(length)),
-			(const_cast<float&>(input.j) /= static_cast<float>(length)),
-			(const_cast<float&>(input.k) /= static_cast<float>(length))
+			temp_s /= length,
+			temp_i /= length,
+			temp_j /= length,
+			temp_k /= length
 		);
 		return output;
 	}

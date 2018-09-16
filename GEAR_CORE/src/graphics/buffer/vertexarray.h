@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include "GL/glew.h"
 #include "vertexbuffer.h"
 
@@ -16,7 +17,7 @@ class VertexArray
 {
 private:
 	unsigned int m_VertexArrayID;
-	std::vector<VertexBuffer*> m_VertexBuffer;
+	std::vector<std::shared_ptr<VertexBuffer>> m_VertexBuffer;
 
 public:
 	VertexArray();
@@ -24,7 +25,7 @@ public:
 	void Bind() const;
 	void Unbind() const;
 
-	void AddBuffer(VertexBuffer* vbo, GLuint index);
+	void AddBuffer(std::shared_ptr<VertexBuffer> vbo, GLuint index);
 };
 }
 }

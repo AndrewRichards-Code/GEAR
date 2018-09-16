@@ -30,13 +30,14 @@ private:
 	float m_WindowWidth = (float)m_Window.GetWidth();
 	float m_WindowHeight = (float)m_Window.GetHeight();
 	Shader m_Shader = Shader("res/shaders/font.vert", "res/shaders/font.frag");
+	BatchRenderer2D m_FontRenderer;
 
 	FT_Library m_ftlib;
 	FT_Face m_Face;
 	
 	struct Character
 	{
-		Texture* m_Texture;
+		std::shared_ptr<Texture> m_Texture;
 		ARM::Vec2 m_Size;
 		ARM::Vec2 m_Bearing;
 		unsigned int m_Advance;

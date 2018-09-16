@@ -59,11 +59,6 @@ Object::Object(const char* objFilePath, Shader& shader, const Texture& texture, 
 
 Object::~Object()
 {
-	if (forBatchRenderer2D = false)
-	{
-		delete m_VAO;
-		delete m_IBO;
-	}
 }
 
 void Object::BindTexture(int slot) const
@@ -150,12 +145,12 @@ void Object::GenVAOandIBO()
 {
 	if (m_Vertices.size() && m_TextCoords.size() && m_Normals.size() && m_Indices.size() > 0)
 	{
-		m_VAO = new VertexArray;
-		m_VAO->AddBuffer(new VertexBuffer(&m_Vertices[0], m_Vertices.size(), 3), GEAR_BUFFER_POSITIONS);
-		m_VAO->AddBuffer(new VertexBuffer(&m_TextCoords[0], m_TextCoords.size(), 2), GEAR_BUFFER_TEXTCOORDS);
-		m_VAO->AddBuffer(new VertexBuffer(&m_Normals[0], m_Normals.size(), 3), GEAR_BUFFER_NORMALS);
+		m_VAO = std::make_shared<VertexArray>();
+		m_VAO->AddBuffer(std::make_shared<VertexBuffer>(&m_Vertices[0], m_Vertices.size(), 3), GEAR_BUFFER_POSITIONS);
+		m_VAO->AddBuffer(std::make_shared<VertexBuffer>(&m_TextCoords[0], m_TextCoords.size(), 2), GEAR_BUFFER_TEXTCOORDS);
+		m_VAO->AddBuffer(std::make_shared<VertexBuffer>(&m_Normals[0], m_Normals.size(), 3), GEAR_BUFFER_NORMALS);
 
-		m_IBO = new IndexBuffer(&m_Indices[0], m_Indices.size());
+		m_IBO = std::make_shared<IndexBuffer>(&m_Indices[0], m_Indices.size());
 	}
 	else
 	{
