@@ -4,16 +4,23 @@ using namespace GEAR;
 using namespace GRAPHICS;
 using namespace ARM;
 
-Object::Object(const char* objFilePath, Shader& shader, const Texture& texture, const Mat4& modl)
+Object::Object(const char* objFilePath, const Shader& shader, const Texture& texture, const Mat4& modl)
 	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Texture(texture), m_ModlMatrix(modl)
 {
 	LoadObjDataIntoObject();
-	GenVAOandIBO();	
-	BindTexture(0);
+	GenVAOandIBO();
+	if (m_Texture.IsCubeMap() == true)
+	{
+		BindCubeMap(0);
+	}
+	else
+	{
+		BindTexture(0);
+	}
 	SetUniformModlMatrix();
 }
 
-Object::Object(const char* objFilePath, Shader& shader, const Texture& texture, const Vec3& position, const Vec2& size)
+Object::Object(const char* objFilePath, const Shader& shader, const Texture& texture, const Vec3& position, const Vec2& size)
 	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Texture(texture), m_Position(position), m_Size(size)
 {
 	m_ObjData = FileUtils::read_obj(m_ObjFilePath);
@@ -74,7 +81,7 @@ void Object::UnbindTexture() const
 	m_Texture.Unbind();
 }
 
-void Object::SetTextureArray(Shader& shader)
+void Object::SetTextureArray(const Shader& shader)
 {
 	int m_TextIDs[] = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31 };
 	shader.Enable();
@@ -82,11 +89,24 @@ void Object::SetTextureArray(Shader& shader)
 	shader.Disable();
 }
 
-void Object::UnsetTextureArray(Shader& shader)
+void Object::UnsetTextureArray(const Shader& shader)
 {
 	shader.Enable();
 	shader.SetUniformArray<int>("u_Textures", 1, 32, nullptr);
 	shader.Disable();
+}
+
+void Object::BindCubeMap(int slot) const
+{
+	m_Shader.Enable();
+	m_Texture.BindCubeMap();
+	m_Shader.SetUniform<int>("u_CubeMap", { slot });
+	m_Shader.Disable();
+}
+
+void Object::UnbindCubeMap() const
+{
+	m_Texture.UnbindCubeMap();
 }
 
 void Object::SetUniformModlMatrix() const

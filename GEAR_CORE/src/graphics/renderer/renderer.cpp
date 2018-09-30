@@ -14,7 +14,14 @@ void Renderer::Flush()
 	{
 		const Object* obj = m_RenderQueue.front();
 
-		obj->BindTexture(0);
+		if (obj->GetTexture().IsCubeMap() == true)
+		{
+			obj->BindCubeMap(0);
+		}
+		else
+		{
+			obj->BindTexture(0);
+		}
 		obj->SetUniformModlMatrix();
 
 		obj->GetShader().Enable();

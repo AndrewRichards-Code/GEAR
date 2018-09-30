@@ -5,7 +5,7 @@
 #include "../buffer/vertexarray.h"
 #include "../buffer/indexbuffer.h"
 #include "../shader.h"
-#include "../object/object.h"
+#include "../object.h"
 #include <deque>
 
 namespace GEAR {

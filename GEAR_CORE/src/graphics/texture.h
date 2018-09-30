@@ -1,5 +1,7 @@
 #pragma once
+#include <iostream>
 #include <string>
+#include <vector>
 #include "GL/glew.h"
 
 namespace GEAR {
@@ -9,12 +11,14 @@ class Texture
 private:
 	unsigned int m_TextureID;
 	std::string m_FilePath;
+	std::vector<std::string> m_FilePaths;
 	unsigned char* m_LocalBuffer;
 	int m_Width, m_Height, m_BPP; //BPP = Bits per pixel
+	bool m_CubeMap;
 
 public:
 	Texture(const std::string& filepath); //Assumes GL_TEXTURE_2D!
-	Texture(const std::string& filepath, bool CubMap); //For CubeMaps only!
+	Texture(const std::vector<std::string>& filepaths); //For CubeMaps only! Submit in filepaths in order of: front, back, top, bottom, right and left.
 	Texture(unsigned char* buffer, int width, int height); //For Fonts only!
 	~Texture();
 
@@ -28,6 +32,7 @@ public:
 	inline int GetHeight() const { return m_Height; }
 	inline int GetBPP() const { return m_BPP; }
 	inline unsigned int GetTextureID() const { return m_TextureID; }
+	inline bool IsCubeMap() const { return m_CubeMap; }
 };
 }
 }

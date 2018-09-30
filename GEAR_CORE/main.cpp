@@ -30,12 +30,22 @@ int main()
 
 	Shader shader("res/shaders/basic.vert", "res/shaders/basic.frag");
 	shader.SetLighting(GEAR_CALC_LIGHT_DIFFUSE + GEAR_CALC_LIGHT_SPECULAR + GEAR_CALC_LIGHT_AMIBIENT);
+	
+	Shader shaderCube("res/shaders/cube.vert", "res/shaders/cube.frag");
 
 	Texture texture("res/img/stallTexture.png");
-	Object stall("res/obj/stall.obj", shader, texture, Mat4::Translation(Vec3(5.0f, -2.0f, -5.0f)) * Mat4::Rotation(pi, Vec3(0, 1, 0)));
-
 	Texture texture2("res/gear_core/GEAR_logo_square.png");
 	Texture texture3("res/img/andrew_manga_3_square.png");
+	Texture skybox({ 
+		"res/img/mp_midnight/midnight-silence_ft.tga", 
+		"res/img/mp_midnight/midnight-silence_bk.tga",
+		"res/img/mp_midnight/midnight-silence_up.tga",
+		"res/img/mp_midnight/midnight-silence_dn.tga",
+		"res/img/mp_midnight/midnight-silence_rt.tga",
+		"res/img/mp_midnight/midnight-silence_lf.tga" });
+
+	Object cube("res/obj/cube.obj", shaderCube, skybox, Mat4::Scale(Vec3(500, 500, 500)));
+	Object stall("res/obj/stall.obj", shader, texture, Mat4::Translation(Vec3(5.0f, -2.0f, -5.0f)) * Mat4::Rotation(pi, Vec3(0, 1, 0)));
 	Object quad1("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3( 1.5f,  0.0f, -2.0f))); 
 	Object quad2("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(-1.5f,  0.0f, -2.0f)));
 	Object floor("res/obj/quad.obj", shader, texture3, Mat4::Translation(Vec3( 0.0f, -2.0f, -2.0f)) * Mat4::Rotation(pi / 2, Vec3(1, 0, 0)) * Mat4::Scale(Vec3(15, 15, 1)));
@@ -83,6 +93,7 @@ int main()
 
 		Camera logo_cam(GEAR_CAMERA_ORTHOGRAPHIC, logo_shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, 1.0f, 0.0f));
 		Light logo_light(GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 5.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), logo_shader);
+		
 
 		int time = 0;
 		float increment = 0.017f;
@@ -104,8 +115,9 @@ int main()
 			}
 			else
 				logo_shader.SetUniform<float>("u_LightColour", { 1.0f, 1.0f, 1.0f, 1.0f });
-
+			
 			logo_cam.DefineProjection(-window.GetRatio(), window.GetRatio(), -1.0f, 1.0f, -1.0f, 1.0f);
+			logo_cam.DefineView();
 
 			renderer.Draw(&logo);
 			window.Update();
@@ -119,46 +131,90 @@ int main()
 		window.Clear();
 		window.CalculateFPS();
 		shader.Enable();
-		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+		glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
 
-		if (window.IsKeyPressed(GLFW_KEY_D))
-			cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) *  increment;
-		if (window.IsKeyPressed(GLFW_KEY_A))
-			cam_main.m_Position = cam_main.m_Position + Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) *  increment;
-		if (window.IsKeyPressed(GLFW_KEY_S))
-			cam_main.m_Position = cam_main.m_Position - cam_main.m_Forward *  increment;
-		if (window.IsKeyPressed(GLFW_KEY_W))
-			cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward *  increment;
-
-		cam_main.m_Position.y = 0.0f;
-		window.GetMousePosition(pos_x, pos_y);
-
-		if (initMouse || window.IsMouseButtonPressed(GLFW_MOUSE_BUTTON_MIDDLE))
+		//Joystick Input
+		int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
+		if (present == 1)
 		{
+			const char* joystickName = glfwGetJoystickName(GLFW_JOYSTICK_1);
+			int count_axes, count_buttons;
+			const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &count_axes);
+			const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &count_buttons);
+			
+			if (axes[0] > 0.1)
+				cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
+			if (axes[0] < -0.1)
+				cam_main.m_Position = cam_main.m_Position + Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
+			if (axes[1] < -0.1)
+				cam_main.m_Position = cam_main.m_Position - cam_main.m_Forward * 2 * increment;
+			if (axes[1] > 0.1)
+				cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward * 2 * increment;
+			
+			pos_x = axes[2];
+			pos_y = axes[3];
+
+			if (initMouse || buttons[0])
+			{
+				last_pos_x = pos_x;
+				last_pos_y = pos_y;
+				initMouse = false;
+			}
+
+			double offset_pos_x = pos_x - last_pos_x;
+			double offset_pos_y = -pos_y + last_pos_y;
 			last_pos_x = pos_x;
 			last_pos_y = pos_y;
-			initMouse = false;
+			offset_pos_x *= 0.75f;
+			offset_pos_y *= 0.75f;
+			yaw += 2 * offset_pos_x;
+			pitch += offset_pos_y;
+			if (pitch > pi / 2)
+				pitch = pi / 2;
+			if (pitch < -pi / 2)
+				pitch = -pi / 2;
 		}
+		//Mouse and Keyboard Input
+		else
+		{
+			if (window.IsKeyPressed(GLFW_KEY_D))
+			cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
+			if (window.IsKeyPressed(GLFW_KEY_A))
+			cam_main.m_Position = cam_main.m_Position + Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
+			if (window.IsKeyPressed(GLFW_KEY_S))
+			cam_main.m_Position = cam_main.m_Position - cam_main.m_Forward * 2 * increment;
+			if (window.IsKeyPressed(GLFW_KEY_W))
+			cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward * 2 * increment;
 
-		double offset_pos_x = pos_x - last_pos_x;
-		double offset_pos_y = -pos_y + last_pos_y;
-		last_pos_x = pos_x;
-		last_pos_y = pos_y;
-		offset_pos_x *= increment * increment;
-		offset_pos_y *= increment * increment;
-		yaw += 2*offset_pos_x;
-		pitch += offset_pos_y;
-		if (pitch > pi / 2)
-			pitch = pi / 2;
-		if (pitch < -pi / 2)
-			pitch = -pi / 2;
+			window.GetMousePosition(pos_x, pos_y);
+			
+			if (initMouse || window.IsMouseButtonPressed(GLFW_MOUSE_BUTTON_MIDDLE))
+			{
+				last_pos_x = pos_x;
+				last_pos_y = pos_y;
+				initMouse = false;
+			}
 
+			double offset_pos_x = pos_x - last_pos_x;
+			double offset_pos_y = -pos_y + last_pos_y;
+			last_pos_x = pos_x;
+			last_pos_y = pos_y;
+			offset_pos_x *= increment * increment;
+			offset_pos_y *= increment * increment;
+			yaw += 2 * offset_pos_x;
+			pitch += offset_pos_y;
+			if (pitch > pi / 2)
+				pitch = pi / 2;
+			if (pitch < -pi / 2)
+				pitch = -pi / 2;
+		}
 
 		cam_main.UpdateCameraPosition();
 		cam_main.CalcuateLookAround(yaw, pitch, roll, true);
-		cam_main.m_Position.y = 0.0f;
+		cam_main.m_Position.y = 1.0f;
 		cam_main.DefineView();
 		cam_main.DefineProjection(DegToRad(90), window.GetRatio(), 0.5f, 1000.0f);
+		cam_main.UpdateProjectionAndViewInOtherShader(shaderCube);
 
 		//Severe performance with texture, likely due to no font atlas. 
 		testFont2.RenderText();
@@ -177,6 +233,7 @@ int main()
 		renderer.Submit(&quad1);
 		renderer.Submit(&quad2);
 		renderer.Flush();
+		renderer.Draw(&cube);
 		
 		br2d.OpenMapBuffer();
 		br2d.Submit(&quad3);

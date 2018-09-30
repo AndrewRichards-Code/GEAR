@@ -29,6 +29,11 @@ Window::Window(std::string title, int width, int height)
 	{
 		m_MouseButtons[i] = false;
 	}
+
+	for (int i = 0; i < MAX_JOY_BUTTONS; i++)
+	{
+		m_JoyButtons[i] = false;
+	}
 }
 
 Window::~Window()
@@ -111,6 +116,7 @@ bool Window::Init()
 	glfwSetKeyCallback(m_Window, key_callback);
 	glfwSetMouseButtonCallback(m_Window, mouse_button_callback);
 	glfwSetCursorPosCallback(m_Window, cursor_position_callback);
+	//glfwSetJoystickCallback(joystick_callback);
 
 	if (glewInit() != GLEW_OK)
 	{
@@ -135,11 +141,29 @@ bool Window::IsMouseButtonPressed(unsigned int button) const
 	return m_MouseButtons[button];
 }
 
-void Window::GetMousePosition(double & x, double & y) const
+void Window::GetMousePosition(double& x, double& y) const
 {
 	x = mx;
 	y = my;
 }
+
+bool Window::IsJoyButtonPressed(unsigned int button) const
+{
+	if (button >= MAX_JOY_BUTTONS)
+		return false;
+	return m_JoyButtons[button];
+}
+
+void Window::GetJoyAxes(double& x1, double& y1, double& x2, double& y2, double& x3, double& y3) const
+{
+	x1 = m_xJoy1;
+	y1 = m_yJoy1;
+	x2 = m_xJoy2;
+	y2 = m_yJoy2;
+	x3 = m_xJoy3;
+	y3 = m_yJoy3;
+}
+	
 
 void window_resize(GLFWwindow* window, int width, int height)
 {
@@ -180,15 +204,43 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 	}
 }
 
-void Window::mouse_button_callback(GLFWwindow * window, int button, int action, int mods)
+void Window::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	Window* win = (Window*)glfwGetWindowUserPointer(window);
 	win->m_MouseButtons[button] = action != GLFW_RELEASE;
 }
 
-void Window::cursor_position_callback(GLFWwindow * window, double xpos, double ypos)
+void Window::cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	Window* win = (Window*)glfwGetWindowUserPointer(window);
 	win->mx = xpos;
 	win->my = ypos;
 }
+
+/*void Window::joystick_callback(int joy, int event)
+{
+	if (event == GLFW_CONNECTED)
+	{
+		std::cout << "The joystick was connected" << std::endl;
+	}
+	else if (event == GLFW_DISCONNECTED)
+	{
+		std::cout << "The joystick was disconnected" << std::endl;
+	}
+	
+	const char* joystickName = glfwGetJoystickName(joy);
+	std::cout << joystickName << std::endl;
+	int count_axes, count_buttons;
+	const float* axes = glfwGetJoystickAxes(joy, &count_axes);
+	const unsigned char* buttons = glfwGetJoystickButtons(joy, &count_buttons);
+	
+	m_xJoy1 = axes[0];
+	m_yJoy1 = axes[1];
+	m_xJoy2 = axes[2];
+	m_yJoy2 = axes[3];
+	m_xJoy3 = axes[4];
+	m_yJoy3 = axes[5];
+	
+	for (int i = 0; i < MAX_JOY_BUTTONS; i++)
+		m_JoyButtons[i] = buttons[i] == GLFW_PRESS? true : false;
+}*/

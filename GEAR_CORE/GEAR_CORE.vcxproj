@@ -157,7 +157,7 @@
     <ClCompile Include="src\graphics\buffer\indexbuffer.cpp" />
     <ClCompile Include="src\graphics\buffer\vertexarray.cpp" />
     <ClCompile Include="src\graphics\buffer\vertexbuffer.cpp" />
-    <ClCompile Include="src\graphics\object\object.cpp" />
+    <ClCompile Include="src\graphics\object.cpp" />
     <ClCompile Include="src\graphics\renderer\batchrenderer2d.cpp" />
     <ClCompile Include="src\graphics\renderer\renderer.cpp" />
     <ClCompile Include="src\graphics\shader.cpp" />
@@ -180,7 +180,7 @@
     <ClInclude Include="src\graphics\buffer\vertexarray.h" />
     <ClInclude Include="src\graphics\buffer\vertexbuffer.h" />
     <ClInclude Include="src\graphics\debugopengl.h" />
-    <ClInclude Include="src\graphics\object\object.h" />
+    <ClInclude Include="src\graphics\object.h" />
     <ClInclude Include="src\graphics\renderer\batchrenderer2d.h" />
     <ClInclude Include="src\graphics\renderer\renderer.h" />
     <ClInclude Include="src\graphics\shader.h" />
@@ -205,6 +205,8 @@
   <ItemGroup>
     <None Include="res\shaders\basic.frag" />
     <None Include="res\shaders\basic.vert" />
+    <None Include="res\shaders\cube.frag" />
+    <None Include="res\shaders\cube.vert" />
     <None Include="res\shaders\font.frag" />
     <None Include="res\shaders\font.vert" />
   </ItemGroup>

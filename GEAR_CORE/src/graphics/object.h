@@ -1,12 +1,12 @@
 #pragma once
 
 #include "GL/glew.h"
-#include "../buffer/vertexarray.h"
-#include "../buffer/indexbuffer.h"
-#include "../shader.h"
-#include "../texture.h"
-#include "../../utils/fileutils.h"
-#include "../../maths/ARMLib.h"
+#include "buffer/vertexarray.h"
+#include "buffer/indexbuffer.h"
+#include "shader.h"
+#include "texture.h"
+#include "../utils/fileutils.h"
+#include "../maths/ARMLib.h"
 
 namespace GEAR {
 namespace GRAPHICS {
@@ -24,7 +24,7 @@ private:
 
 	std::shared_ptr<VertexArray> m_VAO;
 	std::shared_ptr<IndexBuffer> m_IBO;
-	Shader& m_Shader;
+	const Shader& m_Shader;
 	const Texture& m_Texture;
 
 	ARM::Mat4 m_ModlMatrix;
@@ -47,21 +47,23 @@ private:
 	void GenVAOandIBO();
 
 public:
-	Object(const char* objFilePath, Shader& shader, const Texture& texture, const ARM::Mat4& modl);
-	Object(const char* objFilePath, Shader& shader, const Texture& texture, const ARM::Vec3& position, const ARM::Vec2& size); //Doesn't fill the VAO or IBO.
+	Object(const char* objFilePath, const Shader& shader, const Texture& texture, const ARM::Mat4& modl);
+	Object(const char* objFilePath, const Shader& shader, const Texture& texture, const ARM::Vec3& position, const ARM::Vec2& size); //Doesn't fill the VAO or IBO.
 	~Object();
 
 	void BindTexture(int slot = 0) const;
 	void UnbindTexture() const;
-	static void SetTextureArray(Shader& shader);
-	static void UnsetTextureArray(Shader& shader);
+	static void SetTextureArray(const Shader& shader);
+	static void UnsetTextureArray(const Shader& shader);
+	void BindCubeMap(int slot) const;
+	void UnbindCubeMap() const;
 			
 	void SetUniformModlMatrix() const;
 	void SetUniformModlMatrix(const ARM::Mat4& modl);
 		
 	inline const std::shared_ptr<VertexArray> GetVAO() const { return m_VAO; }
 	inline const std::shared_ptr<IndexBuffer> GetIBO() const { return m_IBO; }
-	inline Shader& GetShader() const { return m_Shader; }
+	inline const Shader& GetShader() const { return m_Shader; }
 	inline const Texture& GetTexture() const { return m_Texture; }
 	inline const unsigned int GetTextureID() const { return m_Texture.GetTextureID(); }
 	inline const ARM::Mat4 GetModlMatrix() const { return m_ModlMatrix; }
