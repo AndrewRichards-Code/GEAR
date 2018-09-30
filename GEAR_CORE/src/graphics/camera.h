@@ -15,32 +15,41 @@ class Camera
 {
 private:
 	int m_ProjectionType;
-	Shader& m_Shader;
-	float m_Yaw;
-	float m_Pitch;
-	float m_Roll;
+	const Shader& m_Shader;
+	double m_Yaw = 0;
+	double m_Pitch = 0;
+	double m_Roll = 0;
+
+	const ARM::Vec3 m_xAxis = ARM::Vec3(1, 0, 0);
+	const ARM::Vec3 m_yAxis = ARM::Vec3(0, 1, 0);
+	const ARM::Vec3 m_zAxis = ARM::Vec3(0, 0, 1);
 
 public:
 	ARM::Vec3 m_Position;
+
 	ARM::Vec3 m_Forward;
-	ARM::Vec3 m_Up = ARM::Vec3(0, 1, 0);
+	ARM::Vec3 m_Up;
 	ARM::Vec3 m_Right;
 	
 	ARM::Mat4 m_ProjectionMatrix;
 	ARM::Mat4 m_ViewMatrix;
 	
 public:
-	Camera(int projType, Shader& shader, ARM::Vec3 pos, ARM::Vec3 front, float yaw = 0, float pitch = 0, float roll = 0);
+	Camera(int projType, const Shader& shader, const ARM::Vec3& position, const ARM::Vec3& forward, const ARM::Vec3 up);
 	~Camera();
 
 	void UpdateCameraPosition();
-	void CalcuateLookAround(float yaw, float pitch, float roll);
+	void CalcuateLookAround(double yaw, double pitch, double roll, bool invertYAxis = false);
 
 	void DefineView();
-	void DefineProjection(float fov, float aspectRatio, float zNear, float zFar);
+	void DefineProjection(double fov, float aspectRatio, float zNear, float zFar);
 	void DefineProjection(float left, float right, float bottom, float top, float near, float far);
+	void UpdateProjectionAndViewInOtherShader(const Shader& shader); //Call after updating camera public members
 
-	ARM::Mat4 LookAt(const ARM::Vec3& CamPos, const ARM::Vec3& CamLookDir, const ARM::Vec3& up);
+private:
+	void CalculateRight();
+	ARM::Mat4 CameraMatrix(const ARM::Vec3& camPos, const ARM::Vec3& camTarget, const ARM::Vec3& up);
+
 };
 }
 }

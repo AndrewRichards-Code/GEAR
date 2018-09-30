@@ -25,10 +25,10 @@ namespace ARM
 
 		static Mat4 Identity(); //test
 		static Mat4 Orthographic(float left, float right, float bottom, float top, float near, float far); //test
-		static Mat4 Perspective(float fov, float aspectRatio, float near, float far); //test
+		static Mat4 Perspective(double fov, float aspectRatio, float near, float far); //test
 		
 		static Mat4 Translation(const Vec3& translation); //test
-		static Mat4 Rotation(float angle, const Vec3& axis); //test
+		static Mat4 Rotation(double angle, const Vec3& axis); //test
 		static Mat4 Scale(const Vec3& scale); //test
 
 		friend std::ostream& operator<< (std::ostream& stream, const Mat4 & output)

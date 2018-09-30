@@ -34,7 +34,6 @@ namespace ARM
 		//Quaternions
 		Vec4 RotQuat();
 		
-		//Equalivence operator==
 		Vec4 operator+ (const Vec4& other) const;
 		Vec4 operator- (const Vec4& other) const;
 		Vec4 operator* (float a) const;

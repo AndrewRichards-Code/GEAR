@@ -13,6 +13,7 @@ private:
 
 public:
 	VertexBuffer(const float* data, unsigned int count, unsigned int componentcount);
+	VertexBuffer(const float* data, unsigned int count, unsigned int componentcount, GLenum usage);
 	~VertexBuffer();
 
 	void Bind() const;

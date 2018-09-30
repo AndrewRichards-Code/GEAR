@@ -29,12 +29,16 @@ Window::Window(std::string title, int width, int height)
 	{
 		m_MouseButtons[i] = false;
 	}
+
+	for (int i = 0; i < MAX_JOY_BUTTONS; i++)
+	{
+		m_JoyButtons[i] = false;
+	}
 }
 
 Window::~Window()
 {
-	//TODO: Fix this atioglxx.dll error
-	//glfwTerminate();
+	glfwTerminate();
 }
 
 void Window::Clear() const
@@ -60,15 +64,29 @@ void Window::Fullscreen()
 {
 	m_Mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 	glfwSetWindowMonitor(m_Window, glfwGetPrimaryMonitor(), 0, 0, m_Mode->width, m_Mode->height, m_Mode->refreshRate);
-	glfwSwapInterval(1);
+	glfwSwapInterval((int)m_VSync);
 	m_Fullscreen = true;
+}
+
+void Window::UpdateVSync(bool vSync)
+{
+	m_VSync = vSync;
+	glfwSwapInterval((int)m_VSync);
+}
+
+void Window::CalculateFPS()
+{
+	double m_CurrentTime = glfwGetTime();
+	double m_DeltaTime = m_CurrentTime - m_PreviousTime;
+	m_PreviousTime = m_CurrentTime;
+	m_FPS = 1 / m_DeltaTime;
 }
 
 bool Window::Init()
 {
 	if (!glfwInit())
 	{
-		std::cout << "Failed to initialise GLFW!" << std::endl;
+		std::cout << "ERROR: GEAR::GRAPHICS::Window: Failed to initialise GLFW!" << std::endl;
 		return false;
 	}
 
@@ -83,11 +101,11 @@ bool Window::Init()
 	if (!m_Window)
 	{
 		glfwTerminate();
-		std::cout << "Failed to create GLFW window!" << std::endl;
+		std::cout << "ERROR: GEAR::GRAPHICS::Window: Failed to create GLFW window!" << std::endl;
 		return 1;
 	}
 	glfwMakeContextCurrent(m_Window);
-	glfwSwapInterval(1);
+	glfwSwapInterval((int)m_VSync);
 	
 	GLFWimage icon[1];
 	icon[0].pixels = stbi_load("res/gear_core/GEAR_logo_icon.png", &icon->width, &icon->height, 0, 4);
@@ -98,10 +116,11 @@ bool Window::Init()
 	glfwSetKeyCallback(m_Window, key_callback);
 	glfwSetMouseButtonCallback(m_Window, mouse_button_callback);
 	glfwSetCursorPosCallback(m_Window, cursor_position_callback);
+	//glfwSetJoystickCallback(joystick_callback);
 
 	if (glewInit() != GLEW_OK)
 	{
-		std::cout << "Failed to initialise GLEW!" << std::endl;
+		std::cout << "ERROR: GEAR::GRAPHICS::Window: Failed to initialise GLEW!" << std::endl;
 		return false;
 	}
 	std::cout << "OpenGL: " << glGetString(GL_VERSION) << std::endl;
@@ -122,11 +141,29 @@ bool Window::IsMouseButtonPressed(unsigned int button) const
 	return m_MouseButtons[button];
 }
 
-void Window::GetMousePosition(double & x, double & y) const
+void Window::GetMousePosition(double& x, double& y) const
 {
 	x = mx;
 	y = my;
 }
+
+bool Window::IsJoyButtonPressed(unsigned int button) const
+{
+	if (button >= MAX_JOY_BUTTONS)
+		return false;
+	return m_JoyButtons[button];
+}
+
+void Window::GetJoyAxes(double& x1, double& y1, double& x2, double& y2, double& x3, double& y3) const
+{
+	x1 = m_xJoy1;
+	y1 = m_yJoy1;
+	x2 = m_xJoy2;
+	y2 = m_yJoy2;
+	x3 = m_xJoy3;
+	y3 = m_yJoy3;
+}
+	
 
 void window_resize(GLFWwindow* window, int width, int height)
 {
@@ -147,14 +184,14 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			win->m_Mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 			glfwSetWindowMonitor(win->m_Window, glfwGetPrimaryMonitor(), 0, 0, win->m_Mode->width, win->m_Mode->height, win->m_Mode->refreshRate);
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			glfwSwapInterval(1);
+			glfwSwapInterval((int)win->m_VSync);
 		}
 
 		if (!win->m_Fullscreen)
 		{
 			glfwSetWindowMonitor(win->m_Window, NULL, 100, 100, win->m_InitWidth, win->m_InitHeight, GL_DONT_CARE);
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			glfwSwapInterval(1);
+			glfwSwapInterval((int)win->m_VSync);
 		}
 	}
 
@@ -167,15 +204,43 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 	}
 }
 
-void Window::mouse_button_callback(GLFWwindow * window, int button, int action, int mods)
+void Window::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	Window* win = (Window*)glfwGetWindowUserPointer(window);
 	win->m_MouseButtons[button] = action != GLFW_RELEASE;
 }
 
-void Window::cursor_position_callback(GLFWwindow * window, double xpos, double ypos)
+void Window::cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	Window* win = (Window*)glfwGetWindowUserPointer(window);
 	win->mx = xpos;
 	win->my = ypos;
 }
+
+/*void Window::joystick_callback(int joy, int event)
+{
+	if (event == GLFW_CONNECTED)
+	{
+		std::cout << "The joystick was connected" << std::endl;
+	}
+	else if (event == GLFW_DISCONNECTED)
+	{
+		std::cout << "The joystick was disconnected" << std::endl;
+	}
+	
+	const char* joystickName = glfwGetJoystickName(joy);
+	std::cout << joystickName << std::endl;
+	int count_axes, count_buttons;
+	const float* axes = glfwGetJoystickAxes(joy, &count_axes);
+	const unsigned char* buttons = glfwGetJoystickButtons(joy, &count_buttons);
+	
+	m_xJoy1 = axes[0];
+	m_yJoy1 = axes[1];
+	m_xJoy2 = axes[2];
+	m_yJoy2 = axes[3];
+	m_xJoy3 = axes[4];
+	m_yJoy3 = axes[5];
+	
+	for (int i = 0; i < MAX_JOY_BUTTONS; i++)
+		m_JoyButtons[i] = buttons[i] == GLFW_PRESS? true : false;
+}*/

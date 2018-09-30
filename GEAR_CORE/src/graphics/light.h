@@ -21,7 +21,7 @@ private:
 	Shader& m_Shader;
 
 public:
-	Light(int type, ARM::Vec3 pos_dir, ARM::Vec4 colour, Shader& shader);
+	Light(int type, const ARM::Vec3& pos_dir, const ARM::Vec4& colour, Shader& shader);
 	~Light();
 
 	void Specular(float shineFactor, float reflectivity) const;
