@@ -173,3 +173,21 @@ https://pixabay.com/en/logo-half-gear-letter-k-symbol-27682/
 Stall Object and Texture:
 Copyright © 2014 ThinMatrix
 https://www.youtube.com/watch?v=KMWUjNE0fYI&index=9&list=PLRIWtICgwaX0u7Rf9zkZhLoLuZVfUksDP
+
+-----------------------------------------------------------------------------
+
+My Own Images:
+andrew_Manga_3_square.png
+Copyright © 2018 Andrew Richards
+
+-----------------------------------------------------------------------------
+
+Skyboxes:
+(mp_artic, mp_midnight)
+This skybox has been created by 'The Mighty Pete'. He can be reached
+at the following WEB site:
+
+http://www.petesoasis.com
+
+The author grants you the right to freely use this sky box in your projects
+and distribute it under the GNU General Public License version 2.
