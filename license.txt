@@ -1,4 +1,4 @@
-# GEAR_CORE
+﻿# GEAR_CORE
 
 Creative Commons 3.0
 
@@ -118,22 +118,9 @@ https://github.com/nothings/stb
 
 -----------------------------------------------------------------------------
 
-OpenAL Soft 1.18.2:
-GEAR_CORE/Dependencies/OPENAL/
-COPYING.TXT
-
-GNU LIBRARY GENERAL PUBLIC LICENSE
-       Version 2, June 1991
-       
-Copyright (C) 1991 Free Software Foundation, Inc.
-675 Mass Ave, Cambridge, MA 02139, USA
-Everyone is permitted to copy and distribute verbatim copies
-of this license document, but changing it is not allowed.
-
-[This is the first released version of the library GPL.  It is
- numbered 2 because it goes with version 2 of the ordinary GPL.]
- 
-http://kcat.strangesort.net/openal.html
+OpenAL 1.1:
+Licensing not specified.
+https://www.openal.org/
 
 -----------------------------------------------------------------------------
 

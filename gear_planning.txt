@@ -22,11 +22,11 @@ Enable shader;
 Bind textures
 SetUniforms
 
-Pass Object to the Renderer (implement: m_RenderQueue<deque>, Submit() and Flush())
+Pass Object to the Renderer (implement: m_RenderQueue<deque>, Submit() and Flush()) DONE!
 }
 struct ObjData
 {
-	std::vector<MeshData>;
+	std::vector<MeshData>;TODO!
 	struct MeshData
 	{
 		const char* mtlFilePath;
@@ -62,7 +62,7 @@ case GEAR_CAMERA_ORTHOGRAPHIC: DefineProjection(left, right, bottom, top, near, 
 //Define a projection and view matrix
 GEAR_CAMERA_PERSPECTIVE;
 GEAR_CAMERA_ORTHOGRAPHIC;
-}
+}DONE!
 
 Light(int type, Vec3 pos/direction, Vec4 Colour, Camera())
 {
@@ -71,18 +71,14 @@ GEAR_LIGHT_POINT;	//pos
 GEAR_LIGHT_DIRECTIONAL;	//dir
 GEAR_LIGHT_SPOT;	//cone, umbra, penumbra
 GEAR_LIGHT_AREA;	//err...
-}
+} DONE!
 
 Add to Shader()
 {
-//Add GeometryShader?
+//Add GeometryShader? TODO!
 //CalcLightType
 GEAR_CALC_LIGHT_DIFFUSE;
 GEAR_CALC_LIGHT_SPECULAR;
 GEAR_CALC_LIGHT_AMIBIENT;
 GEAR_CALC_LIGHT_EMIT;
-}
-
-------------------------------------------------------------------------------------------------
-Logo website:
-https://pixabay.com/en/logo-half-gear-letter-k-symbol-27682/
+}DONE!

@@ -6,8 +6,8 @@
 #include "src/graphics/camera.h"
 #include "src/graphics/light.h"
 #include "src/graphics/font.h"
-
-#include "AL/al.h"
+#include "src/audio/listener.h"
+#include "src/audio/audiosource.h"
 
 
 #if _DEBUG
@@ -16,6 +16,7 @@
 
 	using namespace GEAR;
 	using namespace GRAPHICS;
+	using namespace AUDIO;
 	using namespace ARM;
 
 int main()
@@ -62,6 +63,11 @@ int main()
 	Light light_main(GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), shader);
 	light_main.Specular(32.0f, 1.0f);
 	light_main.Ambient(0.5f);
+
+	Listener listener_main(cam_main);
+	AudioSource music("res/wav/Air_BWV1068_MONO.wav", Vec3(0, 0, 0), Vec3(0, 0, -1));
+	music.DefineConeParameters(0.0f, 10.0, 45.0);
+	music.Play();
 
 	BatchRenderer2D br2d;
 	Renderer renderer;
@@ -215,6 +221,7 @@ int main()
 		cam_main.DefineView();
 		cam_main.DefineProjection(DegToRad(90), window.GetRatio(), 0.5f, 1000.0f);
 		cam_main.UpdateProjectionAndViewInOtherShader(shaderCube);
+		listener_main.UpdateListenerPosVelOri();
 
 		//Severe performance with texture, likely due to no font atlas. 
 		testFont2.RenderText();
