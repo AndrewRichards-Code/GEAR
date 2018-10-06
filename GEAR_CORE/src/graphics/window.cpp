@@ -116,7 +116,7 @@ bool Window::Init()
 	glfwSetKeyCallback(m_Window, key_callback);
 	glfwSetMouseButtonCallback(m_Window, mouse_button_callback);
 	glfwSetCursorPosCallback(m_Window, cursor_position_callback);
-	//glfwSetJoystickCallback(joystick_callback);
+	glfwSetJoystickCallback(joystick_callback);
 
 	if (glewInit() != GLEW_OK)
 	{
@@ -217,7 +217,7 @@ void Window::cursor_position_callback(GLFWwindow* window, double xpos, double yp
 	win->my = ypos;
 }
 
-/*void Window::joystick_callback(int joy, int event)
+void Window::joystick_callback(int joy, int event)
 {
 	if (event == GLFW_CONNECTED)
 	{
@@ -227,20 +227,4 @@ void Window::cursor_position_callback(GLFWwindow* window, double xpos, double yp
 	{
 		std::cout << "The joystick was disconnected" << std::endl;
 	}
-	
-	const char* joystickName = glfwGetJoystickName(joy);
-	std::cout << joystickName << std::endl;
-	int count_axes, count_buttons;
-	const float* axes = glfwGetJoystickAxes(joy, &count_axes);
-	const unsigned char* buttons = glfwGetJoystickButtons(joy, &count_buttons);
-	
-	m_xJoy1 = axes[0];
-	m_yJoy1 = axes[1];
-	m_xJoy2 = axes[2];
-	m_yJoy2 = axes[3];
-	m_xJoy3 = axes[4];
-	m_yJoy3 = axes[5];
-	
-	for (int i = 0; i < MAX_JOY_BUTTONS; i++)
-		m_JoyButtons[i] = buttons[i] == GLFW_PRESS? true : false;
-}*/
+}

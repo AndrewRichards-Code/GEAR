@@ -41,6 +41,7 @@ AudioSource::AudioSource(const char* filepath, const ARM::Vec3& position, const 
 
 AudioSource::~AudioSource()
 {
+	delete[] m_WavData.m_Data;
 	alDeleteBuffers(1, &m_BufferID);
 	alDeleteSources(1, &m_SourceID);
 }

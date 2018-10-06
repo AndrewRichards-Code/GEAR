@@ -176,6 +176,9 @@
     <ClInclude Include="src\audio\audiosource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\input\inputmanager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\basic.frag" />

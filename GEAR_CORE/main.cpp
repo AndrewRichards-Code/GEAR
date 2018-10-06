@@ -4,6 +4,7 @@
 #include "src/graphics/texture.h"
 #include "src/maths/ARMLib.h"
 #include "src/graphics/camera.h"
+#include "src/input/inputmanager.h"
 #include "src/graphics/light.h"
 #include "src/graphics/font.h"
 #include "src/audio/listener.h"
@@ -17,6 +18,7 @@
 	using namespace GEAR;
 	using namespace GRAPHICS;
 	using namespace AUDIO;
+	using namespace INPUT;
 	using namespace ARM;
 
 int main()
@@ -65,7 +67,7 @@ int main()
 	light_main.Ambient(0.5f);
 
 	Listener listener_main(cam_main);
-	AudioSource music("res/wav/Air_BWV1068_MONO.wav", Vec3(0, 0, 0), Vec3(0, 0, -1));
+	AudioSource music("res/wav/Air_BWV1068.wav", Vec3(0, 0, 0), Vec3(0, 0, 1));
 	music.DefineConeParameters(0.0f, 10.0, 45.0);
 	music.Play();
 
@@ -77,7 +79,8 @@ int main()
 	Font testFont3(window.GetOpenGLVersion(),     "res/font/consola/consola.ttf", 100, Vec2(10.0f, 680.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
 	Font testFont4(window.GetFPSString() + "FPS", "res/font/consola/consola.ttf", 100, Vec2(10.0f, 660.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
 
-	float x = 0, y = 0, z = 0;
+	InputManager main_input(GEAR_INPUT_JOYSTICK_CONTROLLER);
+
 	double yaw = 0;
 	double pitch = 0;
 	double roll = 0;
@@ -140,66 +143,50 @@ int main()
 		glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
 
 		//Joystick Input
-		int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
-		if (present == 1)
+		if(main_input.m_JoyStickPresent)
 		{
-			const char* joystickName = glfwGetJoystickName(GLFW_JOYSTICK_1);
-			int count_axes, count_buttons;
-			const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &count_axes);
-			const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &count_buttons);
-			
-			if (axes[0] > 0.1)
+			main_input.Update();
+			if (main_input.m_Axis[0] > 0.1)
 				cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
-			if (axes[0] < -0.1)
+			if (main_input.m_Axis[0] < -0.1)
 				cam_main.m_Position = cam_main.m_Position + Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
-			if (axes[1] < -0.1)
+			if (main_input.m_Axis[1] < -0.1)
 				cam_main.m_Position = cam_main.m_Position - cam_main.m_Forward * 2 * increment;
-			if (axes[1] > 0.1)
+			if (main_input.m_Axis[1] > 0.1)
 				cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward * 2 * increment;
 			
-			pos_x = axes[2];
-			pos_y = axes[3];
+			pos_x = main_input.m_Axis[2];
+			pos_y = main_input.m_Axis[3];
 
-			if (initMouse || buttons[0])
+			if (initMouse || main_input.m_Button[0])
 			{
 				last_pos_x = pos_x;
 				last_pos_y = pos_y;
 				initMouse = false;
 			}
-
-			double offset_pos_x = pos_x - last_pos_x;
-			double offset_pos_y = -pos_y + last_pos_y;
-			last_pos_x = pos_x;
-			last_pos_y = pos_y;
-			offset_pos_x *= 0.75f;
-			offset_pos_y *= 0.75f;
-			yaw += 2 * offset_pos_x;
-			pitch += offset_pos_y;
-			if (pitch > pi / 2)
-				pitch = pi / 2;
-			if (pitch < -pi / 2)
-				pitch = -pi / 2;
 		}
+		
 		//Mouse and Keyboard Input
 		else
 		{
 			if (window.IsKeyPressed(GLFW_KEY_D))
-			cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
+				cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
 			if (window.IsKeyPressed(GLFW_KEY_A))
-			cam_main.m_Position = cam_main.m_Position + Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
+				cam_main.m_Position = cam_main.m_Position + Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
 			if (window.IsKeyPressed(GLFW_KEY_S))
-			cam_main.m_Position = cam_main.m_Position - cam_main.m_Forward * 2 * increment;
+				cam_main.m_Position = cam_main.m_Position - cam_main.m_Forward * 2 * increment;
 			if (window.IsKeyPressed(GLFW_KEY_W))
-			cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward * 2 * increment;
+				cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward * 2 * increment;
 
 			window.GetMousePosition(pos_x, pos_y);
-			
+
 			if (initMouse || window.IsMouseButtonPressed(GLFW_MOUSE_BUTTON_MIDDLE))
 			{
 				last_pos_x = pos_x;
 				last_pos_y = pos_y;
 				initMouse = false;
 			}
+		}
 
 			double offset_pos_x = pos_x - last_pos_x;
 			double offset_pos_y = -pos_y + last_pos_y;
@@ -213,7 +200,6 @@ int main()
 				pitch = pi / 2;
 			if (pitch < -pi / 2)
 				pitch = -pi / 2;
-		}
 
 		cam_main.UpdateCameraPosition();
 		cam_main.CalcuateLookAround(yaw, pitch, roll, true);

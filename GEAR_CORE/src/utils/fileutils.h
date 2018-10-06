@@ -219,7 +219,7 @@ public:
 	}
 
 	public:
-	struct WavData
+	struct WavData //You must call 'delete[]' once finished, as WavData::m_Data is heap allocated with 'new'.
 	{
 		char* m_Data;
 		int m_Channels;
@@ -228,7 +228,7 @@ public:
 		int m_Size;
 	};
 
-	static WavData load_wav(const char* filepath)
+	static WavData load_wav(const char* filepath) //You must call 'delete[]' once finished, as WavData::m_Data is heap allocated with 'new'.
 	{
 		WavData result = { 0 };
 		char buffer[4];

@@ -177,6 +177,7 @@
     <ClInclude Include="src\audio\audiosource.h" />
     <ClInclude Include="src\audio\listener.h" />
     <ClInclude Include="src\graphics\font.h" />
+    <ClInclude Include="src\input\inputmanager.h" />
     <ClInclude Include="src\maths\quaternion\Quat.h" />
     <ClInclude Include="src\graphics\light.h" />
     <ClInclude Include="src\graphics\camera.h" />
