@@ -10,7 +10,7 @@ class AudioSource
 {
 private:
 	const char* m_FilePath;
-	unsigned int m_BufferID;
+	unsigned int m_BufferID[2];
 	unsigned int m_SourceID;
 
 	FileUtils::WavData m_WavData;
@@ -20,7 +20,8 @@ private:
 	ARM::Vec3 m_Velocity = { 0.0f, 0.0f, 0.0f };
 	ARM::Vec3 m_Direction;
 
-	int m_IsLopped = AL_FALSE;
+	bool m_Looped = false;
+	bool m_Ended = false;
 	
 public:
 	AudioSource(const char* filepath, const ARM::Vec3& position, const ARM::Vec3& direction);
@@ -28,16 +29,17 @@ public:
 
 	void UpdateSourcePosVelOri();
 	void DefineConeParameters(float outerGain, double innerAngle, double outerAngle);
+	
+	void SetPitch(float value);
+	void SetVolume(float value);
+	void Stream();
+	void Loop();
 
-	void Bind();
-	void Unbind();
-
+private:
+	void SubmitBuffer();
 	void Play();
 	void Stop();
 	void Pause();
-	void Loop();
-	void SetPitch(float value);
-	void SetVolume(float value);
 };
 }
 }

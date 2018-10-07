@@ -4,7 +4,9 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <array>
 #include <vector>
+#include <deque>
 #include <algorithm>
 
 #include "typesx86x64.h"
@@ -219,24 +221,34 @@ public:
 	}
 
 	public:
-	struct WavData //You must call 'delete[]' once finished, as WavData::m_Data is heap allocated with 'new'.
+	struct WavData
 	{
-		char* m_Data;
+		const char* m_FilePath;
+		std::array<char, 8192> m_Buffer1;
+		std::array<char, 8192> m_Buffer2;
+		int m_NextBuffer;
 		int m_Channels;
 		int m_SampleRate;
 		int m_BitsPerSample;
 		int m_Size;
+		std::deque<std::streamoff> m_BufferQueue;
+		bool m_LoopBufferQueue;
 	};
 
-	static WavData load_wav(const char* filepath) //You must call 'delete[]' once finished, as WavData::m_Data is heap allocated with 'new'.
+	static WavData stream_wav(const char* filepath)
 	{
-		WavData result = { 0 };
+		WavData result;
+		result.m_FilePath = filepath;
+		result.m_NextBuffer = 1;
+		result.m_LoopBufferQueue = false;
+
 		char buffer[4];
+
 		std::ifstream stream(filepath, std::ios::binary);
 		stream.read(buffer, 4);     //RIFF
 		if (strncmp(buffer, "RIFF", 4) != 0)
 		{
-			std::cout << "ERROR: GEAR::FileUtils::read_wav: Could not read file " << filepath << ". File does not exist." << std::endl;
+			std::cout << "ERROR: GEAR::FileUtils::stream_wav: Could not read file " << filepath << ". File does not exist." << std::endl;
 			return result;
 		}
 		stream.read(buffer, 4);
@@ -267,12 +279,54 @@ public:
 				continue;
 			}
 		}
-		stream.read(buffer, 4);		 //Subchunck1 Size
+		stream.read(buffer, 4);		 //Subchunck2 Size
 		result.m_Size = ConvertToInt(buffer, 4);
 
-		result.m_Data = new char[result.m_Size];
-		stream.read(result.m_Data, result.m_Size);
+		while(stream.tellg() <= result.m_Size)
+		{
+			result.m_BufferQueue.push_back(stream.tellg());
+			stream.seekg(result.m_Buffer1.size(), std::ios_base::cur);
+		}
+		/*stream.seekg(0, std::ios_base::end);
+		int temp = stream.tellg();*/
+		stream.close();
 		return result;
+	}
+
+	static void get_next_wav_block(WavData& input)
+	{
+		if (!input.m_BufferQueue.empty())
+		{
+			std::ifstream stream(input.m_FilePath, std::ios::binary);
+			stream.seekg(input.m_BufferQueue.front(), std::ios_base::beg);
+			switch (input.m_NextBuffer)
+			{
+			case 1:
+				stream.read(input.m_Buffer1.data(), input.m_Buffer1.size());
+				input.m_NextBuffer = 2;
+				break;
+			case 2:
+				stream.read(input.m_Buffer2.data(), input.m_Buffer2.size());
+				input.m_NextBuffer = 1;
+				break;
+			}
+
+			if (input.m_LoopBufferQueue == true)
+			{
+				std::streamoff temp = input.m_BufferQueue.front();
+				input.m_BufferQueue.pop_front();
+				input.m_BufferQueue.push_back(temp);
+			}
+			else
+			{
+				input.m_BufferQueue.pop_front();
+			}
+			stream.close();
+		}
+		else
+		{
+			input.m_NextBuffer = 0;
+		}
 	}
 };
 }

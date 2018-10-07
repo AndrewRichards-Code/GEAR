@@ -67,9 +67,9 @@ int main()
 	light_main.Ambient(0.5f);
 
 	Listener listener_main(cam_main);
-	AudioSource music("res/wav/Air_BWV1068.wav", Vec3(0, 0, 0), Vec3(0, 0, 1));
+	AudioSource music("res/wav/Rainbow Road.wav", Vec3(0, 0, 0), Vec3(0, 0, 1));
 	music.DefineConeParameters(0.0f, 10.0, 45.0);
-	music.Play();
+	music.Loop();
 
 	BatchRenderer2D br2d;
 	Renderer renderer;
@@ -137,13 +137,15 @@ int main()
 
 	while (!window.Closed())
 	{
+		music.Stream();
+	
 		window.Clear();
 		window.CalculateFPS();
 		shader.Enable();
 		glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
 
 		//Joystick Input
-		if(main_input.m_JoyStickPresent)
+		/*if(main_input.m_JoyStickPresent)
 		{
 			main_input.Update();
 			if (main_input.m_Axis[0] > 0.1)
@@ -164,11 +166,11 @@ int main()
 				last_pos_y = pos_y;
 				initMouse = false;
 			}
-		}
+		}*/
 		
 		//Mouse and Keyboard Input
-		else
-		{
+		//else
+		//{
 			if (window.IsKeyPressed(GLFW_KEY_D))
 				cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
 			if (window.IsKeyPressed(GLFW_KEY_A))
@@ -186,7 +188,7 @@ int main()
 				last_pos_y = pos_y;
 				initMouse = false;
 			}
-		}
+		//}
 
 			double offset_pos_x = pos_x - last_pos_x;
 			double offset_pos_y = -pos_y + last_pos_y;

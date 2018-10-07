@@ -4,9 +4,9 @@ using namespace GEAR;
 using namespace AUDIO;
 
 AudioSource::AudioSource(const char* filepath, const ARM::Vec3& position, const ARM::Vec3& direction)
- :m_FilePath(filepath), m_Position(position), m_Direction(direction)
+	:m_FilePath(filepath), m_Position(position), m_Direction(direction)
 {
-	m_WavData = FileUtils::load_wav(m_FilePath);
+	m_WavData = FileUtils::stream_wav(m_FilePath);
 	if (m_WavData.m_Channels == 1)
 	{
 		if (m_WavData.m_BitsPerSample == 8)
@@ -27,22 +27,26 @@ AudioSource::AudioSource(const char* filepath, const ARM::Vec3& position, const 
 			m_Format = AL_FORMAT_STEREO16;
 		}
 	}
-	alGenBuffers(1, &m_BufferID);
-	alBufferData(m_BufferID, m_Format, m_WavData.m_Data, m_WavData.m_Size, m_WavData.m_SampleRate);
-
+	alGenBuffers(2, &m_BufferID[0]);
 	alGenSources(1, &m_SourceID);
+
+	Loop(); //Used to catch the first two buffers, in case the track is looped.
+	SubmitBuffer();
+	SubmitBuffer();
+	Loop(); //Same as above.
+
+	alSourceQueueBuffers(m_SourceID, 2, &m_BufferID[0]);
+	
 	alSourcef(m_SourceID, AL_GAIN, 1);
 	alSourcef(m_SourceID, AL_PITCH, 1);
 	alSourcei(m_SourceID, AL_LOOPING, AL_FALSE);
 	
 	UpdateSourcePosVelOri();
-	Bind();
 }
 
 AudioSource::~AudioSource()
 {
-	delete[] m_WavData.m_Data;
-	alDeleteBuffers(1, &m_BufferID);
+	alDeleteBuffers(2, &m_BufferID[0]);
 	alDeleteSources(1, &m_SourceID);
 }
 
@@ -60,19 +64,72 @@ void AudioSource::DefineConeParameters(float outerGain, double innerAngle, doubl
 	alSourcef(m_SourceID, AL_CONE_OUTER_ANGLE, static_cast<float>(outerAngle));
 }
 
-void AudioSource::Bind()
+
+void AudioSource::SetPitch(float value) //By semitones (-6.0f < value < 6.0f).
 {
-	alSourcei(m_SourceID, AL_BUFFER, m_BufferID);
+	if (value > 6.0f || value < -6.0f)
+		std::cout << "ERROR: GEAR::AUDIO::AudioSource::SetPitch: Input value out of range! Pitch has not been changed!" << std::endl;
+	else
+		alSourcef(m_SourceID, AL_PITCH, pow(2.0f, (value / 12.0f)));
 }
 
-void AudioSource::Unbind()
+void AudioSource::SetVolume(float value) //By decibels.
 {
-	alSourcei(m_SourceID, AL_BUFFER, 0);
+	float dB = pow(10.0f, (value / 20.0f));
+	if (dB < 0.0f)
+		std::cout << "ERROR: GEAR::AUDIO::AudioSource::SetVolume: Calcualted value out of range! Volume has not been changed!" << std::endl;
+	else
+		alSourcef(m_SourceID, AL_GAIN, dB);
+}
+
+void AudioSource::Stream()
+{
+	if (!m_Ended)
+	{
+		Play();
+	}
+
+	int processed;
+	alGetSourcei(m_SourceID, AL_BUFFERS_PROCESSED, &processed);
+	/*std::cout << "Buffers: " << processed << std::endl;
+	std::cout << "Next Buffer: " << m_WavData.m_NextBuffer << std::endl;*/
+	
+	while (processed--)
+	{
+		switch (m_WavData.m_NextBuffer)
+		{
+		case 1:
+			alSourceUnqueueBuffers(m_SourceID, 1, &m_BufferID[0]);
+			SubmitBuffer();
+			alSourceQueueBuffers(m_SourceID, 1, &m_BufferID[0]);
+			break;
+		case 2:
+			alSourceUnqueueBuffers(m_SourceID, 1, &m_BufferID[1]);
+			SubmitBuffer();
+			alSourceQueueBuffers(m_SourceID, 1, &m_BufferID[1]);
+			break;
+		case 0:
+			m_Ended = true;
+			alSourceUnqueueBuffers(m_SourceID, 2, &m_BufferID[0]);
+			Stop();
+		}
+	}
 }
 
 void AudioSource::Play()
 {
-	alSourcePlay(m_SourceID);
+	int playing;
+	alGetSourcei(m_SourceID, AL_SOURCE_STATE, &playing);
+
+	/*switch (playing)
+	{
+	case 0x1011: std::cout << "AL_INITIAL" << std::endl; break;
+	case 0x1012: std::cout << "AL_PLAYING" << std::endl; break;
+	case 0x1013: std::cout << "AL_PAUSED"  << std::endl; break;
+	case 0x1014: std::cout << "AL_STOPPED" << std::endl; break;
+	}*/
+	if (playing != AL_PLAYING)
+		alSourcePlay(m_SourceID);
 }
 
 void AudioSource::Stop()
@@ -87,23 +144,23 @@ void AudioSource::Pause()
 
 void AudioSource::Loop()
 {
-	alGetSourcei(m_SourceID, AL_SOURCE_STATE, &m_IsLopped);
-	if(m_IsLopped == AL_FALSE)
+	if(m_Looped == false)
 	{
-		alSourcei(m_SourceID, AL_LOOPING, AL_TRUE);
+		m_WavData.m_LoopBufferQueue = true;
 	}
-	else if (m_IsLopped == AL_TRUE)
+	else if (m_Looped == true)
 	{
-		alSourcei(m_SourceID, AL_LOOPING, AL_FALSE);
+		m_WavData.m_LoopBufferQueue = false;
 	}
 }
-
-void AudioSource::SetPitch(float value)
+void AudioSource::SubmitBuffer()
 {
-	alSourcef(m_SourceID, AL_PITCH, value);
-}
-
-void AudioSource::SetVolume(float value)
-{
-	alSourcef(m_SourceID, AL_GAIN, value);
+	FileUtils::get_next_wav_block(m_WavData);
+	switch (m_WavData.m_NextBuffer)
+	{
+	case 1:
+		alBufferData(m_BufferID[1], m_Format, m_WavData.m_Buffer2.data(), m_WavData.m_Buffer2.size(), m_WavData.m_SampleRate);
+	case 2:
+		alBufferData(m_BufferID[0], m_Format, m_WavData.m_Buffer1.data(), m_WavData.m_Buffer1.size(), m_WavData.m_SampleRate);
+	}
 }
