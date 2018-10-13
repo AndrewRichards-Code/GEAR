@@ -7,8 +7,8 @@ using namespace GRAPHICS;
 //Declare only in this .cpp file, not in the window class
 void window_resize(GLFWwindow* window, int width, int height);
 
-Window::Window(std::string title, int width, int height)
-	:m_Title(title), m_Width(width), m_Height(height)
+Window::Window(std::string title, int width, int height, int antiAliasingValue)
+	:m_Title(title), m_Width(width), m_Height(height), m_AntiAliasingValue(antiAliasingValue)
 {
 #ifdef _M_X64
 	m_Title += ": GEAR_CORE(x64-86)";
@@ -93,6 +93,9 @@ bool Window::Init()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_SAMPLES, m_AntiAliasingValue);
+	glEnable(GL_MULTISAMPLE);
+
 #if _DEBUG
 	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 #endif
@@ -124,6 +127,7 @@ bool Window::Init()
 		return false;
 	}
 	std::cout << "OpenGL: " << glGetString(GL_VERSION) << std::endl;
+	
 	return true;
 }
 

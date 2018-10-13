@@ -187,5 +187,7 @@
     <None Include="res\shaders\font.frag" />
     <None Include="res\shaders\cube.frag" />
     <None Include="res\shaders\cube.vert" />
+    <None Include="res\shaders\pbr.frag" />
+    <None Include="res\shaders\pbr.vert" />
   </ItemGroup>
 </Project>

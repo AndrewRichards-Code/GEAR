@@ -20,6 +20,24 @@ Object::Object(const char* objFilePath, const Shader& shader, const Texture& tex
 	SetUniformModlMatrix();
 }
 
+Object::Object(const char* objFilePath, const Shader& shader, const ARM::Vec4& colour, const ARM::Mat4& modl)
+	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Colour(colour), m_ModlMatrix(modl)
+{
+	LoadObjDataIntoObject();
+	m_Colours.resize(2 * m_TextCoords.size());
+	for (int i = 0; i < (int)m_Colours.size();)
+	{
+		m_Colours[i + 0] = m_Colour.r;
+		m_Colours[i + 1] = m_Colour.g;
+		m_Colours[i + 2] = m_Colour.b;
+		m_Colours[i + 3] = m_Colour.a;
+		i += 4;
+	}
+	GenVAOandIBO();
+	m_VAO->AddBuffer(std::make_shared<VertexBuffer>(&m_Colours[0], m_Colours.size(), 4), GEAR_BUFFER_COLOUR);
+	SetUniformModlMatrix();
+}
+
 Object::Object(const char* objFilePath, const Shader& shader, const Texture& texture, const Vec3& position, const Vec2& size)
 	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Texture(texture), m_Position(position), m_Size(size)
 {
@@ -41,8 +59,8 @@ Object::Object(const char* objFilePath, const Shader& shader, const Texture& tex
 	for (int i = 0; i < m_ObjData.GetSizeVertices(); i++)
 	{
 		Vec2 temp = m_ObjData.m_TexCoords[(unsigned int)m_ObjData.m_UniqueVertices[i].y];
-		m_TextCoords.push_back(temp.x);
-		m_TextCoords.push_back(temp.y);;
+		m_TextCoords.push_back(temp.x * m_Texture.GetTileFactor());
+		m_TextCoords.push_back(temp.y * m_Texture.GetTileFactor());;
 	}
 
 	m_Normals.reserve(m_ObjData.GetSizeVertices() * 3);
@@ -141,8 +159,8 @@ void Object::LoadObjDataIntoObject()
 	for (int i = 0; i < m_ObjData.GetSizeVertices(); i++)
 	{
 		Vec2 temp = m_ObjData.m_TexCoords[(unsigned int)m_ObjData.m_UniqueVertices[i].y];
-		m_TextCoords.push_back(temp.x);
-		m_TextCoords.push_back(temp.y);;
+		m_TextCoords.push_back(temp.x * m_Texture.GetTileFactor());
+		m_TextCoords.push_back(temp.y * m_Texture.GetTileFactor());;
 	}
 
 	m_Normals.reserve(m_ObjData.GetSizeVertices() * 3);

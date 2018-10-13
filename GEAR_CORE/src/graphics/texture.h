@@ -15,6 +15,10 @@ private:
 	unsigned char* m_LocalBuffer;
 	int m_Width, m_Height, m_BPP; //BPP = Bits per pixel
 	bool m_CubeMap;
+	float m_TileFactor = 1.0f;
+	static bool m_MipMapping;
+	static bool m_AnisotrophicFilter;
+	static float m_AnisotrophicValue;
 
 public:
 	Texture(const std::string& filepath); //Assumes GL_TEXTURE_2D!
@@ -28,11 +32,30 @@ public:
 	void BindCubeMap(unsigned int slot = 0) const;
 	void UnbindCubeMap() const;
 
+	void Tile(float tileFactor);
+	void Untile();
+	static void EnableDisableMipMapping();
+	static void EnableDisableAniostrophicFilting(float anisostrphicVal);
+
 	inline int GetWidth() const { return m_Width; }
 	inline int GetHeight() const { return m_Height; }
 	inline int GetBPP() const { return m_BPP; }
 	inline unsigned int GetTextureID() const { return m_TextureID; }
 	inline bool IsCubeMap() const { return m_CubeMap; }
+	inline float GetTileFactor() const { return m_TileFactor; }
+	inline static std::string GetAnisotrophicValue() { return std::to_string(static_cast<int>(m_AnisotrophicValue)); }
+
+private:
+	void AniostrophicFilting();
+	void MipMapping();
 };
 }
 }
+
+/*if (glewIsSupported("GL_EXT_texture_filter_anisotropic") || GLEW_EXT_texture_filter_anisotropic)
+{
+	std::cout << "Anisotrophic Filter supported" << std::endl;
+	float anisoMax;
+	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &anisoMax);
+	std::cout << "Max Anisotrophic filtering: " << anisoMax << std::endl;
+}*/

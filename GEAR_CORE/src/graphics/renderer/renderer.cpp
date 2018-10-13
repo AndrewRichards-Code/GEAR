@@ -51,6 +51,14 @@ void Renderer::Draw(const VertexArray& vao, const IndexBuffer& ibo, const Shader
 
 void Renderer::Draw(const Object* obj) const
 {
+	if (obj->GetTexture().IsCubeMap() == true)
+	{
+		obj->BindCubeMap(0);
+	}
+	else
+	{
+		obj->BindTexture(0);
+	}
 	obj->GetShader().Enable();
 	obj->GetVAO()->Bind();
 	obj->GetIBO()->Bind();

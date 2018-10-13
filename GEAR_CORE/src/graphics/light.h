@@ -14,14 +14,14 @@ namespace GRAPHICS {
 
 class Light
 {
-private:
+public:
 	int m_Type;
 	ARM::Vec3 m_PosDir;
 	ARM::Vec4 m_Colour;
-	Shader& m_Shader;
+	const Shader& m_Shader;
 
 public:
-	Light(int type, const ARM::Vec3& pos_dir, const ARM::Vec4& colour, Shader& shader);
+	Light(int type, const ARM::Vec3& pos_dir, const ARM::Vec4& colour, const Shader& shader);
 	~Light();
 
 	void Specular(float shineFactor, float reflectivity) const;

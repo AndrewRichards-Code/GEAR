@@ -13,7 +13,7 @@ uniform vec4 u_Colour;
 
 void main()
 {
-	vec4 sampled = {1.0, 1.0, 1.0, 1.0};
+	vec4 sampled = {0, 0, 0, 0};
 	if( fs_in.v_TextIds > 0)
 	{
 		for (int i = 0; i < 32; i++)

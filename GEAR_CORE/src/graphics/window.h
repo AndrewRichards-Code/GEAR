@@ -29,6 +29,7 @@ private:
 	const GLFWvidmode* m_Mode;
 	bool m_Fullscreen = false;
 	bool m_VSync = true;
+	int m_AntiAliasingValue = 0;
 
 	double m_CurrentTime, m_PreviousTime = 0.0, m_DeltaTime, m_FPS;
 
@@ -40,7 +41,7 @@ private:
 	double m_xJoy1, m_yJoy1, m_xJoy2, m_yJoy2, m_xJoy3, m_yJoy3;
 
 public:
-	Window(std::string title, int width, int height);
+	Window(std::string title, int width, int height, int antiAliasingValue);
 	virtual ~Window();
 
 	void Clear() const;
@@ -56,6 +57,7 @@ public:
 	inline std::string GetTitle() const { return m_Title; }
 	inline std::string GetOpenGLVersion() const { return std::string((const char*)glGetString(GL_VERSION)); }
 	inline std::string GetFPSString() const { return std::to_string(m_FPS); }
+	inline std::string GetAntiAliasingValue() const { return std::to_string(m_AntiAliasingValue); }
 
 	bool IsKeyPressed(unsigned int keycode) const;
 	bool IsMouseButtonPressed(unsigned int button) const;

@@ -4,7 +4,7 @@ using namespace GEAR;
 using namespace GRAPHICS;
 using namespace ARM;
 
-Light::Light(int type, const ARM::Vec3& pos_dir, const ARM::Vec4& colour, Shader& shader)
+Light::Light(int type, const ARM::Vec3& pos_dir, const ARM::Vec4& colour, const Shader& shader)
 	:m_Type(type), m_PosDir(pos_dir), m_Colour(colour), m_Shader(shader)
 {
 	if (m_Type == GEAR_LIGHT_POINT)

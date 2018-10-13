@@ -214,6 +214,8 @@
     <None Include="res\shaders\cube.vert" />
     <None Include="res\shaders\font.frag" />
     <None Include="res\shaders\font.vert" />
+    <None Include="res\shaders\pbr.frag" />
+    <None Include="res\shaders\pbr.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

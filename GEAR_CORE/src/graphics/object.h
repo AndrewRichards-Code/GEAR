@@ -21,11 +21,13 @@ private:
 	std::vector<float> m_TextCoords;
 	std::vector<float> m_Normals;
 	std::vector<unsigned int> m_Indices;
+	std::vector<float> m_Colours;
 
 	std::shared_ptr<VertexArray> m_VAO;
 	std::shared_ptr<IndexBuffer> m_IBO;
 	const Shader& m_Shader;
-	const Texture& m_Texture;
+	const Texture& m_Texture = Texture("res/gear_core/GEAR_logo_square.png");
+	ARM::Vec4 m_Colour{ 0.0f, 0.0f, 0.0f, 0.0f };
 
 	ARM::Mat4 m_ModlMatrix;
 
@@ -48,6 +50,7 @@ private:
 
 public:
 	Object(const char* objFilePath, const Shader& shader, const Texture& texture, const ARM::Mat4& modl);
+	Object(const char* objFilePath, const Shader& shader, const ARM::Vec4& colour, const ARM::Mat4& modl);
 	Object(const char* objFilePath, const Shader& shader, const Texture& texture, const ARM::Vec3& position, const ARM::Vec2& size); //Doesn't fill the VAO or IBO.
 	~Object();
 
