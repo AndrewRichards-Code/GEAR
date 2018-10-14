@@ -21,6 +21,21 @@
 	using namespace INPUT;
 	using namespace ARM;
 
+void AudioThread()
+{
+#if _DEBUG
+	std::cout << "GEAR: AudioThread started. Thread ID: " << std::this_thread::get_id() << std::endl;
+#endif
+
+	AudioSource music("res/wav/Rainbow Road.wav", Vec3(0, 0, 0), Vec3(0, 0, 1));
+	music.DefineConeParameters(0.0f, 10.0, 45.0);
+	music.Loop();
+	while (true)
+	{
+		music.Stream();
+	}
+}
+
 int main()
 {
 	Window window("GEAR", 1280, 720, 16);
@@ -69,7 +84,7 @@ int main()
 	Font testFont2(window.GetOpenGLVersion(),								 "res/font/consola/consola.ttf", 75, Vec2(10.0f, 690.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
 	Font testFont3("MSAA: " + window.GetAntiAliasingValue() + "x",			 "res/font/consola/consola.ttf", 75, Vec2(10.0f, 680.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
 	Font testFont4("Anisotrophic: " + Texture::GetAnisotrophicValue() + "x", "res/font/consola/consola.ttf", 75, Vec2(10.0f, 670.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont5("FPS: " + window.GetFPSString<int>(),							 "res/font/consola/consola.ttf", 75, Vec2(10.0f, 660.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont5("FPS: " + window.GetFPSString<int>(),					 "res/font/consola/consola.ttf", 75, Vec2(10.0f, 660.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
 
 	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, 1.0f, 0.0f));
 	cam_main.DefineProjection((float)DegToRad(90), window.GetRatio(), 0.5f, 50.0f);
@@ -79,9 +94,6 @@ int main()
 	light_main.Ambient(0.6f);
 
 	Listener listener_main(cam_main);
-	AudioSource music("res/wav/Rainbow Road.wav", Vec3(0, 0, 0), Vec3(0, 0, 1));
-	music.DefineConeParameters(0.0f, 10.0, 45.0);
-	music.Loop();
 
 	BatchRenderer2D br2d;
 	Renderer renderer;
@@ -144,17 +156,16 @@ int main()
 		}
 	}
 
+	std::thread AudioThread(AudioThread);
 	while (!window.Closed())
 	{
 		window.Clear();
 		window.CalculateFPS();
 		shader.Enable();
 		glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
-		music.Stream();
-
-
+		
 		//Joystick Input
-		/*if(main_input.m_JoyStickPresent)
+		if(main_input.m_JoyStickPresent)
 		{
 			main_input.Update();
 			if (main_input.m_Axis[0] > 0.1)
@@ -175,18 +186,53 @@ int main()
 				last_pos_y = pos_y;
 				initMouse = false;
 			}
-		}*/
+
+			double offset_pos_x = pos_x - last_pos_x;
+			double offset_pos_y = -pos_y + last_pos_y;
+			last_pos_x = pos_x;
+			last_pos_y = pos_y;
+			yaw += 2 * offset_pos_x;
+			pitch += offset_pos_y;
+			if (pitch > pi / 2)
+				pitch = pi / 2;
+			if (pitch < -pi / 2)
+				pitch = -pi / 2;
+		}
 		
 		//Mouse and Keyboard Input
-		
-		if (window.IsKeyPressed(GLFW_KEY_D))
-			cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
-		if (window.IsKeyPressed(GLFW_KEY_A))
-			cam_main.m_Position = cam_main.m_Position + Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
-		if (window.IsKeyPressed(GLFW_KEY_S))
-			cam_main.m_Position = cam_main.m_Position - cam_main.m_Forward * 2 * increment;
-		if (window.IsKeyPressed(GLFW_KEY_W))
-			cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward * 2 * increment;
+		else {
+			if (window.IsKeyPressed(GLFW_KEY_D))
+				cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
+			if (window.IsKeyPressed(GLFW_KEY_A))
+				cam_main.m_Position = cam_main.m_Position + Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
+			if (window.IsKeyPressed(GLFW_KEY_S))
+				cam_main.m_Position = cam_main.m_Position - cam_main.m_Forward * 2 * increment;
+			if (window.IsKeyPressed(GLFW_KEY_W))
+				cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward * 2 * increment;
+
+
+			window.GetMousePosition(pos_x, pos_y);
+
+			if (initMouse || window.IsMouseButtonPressed(GLFW_MOUSE_BUTTON_MIDDLE))
+			{
+				last_pos_x = pos_x;
+				last_pos_y = pos_y;
+				initMouse = false;
+			}
+
+			double offset_pos_x = pos_x - last_pos_x;
+			double offset_pos_y = -pos_y + last_pos_y;
+			last_pos_x = pos_x;
+			last_pos_y = pos_y;
+			offset_pos_x *= increment * increment;
+			offset_pos_y *= increment * increment;
+			yaw += 2 * offset_pos_x;
+			pitch += offset_pos_y;
+			if (pitch > pi / 2)
+				pitch = pi / 2;
+			if (pitch < -pi / 2)
+				pitch = -pi / 2;
+		}
 
 		if (window.IsKeyPressed(GLFW_KEY_L))
 			light_main.m_PosDir.x = light_main.m_PosDir.x + increment;
@@ -204,29 +250,7 @@ int main()
 		light_main.Point();
 		cube.SetUniformModlMatrix(Mat4::Translation(light_main.m_PosDir) * Mat4::Scale(Vec3(0.1f, 0.1f, 0.1f)));
 
-		window.GetMousePosition(pos_x, pos_y);
-
 		//Camera Update
-		if (initMouse || window.IsMouseButtonPressed(GLFW_MOUSE_BUTTON_MIDDLE))
-		{
-			last_pos_x = pos_x;
-			last_pos_y = pos_y;
-			initMouse = false;
-		}
-		
-		double offset_pos_x = pos_x - last_pos_x;
-		double offset_pos_y = -pos_y + last_pos_y;
-		last_pos_x = pos_x;
-		last_pos_y = pos_y;
-		offset_pos_x *= increment * increment;
-		offset_pos_y *= increment * increment;
-		yaw += 2 * offset_pos_x;
-		pitch += offset_pos_y;
-		if (pitch > pi / 2)
-			pitch = pi / 2;
-		if (pitch < -pi / 2)
-			pitch = -pi / 2;
-
 		cam_main.UpdateCameraPosition();
 		cam_main.CalcuateLookAround(yaw, pitch, roll, true);
 		cam_main.m_Position.y = 1.0f;
@@ -289,4 +313,6 @@ int main()
 		
 		window.Update();
 	}
+	if (AudioThread.joinable() == true)
+			AudioThread.join();
 }
