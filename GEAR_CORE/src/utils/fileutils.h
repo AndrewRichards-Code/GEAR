@@ -297,7 +297,7 @@ public:
 	{
 		if (!input.m_BufferQueue.empty())
 		{
-			std::ifstream stream(input.m_FilePath, std::ios::binary);
+			std::ifstream stream(input.m_FilePath, std::ios::binary); //TODO: Open the file once, not on every buffer allocation.
 			stream.seekg(input.m_BufferQueue.front(), std::ios_base::beg);
 			switch (input.m_NextBuffer)
 			{

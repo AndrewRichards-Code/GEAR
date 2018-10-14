@@ -21,11 +21,11 @@
 	using namespace INPUT;
 	using namespace ARM;
 
-	int main()
-	{
-		Window window("GEAR", 1280, 720, 16);
-		//window.Fullscreen();
-		//window.UpdateVSync(false);
+int main()
+{
+	Window window("GEAR", 1280, 720, 16);
+	window.Fullscreen();
+	//window.UpdateVSync(false);
 
 #if _DEBUG
 		DebugOpenGL debug;
@@ -33,6 +33,7 @@
 
 	Shader shader("res/shaders/basic.vert", "res/shaders/basic.frag");
 	shader.SetLighting(GEAR_CALC_LIGHT_DIFFUSE + GEAR_CALC_LIGHT_SPECULAR + GEAR_CALC_LIGHT_AMBIENT);
+	
 	Shader shaderCube("res/shaders/cube.vert", "res/shaders/cube.frag");
 	//Shader shaderPBR("res/shaders/pbr.vert", "res/shaders/pbr.frag");
 	
@@ -68,6 +69,7 @@
 	Font testFont2(window.GetOpenGLVersion(),								 "res/font/consola/consola.ttf", 75, Vec2(10.0f, 690.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
 	Font testFont3("MSAA: " + window.GetAntiAliasingValue() + "x",			 "res/font/consola/consola.ttf", 75, Vec2(10.0f, 680.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
 	Font testFont4("Anisotrophic: " + Texture::GetAnisotrophicValue() + "x", "res/font/consola/consola.ttf", 75, Vec2(10.0f, 670.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont5("FPS: " + window.GetFPSString<int>(),							 "res/font/consola/consola.ttf", 75, Vec2(10.0f, 660.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
 
 	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, 1.0f, 0.0f));
 	cam_main.DefineProjection((float)DegToRad(90), window.GetRatio(), 0.5f, 50.0f);
@@ -94,8 +96,10 @@
 	double last_pos_x = window.GetWidth() / 2.0;
 	double last_pos_y = window.GetHeight() / 2.0;
 	bool initMouse = true;
-
 	float increment = 0.05f;
+
+	bool showDebug = false;
+	int fpsTime = 0;
 
 	//Logo Splashscreen
 	{
@@ -147,6 +151,7 @@
 		shader.Enable();
 		glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
 		music.Stream();
+
 
 		//Joystick Input
 		/*if(main_input.m_JoyStickPresent)
@@ -226,7 +231,7 @@
 		cam_main.CalcuateLookAround(yaw, pitch, roll, true);
 		cam_main.m_Position.y = 1.0f;
 		cam_main.DefineView();
-		cam_main.DefineProjection(DegToRad(90), window.GetRatio(), 0.5f, 1000.0f);
+		cam_main.DefineProjection(DegToRad(90), window.GetRatio(), 0.5f, 1500.0f);
 		cam_main.UpdateProjectionAndViewInOtherShader(shaderCube);
 		listener_main.UpdateListenerPosVelOri();
 
@@ -251,11 +256,36 @@
 		br2d.CloseMapBuffer();
 		br2d.Flush();
 		
-		//Severe performance with texture, likely due to no font atlas. 
-		testFont1.RenderText();
-		testFont2.RenderText();
-		testFont3.RenderText();
-		testFont4.RenderText();
+		fpsTime++;
+		if (window.IsKeyPressed(GLFW_KEY_F3))
+		{
+			switch (showDebug)
+			{
+			case true:
+				showDebug = false;
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+				break;
+
+			case false:
+				showDebug = true;
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+				break;
+			}
+		}
+
+		if (showDebug == true)
+		{
+			if (fpsTime % 60 == 0)
+			{
+				testFont5.UpdateText("FPS: " + window.GetFPSString<int>());
+			}
+			//Severe performance with texture, likely due to no font atlas. 
+			testFont1.RenderText();
+			testFont2.RenderText();
+			testFont3.RenderText();
+			testFont4.RenderText();
+			testFont5.RenderText();
+		}
 		
 		window.Update();
 	}

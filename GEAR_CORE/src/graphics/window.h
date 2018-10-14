@@ -56,7 +56,8 @@ public:
 	inline float GetRatio() const { return ((float)m_Width / (float)m_Height); }
 	inline std::string GetTitle() const { return m_Title; }
 	inline std::string GetOpenGLVersion() const { return std::string((const char*)glGetString(GL_VERSION)); }
-	inline std::string GetFPSString() const { return std::to_string(m_FPS); }
+	template<typename T>
+	inline std::string GetFPSString() const { return std::to_string(static_cast<T>(m_FPS)); }
 	inline std::string GetAntiAliasingValue() const { return std::to_string(m_AntiAliasingValue); }
 
 	bool IsKeyPressed(unsigned int keycode) const;

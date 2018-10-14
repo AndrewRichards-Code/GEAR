@@ -82,6 +82,7 @@ void Font::RenderText()
 void Font::UpdateText(const std::string & input)
 {
 	m_Text = input;
+	m_GlyphBuffer.clear();
 
 	std::string::const_iterator it;
 	for (it = m_Text.begin(); it != m_Text.end(); it++)
