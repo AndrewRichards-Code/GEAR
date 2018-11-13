@@ -1,25 +1,12 @@
-#include "src/graphics/window.h"
-#include "src/graphics/renderer/renderer.h"
-#include "src/graphics/renderer/batchrenderer2d.h"
-#include "src/graphics/texture.h"
-#include "src/maths/ARMLib.h"
-#include "src/graphics/camera.h"
-#include "src/input/inputmanager.h"
-#include "src/graphics/light.h"
-#include "src/graphics/font.h"
-#include "src/audio/listener.h"
-#include "src/audio/audiosource.h"
+#include "src/gear.h"
 
+#define GEAR_USE_FBO 0
 
-#if _DEBUG
-#include "src/graphics/debugopengl.h"
-#endif
-
-	using namespace GEAR;
-	using namespace GRAPHICS;
-	using namespace AUDIO;
-	using namespace INPUT;
-	using namespace ARM;
+using namespace GEAR;
+using namespace GRAPHICS;
+using namespace AUDIO;
+using namespace INPUT;
+using namespace ARM;
 
 void AudioThread()
 {
@@ -27,7 +14,7 @@ void AudioThread()
 	std::cout << "GEAR: AudioThread started. Thread ID: " << std::this_thread::get_id() << std::endl;
 #endif
 
-	AudioSource music("res/wav/Rainbow Road.wav", Vec3(0, 0, 0), Vec3(0, 0, 1));
+	AudioSource music("res/wav/Air_BWV1068.wav", Vec3(0, 0, 0), Vec3(0, 0, 1));
 	music.DefineConeParameters(0.0f, 10.0, 45.0);
 	music.Loop();
 	while (true)
@@ -39,11 +26,11 @@ void AudioThread()
 int main()
 {
 	Window window("GEAR", 1280, 720, 16);
-	window.Fullscreen();
-	//window.UpdateVSync(false);
+	//window.Fullscreen();
+	window.UpdateVSync(true);
 
 #if _DEBUG
-		DebugOpenGL debug;
+	DebugOpenGL debug;
 #endif
 
 	Shader shader("res/shaders/basic.vert", "res/shaders/basic.frag");
@@ -76,22 +63,22 @@ int main()
 	Object floor("res/obj/quad.obj", shader, texture4, Mat4::Translation(Vec3(0.0f, -2.0f, -2.0f)) * Mat4::Rotation(pi / 2, Vec3(1, 0, 0)) * Mat4::Scale(Vec3(500, 500, 1)));
 
 	//For BatchRender2D
-	Object quad3("res/obj/quad.obj", shader, texture, Vec3(0.0f, 0.0f, -2.0f), Vec2(0.5f, 0.5f));
-	Object quad4("res/obj/quad.obj", shader, texture2, Vec3(-1.5f, 0.0f, -2.0f), Vec2(0.5f, 0.5f));
-	Object quad5("res/obj/quad.obj", shader, texture3, Vec3(1.5f, 0.0f, -2.0f), Vec2(0.5f, 0.5f));
+	Object quad3("res/obj/quad.obj", shader, texture, Vec3(0.0f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
+	Object quad4("res/obj/quad.obj", shader, texture2, Vec3(1.5f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
+	Object quad5("res/obj/quad.obj", shader, texture3, Vec3(-1.5f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
 
-	Font testFont1(window.GetTitle(),										 "res/font/consola/consola.ttf", 75, Vec2(10.0f, 700.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont2(window.GetOpenGLVersion(),								 "res/font/consola/consola.ttf", 75, Vec2(10.0f, 690.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont3("MSAA: " + window.GetAntiAliasingValue() + "x",			 "res/font/consola/consola.ttf", 75, Vec2(10.0f, 680.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont4("Anisotrophic: " + Texture::GetAnisotrophicValue() + "x", "res/font/consola/consola.ttf", 75, Vec2(10.0f, 670.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont5("FPS: " + window.GetFPSString<int>(),					 "res/font/consola/consola.ttf", 75, Vec2(10.0f, 660.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont1(window.GetTitle(),										                                        "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 700.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont2(window.GetOpenGLVersion(),								                                        "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 690.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont3("Resolution: " + std::to_string(window.GetWidth()) + " x " + std::to_string(window.GetHeight()), "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 680.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont4("MSAA: " + window.GetAntiAliasingValue() + "x",													"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 670.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont5("Anisotrophic: " + Texture::GetAnisotrophicValue() + "x",										"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 660.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont6("FPS: " + window.GetFPSString<int>(),					                                        "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 650.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
 
 	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, 1.0f, 0.0f));
-	cam_main.DefineProjection((float)DegToRad(90), window.GetRatio(), 0.5f, 50.0f);
 
-	Light light_main(GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), shader);
+	Light light_main(GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 10.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), shader);
 	light_main.Specular(64.0f, 10.0f);
-	light_main.Ambient(0.6f);
+	light_main.Ambient(0.5f);
 
 	Listener listener_main(cam_main);
 
@@ -99,6 +86,7 @@ int main()
 	Renderer renderer;
 	
 	InputManager main_input(GEAR_INPUT_JOYSTICK_CONTROLLER);
+	FrameBuffer fbo(window, shader);
 
 	double yaw = 0;
 	double pitch = 0;
@@ -159,15 +147,20 @@ int main()
 	std::thread AudioThread(AudioThread);
 	while (!window.Closed())
 	{
+#if GEAR_USE_FBO
+		fbo.Bind();
+		fbo.UpdateFrameBufferSize();
+#endif
 		window.Clear();
 		window.CalculateFPS();
-		shader.Enable();
-		glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 		
 		//Joystick Input
+		main_input.Update();
 		if(main_input.m_JoyStickPresent)
 		{
-			main_input.Update();
 			if (main_input.m_Axis[0] > 0.1)
 				cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
 			if (main_input.m_Axis[0] < -0.1)
@@ -177,8 +170,8 @@ int main()
 			if (main_input.m_Axis[1] > 0.1)
 				cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward * 2 * increment;
 			
-			pos_x = main_input.m_Axis[2];
-			pos_y = main_input.m_Axis[3];
+			pos_x += (main_input.m_Axis[2] * increment);
+			pos_y += (main_input.m_Axis[3] * increment);
 
 			if (initMouse || main_input.m_Button[0])
 			{
@@ -251,16 +244,17 @@ int main()
 		cube.SetUniformModlMatrix(Mat4::Translation(light_main.m_PosDir) * Mat4::Scale(Vec3(0.1f, 0.1f, 0.1f)));
 
 		//Camera Update
+		cam_main.DefineProjection(DegToRad(90), window.GetRatio(), 0.5f, 1500.0f);
 		cam_main.UpdateCameraPosition();
 		cam_main.CalcuateLookAround(yaw, pitch, roll, true);
 		cam_main.m_Position.y = 1.0f;
 		cam_main.DefineView();
-		cam_main.DefineProjection(DegToRad(90), window.GetRatio(), 0.5f, 1500.0f);
 		cam_main.UpdateProjectionAndViewInOtherShader(shaderCube);
 		listener_main.UpdateListenerPosVelOri();
 
 
 		//Main Render
+		//renderer.AddLight(&light_main);
 		stall.SetUniformModlMatrix(Mat4::Translation(Vec3(5.0f, -2.0f, -5.0f)) * Mat4::Rotation(pi, Vec3(0, 1, 0)));
 		renderer.Draw(&stall);
 		stall.SetUniformModlMatrix(Mat4::Translation(Vec3(-5.0f, -2.0f, -5.0f)) * Mat4::Rotation(pi, Vec3(0, 1, 0)));
@@ -273,6 +267,7 @@ int main()
 		renderer.Flush();
 		renderer.Draw(&skybox);
 		
+		//br2d.CopyLights(renderer.GetLights());
 		br2d.OpenMapBuffer();
 		br2d.Submit(&quad3);
 		br2d.Submit(&quad4);
@@ -296,12 +291,13 @@ int main()
 				break;
 			}
 		}
-
+				
 		if (showDebug == true)
 		{
 			if (fpsTime % 60 == 0)
 			{
-				testFont5.UpdateText("FPS: " + window.GetFPSString<int>());
+				testFont3.UpdateText("Resolution: " + std::to_string(window.GetWidth()) + " x " + std::to_string(window.GetHeight()));
+				testFont6.UpdateText("FPS: " + window.GetFPSString<int>());
 			}
 			//Severe performance with texture, likely due to no font atlas. 
 			testFont1.RenderText();
@@ -309,8 +305,17 @@ int main()
 			testFont3.RenderText();
 			testFont4.RenderText();
 			testFont5.RenderText();
+			testFont6.RenderText();
 		}
-		
+
+#if GEAR_USE_FBO
+		//FBO
+		fbo.Unbind();
+		window.Clear();
+		renderer.Draw(&fbo.UseFrameBufferAsObject({ 0.75f, 0.75f, 0.0f }, { 0.25f, 0.25f, 1.0f }));
+		renderer.Draw(&fbo.UseFrameBufferAsObject({ 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }));
+#endif
+
 		window.Update();
 	}
 	if (AudioThread.joinable() == true)

@@ -81,6 +81,9 @@
     <ClCompile Include="src\audio\audiosource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\buffer\framebuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\maths\matrix\Mat2.h">
@@ -179,6 +182,12 @@
     <ClInclude Include="src\input\inputmanager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\graphics\buffer\framebuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gear.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\basic.frag" />
@@ -189,5 +198,7 @@
     <None Include="res\shaders\cube.vert" />
     <None Include="res\shaders\pbr.frag" />
     <None Include="res\shaders\pbr.vert" />
+    <None Include="res\shaders\depth.vert" />
+    <None Include="res\shaders\depth.frag" />
   </ItemGroup>
 </Project>

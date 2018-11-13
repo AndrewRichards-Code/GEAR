@@ -147,7 +147,7 @@ void BatchRenderer2D::Flush()
 	}
 	
 	Object::SetTextureArray(m_Object->GetShader());
-
+	m_Object->SetUniformModlMatrix();
 	m_Object->GetShader().Enable();
 	glBindVertexArray(m_VAO);
 	m_IBO->Bind();
@@ -155,6 +155,19 @@ void BatchRenderer2D::Flush()
 	m_IBO->Unbind();
 	glBindVertexArray(0);
 	m_Object->GetShader().Disable();
+	
+	//DepthRender
+	/*for (int i = 0; i < (signed int)m_Lights.size(); i++)
+	{
+		m_Lights[i]->GetDepthShader().Enable();
+		m_Lights[i]->CalculateLightMVP();
+		glBindVertexArray(m_VAO);
+		m_IBO->Bind();
+		glDrawElements(GL_TRIANGLES, m_IndexCount, GL_UNSIGNED_INT, nullptr);
+		m_IBO->Unbind();
+		glBindVertexArray(0);
+		m_Lights[i]->GetDepthShader().Disable();
+	}*/
 
 	m_IndexCount = 0;
 }

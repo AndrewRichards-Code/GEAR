@@ -33,6 +33,7 @@ public:
 	void CloseMapBuffer();
 	void Submit(const Object* obj) override;
 	void Flush() override;
+	void CopyLights(const std::vector<Light*> lights) { std::copy(lights.begin(), lights.end(), std::back_inserter(m_Lights)); }
 
 	BatchRenderer2D();
 	~BatchRenderer2D();

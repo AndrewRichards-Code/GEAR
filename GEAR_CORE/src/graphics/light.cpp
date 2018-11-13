@@ -15,6 +15,7 @@ Light::Light(int type, const ARM::Vec3& pos_dir, const ARM::Vec4& colour, const 
 		Spot();
 	if (m_Type == GEAR_LIGHT_AREA)
 		Area();
+	m_LightCam.DefineProjection(-10, 10, -10, 10, -10, 20);
 }
 
 Light::~Light(){}
@@ -49,4 +50,11 @@ void Light::Spot() const
 }
 void Light::Area() const
 {
+}
+
+void Light::CalculateLightMVP()
+{
+	m_LightCam.UpdateCameraPosition();
+	m_LightCam.CalcuateLookAround(0, 0, 0, true);
+	m_LightCam.DefineView();
 }

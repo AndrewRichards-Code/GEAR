@@ -6,6 +6,7 @@
 #include "../buffer/indexbuffer.h"
 #include "../shader.h"
 #include "../object.h"
+#include "../light.h"
 #include <deque>
 
 namespace GEAR {
@@ -14,7 +15,12 @@ class Renderer
 {
 private:
 	std::deque<const Object*> m_RenderQueue;
+
+protected:
+	std::vector<Light*> m_Lights;
+
 public:
+	void AddLight(Light* light);
 	virtual void Submit(const Object* obj);
 	virtual void Flush();
 
@@ -22,6 +28,8 @@ public:
 	void Draw(const Object* obj) const;
 
 	void Clear() const;
+
+	inline std::vector<Light*> GetLights() const { return m_Lights; }
 };
 }
 }
