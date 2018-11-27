@@ -120,6 +120,9 @@ void AudioSource::Play()
 {
 	int playing;
 	alGetSourcei(m_SourceID, AL_SOURCE_STATE, &playing);
+	
+	if (playing != AL_PLAYING)
+		alSourcePlay(m_SourceID);
 
 	/*switch (playing)
 	{
@@ -128,8 +131,6 @@ void AudioSource::Play()
 	case 0x1013: std::cout << "AL_PAUSED"  << std::endl; break;
 	case 0x1014: std::cout << "AL_STOPPED" << std::endl; break;
 	}*/
-	if (playing != AL_PLAYING)
-		alSourcePlay(m_SourceID);
 }
 
 void AudioSource::Stop()

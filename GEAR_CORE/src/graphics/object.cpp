@@ -41,7 +41,13 @@ Object::Object(const char* objFilePath, const Shader& shader, const ARM::Vec4& c
 Object::Object(const char* objFilePath, const Shader& shader, const Texture& texture, const Vec3& position, const Vec2& size)
 	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Texture(texture), m_Position(position), m_Size(size)
 {
-	m_ObjData = FileUtils::read_obj(m_ObjFilePath);
+	m_ObjData.m_Vertices = { Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0), Vec3(-1, 1, 0) };
+	m_ObjData.m_TexCoords = { Vec2(0, 0), Vec2(1, 0), Vec2(1, 1), Vec2(0, 1) };
+	m_ObjData.m_Normals = { Vec3(0, 0, 1) };
+	m_ObjData.m_VertIndices = { 0, 1, 2, 2, 3, 0 };
+	m_ObjData.m_TextIndices = { 0, 1, 2, 2, 3, 0 };
+	m_ObjData.m_NormIndices = { 0, 1, 2, 2, 3, 0 };
+	m_ObjData.m_UniqueVertices = { Vec3(0, 0, 0), Vec3(1, 1, 0), Vec3(2, 2, 0), Vec3(3, 3, 0) };
 
 	m_Vertices.reserve(m_ObjData.GetSizeVertices() * 3);
 	for (int i = 0; i < m_ObjData.GetSizeVertices(); i++)

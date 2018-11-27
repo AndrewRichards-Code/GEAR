@@ -25,8 +25,15 @@ void Shader::Disable() const
 
 void Shader::SetLighting(int types) const
 {
+	int diffuse, specular, ambient, emit;
+	diffuse = (types & 0x0000000f);
+	specular = (types & 0x000000f0) >> 4;
+	ambient = (types & 0x00000f00) >> 8;
+	emit = (types & 0x0000f000) >> 12;
+	int setLighting[] = { diffuse, specular, ambient, emit };
+	
 	Enable();
-	SetUniform<int>("u_SetLighting", { types });
+	SetUniformArray<int>("u_SetLighting", 1, 4, setLighting);
 	Disable();
 }
 

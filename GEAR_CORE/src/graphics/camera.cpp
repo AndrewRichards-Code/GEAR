@@ -46,24 +46,23 @@ void Camera::CalcuateLookAround(double yaw, double pitch, double roll, bool inve
 void Camera::DefineView()
 {
 	//m_ViewMatrix = CameraMatrix(m_Position, m_Position + m_Forward, m_Up); TODO: Corect the lookAt matrix or Quaternions
-	m_ViewMatrix =
+	m_Matrices.m_ViewMatrix =
 		Mat4::Rotation(m_Pitch, m_xAxis) *
 		Mat4::Rotation(m_Yaw, m_yAxis) *
 		Mat4::Rotation(m_Roll, m_zAxis) *
 		Mat4::Translation(Vec3(-m_Position.x, -m_Position.y, -m_Position.z));
+	m_Matrices.m_ViewMatrix.Transpose();
 
-	m_Shader.Enable();
-	m_Shader.SetUniformMatrix<4>("u_View", 1, GL_TRUE, m_ViewMatrix.a);
-	m_Shader.Disable();
+	m_MatricesUBO.SubDataBind(&m_Matrices.m_ViewMatrix.a, sizeof(Mat4), offsetof(Matrices, m_ViewMatrix));
 }
 void Camera::DefineProjection(float left, float right, float bottom, float top, float near, float far)
 {
 	if (m_ProjectionType == GEAR_CAMERA_ORTHOGRAPHIC)
 	{
-		m_ProjectionMatrix = Mat4::Orthographic(left, right, bottom, top, near, far);
-		m_Shader.Enable();
-		m_Shader.SetUniformMatrix<4>("u_Proj", 1, GL_TRUE, m_ProjectionMatrix.a);
-		m_Shader.Disable();
+		m_Matrices.m_ProjectionMatrix = Mat4::Orthographic(left, right, bottom, top, near, far);
+		m_Matrices.m_ProjectionMatrix.Transpose();
+
+		m_MatricesUBO.SubDataBind(&m_Matrices.m_ProjectionMatrix.a, sizeof(Mat4), offsetof(Matrices, m_ProjectionMatrix));
 	}
 	else
 	{
@@ -75,23 +74,17 @@ void Camera::DefineProjection(double fov, float aspectRatio, float zNear, float 
 {
 	if (m_ProjectionType == GEAR_CAMERA_PERSPECTIVE)
 	{
-		m_ProjectionMatrix = Mat4::Perspective(fov, aspectRatio, zNear, zFar);
+		m_Matrices.m_ProjectionMatrix = Mat4::Perspective(fov, aspectRatio, zNear, zFar);
+		m_Matrices.m_ProjectionMatrix.Transpose();
+
 		m_Shader.Enable();
-		m_Shader.SetUniformMatrix<4>("u_Proj", 1, GL_TRUE, m_ProjectionMatrix.a);
-		m_Shader.Disable();
+		m_MatricesUBO.SubDataBind(&m_Matrices.m_ProjectionMatrix.a, sizeof(Mat4), offsetof(Matrices, m_ProjectionMatrix));
 	}
 	else
 	{
 		std::cout << "ERROR: GEAR::GRAPHICS::Camera: The parameters for DefinieProjection() don't match the projection type." << std::endl;
 		throw;
 	}
-}
-void Camera::UpdateProjectionAndViewInOtherShader(const Shader& shader)
-{
-	shader.Enable();
-	shader.SetUniformMatrix<4>("u_Proj", 1, GL_TRUE, m_ProjectionMatrix.a);
-	shader.SetUniformMatrix<4>("u_View", 1, GL_TRUE, m_ViewMatrix.a);
-	shader.Disable();
 }
 
 //private:

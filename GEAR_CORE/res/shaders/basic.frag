@@ -15,11 +15,15 @@ in DATA
 
 uniform sampler2D u_Texture;
 uniform sampler2D u_Textures[32];
-uniform int u_SetLighting;
-uniform vec4 u_LightColour;
-uniform float u_ShineFactor;
-uniform float u_Reflectivity;
-uniform float u_AmbientFactor;
+uniform int u_SetLighting[4];
+
+layout(binding = 1) uniform LightParams
+{
+	vec4 u_LightColour;
+	float u_ShineFactor;
+	float u_Reflectivity;
+	float u_AmbientFactor;
+};
 
 //Functions
 vec4 diffuse = {0, 0, 0, 0};
@@ -33,14 +37,14 @@ void CalcLighting()
 	vec4 unitVertexToCamera = normalize(fs_in.v_VertexToCamera);
 	
 	//Diffuse
-	if(u_SetLighting & 0x0000000f)
+	if(u_SetLighting[0] == 1)
 	{
 		float diffuseLightFactor = max(dot(unitNormal, unitVertexToLight), 0.0); 
 		diffuse = diffuseLightFactor * u_LightColour;
 	}
 	
 	//Specular
-	if(u_SetLighting & 0x00000f0)
+	if(u_SetLighting[1] == 1)
 	{
 		vec4 lightDirection = unitVertexToLight;
 		vec4 reflecedLightDirection = reflect(-lightDirection, unitNormal);
@@ -50,14 +54,14 @@ void CalcLighting()
 	}
 
 	//Ambient
-	if(u_SetLighting & 0x0000f00)
+	if(u_SetLighting[2] == 1)
 	{
 		ambient = u_AmbientFactor * u_LightColour;
 	}
 
 	//Emit
 	vec4 emit = {0, 0, 0, 0};
-	if(u_SetLighting & 0x000f000)
+	if(u_SetLighting[3] == 1)
 	{}
 }
 

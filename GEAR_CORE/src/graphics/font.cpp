@@ -52,7 +52,7 @@ Font::Font(const std::string& text, const char* filepath, int fontHeight, const 
 		float height = ch.m_Size.y * scale;
 
 		m_GlyphBuffer.emplace_back(Object("res/obj/quad.obj", m_Shader, *ch.m_Texture, Vec3(pos_x, pos_y, 0.0f), Vec2(width, height)));
-		m_Position.x += (ch.m_Advance >> 6) * m_Window.GetRatio() * scale;
+		m_Position.x += (ch.m_Advance >> 6) * m_WindowRatio * scale;
 	}
 	
 	Mat4 proj = Mat4::Orthographic(0.0f, m_WindowWidth, 0.0f, m_WindowHeight, -1.0f, 1.0f);
@@ -71,11 +71,7 @@ void Font::RenderText()
 	}
 	m_FontRenderer.CloseMapBuffer();
 	
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	m_FontRenderer.Flush();
-	glDisable(GL_BLEND);
-
 	m_Position = m_InitPosition;
 }
 
@@ -95,7 +91,7 @@ void Font::UpdateText(const std::string & input)
 		float height = ch.m_Size.y * scale;
 
 		m_GlyphBuffer.emplace_back(Object("res/obj/quad.obj", m_Shader, *ch.m_Texture, Vec3(pos_x, pos_y, 0.0f), Vec2(width, height)));
-		m_Position.x += (ch.m_Advance >> 6) * m_Window.GetRatio() * scale;
+		m_Position.x += (ch.m_Advance >> 6) * m_WindowRatio * scale;
 	}
 }
 

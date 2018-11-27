@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "shader.h"
+#include "buffer/uniformbuffer.h"
 #include "../maths/ARMLib.h"
 
 #define GEAR_CAMERA_PERSPECTIVE 0
@@ -23,6 +24,8 @@ private:
 	const ARM::Vec3 m_xAxis = ARM::Vec3(1, 0, 0);
 	const ARM::Vec3 m_yAxis = ARM::Vec3(0, 1, 0);
 	const ARM::Vec3 m_zAxis = ARM::Vec3(0, 0, 1);
+	
+	UniformBuffer m_MatricesUBO = UniformBuffer(sizeof(Matrices), 0);
 
 public:
 	ARM::Vec3 m_Position;
@@ -30,10 +33,13 @@ public:
 	ARM::Vec3 m_Forward;
 	ARM::Vec3 m_Up;
 	ARM::Vec3 m_Right;
-	
-	ARM::Mat4 m_ProjectionMatrix;
-	ARM::Mat4 m_ViewMatrix;
-	
+
+	struct Matrices
+	{
+		ARM::Mat4 m_ProjectionMatrix;
+		ARM::Mat4 m_ViewMatrix;
+	} m_Matrices;
+		
 public:
 	Camera(int projType, const Shader& shader, const ARM::Vec3& position, const ARM::Vec3& forward, const ARM::Vec3 up);
 	~Camera();
@@ -44,7 +50,6 @@ public:
 	void DefineView();
 	void DefineProjection(double fov, float aspectRatio, float zNear, float zFar);
 	void DefineProjection(float left, float right, float bottom, float top, float near, float far);
-	void UpdateProjectionAndViewInOtherShader(const Shader& shader); //Call after updating camera public members
 
 private:
 	void CalculateRight();

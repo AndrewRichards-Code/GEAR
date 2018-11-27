@@ -8,8 +8,11 @@ out DATA
 	vec3 v_TextCoord;
 } vs_out;
 
-uniform mat4 u_Proj;
-uniform mat4 u_View;
+layout(binding = 0) uniform ubo
+{
+	mat4 u_Proj;
+	mat4 u_View;
+};
 uniform mat4 u_Modl;
 
 void main()

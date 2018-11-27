@@ -261,3 +261,5 @@ __pycache__/
 *.pyc
 /GEAR_CORE/res/font/consola
 /GEAR_CORE/res/wav/Rainbow Road.wav
+/Dependencies/FBX
+/GEAR_CORE/src/utils/fbxLoader.h

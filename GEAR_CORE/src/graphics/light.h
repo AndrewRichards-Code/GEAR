@@ -19,7 +19,16 @@ private:
 	ARM::Vec4 m_Colour;
 	const Shader& m_Shader;
 	const Shader m_DepthShader = Shader("res/shaders/depth.vert", "res/shaders/depth.frag");
-	Camera m_LightCam = Camera(GEAR_CAMERA_ORTHOGRAPHIC, m_DepthShader, m_PosDir, ARM::Vec3(0, 0, 1), ARM::Vec3(0, 1, 0));
+	//Camera m_LightCam = Camera(GEAR_CAMERA_ORTHOGRAPHIC, m_DepthShader, m_PosDir, ARM::Vec3(0, 0, 1), ARM::Vec3(0, 1, 0));
+
+	UniformBuffer m_LightParamsUBO = UniformBuffer(sizeof(LightParams), 1);
+	struct LightParams
+	{
+		ARM::Vec4 m_LightColour;
+		float m_ShineFactor;
+		float m_Reflectivity;
+		float m_AmbientFactor;
+	} m_LightParams;
 
 public:
 	ARM::Vec3 m_PosDir;

@@ -12,6 +12,7 @@ out DATA
 
 uniform mat4 u_Proj;
 
+
 void main()
 {
 	gl_Position = u_Proj * positions;

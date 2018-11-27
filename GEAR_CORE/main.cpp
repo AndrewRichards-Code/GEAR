@@ -1,4 +1,5 @@
 #include "src/gear.h"
+//#include "src/utils/fbxLoader.h"
 
 #define GEAR_USE_FBO 0
 
@@ -35,10 +36,10 @@ int main()
 
 	Shader shader("res/shaders/basic.vert", "res/shaders/basic.frag");
 	shader.SetLighting(GEAR_CALC_LIGHT_DIFFUSE + GEAR_CALC_LIGHT_SPECULAR + GEAR_CALC_LIGHT_AMBIENT);
-	
+
 	Shader shaderCube("res/shaders/cube.vert", "res/shaders/cube.frag");
-	//Shader shaderPBR("res/shaders/pbr.vert", "res/shaders/pbr.frag");
-	
+	Shader shaderPBR("res/shaders/pbr.vert", "res/shaders/pbr.frag");
+
 	Texture::EnableDisableAniostrophicFilting(16.0f);
 	Texture::EnableDisableMipMapping();
 	Texture texture("res/img/stallTexture.png");
@@ -57,28 +58,37 @@ int main()
 
 	Object skybox("res/obj/cube.obj", shaderCube, textureSB, Mat4::Scale(Vec3(500, 500, 500)));
 	Object cube("res/obj/cube.obj", shader, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Mat4::Identity());
-	Object stall("res/obj/stall.obj", shader, texture, Mat4::Identity());
+	Object stall("res/obj/stall.obj", shaderPBR, texture, Mat4::Identity());
 	Object quad1("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(1.5f, 0.0f, -2.0f)));
 	Object quad2("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(-1.5f, 0.0f, -2.0f)));
 	Object floor("res/obj/quad.obj", shader, texture4, Mat4::Translation(Vec3(0.0f, -2.0f, -2.0f)) * Mat4::Rotation(pi / 2, Vec3(1, 0, 0)) * Mat4::Scale(Vec3(500, 500, 1)));
+	//Object sword("res/obj/KagemitsuG4.obj", shader, texture3, Mat4::Translation(Vec3(0, 1, 0)));
 
 	//For BatchRender2D
 	Object quad3("res/obj/quad.obj", shader, texture, Vec3(0.0f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
 	Object quad4("res/obj/quad.obj", shader, texture2, Vec3(1.5f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
 	Object quad5("res/obj/quad.obj", shader, texture3, Vec3(-1.5f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
 
-	Font testFont1(window.GetTitle(),										                                        "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 700.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont2(window.GetOpenGLVersion(),								                                        "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 690.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont1(window.GetTitle(),																				"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 700.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont2(window.GetOpenGLVersion(),																		"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 690.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
 	Font testFont3("Resolution: " + std::to_string(window.GetWidth()) + " x " + std::to_string(window.GetHeight()), "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 680.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
 	Font testFont4("MSAA: " + window.GetAntiAliasingValue() + "x",													"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 670.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
 	Font testFont5("Anisotrophic: " + Texture::GetAnisotrophicValue() + "x",										"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 660.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont6("FPS: " + window.GetFPSString<int>(),					                                        "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 650.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont6("FPS: " + window.GetFPSString<int>(),															"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 650.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
 
 	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, 1.0f, 0.0f));
 
 	Light light_main(GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 10.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), shader);
 	light_main.Specular(64.0f, 10.0f);
-	light_main.Ambient(0.5f);
+	light_main.Ambient(0.0f);
+
+	shaderPBR.Enable();
+	shaderPBR.SetUniform<float>("u_LightColour", {1.0f, 1.0f, 1.0f, 1.0f});
+	shaderPBR.SetUniform<float>("u_F0", { 0.99f, 0.98f, 0.96f }); //Base reflectivity
+	shaderPBR.SetUniform<float>("u_Albedo", { 0.0f, 0.0f, 0.0f }); //Diffuse lighting
+	shaderPBR.SetUniform<float>("u_Metallic", { 1.0f });
+	shaderPBR.SetUniform<float>("u_Roughness", { 0.0f }); //Num of Micro-facets
+	shaderPBR.SetUniform<float>("u_AO", { 0.00f }); //Micro-facets shadowing
 
 	Listener listener_main(cam_main);
 
@@ -87,6 +97,8 @@ int main()
 	
 	InputManager main_input(GEAR_INPUT_JOYSTICK_CONTROLLER);
 	FrameBuffer fbo(window, shader);
+
+	//FBX::read_fbx("res/obj/KagemitsuG4.fbx");
 
 	double yaw = 0;
 	double pitch = 0;
@@ -103,14 +115,11 @@ int main()
 
 	//Logo Splashscreen
 	{
-		Shader logo_shader("res/shaders/basic.vert", "res/shaders/basic.frag");
-		logo_shader.SetLighting(GEAR_CALC_LIGHT_AMBIENT);
-
 		Texture logo_texture("res/gear_core/GEAR_logo_square.png");
-		Object logo("res/obj/quad.obj", logo_shader, logo_texture, Mat4::Translation(Vec3(0.0f, 0.0f, 0.0f)));
+		Object logo("res/obj/quad.obj", shader, logo_texture, Mat4::Translation(Vec3(0.0f, 0.0f, -1.0f)));
 
-		Camera logo_cam(GEAR_CAMERA_ORTHOGRAPHIC, logo_shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, 1.0f, 0.0f));
-		Light logo_light(GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), logo_shader);
+		//Camera logo_cam(GEAR_CAMERA_ORTHOGRAPHIC, logo_shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, 1.0f, 0.0f));
+		//Light logo_light(GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), logo_shader);
 		
 
 		int time = 0;
@@ -120,22 +129,21 @@ int main()
 		{
 			window.Clear();
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-			logo_shader.Enable();
 			if (time < 60)
 			{
 				ambient += increment; 
-				logo_shader.SetUniform<float>("u_AmbientFactor", { ambient });
+				light_main.Ambient(ambient);
 			}
 			else if (time > 240)
 			{
 				ambient -= increment;
-				logo_shader.SetUniform<float>("u_AmbientFactor", { ambient });
+				light_main.Ambient(ambient);
 			}
 			else
-				logo_shader.SetUniform<float>("u_AmbientFactor", { 1.0f });
+				light_main.Ambient(1.0f);
 			
-			logo_cam.DefineProjection(-window.GetRatio(), window.GetRatio(), -1.0f, 1.0f, -1.0f, 1.0f);
-			logo_cam.DefineView();
+			cam_main.DefineProjection(DegToRad(90), window.GetRatio(), 0.01f, 2.0f);
+			cam_main.DefineView();
 
 			renderer.Draw(&logo);
 			window.Update();
@@ -143,8 +151,11 @@ int main()
 			time++;
 		}
 	}
-
+	
 	std::thread AudioThread(AudioThread);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
 	while (!window.Closed())
 	{
 #if GEAR_USE_FBO
@@ -153,9 +164,8 @@ int main()
 #endif
 		window.Clear();
 		window.CalculateFPS();
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+		light_main.Ambient(0.1f);
 		
 		//Joystick Input
 		main_input.Update();
@@ -241,15 +251,16 @@ int main()
 			light_main.m_PosDir.z = light_main.m_PosDir.z - increment;
 
 		light_main.Point();
+		shaderPBR.Enable();
+		shaderPBR.SetUniform<float>("u_LightPosition", { light_main.m_PosDir.x , light_main.m_PosDir.y , light_main.m_PosDir.z });
 		cube.SetUniformModlMatrix(Mat4::Translation(light_main.m_PosDir) * Mat4::Scale(Vec3(0.1f, 0.1f, 0.1f)));
 
 		//Camera Update
-		cam_main.DefineProjection(DegToRad(90), window.GetRatio(), 0.5f, 1500.0f);
+		cam_main.DefineProjection(DegToRad(90), window.GetRatio(), 0.01f, 1500.0f);
 		cam_main.UpdateCameraPosition();
 		cam_main.CalcuateLookAround(yaw, pitch, roll, true);
 		cam_main.m_Position.y = 1.0f;
 		cam_main.DefineView();
-		cam_main.UpdateProjectionAndViewInOtherShader(shaderCube);
 		listener_main.UpdateListenerPosVelOri();
 
 
@@ -260,6 +271,7 @@ int main()
 		stall.SetUniformModlMatrix(Mat4::Translation(Vec3(-5.0f, -2.0f, -5.0f)) * Mat4::Rotation(pi, Vec3(0, 1, 0)));
 		renderer.Draw(&stall);
 		
+		//renderer.Submit(&sword);
 		renderer.Submit(&cube);
 		renderer.Submit(&floor);
 		renderer.Submit(&quad1);
@@ -291,7 +303,7 @@ int main()
 				break;
 			}
 		}
-				
+
 		if (showDebug == true)
 		{
 			if (fpsTime % 60 == 0)

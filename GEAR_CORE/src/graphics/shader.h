@@ -7,7 +7,7 @@
 
 #define GEAR_CALC_LIGHT_DIFFUSE  0x00000001
 #define GEAR_CALC_LIGHT_SPECULAR 0x00000010
-#define GEAR_CALC_LIGHT_AMBIENT 0x00000100
+#define GEAR_CALC_LIGHT_AMBIENT  0x00000100
 #define GEAR_CALC_LIGHT_EMIT     0x00001000
 
 namespace GEAR {
@@ -102,6 +102,8 @@ public:
 		else if (N == 4) glUniformMatrix4fv(location, count, tranpose, &values);
 		else throw;
 	}
+
+	inline GLuint GetShaderID() const { return m_ShaderID; }
 
 private:
 	unsigned int CompileShader(unsigned int type, const std::string& source);

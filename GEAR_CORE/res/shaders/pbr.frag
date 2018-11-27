@@ -71,7 +71,7 @@ vec3 CalcPBRLighting()
 	
 	vec4 unitNormal = normalize(fs_in.v_Normal);
 	vec4 unitVertexToCamera = normalize(fs_in.v_VertexToCamera);
-	vec4 unitVertexToLight = normalize(fs_in.v_VertexToLight);
+	vec4 unitVertexToLight = -normalize(fs_in.v_VertexToLight);
 	vec4 unitHalfVector = normalize(unitNormal + unitVertexToCamera);
 
 	float distanceVertToCam = length(unitVertexToCamera);
@@ -108,13 +108,14 @@ void main()
 	vec3 lighting = CalcPBRLighting();
 
 	if(fs_in.v_TextIds > 0)
+	{
 		for (int i = 0; i < 32; i++)
 		{
 			int tid = int(fs_in.v_TextIds - 0.5);
 			if(tid == i)
-			colour = vec4(lighting, 1.0) + texture(u_Textures[tid], fs_in.v_TextCoord);
+				colour = vec4(lighting, 1.0) + texture(u_Textures[tid], fs_in.v_TextCoord);
 		}	
-	
+	}
 	else
 	{
 		colour = vec4(lighting, 1.0) + texture(u_Texture, fs_in.v_TextCoord);
@@ -122,6 +123,6 @@ void main()
 
 	if(fs_in.v_Colour != vec4(0, 0, 0, 0))
 	{
-		colour = vec4(lighting, 1.0) + fs_in.v_Colour;
+		colour += fs_in.v_Colour;
 	}
 }
