@@ -16,38 +16,36 @@ class Light
 {
 private:
 	int m_Type;
-	ARM::Vec4 m_Colour;
 	const Shader& m_Shader;
-	const Shader m_DepthShader = Shader("res/shaders/depth.vert", "res/shaders/depth.frag");
+
+	//Depth Shader for Shadows
+	//const Shader m_DepthShader = Shader("res/shaders/depth.vert", "res/shaders/depth.frag");
 	//Camera m_LightCam = Camera(GEAR_CAMERA_ORTHOGRAPHIC, m_DepthShader, m_PosDir, ARM::Vec3(0, 0, 1), ARM::Vec3(0, 1, 0));
-
-	UniformBuffer m_LightParamsUBO = UniformBuffer(sizeof(LightParams), 1);
-	struct LightParams
-	{
-		ARM::Vec4 m_LightColour;
-		float m_ShineFactor;
-		float m_Reflectivity;
-		float m_AmbientFactor;
-	} m_LightParams;
+	
+public:
+	ARM::Vec4 m_Colour;
+	ARM::Vec3 m_Position;
+	ARM::Vec3 m_Direction;
 
 public:
-	ARM::Vec3 m_PosDir;
-
-public:
-	Light(int type, const ARM::Vec3& pos_dir, const ARM::Vec4& colour, const Shader& shader);
+	Light(int type, const ARM::Vec3& position, ARM::Vec3& direction, const ARM::Vec4& colour, const Shader& shader);
 	~Light();
 
 	void Specular(float shineFactor, float reflectivity) const;
 	void Ambient(float ambientFactor) const;
+	void Attenuation(float linear, float quadratic) const;
+	void SpotCone(double theta) const;
 
 	void Point() const;
 	void Directional() const;
 	void Spot() const;
 	void Area() const;
 
-	inline const Shader& GetDepthShader() const { return m_DepthShader; }
+	//inline const Shader& GetDepthShader() const { return m_DepthShader; }
 
 	void CalculateLightMVP();
+	void UpdatePosition();
+	void UpdateDirection(double yaw, double pitch, double roll, bool invertYAxis);
 };
 }
 }

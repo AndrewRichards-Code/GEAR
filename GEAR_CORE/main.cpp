@@ -38,7 +38,7 @@ int main()
 	shader.SetLighting(GEAR_CALC_LIGHT_DIFFUSE + GEAR_CALC_LIGHT_SPECULAR + GEAR_CALC_LIGHT_AMBIENT);
 
 	Shader shaderCube("res/shaders/cube.vert", "res/shaders/cube.frag");
-	Shader shaderPBR("res/shaders/pbr.vert", "res/shaders/pbr.frag");
+	//Shader shaderPBR("res/shaders/pbr.vert", "res/shaders/pbr.frag");
 
 	Texture::EnableDisableAniostrophicFilting(16.0f);
 	Texture::EnableDisableMipMapping();
@@ -58,7 +58,7 @@ int main()
 
 	Object skybox("res/obj/cube.obj", shaderCube, textureSB, Mat4::Scale(Vec3(500, 500, 500)));
 	Object cube("res/obj/cube.obj", shader, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Mat4::Identity());
-	Object stall("res/obj/stall.obj", shaderPBR, texture, Mat4::Identity());
+	Object stall("res/obj/stall.obj", shader, texture, Mat4::Identity());
 	Object quad1("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(1.5f, 0.0f, -2.0f)));
 	Object quad2("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(-1.5f, 0.0f, -2.0f)));
 	Object floor("res/obj/quad.obj", shader, texture4, Mat4::Translation(Vec3(0.0f, -2.0f, -2.0f)) * Mat4::Rotation(pi / 2, Vec3(1, 0, 0)) * Mat4::Scale(Vec3(500, 500, 1)));
@@ -70,25 +70,28 @@ int main()
 	Object quad5("res/obj/quad.obj", shader, texture3, Vec3(-1.5f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
 
 	Font testFont1(window.GetTitle(),																				"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 700.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont2(window.GetOpenGLVersion(),																		"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 690.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont3("Resolution: " + std::to_string(window.GetWidth()) + " x " + std::to_string(window.GetHeight()), "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 680.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont4("MSAA: " + window.GetAntiAliasingValue() + "x",													"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 670.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont5("Anisotrophic: " + Texture::GetAnisotrophicValue() + "x",										"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 660.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont6("FPS: " + window.GetFPSString<int>(),															"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 650.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont2(window.GetDeviceName(),																			"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 690.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont3("OpenGL: " + window.GetOpenGLVersion() + " | GLSL: " + window.GetGLSLVersion(),					"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 680.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont4("Resolution: " + std::to_string(window.GetWidth()) + " x " + std::to_string(window.GetHeight()), "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 670.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont5("MSAA: " + window.GetAntiAliasingValue() + "x",													"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 660.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont6("Anisotrophic: " + Texture::GetAnisotrophicValue() + "x",										"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 650.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont7("FPS: " + window.GetFPSString<int>(),															"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 640.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
 
 	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, 1.0f, 0.0f));
 
-	Light light_main(GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 10.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), shader);
+	Light light_main(GEAR_LIGHT_SPOT, Vec3(0.0f, 10.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), shader);
 	light_main.Specular(64.0f, 10.0f);
-	light_main.Ambient(0.0f);
-
-	shaderPBR.Enable();
+	light_main.Ambient(0.5f);
+	light_main.Attenuation(0.007f, 0.0002f);
+	light_main.SpotCone(DegToRad(45));
+	
+	/*shaderPBR.Enable();
 	shaderPBR.SetUniform<float>("u_LightColour", {1.0f, 1.0f, 1.0f, 1.0f});
 	shaderPBR.SetUniform<float>("u_F0", { 0.99f, 0.98f, 0.96f }); //Base reflectivity
 	shaderPBR.SetUniform<float>("u_Albedo", { 0.0f, 0.0f, 0.0f }); //Diffuse lighting
 	shaderPBR.SetUniform<float>("u_Metallic", { 1.0f });
 	shaderPBR.SetUniform<float>("u_Roughness", { 0.0f }); //Num of Micro-facets
-	shaderPBR.SetUniform<float>("u_AO", { 0.00f }); //Micro-facets shadowing
+	shaderPBR.SetUniform<float>("u_AO", { 0.00f }); //Micro-facets shadowing*/
 
 	Listener listener_main(cam_main);
 
@@ -104,6 +107,11 @@ int main()
 	double pitch = 0;
 	double roll = 0;
 
+	double Light_yaw = 0;
+	double Light_pitch = 0;
+	double Light_roll = 0;
+	bool rotateLight = false;
+
 	double pos_x = 0, pos_y = 0;
 	double last_pos_x = window.GetWidth() / 2.0;
 	double last_pos_y = window.GetHeight() / 2.0;
@@ -115,12 +123,16 @@ int main()
 
 	//Logo Splashscreen
 	{
-		Texture logo_texture("res/gear_core/GEAR_logo_square.png");
-		Object logo("res/obj/quad.obj", shader, logo_texture, Mat4::Translation(Vec3(0.0f, 0.0f, -1.0f)));
+		Shader logo_shader("res/shaders/basic.vert", "res/shaders/basic.frag");
+		logo_shader.SetLighting(GEAR_CALC_LIGHT_AMBIENT);
 
-		//Camera logo_cam(GEAR_CAMERA_ORTHOGRAPHIC, logo_shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, 1.0f, 0.0f));
-		//Light logo_light(GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), logo_shader);
-		
+		Texture logo_texture("res/gear_core/GEAR_logo_square.png");
+		Texture render_texture("res/gear_core/GEAR_OpenGL.png");
+		Object logo("res/obj/quad.obj", logo_shader, logo_texture, Mat4::Translation(Vec3(0.0f, 0.0f, -1.0f)));
+		Object render("res/obj/quad.obj", logo_shader, render_texture, Mat4::Translation(Vec3(0.0f, 0.0f, -1.0f)));
+
+		Light logo_light(GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), logo_shader);
+		logo_light.Attenuation(0, 0);
 
 		int time = 0;
 		float increment = 0.017f;
@@ -129,18 +141,19 @@ int main()
 		{
 			window.Clear();
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			logo_shader.Enable();
 			if (time < 60)
 			{
-				ambient += increment; 
-				light_main.Ambient(ambient);
+				ambient += increment;
+				logo_shader.SetUniform<float>("u_AmbientFactor", { ambient });
 			}
 			else if (time > 240)
 			{
 				ambient -= increment;
-				light_main.Ambient(ambient);
+				logo_shader.SetUniform<float>("u_AmbientFactor", { ambient });
 			}
 			else
-				light_main.Ambient(1.0f);
+				logo_shader.SetUniform<float>("u_AmbientFactor", { 1.0f });
 			
 			cam_main.DefineProjection(DegToRad(90), window.GetRatio(), 0.01f, 2.0f);
 			cam_main.DefineView();
@@ -150,8 +163,34 @@ int main()
 			if (window.IsKeyPressed(GLFW_KEY_ENTER)) break;
 			time++;
 		}
+		while (time < 300 + 300)
+		{
+			window.Clear();
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			logo_shader.Enable();
+			if (time < 60 + 300)
+			{
+				ambient += increment;
+				logo_shader.SetUniform<float>("u_AmbientFactor", { ambient });
+			}
+			else if (time > 240 + 300)
+			{
+				ambient -= increment;
+				logo_shader.SetUniform<float>("u_AmbientFactor", { ambient });
+			}
+			else
+				logo_shader.SetUniform<float>("u_AmbientFactor", { 1.0f });
+
+			cam_main.DefineProjection(DegToRad(90), window.GetRatio(), 0.01f, 2.0f);
+			cam_main.DefineView();
+
+			renderer.Draw(&render);
+			window.Update();
+			if (window.IsKeyPressed(GLFW_KEY_ENTER)) break;
+			time++;
+		}
 	}
-	
+		
 	std::thread AudioThread(AudioThread);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -165,7 +204,6 @@ int main()
 		window.Clear();
 		window.CalculateFPS();
 		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-		light_main.Ambient(0.1f);
 		
 		//Joystick Input
 		main_input.Update();
@@ -237,23 +275,60 @@ int main()
 				pitch = -pi / 2;
 		}
 
-		if (window.IsKeyPressed(GLFW_KEY_L))
-			light_main.m_PosDir.x = light_main.m_PosDir.x + increment;
-		if (window.IsKeyPressed(GLFW_KEY_J))
-			light_main.m_PosDir.x = light_main.m_PosDir.x - increment;
-		if (window.IsKeyPressed(GLFW_KEY_H))
-			light_main.m_PosDir.y = light_main.m_PosDir.y + increment;
-		if (window.IsKeyPressed(GLFW_KEY_N))
-			light_main.m_PosDir.y = light_main.m_PosDir.y - increment;
-		if (window.IsKeyPressed(GLFW_KEY_K))
-			light_main.m_PosDir.z = light_main.m_PosDir.z + increment;
-		if (window.IsKeyPressed(GLFW_KEY_I))
-			light_main.m_PosDir.z = light_main.m_PosDir.z - increment;
 
-		light_main.Point();
-		shaderPBR.Enable();
-		shaderPBR.SetUniform<float>("u_LightPosition", { light_main.m_PosDir.x , light_main.m_PosDir.y , light_main.m_PosDir.z });
-		cube.SetUniformModlMatrix(Mat4::Translation(light_main.m_PosDir) * Mat4::Scale(Vec3(0.1f, 0.1f, 0.1f)));
+		if (window.IsKeyPressed(GLFW_KEY_O))
+		{
+			switch (rotateLight)
+			{
+			case true:
+				rotateLight = false;
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+				break;
+
+			case false:
+				rotateLight = true;
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+				break;
+			}
+		}
+		if (!rotateLight)
+		{
+			if (window.IsKeyPressed(GLFW_KEY_L))
+				light_main.m_Position.x = light_main.m_Position.x + increment;
+			if (window.IsKeyPressed(GLFW_KEY_J))
+				light_main.m_Position.x = light_main.m_Position.x - increment;
+			if (window.IsKeyPressed(GLFW_KEY_H))
+				light_main.m_Position.y = light_main.m_Position.y + increment;
+			if (window.IsKeyPressed(GLFW_KEY_N))
+				light_main.m_Position.y = light_main.m_Position.y - increment;
+			if (window.IsKeyPressed(GLFW_KEY_K))
+				light_main.m_Position.z = light_main.m_Position.z + increment;
+			if (window.IsKeyPressed(GLFW_KEY_I))
+				light_main.m_Position.z = light_main.m_Position.z - increment;
+		}
+		
+		if(rotateLight)
+		{
+			if (window.IsKeyPressed(GLFW_KEY_L))
+				Light_yaw += increment * 0.5;
+			if (window.IsKeyPressed(GLFW_KEY_J))
+				Light_yaw -= increment * 0.5;
+			if (window.IsKeyPressed(GLFW_KEY_H))
+				Light_roll += increment * 0.5;
+			if (window.IsKeyPressed(GLFW_KEY_N))
+				Light_roll += increment * 0.5;
+			if (window.IsKeyPressed(GLFW_KEY_K))
+				Light_pitch += increment * 0.5;
+			if (window.IsKeyPressed(GLFW_KEY_I))
+				Light_pitch -= increment * 0.5;
+
+			light_main.UpdateDirection(Light_yaw, Light_pitch, Light_roll, false);
+		}
+
+		light_main.UpdatePosition();
+		/*shaderPBR.Enable();
+		shaderPBR.SetUniform<float>("u_LightPosition", { light_main.m_Position.x , light_main.m_Position.y , light_main.m_Position.z });*/
+		cube.SetUniformModlMatrix(Mat4::Translation(light_main.m_Position) * Mat4::Scale(Vec3(0.1f, 0.1f, 0.1f)));
 
 		//Camera Update
 		cam_main.DefineProjection(DegToRad(90), window.GetRatio(), 0.01f, 1500.0f);
@@ -308,8 +383,8 @@ int main()
 		{
 			if (fpsTime % 60 == 0)
 			{
-				testFont3.UpdateText("Resolution: " + std::to_string(window.GetWidth()) + " x " + std::to_string(window.GetHeight()));
-				testFont6.UpdateText("FPS: " + window.GetFPSString<int>());
+				testFont4.UpdateText("Resolution: " + std::to_string(window.GetWidth()) + " x " + std::to_string(window.GetHeight()));
+				testFont7.UpdateText("FPS: " + window.GetFPSString<int>());
 			}
 			//Severe performance with texture, likely due to no font atlas. 
 			testFont1.RenderText();
@@ -318,6 +393,7 @@ int main()
 			testFont4.RenderText();
 			testFont5.RenderText();
 			testFont6.RenderText();
+			testFont7.RenderText();
 		}
 
 #if GEAR_USE_FBO

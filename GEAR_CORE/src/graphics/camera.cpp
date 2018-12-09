@@ -77,7 +77,6 @@ void Camera::DefineProjection(double fov, float aspectRatio, float zNear, float 
 		m_Matrices.m_ProjectionMatrix = Mat4::Perspective(fov, aspectRatio, zNear, zFar);
 		m_Matrices.m_ProjectionMatrix.Transpose();
 
-		m_Shader.Enable();
 		m_MatricesUBO.SubDataBind(&m_Matrices.m_ProjectionMatrix.a, sizeof(Mat4), offsetof(Matrices, m_ProjectionMatrix));
 	}
 	else

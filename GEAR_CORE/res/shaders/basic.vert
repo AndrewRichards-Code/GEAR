@@ -33,7 +33,7 @@ void main()
 	vs_out.v_Position = positions;
 	vs_out.v_TextCoord = textCoords;
 	vs_out.v_TextIds = textIds;
-	vs_out.v_Normal = normals;
+	vs_out.v_Normal = mat4(transpose(inverse(u_Modl))) * normals;
 	vs_out.v_VertexToLight = vec4(u_LightPosition, 0.0) - (u_Modl *  positions);
 	vs_out.v_VertexToCamera = vec4(u_CameraPosition, 0.0) - (u_Modl * positions);
 	vs_out.v_Colour = colours;

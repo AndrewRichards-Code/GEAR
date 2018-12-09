@@ -263,3 +263,7 @@ __pycache__/
 /GEAR_CORE/res/wav/Rainbow Road.wav
 /Dependencies/FBX
 /GEAR_CORE/src/utils/fbxLoader.h
+/GEAR_CORE/res/gear_core/GEAR_OpenGL.png
+/GEAR_CORE/res/gear_core/GEAR_OpenGL.psd
+/GEAR_CORE/res/gear_core/GEAR_Vulkan.psd
+/GEAR_CORE/res/gear_core/GEAR_Vulkan.png

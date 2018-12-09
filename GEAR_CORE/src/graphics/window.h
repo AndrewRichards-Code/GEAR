@@ -56,9 +56,12 @@ public:
 	inline float GetRatio() const { return ((float)m_Width / (float)m_Height); }
 	inline std::string GetTitle() const { return m_Title; }
 	inline std::string GetOpenGLVersion() const { return std::string((const char*)glGetString(GL_VERSION)); }
+	inline std::string GetGLSLVersion() const { return std::string((const char*)glGetString(GL_SHADING_LANGUAGE_VERSION)); }
+	inline std::string GetDeviceName() const { return std::string((const char*)glGetString(GL_RENDERER)); }
 	template<typename T>
 	inline std::string GetFPSString() const { return std::to_string(static_cast<T>(m_FPS)); }
 	inline std::string GetAntiAliasingValue() const { return std::to_string(m_AntiAliasingValue); }
+
 
 	bool IsKeyPressed(unsigned int keycode) const;
 	bool IsMouseButtonPressed(unsigned int button) const;

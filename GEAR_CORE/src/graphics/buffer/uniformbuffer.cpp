@@ -35,6 +35,16 @@ void UniformBuffer::SubDataBind(const float* data, unsigned int size, unsigned i
 	{
 		Bind();
 		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
+		
+		/*if (m_BindingIndex == 1)
+		{
+			std::vector<float> dataOut(m_Size);
+			glGetBufferSubData(GL_UNIFORM_BUFFER, 0, m_Size, dataOut.data());
+			for (int i = 0; i < m_Size; i++)
+				std::cout << dataOut[i] << std::endl;
+
+			std::cout << std::endl;
+		}*/
 		Unbind();
 	}
 	else
