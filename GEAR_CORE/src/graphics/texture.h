@@ -25,7 +25,7 @@ public:
 	Texture(const std::string& filepath); //Assumes GL_TEXTURE_2D!
 	Texture(const std::vector<std::string>& filepaths); //For CubeMaps only! Submit in filepaths in order of: front, back, top, bottom, right and left.
 	Texture(unsigned char* buffer, int width, int height); //For Fonts only!
-	Texture(int width = 1024, int height = 1024); //For DepthBuffer only!
+	Texture(int width = 1024, int height = 1024, bool depthTexture = false); //For FrameBuffer only!
 	~Texture();
 
 	void Bind(unsigned int slot = 0) const;

@@ -220,6 +220,8 @@
     <None Include="res\shaders\cube.vert" />
     <None Include="res\shaders\depth.frag" />
     <None Include="res\shaders\depth.vert" />
+    <None Include="res\shaders\fbo.frag" />
+    <None Include="res\shaders\fbo.vert" />
     <None Include="res\shaders\font.frag" />
     <None Include="res\shaders\font.vert" />
     <None Include="res\shaders\pbr.frag" />

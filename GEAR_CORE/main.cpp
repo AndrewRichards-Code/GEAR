@@ -1,7 +1,7 @@
 #include "src/gear.h"
 //#include "src/utils/fbxLoader.h"
 
-#define GEAR_USE_FBO 0
+#define GEAR_USE_FBO 1
 
 using namespace GEAR;
 using namespace GRAPHICS;
@@ -99,7 +99,7 @@ int main()
 	Renderer renderer;
 	
 	InputManager main_input(GEAR_INPUT_JOYSTICK_CONTROLLER);
-	FrameBuffer fbo(window, shader);
+	FrameBuffer fbo(window);
 
 	//FBX::read_fbx("res/obj/KagemitsuG4.fbx");
 
@@ -199,6 +199,7 @@ int main()
 	{
 #if GEAR_USE_FBO
 		fbo.Bind();
+		fbo.UseColourTextureAttachment();
 		fbo.UpdateFrameBufferSize();
 #endif
 		window.Clear();
@@ -400,8 +401,9 @@ int main()
 		//FBO
 		fbo.Unbind();
 		window.Clear();
-		renderer.Draw(&fbo.UseFrameBufferAsObject({ 0.75f, 0.75f, 0.0f }, { 0.25f, 0.25f, 1.0f }));
-		renderer.Draw(&fbo.UseFrameBufferAsObject({ 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }));
+		Shader fboShader("res/shaders/fbo.vert", "res/shaders/fbo.frag");
+		Object fbo("res/obj/quad.obj", fboShader, *fbo.GetColourTexture(), Mat4::Scale(Vec3(window.GetRatio(), 1.0f, 1.0f)));
+		renderer.Draw(&fbo);
 #endif
 
 		window.Update();

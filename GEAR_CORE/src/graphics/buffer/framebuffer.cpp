@@ -3,21 +3,22 @@
 using namespace GEAR;
 using namespace GRAPHICS;
 
-FrameBuffer::FrameBuffer(const Window& window, const Shader& shader)
-	:m_Window(window), m_Shader(shader)
+FrameBuffer::FrameBuffer(const Window& window)
+	:m_Window(window)
 {
 	glGenFramebuffers(1, &m_FrameID);
 	glGenRenderbuffers(1, &m_RenderBufferID);
 	Bind();
-	AddDepthBuffer();
-	AttachDepthTexture();
+
+	AddColourTextureAttachment(0);
+	AddDepthTextureAttachment();
+	AddDepthBufferAttachment();
 
 	if (GLenum error = glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
 		std::cout << "ERROR: GEAR::GRAPHICS::FrameBuffer: FrameBuffer is not complete! Code: " << error << std::endl;
 		throw(0);
 	}
-	m_Quad = std::make_unique<Object>("res/obj/quad.obj", m_Shader, *m_DepthTexture, ARM::Mat4::Identity());
 
 	Unbind();
 }
@@ -44,33 +45,55 @@ void FrameBuffer::UpdateFrameBufferSize()
 {
 	if (m_Window.GetWidth() != m_DepthTexture->GetWidth() || m_Window.GetHeight() != m_DepthTexture->GetHeight())
 	{
-		AttachDepthTexture();
-		AddDepthBuffer();
-		m_Quad = std::make_unique<Object>("res/obj/quad.obj", m_Shader, *m_DepthTexture, ARM::Mat4::Identity());
+		for (int i = 0; i < static_cast<signed int>(m_ColourTextures.size()); i++)
+		{
+			if (m_ColourTextures[i] != nullptr)
+			{
+				m_ColourTextures[i] = nullptr;
+				AddColourTextureAttachment(i);
+			}
+		}
+		AddDepthTextureAttachment();
+		AddDepthBufferAttachment();
 	}
 }
 
-Object FrameBuffer::UseFrameBufferAsObject(const ARM::Vec3& translate, const ARM::Vec3& scale)
+void FrameBuffer::AddColourTextureAttachment(int attachment)
 {
-	m_Shader.Enable();
-	m_Shader.SetUniformMatrix<4>("u_Proj", 1, GL_TRUE, ARM::Mat4::Identity().a);
-	m_Shader.SetUniformMatrix<4>("u_View", 1, GL_TRUE, (ARM::Mat4::Translation(translate) * ARM::Mat4::Scale(scale)).a);
-	m_Shader.Disable();
-	return *m_Quad;
+	if (attachment > static_cast<signed int>(m_ColourTextures.size()))
+	{
+		std::cout << "ERROR: GEAR::GRAPHICS::FrameBuffer: Attachment slot unavailable! Only 16 available slots." << std::endl;
+		return;
+	}
+	
+	if (m_ColourTextures[attachment] != nullptr)
+	{
+		std::cout << "ERROR: GEAR::GRAPHICS::FrameBuffer: Attachment slot is already taken!" << std::endl;
+		return;
+	}
+
+	m_ColourTextures[attachment] = std::make_shared<Texture>(m_Window.GetWidth(), m_Window.GetHeight(), false);
+	if (m_ColourTextures[attachment]->IsDepthTexture() == false)
+	{
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, GL_TEXTURE_2D, m_ColourTextures[attachment]->GetTextureID(), 0);
+	}
 }
 
-//private:
-void FrameBuffer::AttachDepthTexture()
+void FrameBuffer::UseColourTextureAttachment(int attachment)
 {
-	m_DepthTexture = std::make_unique<Texture>(m_Window.GetWidth(), m_Window.GetHeight());
+	glDrawBuffer(GL_COLOR_ATTACHMENT0 + attachment);
+}
+
+void FrameBuffer::AddDepthTextureAttachment()
+{
+	m_DepthTexture = std::make_shared<Texture>(m_Window.GetWidth(), m_Window.GetHeight(), true);
 	if (m_DepthTexture->IsDepthTexture() == true)
 	{
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_DepthTexture->GetTextureID(), 0);
-		//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_DepthTexture->GetTextureID(), 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_DepthTexture->GetTextureID(), 0);
 	}
 }
 
-void FrameBuffer::AddDepthBuffer()
+void FrameBuffer::AddDepthBufferAttachment()
 {
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_Window.GetWidth(), m_Window.GetHeight()); 
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_RenderBufferID);

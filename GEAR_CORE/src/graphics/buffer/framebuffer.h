@@ -1,9 +1,9 @@
 #pragma once
 
 #include <memory>
+#include <array>
 #include "GL/glew.h"
 #include "../texture.h"
-#include "../object.h"
 #include "../window.h"
 
 namespace GEAR {
@@ -12,25 +12,28 @@ class FrameBuffer
 {
 private:
 	const Window& m_Window;
-	const Shader& m_Shader;
 	unsigned int m_FrameID;
 	unsigned int m_RenderBufferID;
-	std::unique_ptr<Texture> m_DepthTexture;
-	std::unique_ptr<Object> m_Quad;
+	std::array<std::shared_ptr<Texture>, 16> m_ColourTextures;
+	std::shared_ptr<Texture> m_DepthTexture;
 
 public:
-	FrameBuffer(const Window& window, const Shader& shader);
+	FrameBuffer(const Window& window);
 	~FrameBuffer();
 
 	void Bind() const;
 	void Unbind() const;
 
-	Object UseFrameBufferAsObject(const ARM::Vec3 & translate, const ARM::Vec3 & scale);
 	void UpdateFrameBufferSize();
+	void AddColourTextureAttachment(int attachment = 0);
+	void UseColourTextureAttachment(int attachment = 0);
+
+	inline std::shared_ptr<Texture> GetColourTexture(int slot = 0) const { return m_ColourTextures[slot]; }
+	inline std::shared_ptr<Texture> GetDepthTexture() const { return m_DepthTexture; }
 
 private:
-	void AttachDepthTexture();
-	void AddDepthBuffer();
+	void AddDepthTextureAttachment();
+	void AddDepthBufferAttachment();
 };
 }
 }
