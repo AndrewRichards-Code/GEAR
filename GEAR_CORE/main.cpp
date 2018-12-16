@@ -402,8 +402,10 @@ int main()
 		fbo.Unbind();
 		window.Clear();
 		Shader fboShader("res/shaders/fbo.vert", "res/shaders/fbo.frag");
-		Object fbo("res/obj/quad.obj", fboShader, *fbo.GetColourTexture(), Mat4::Scale(Vec3(window.GetRatio(), 1.0f, 1.0f)));
-		renderer.Draw(&fbo);
+		Object fboColour("res/obj/quad.obj", fboShader, *fbo.GetColourTexture(), Mat4::Scale(Vec3(1.0f, 1.0f, 1.0f)));
+		Object fboDepth("res/obj/quad.obj", fboShader, *fbo.GetColourTexture(), Mat4::Translation(Vec3(0.75f, 0.75f, 0.0f)) * Mat4::Scale(Vec3(0.25f, 0.25f, 1.0f)));
+		renderer.Draw(&fboDepth);
+		renderer.Draw(&fboColour);
 #endif
 
 		window.Update();

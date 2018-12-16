@@ -25,9 +25,10 @@ public:
 	void Unbind() const;
 
 	void UpdateFrameBufferSize();
+
 	void AddColourTextureAttachment(int attachment = 0);
 	void UseColourTextureAttachment(int attachment = 0);
-
+	
 	inline std::shared_ptr<Texture> GetColourTexture(int slot = 0) const { return m_ColourTextures[slot]; }
 	inline std::shared_ptr<Texture> GetDepthTexture() const { return m_DepthTexture; }
 
