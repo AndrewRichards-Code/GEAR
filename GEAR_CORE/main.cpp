@@ -1,10 +1,12 @@
 #include "src/gear.h"
 //#include "src/utils/fbxLoader.h"
 
-#define GEAR_USE_FBO 1
+#define GEAR_USE_FBO 0
 
 using namespace GEAR;
 using namespace GRAPHICS;
+using namespace CROSSPLATFORM;
+using namespace OPENGL;
 using namespace AUDIO;
 using namespace INPUT;
 using namespace ARM;
@@ -57,7 +59,8 @@ int main()
 		"res/img/mp_arctic/arctic-ice_lf.tga" });
 
 	Object skybox("res/obj/cube.obj", shaderCube, textureSB, Mat4::Scale(Vec3(500, 500, 500)));
-	Object cube("res/obj/cube.obj", shader, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Mat4::Identity());
+	Object cube1("res/obj/cube.obj", shader, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Mat4::Identity());
+	Object cube2("res/obj/cube.obj", shader, Vec4(1.0f, 0.0f, 0.0f, 1.0f), Mat4::Identity());
 	Object stall("res/obj/stall.obj", shader, texture, Mat4::Identity());
 	Object quad1("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(1.5f, 0.0f, -2.0f)));
 	Object quad2("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(-1.5f, 0.0f, -2.0f)));
@@ -79,12 +82,18 @@ int main()
 
 	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, 1.0f, 0.0f));
 
-	Light light_main(GEAR_LIGHT_SPOT, Vec3(0.0f, 10.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), shader);
-	light_main.Specular(64.0f, 10.0f);
-	light_main.Ambient(0.5f);
-	light_main.Attenuation(0.007f, 0.0002f);
-	light_main.SpotCone(DegToRad(45));
-	
+	Light light_main1(GEAR_LIGHT_SPOT, Vec3(0.0f, 10.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), shader);
+	light_main1.Specular(64.0f, 10.0f);
+	light_main1.Ambient(0.25f);
+	light_main1.Attenuation(0.007f, 0.0002f);
+	light_main1.SpotCone(DegToRad(45));
+
+	Light light_main2(GEAR_LIGHT_SPOT, Vec3(0.0f, 10.0f, 30.0f), Vec3(0.0f, -1.0f, 0.0f), Vec4(1.0f, 0.0f, 0.0f, 1.0f), shader);
+	light_main2.Specular(64.0f, 10.0f);
+	light_main2.Ambient(0.05f);
+	light_main2.Attenuation(0.007f, 0.0002f);
+	light_main2.SpotCone(DegToRad(45));
+
 	/*shaderPBR.Enable();
 	shaderPBR.SetUniform<float>("u_LightColour", {1.0f, 1.0f, 1.0f, 1.0f});
 	shaderPBR.SetUniform<float>("u_F0", { 0.99f, 0.98f, 0.96f }); //Base reflectivity
@@ -145,15 +154,15 @@ int main()
 			if (time < 60)
 			{
 				ambient += increment;
-				logo_shader.SetUniform<float>("u_AmbientFactor", { ambient });
+				logo_light.Ambient(ambient);
 			}
 			else if (time > 240)
 			{
 				ambient -= increment;
-				logo_shader.SetUniform<float>("u_AmbientFactor", { ambient });
+				logo_light.Ambient(ambient);
 			}
 			else
-				logo_shader.SetUniform<float>("u_AmbientFactor", { 1.0f });
+				logo_light.Ambient(ambient);
 			
 			cam_main.DefineProjection(DegToRad(90), window.GetRatio(), 0.01f, 2.0f);
 			cam_main.DefineView();
@@ -171,15 +180,15 @@ int main()
 			if (time < 60 + 300)
 			{
 				ambient += increment;
-				logo_shader.SetUniform<float>("u_AmbientFactor", { ambient });
+				logo_light.Ambient(ambient);
 			}
 			else if (time > 240 + 300)
 			{
 				ambient -= increment;
-				logo_shader.SetUniform<float>("u_AmbientFactor", { ambient });
+				logo_light.Ambient(ambient);
 			}
 			else
-				logo_shader.SetUniform<float>("u_AmbientFactor", { 1.0f });
+				logo_light.Ambient(ambient);
 
 			cam_main.DefineProjection(DegToRad(90), window.GetRatio(), 0.01f, 2.0f);
 			cam_main.DefineView();
@@ -295,18 +304,20 @@ int main()
 		if (!rotateLight)
 		{
 			if (window.IsKeyPressed(GLFW_KEY_L))
-				light_main.m_Position.x = light_main.m_Position.x + increment;
+				light_main1.m_Position.x = light_main1.m_Position.x + increment;
 			if (window.IsKeyPressed(GLFW_KEY_J))
-				light_main.m_Position.x = light_main.m_Position.x - increment;
+				light_main1.m_Position.x = light_main1.m_Position.x - increment;
 			if (window.IsKeyPressed(GLFW_KEY_H))
-				light_main.m_Position.y = light_main.m_Position.y + increment;
+				light_main1.m_Position.y = light_main1.m_Position.y + increment;
 			if (window.IsKeyPressed(GLFW_KEY_N))
-				light_main.m_Position.y = light_main.m_Position.y - increment;
+				light_main1.m_Position.y = light_main1.m_Position.y - increment;
 			if (window.IsKeyPressed(GLFW_KEY_K))
-				light_main.m_Position.z = light_main.m_Position.z + increment;
+				light_main1.m_Position.z = light_main1.m_Position.z + increment;
 			if (window.IsKeyPressed(GLFW_KEY_I))
-				light_main.m_Position.z = light_main.m_Position.z - increment;
+				light_main1.m_Position.z = light_main1.m_Position.z - increment;
+			
 		}
+		light_main1.UpdatePosition();
 		
 		if(rotateLight)
 		{
@@ -323,13 +334,13 @@ int main()
 			if (window.IsKeyPressed(GLFW_KEY_I))
 				Light_pitch -= increment * 0.5;
 
-			light_main.UpdateDirection(Light_yaw, Light_pitch, Light_roll, false);
+			light_main1.UpdateDirection(Light_yaw, Light_pitch, Light_roll, false);
 		}
-
-		light_main.UpdatePosition();
+	
 		/*shaderPBR.Enable();
 		shaderPBR.SetUniform<float>("u_LightPosition", { light_main.m_Position.x , light_main.m_Position.y , light_main.m_Position.z });*/
-		cube.SetUniformModlMatrix(Mat4::Translation(light_main.m_Position) * Mat4::Scale(Vec3(0.1f, 0.1f, 0.1f)));
+		cube1.SetUniformModlMatrix(Mat4::Translation(light_main1.m_Position) * Mat4::Scale(Vec3(0.1f, 0.1f, 0.1f)));
+		cube2.SetUniformModlMatrix(Mat4::Translation(light_main2.m_Position) * Mat4::Scale(Vec3(0.1f, 0.1f, 0.1f)));
 
 		//Camera Update
 		cam_main.DefineProjection(DegToRad(90), window.GetRatio(), 0.01f, 1500.0f);
@@ -348,7 +359,8 @@ int main()
 		renderer.Draw(&stall);
 		
 		//renderer.Submit(&sword);
-		renderer.Submit(&cube);
+		renderer.Submit(&cube1);
+		renderer.Submit(&cube2);
 		renderer.Submit(&floor);
 		renderer.Submit(&quad1);
 		renderer.Submit(&quad2);

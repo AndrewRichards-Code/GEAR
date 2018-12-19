@@ -92,7 +92,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FBX\include\;$(SolutionDir)Dependencies\STBI\;$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GEAR_OPENGL;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>libfbxsdk.lib;freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -122,7 +122,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\FBX\include\;$(SolutionDir)Dependencies\STBI\;$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>GEAR_OPENGL;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -152,20 +152,20 @@
   <ItemGroup>
     <ClCompile Include="src\audio\audiosource.cpp" />
     <ClCompile Include="src\audio\listener.cpp" />
-    <ClCompile Include="src\graphics\buffer\framebuffer.cpp" />
-    <ClCompile Include="src\graphics\font.cpp" />
+    <ClCompile Include="src\graphics\opengl\buffer\framebuffer.cpp" />
+    <ClCompile Include="src\graphics\opengl\font.cpp" />
     <ClCompile Include="src\maths\quaternion\Quat.cpp" />
-    <ClCompile Include="src\graphics\light.cpp" />
-    <ClCompile Include="src\graphics\camera.cpp" />
-    <ClCompile Include="src\graphics\buffer\indexbuffer.cpp" />
-    <ClCompile Include="src\graphics\buffer\vertexarray.cpp" />
-    <ClCompile Include="src\graphics\buffer\vertexbuffer.cpp" />
-    <ClCompile Include="src\graphics\object.cpp" />
-    <ClCompile Include="src\graphics\renderer\batchrenderer2d.cpp" />
-    <ClCompile Include="src\graphics\renderer\renderer.cpp" />
-    <ClCompile Include="src\graphics\shader.cpp" />
-    <ClCompile Include="src\graphics\texture.cpp" />
-    <ClCompile Include="src\graphics\window.cpp" />
+    <ClCompile Include="src\graphics\crossplatform\light.cpp" />
+    <ClCompile Include="src\graphics\crossplatform\camera.cpp" />
+    <ClCompile Include="src\graphics\opengl\buffer\indexbuffer.cpp" />
+    <ClCompile Include="src\graphics\opengl\buffer\vertexarray.cpp" />
+    <ClCompile Include="src\graphics\opengl\buffer\vertexbuffer.cpp" />
+    <ClCompile Include="src\graphics\crossplatform\object.cpp" />
+    <ClCompile Include="src\graphics\opengl\renderer\batchrenderer2d.cpp" />
+    <ClCompile Include="src\graphics\opengl\renderer\renderer.cpp" />
+    <ClCompile Include="src\graphics\opengl\shader.cpp" />
+    <ClCompile Include="src\graphics\opengl\texture.cpp" />
+    <ClCompile Include="src\graphics\opengl\window.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\maths\matrix\Mat2.cpp" />
     <ClCompile Include="src\maths\matrix\Mat3.cpp" />
@@ -173,28 +173,28 @@
     <ClCompile Include="src\maths\vector\Vec2.cpp" />
     <ClCompile Include="src\maths\vector\Vec3.cpp" />
     <ClCompile Include="src\maths\vector\Vec4.cpp" />
-    <ClCompile Include="src\graphics\buffer\uniformbuffer.cpp" />
+    <ClCompile Include="src\graphics\opengl\buffer\uniformbuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\audio\audiosource.h" />
     <ClInclude Include="src\audio\listener.h" />
     <ClInclude Include="src\gear.h" />
-    <ClInclude Include="src\graphics\buffer\framebuffer.h" />
-    <ClInclude Include="src\graphics\font.h" />
+    <ClInclude Include="src\graphics\opengl\buffer\framebuffer.h" />
+    <ClInclude Include="src\graphics\opengl\font.h" />
     <ClInclude Include="src\input\inputmanager.h" />
     <ClInclude Include="src\maths\quaternion\Quat.h" />
-    <ClInclude Include="src\graphics\light.h" />
-    <ClInclude Include="src\graphics\camera.h" />
-    <ClInclude Include="src\graphics\buffer\indexbuffer.h" />
-    <ClInclude Include="src\graphics\buffer\vertexarray.h" />
-    <ClInclude Include="src\graphics\buffer\vertexbuffer.h" />
-    <ClInclude Include="src\graphics\debugopengl.h" />
-    <ClInclude Include="src\graphics\object.h" />
-    <ClInclude Include="src\graphics\renderer\batchrenderer2d.h" />
-    <ClInclude Include="src\graphics\renderer\renderer.h" />
-    <ClInclude Include="src\graphics\shader.h" />
-    <ClInclude Include="src\graphics\texture.h" />
-    <ClInclude Include="src\graphics\window.h" />
+    <ClInclude Include="src\graphics\crossplatform\light.h" />
+    <ClInclude Include="src\graphics\crossplatform\camera.h" />
+    <ClInclude Include="src\graphics\opengl\buffer\indexbuffer.h" />
+    <ClInclude Include="src\graphics\opengl\buffer\vertexarray.h" />
+    <ClInclude Include="src\graphics\opengl\buffer\vertexbuffer.h" />
+    <ClInclude Include="src\graphics\opengl\debugopengl.h" />
+    <ClInclude Include="src\graphics\crossplatform\object.h" />
+    <ClInclude Include="src\graphics\opengl\renderer\batchrenderer2d.h" />
+    <ClInclude Include="src\graphics\opengl\renderer\renderer.h" />
+    <ClInclude Include="src\graphics\opengl\shader.h" />
+    <ClInclude Include="src\graphics\opengl\texture.h" />
+    <ClInclude Include="src\graphics\opengl\window.h" />
     <ClInclude Include="src\maths\ARMLib.h" />
     <ClInclude Include="src\maths\Common.h" />
     <ClInclude Include="src\maths\conversion\ConvertCart2DandPolarCoord.h" />
@@ -211,7 +211,7 @@
     <ClInclude Include="src\utils\fbxLoader.h" />
     <ClInclude Include="src\utils\fileutils.h" />
     <ClInclude Include="src\utils\typesx86x64.h" />
-    <ClInclude Include="src\graphics\buffer\uniformbuffer.h" />
+    <ClInclude Include="src\graphics\opengl\buffer\uniformbuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\basic.frag" />
