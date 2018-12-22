@@ -13,13 +13,12 @@ namespace GRAPHICS {
 namespace CROSSPLATFORM {
 
 #ifdef GEAR_OPENGL
-using namespace OPENGL;
 
 class Camera
 {
 private:
 	int m_ProjectionType;
-	const Shader& m_Shader;
+	const OPENGL::Shader& m_Shader;
 	double m_Yaw = 0;
 	double m_Pitch = 0;
 	double m_Roll = 0;
@@ -28,7 +27,7 @@ private:
 	const ARM::Vec3 m_yAxis = ARM::Vec3(0, 1, 0);
 	const ARM::Vec3 m_zAxis = ARM::Vec3(0, 0, 1);
 
-	UniformBuffer m_MatricesUBO = UniformBuffer(sizeof(Matrices), 0);
+	OPENGL::UniformBuffer m_MatricesUBO = OPENGL::UniformBuffer(sizeof(Matrices), 0);
 
 public:
 	ARM::Vec3 m_Position;
@@ -44,7 +43,7 @@ public:
 	} m_Matrices;
 
 public:
-	Camera(int projType, const Shader& shader, const ARM::Vec3& position, const ARM::Vec3& forward, const ARM::Vec3 up);
+	Camera(int projType, const OPENGL::Shader& shader, const ARM::Vec3& position, const ARM::Vec3& forward, const ARM::Vec3 up);
 	~Camera();
 
 	void UpdateCameraPosition();

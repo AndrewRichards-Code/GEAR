@@ -13,7 +13,6 @@ namespace GRAPHICS {
 namespace CROSSPLATFORM {
 
 #ifdef GEAR_OPENGL
-using namespace OPENGL;
 
 class Object
 {
@@ -27,10 +26,10 @@ private:
 	std::vector<unsigned int> m_Indices;
 	std::vector<float> m_Colours;
 
-	std::shared_ptr<VertexArray> m_VAO;
-	std::shared_ptr<IndexBuffer> m_IBO;
-	const Shader& m_Shader;
-	const Texture& m_Texture = Texture("res/gear_core/GEAR_logo_square.png");
+	std::shared_ptr<OPENGL::VertexArray> m_VAO;
+	std::shared_ptr<OPENGL::IndexBuffer> m_IBO;
+	const OPENGL::Shader& m_Shader;
+	const OPENGL::Texture& m_Texture = OPENGL::Texture("res/gear_core/GEAR_logo_square.png");
 	ARM::Vec4 m_Colour{ 0.0f, 0.0f, 0.0f, 0.0f };
 
 	ARM::Mat4 m_ModlMatrix;
@@ -53,25 +52,25 @@ private:
 	void GenVAOandIBO();
 
 public:
-	Object(const char* objFilePath, const Shader& shader, const Texture& texture, const ARM::Mat4& modl);
-	Object(const char* objFilePath, const Shader& shader, const ARM::Vec4& colour, const ARM::Mat4& modl);
-	Object(const char* objFilePath, const Shader& shader, const Texture& texture, const ARM::Vec3& position, const ARM::Vec2& size); //Doesn't fill the VAO or IBO.
+	Object(const char* objFilePath, const OPENGL::Shader& shader, const OPENGL::Texture& texture, const ARM::Mat4& modl);
+	Object(const char* objFilePath, const OPENGL::Shader& shader, const ARM::Vec4& colour, const ARM::Mat4& modl);
+	Object(const char* objFilePath, const OPENGL::Shader& shader, const OPENGL::Texture& texture, const ARM::Vec3& position, const ARM::Vec2& size); //Doesn't fill the VAO or IBO.
 	~Object();
 
 	void BindTexture(int slot = 0) const;
 	void UnbindTexture() const;
-	static void SetTextureArray(const Shader& shader);
-	static void UnsetTextureArray(const Shader& shader);
+	static void SetTextureArray(const OPENGL::Shader& shader);
+	static void UnsetTextureArray(const OPENGL::Shader& shader);
 	void BindCubeMap(int slot) const;
 	void UnbindCubeMap() const;
 
 	void SetUniformModlMatrix() const;
 	void SetUniformModlMatrix(const ARM::Mat4& modl);
 
-	inline const std::shared_ptr<VertexArray> GetVAO() const { return m_VAO; }
-	inline const std::shared_ptr<IndexBuffer> GetIBO() const { return m_IBO; }
-	inline const Shader& GetShader() const { return m_Shader; }
-	inline const Texture& GetTexture() const { return m_Texture; }
+	inline const std::shared_ptr<OPENGL::VertexArray> GetVAO() const { return m_VAO; }
+	inline const std::shared_ptr<OPENGL::IndexBuffer> GetIBO() const { return m_IBO; }
+	inline const OPENGL::Shader& GetShader() const { return m_Shader; }
+	inline const OPENGL::Texture& GetTexture() const { return m_Texture; }
 	inline const unsigned int GetTextureID() const { return m_Texture.GetTextureID(); }
 	inline const ARM::Mat4 GetModlMatrix() const { return m_ModlMatrix; }
 

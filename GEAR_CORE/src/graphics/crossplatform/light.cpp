@@ -7,7 +7,7 @@ using namespace ARM;
 
 int Light::s_NumOfLights = 0;
 
-Light::Light(int type, const ARM::Vec3& position, ARM::Vec3& direction, const ARM::Vec4& colour, const Shader& shader)
+Light::Light(int type, const ARM::Vec3& position, ARM::Vec3& direction, const ARM::Vec4& colour, const OPENGL::Shader& shader)
 	:m_Type(type), m_Position(position), m_Direction(direction), m_Colour(colour), m_Shader(shader)
 {
 	s_NumOfLights++;

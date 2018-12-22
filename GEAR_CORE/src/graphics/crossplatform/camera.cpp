@@ -5,7 +5,7 @@ using namespace GRAPHICS;
 using namespace CROSSPLATFORM;
 using namespace ARM;
 
-Camera::Camera(int projType, const Shader& shader, const ARM::Vec3& position, const ARM::Vec3& forward, const ARM::Vec3 up)
+Camera::Camera(int projType, const OPENGL::Shader& shader, const ARM::Vec3& position, const ARM::Vec3& forward, const ARM::Vec3 up)
 	:m_ProjectionType(projType), m_Shader(shader), m_Position(position), m_Forward(forward), m_Up(up)
 {
 	m_Forward.Normalise();

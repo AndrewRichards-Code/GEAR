@@ -5,7 +5,7 @@ using namespace GRAPHICS;
 using namespace CROSSPLATFORM;
 using namespace ARM;
 
-Object::Object(const char* objFilePath, const Shader& shader, const Texture& texture, const Mat4& modl)
+Object::Object(const char* objFilePath, const OPENGL::Shader& shader, const OPENGL::Texture& texture, const Mat4& modl)
 	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Texture(texture), m_ModlMatrix(modl)
 {
 	LoadObjDataIntoObject();
@@ -21,7 +21,7 @@ Object::Object(const char* objFilePath, const Shader& shader, const Texture& tex
 	SetUniformModlMatrix();
 }
 
-Object::Object(const char* objFilePath, const Shader& shader, const ARM::Vec4& colour, const ARM::Mat4& modl)
+Object::Object(const char* objFilePath, const OPENGL::Shader& shader, const ARM::Vec4& colour, const ARM::Mat4& modl)
 	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Colour(colour), m_ModlMatrix(modl)
 {
 	LoadObjDataIntoObject();
@@ -35,11 +35,11 @@ Object::Object(const char* objFilePath, const Shader& shader, const ARM::Vec4& c
 		i += 4;
 	}
 	GenVAOandIBO();
-	m_VAO->AddBuffer(std::make_shared<VertexBuffer>(&m_Colours[0], m_Colours.size(), 4), GEAR_BUFFER_COLOUR);
+	m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_Colours[0], m_Colours.size(), 4), GEAR_BUFFER_COLOUR);
 	SetUniformModlMatrix();
 }
 
-Object::Object(const char* objFilePath, const Shader& shader, const Texture& texture, const Vec3& position, const Vec2& size)
+Object::Object(const char* objFilePath, const OPENGL::Shader& shader, const OPENGL::Texture& texture, const Vec3& position, const Vec2& size)
 	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Texture(texture), m_Position(position), m_Size(size)
 {
 	m_ObjData.m_Vertices = { Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0), Vec3(-1, 1, 0) };
@@ -106,7 +106,7 @@ void Object::UnbindTexture() const
 	m_Texture.Unbind();
 }
 
-void Object::SetTextureArray(const Shader& shader)
+void Object::SetTextureArray(const OPENGL::Shader& shader)
 {
 	int m_TextIDs[] = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31 };
 	shader.Enable();
@@ -114,7 +114,7 @@ void Object::SetTextureArray(const Shader& shader)
 	shader.Disable();
 }
 
-void Object::UnsetTextureArray(const Shader& shader)
+void Object::UnsetTextureArray(const OPENGL::Shader& shader)
 {
 	shader.Enable();
 	shader.SetUniformArray<int>("u_Textures", 1, 32, nullptr);
@@ -190,12 +190,12 @@ void Object::GenVAOandIBO()
 {
 	if (m_Vertices.size() && m_TextCoords.size() && m_Normals.size() && m_Indices.size() > 0)
 	{
-		m_VAO = std::make_shared<VertexArray>();
-		m_VAO->AddBuffer(std::make_shared<VertexBuffer>(&m_Vertices[0], m_Vertices.size(), 3), GEAR_BUFFER_POSITIONS);
-		m_VAO->AddBuffer(std::make_shared<VertexBuffer>(&m_TextCoords[0], m_TextCoords.size(), 2), GEAR_BUFFER_TEXTCOORDS);
-		m_VAO->AddBuffer(std::make_shared<VertexBuffer>(&m_Normals[0], m_Normals.size(), 3), GEAR_BUFFER_NORMALS);
+		m_VAO = std::make_shared<OPENGL::VertexArray>();
+		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_Vertices[0], m_Vertices.size(), 3), GEAR_BUFFER_POSITIONS);
+		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_TextCoords[0], m_TextCoords.size(), 2), GEAR_BUFFER_TEXTCOORDS);
+		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_Normals[0], m_Normals.size(), 3), GEAR_BUFFER_NORMALS);
 
-		m_IBO = std::make_shared<IndexBuffer>(&m_Indices[0], m_Indices.size());
+		m_IBO = std::make_shared<OPENGL::IndexBuffer>(&m_Indices[0], m_Indices.size());
 	}
 	else
 	{

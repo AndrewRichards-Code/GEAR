@@ -16,7 +16,6 @@ namespace GRAPHICS {
 namespace CROSSPLATFORM {
 
 #ifdef GEAR_OPENGL
-using namespace OPENGL;
 
 class Light
 {
@@ -24,7 +23,7 @@ private:
 	static int s_NumOfLights;
 	int m_LightID;
 	int m_Type;
-	const Shader& m_Shader;
+	const OPENGL::Shader& m_Shader;
 
 	//Depth Shader for Shadows
 	//const Shader m_DepthShader = Shader("res/shaders/depth.vert", "res/shaders/depth.frag");
@@ -36,7 +35,7 @@ public:
 	ARM::Vec3 m_Direction;
 
 public:
-	Light(int type, const ARM::Vec3& position, ARM::Vec3& direction, const ARM::Vec4& colour, const Shader& shader);
+	Light(int type, const ARM::Vec3& position, ARM::Vec3& direction, const ARM::Vec4& colour, const OPENGL::Shader& shader);
 	~Light();
 
 	void Specular(float shineFactor, float reflectivity) const;
