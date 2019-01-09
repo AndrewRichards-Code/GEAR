@@ -121,7 +121,7 @@ namespace ARM
 		Mat4 temp = input;
 		float det = temp.Det();
 		if (det == 0.0f)
-			return;
+			return input;
 
 		Mat4 result = Mat4
 		(

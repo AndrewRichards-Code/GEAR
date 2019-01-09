@@ -89,7 +89,7 @@ namespace ARM
 		Mat3 temp = input;
 		float det = temp.Det();
 		if (det == 0.0f)
-			return;
+			return input;
 
 		Mat3 result = Mat3
 		(

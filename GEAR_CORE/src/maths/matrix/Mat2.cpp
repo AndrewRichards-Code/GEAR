@@ -66,7 +66,7 @@ namespace ARM
 		Mat2 temp = input;
 		float det = temp.Det();
 		if (det == 0.0f)
-			return;
+			return input;
 
 		return Mat2((input.d) / det, (-input.b) / det, (-input.c) / det, (input.a) / det);
 	}
