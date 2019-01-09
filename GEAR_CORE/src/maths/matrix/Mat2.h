@@ -21,9 +21,6 @@ namespace ARM
 		void Transpose();
 		Mat2 Transpose(const Mat2& input);
 
-		void Inverse();
-		Mat2 Inverse(const Mat2& input);
-
 		friend std::ostream& operator<< (std::ostream& stream, const Mat2& output)
 		{
 			stream << output.a << ", " << output.b << std::endl;

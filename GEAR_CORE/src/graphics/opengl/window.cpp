@@ -87,7 +87,7 @@ bool Window::Init()
 {
 	if (!glfwInit())
 	{
-		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::Window: Failed to initialise GLFW!" << std::endl;
+		std::cout << "ERROR: GEAR::GRAPHICS::Window: Failed to initialise GLFW!" << std::endl;
 		return false;
 	}
 
@@ -105,8 +105,8 @@ bool Window::Init()
 	if (!m_Window)
 	{
 		glfwTerminate();
-		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::Window: Failed to create GLFW window!" << std::endl;
-		return false;
+		std::cout << "ERROR: GEAR::GRAPHICS::Window: Failed to create GLFW window!" << std::endl;
+		return 1;
 	}
 	glfwMakeContextCurrent(m_Window);
 	glfwSwapInterval((int)m_VSync);
@@ -124,7 +124,7 @@ bool Window::Init()
 
 	if (glewInit() != GLEW_OK)
 	{
-		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::Window: Failed to initialise GLEW!" << std::endl;
+		std::cout << "ERROR: GEAR::GRAPHICS::Window: Failed to initialise GLEW!" << std::endl;
 		return false;
 	}
 	std::cout << "OpenGL: " << glGetString(GL_VERSION) << std::endl;

@@ -61,7 +61,6 @@ int main()
 	Object skybox("res/obj/cube.obj", shaderCube, textureSB, Mat4::Scale(Vec3(500, 500, 500)));
 	Object cube1("res/obj/cube.obj", shader, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Mat4::Identity());
 	Object cube2("res/obj/cube.obj", shader, Vec4(1.0f, 0.0f, 0.0f, 1.0f), Mat4::Identity());
-	Object cube3("res/obj/cube.obj", shader, texture3, Mat4::Translation(Vec3(0.0f, 0.0f, 5.0f)) * Mat4::Scale(Vec3(0.5f, 0.5f, 0.5f)));
 	Object stall("res/obj/stall.obj", shader, texture, Mat4::Identity());
 	Object quad1("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(1.5f, 0.0f, -2.0f)));
 	Object quad2("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(-1.5f, 0.0f, -2.0f)));
@@ -200,10 +199,8 @@ int main()
 			time++;
 		}
 	}
-	
+		
 	std::thread AudioThread(AudioThread);
-	AudioThread.detach();
-
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
@@ -364,7 +361,6 @@ int main()
 		//renderer.Submit(&sword);
 		renderer.Submit(&cube1);
 		renderer.Submit(&cube2);
-		renderer.Submit(&cube3);
 		renderer.Submit(&floor);
 		renderer.Submit(&quad1);
 		renderer.Submit(&quad2);
@@ -426,8 +422,6 @@ int main()
 
 		window.Update();
 	}
-	
 	if (AudioThread.joinable() == true)
-		 AudioThread.join();
-			
+			AudioThread.join();
 }

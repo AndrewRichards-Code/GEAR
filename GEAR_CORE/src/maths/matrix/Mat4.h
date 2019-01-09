@@ -23,9 +23,6 @@ namespace ARM
 		void Transpose();
 		Mat4 Transpose(const Mat4& input);
 
-		void Inverse();
-		Mat4 Inverse(const Mat4& input);
-
 		static Mat4 Identity(); //test
 		static Mat4 Orthographic(float left, float right, float bottom, float top, float near, float far); //test
 		static Mat4 Perspective(double fov, float aspectRatio, float near, float far); //test

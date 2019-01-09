@@ -10,6 +10,3 @@
 
 #include "MatVecMultiplication.h"
 #include "MatMatMultiplication.h"
-
-#include "calculus/differentiation.h"
-#include "calculus/integration.h"

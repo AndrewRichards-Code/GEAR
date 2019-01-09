@@ -20,9 +20,6 @@ namespace ARM
 		void Transpose();
 		Mat3 Transpose(const Mat3& input);
 
-		void Inverse();
-		Mat3 Inverse(const Mat3& input);
-
 		friend std::ostream& operator<< (std::ostream& stream, const Mat3& output)
 		{
 			stream << output.a << ", " << output.b << ", " << output.c << std::endl;
