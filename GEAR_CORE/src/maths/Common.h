@@ -2,6 +2,7 @@
 
 #include <ostream>
 #include <math.h>
+#include <functional>
 
 #include "conversion/ConvertDegAndRad.h"
 #include "conversion/ConvertCart2DandPolarCoord.h"
