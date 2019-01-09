@@ -83,6 +83,71 @@ namespace ARM
 			input.c, input.g, input.k, input.o, input.d, input.h, input.l, input.p);
 	}
 
+	//Inverts the current matrix object.
+	void Mat4::Inverse()
+	{
+		float det = this->Det();
+		if (det == 0.0f)
+			return;
+
+		Mat4 result = Mat4
+		(
+			+Mat3(f, g, h, j, k, l, n, o, p).Det() / det,
+			-Mat3(b, c, d, j, k, l, n, o, p).Det() / det,
+			+Mat3(b, c, d, f, g, h, n, o, p).Det() / det,
+			-Mat3(b, c, d, f, g, h, j, k, l).Det() / det,
+
+			-Mat3(e, g, h, i, k, l, m, o, p).Det() / det,
+			+Mat3(a, c, d, i, k, l, m, o, p).Det() / det,
+			-Mat3(a, c, d, e, g, h, m, o, p).Det() / det,
+			+Mat3(a, c, d, e, g, h, i, k, l).Det() / det,
+
+			+Mat3(e, f, h, i, j, l, m, n, p).Det() / det,
+			-Mat3(a, b, d, i, j, l, m, n, p).Det() / det,
+			+Mat3(a, b, d, e, f, h, m, n, p).Det() / det,
+			-Mat3(a, b, d, e, f, h, i, j, l).Det() / det,
+
+			-Mat3(e, f, g, i, j, k, m, n, o).Det() / det,
+			+Mat3(a, b, c, i, j, k, m, n, o).Det() / det,
+			-Mat3(a, b, c, e, f, g, m, n, o).Det() / det,
+			+Mat3(a, b, c, e, f, g, i, j, k).Det() / det
+		);
+		*this = result;
+	}
+
+	//Inverts the input matrix object, return to a new Mat4 object.
+	Mat4 Mat4::Inverse(const Mat4& input)
+	{
+		Mat4 temp = input;
+		float det = temp.Det();
+		if (det == 0.0f)
+			return input;
+
+		Mat4 result = Mat4
+		(
+			+Mat3(input.f, input.g, input.h, input.j, input.k, input.l, input.n, input.o, input.p).Det() / det,
+			-Mat3(input.b, input.c, input.d, input.j, input.k, input.l, input.n, input.o, input.p).Det() / det,
+			+Mat3(input.b, input.c, input.d, input.f, input.g, input.h, input.n, input.o, input.p).Det() / det,
+			-Mat3(input.b, input.c, input.d, input.f, input.g, input.h, input.j, input.k, input.l).Det() / det,
+
+			-Mat3(input.e, input.g, input.h, input.i, input.k, input.l, input.m, input.o, input.p).Det() / det,
+			+Mat3(input.a, input.c, input.d, input.i, input.k, input.l, input.m, input.o, input.p).Det() / det,
+			-Mat3(input.a, input.c, input.d, input.e, input.g, input.h, input.m, input.o, input.p).Det() / det,
+			+Mat3(input.a, input.c, input.d, input.e, input.g, input.h, input.i, input.k, input.l).Det() / det,
+
+			+Mat3(input.e, input.f, input.h, input.i, input.j, input.l, input.m, input.n, input.p).Det() / det,
+			-Mat3(input.a, input.b, input.d, input.i, input.j, input.l, input.m, input.n, input.p).Det() / det,
+			+Mat3(input.a, input.b, input.d, input.e, input.f, input.h, input.m, input.n, input.p).Det() / det,
+			-Mat3(input.a, input.b, input.d, input.e, input.f, input.h, input.i, input.j, input.l).Det() / det,
+
+			-Mat3(input.e, input.f, input.g, input.i, input.j, input.k, input.m, input.n, input.o).Det() / det,
+			+Mat3(input.a, input.b, input.c, input.i, input.j, input.k, input.m, input.n, input.o).Det() / det,
+			-Mat3(input.a, input.b, input.c, input.e, input.f, input.g, input.m, input.n, input.o).Det() / det,
+			+Mat3(input.a, input.b, input.c, input.e, input.f, input.g, input.i, input.j, input.k).Det() / det
+		);
+		return result;
+	}
+
 	//Constructs a Mat4 where the diagonal is 1.
 	Mat4 Mat4::Identity()
 	{

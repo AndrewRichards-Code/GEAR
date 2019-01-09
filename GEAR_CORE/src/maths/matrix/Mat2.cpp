@@ -49,4 +49,25 @@ namespace ARM
 	{
 		return Mat2 (input.a, input.c, input.b, input.d);
 	}
+
+	//Inverts the current matrix object.
+	void Mat2::Inverse()
+	{
+		float det = this->Det();
+		if (det == 0.0f)
+			return;
+
+		*this = Mat2(d / det, -b / det, -c / det, a / det);
+	}
+
+	//Inverts the input matrix object, return to a new Mat2 object.
+	Mat2 Mat2::Inverse(const Mat2& input)
+	{
+		Mat2 temp = input;
+		float det = temp.Det();
+		if (det == 0.0f)
+			return input;
+
+		return Mat2((input.d) / det, (-input.b) / det, (-input.c) / det, (input.a) / det);
+	}
 }
