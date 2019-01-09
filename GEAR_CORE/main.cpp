@@ -199,8 +199,10 @@ int main()
 			time++;
 		}
 	}
-		
+	
 	std::thread AudioThread(AudioThread);
+	AudioThread.detach();
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
@@ -422,6 +424,8 @@ int main()
 
 		window.Update();
 	}
+	
 	if (AudioThread.joinable() == true)
-			AudioThread.join();
+		 AudioThread.join();
+			
 }
