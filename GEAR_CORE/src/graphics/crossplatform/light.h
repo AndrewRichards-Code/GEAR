@@ -54,9 +54,6 @@ public:
 	void UpdateColour();
 	void UpdatePosition();
 	void UpdateDirection(double yaw, double pitch, double roll, bool invertYAxis);
-
-private:
-	void SetAllToZero();
 };
 }
 }

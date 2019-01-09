@@ -10,9 +10,7 @@ int Light::s_NumOfLights = 0;
 Light::Light(int type, const ARM::Vec3& position, ARM::Vec3& direction, const ARM::Vec4& colour, const OPENGL::Shader& shader)
 	:m_Type(type), m_Position(position), m_Direction(direction), m_Colour(colour), m_Shader(shader)
 {
-	SetAllToZero();
 	s_NumOfLights++;
-
 	if (s_NumOfLights < GEAR_MAX_LIGHTS + 1)
 	{
 		m_LightID = s_NumOfLights - 1;
@@ -35,7 +33,6 @@ Light::Light(int type, const ARM::Vec3& position, ARM::Vec3& direction, const AR
 
 Light::~Light()
 {
-	SetAllToZero();
 	s_NumOfLights--;
 }
 
@@ -143,22 +140,5 @@ void Light::UpdateDirection(double yaw, double pitch, double roll, bool invertYA
 
 	m_Shader.Enable();
 	m_Shader.SetUniform<float>("u_Lights[" + std::to_string(m_LightID) + "].Direction", { m_Direction.x, m_Direction.y, m_Direction.z });
-	m_Shader.Disable();
-}
-
-void Light::SetAllToZero()
-{
-	m_Shader.Enable();
-	m_Shader.SetUniform<int>(  "u_Lights[" + std::to_string(m_LightID) + "].Type", { 0 });
-	m_Shader.SetUniform<float>("u_Lights[" + std::to_string(m_LightID) + "].Colour", { 0.0f, 0.0f, 0.0f, 0.0f });
-	m_Shader.SetUniform<float>("u_Lights[" + std::to_string(m_LightID) + "].Position", { 0.0f, 0.0f, 0.0f });
-	m_Shader.SetUniform<float>("u_Lights[" + std::to_string(m_LightID) + "].Direction", { 0.0f, 0.0f, 0.0f });
-	m_Shader.SetUniform<float>("u_Lights[" + std::to_string(m_LightID) + "].ShineFactor", { 0 });
-	m_Shader.SetUniform<float>("u_Lights[" + std::to_string(m_LightID) + "].Reflectivity", { 0 });
-	m_Shader.SetUniform<float>("u_Lights[" + std::to_string(m_LightID) + "].AmbientFactor", { 0 });
-	m_Shader.SetUniform<float>("u_Lights[" + std::to_string(m_LightID) + "].AttenuationConstant", { 0 });
-	m_Shader.SetUniform<float>("u_Lights[" + std::to_string(m_LightID) + "].AttenuationLinear", { 0 });
-	m_Shader.SetUniform<float>("u_Lights[" + std::to_string(m_LightID) + "].AttenuationQuadratic", { 0 });
-	m_Shader.SetUniform<float>("u_Lights[" + std::to_string(m_LightID) + "].CutOff", { static_cast<float>(cos(0)) });
 	m_Shader.Disable();
 }
