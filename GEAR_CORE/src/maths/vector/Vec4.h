@@ -18,6 +18,7 @@ namespace ARM
 		Vec4(float x, float y, float z, float w);
 		Vec4(const Vec4 & copy);
 		Vec4(const Vec2 & a, const Vec2 & b);
+		Vec4(const Vec3& copy, float w);
 
 		~Vec4();
 

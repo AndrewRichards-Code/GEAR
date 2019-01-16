@@ -18,7 +18,7 @@ class Camera
 {
 private:
 	int m_ProjectionType;
-	const OPENGL::Shader& m_Shader;
+	OPENGL::Shader& m_Shader;
 	double m_Yaw = 0;
 	double m_Pitch = 0;
 	double m_Roll = 0;
@@ -27,7 +27,6 @@ private:
 	const ARM::Vec3 m_yAxis = ARM::Vec3(0, 1, 0);
 	const ARM::Vec3 m_zAxis = ARM::Vec3(0, 0, 1);
 
-	OPENGL::UniformBuffer m_MatricesUBO = OPENGL::UniformBuffer(sizeof(Matrices), 0);
 
 public:
 	ARM::Vec3 m_Position;
@@ -36,14 +35,18 @@ public:
 	ARM::Vec3 m_Up;
 	ARM::Vec3 m_Right;
 
-	struct Matrices
+private:
+	static bool s_InitialiseUBO;
+	struct CameraUBO
 	{
 		ARM::Mat4 m_ProjectionMatrix;
 		ARM::Mat4 m_ViewMatrix;
-	} m_Matrices;
+		ARM::Vec4 m_Position;
+		
+	} m_CameraUBO;
 
 public:
-	Camera(int projType, const OPENGL::Shader& shader, const ARM::Vec3& position, const ARM::Vec3& forward, const ARM::Vec3 up);
+	Camera(int projType, OPENGL::Shader& shader, const ARM::Vec3& position, const ARM::Vec3& forward, const ARM::Vec3 up);
 	~Camera();
 
 	void UpdateCameraPosition();
@@ -56,6 +59,8 @@ public:
 private:
 	void CalculateRight();
 	ARM::Mat4 CameraMatrix(const ARM::Vec3& camPos, const ARM::Vec3& camTarget, const ARM::Vec3& up);
+
+	void InitialiseUBO();
 
 };
 }

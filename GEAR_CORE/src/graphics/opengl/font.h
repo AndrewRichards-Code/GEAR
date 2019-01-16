@@ -30,7 +30,7 @@ private:
 	float m_WindowWidth = (float)m_Window.GetWidth();
 	float m_WindowHeight = (float)m_Window.GetHeight();
 	float m_WindowRatio = (float)m_Window.GetRatio();
-	Shader m_Shader = Shader("res/shaders/font.vert", "res/shaders/font.frag");
+	Shader m_Shader = Shader("res/shaders/GLSL/font.vert", "res/shaders/GLSL/font.frag");
 	BatchRenderer2D m_FontRenderer;
 
 	FT_Library m_ftlib;

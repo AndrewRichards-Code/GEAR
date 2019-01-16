@@ -10,16 +10,16 @@ void Renderer::AddLight(Light* light)
 	m_Lights.push_back(light);
 }
 
-void Renderer::Submit(const Object* obj)
+void Renderer::Submit(Object* obj)
 {
-	m_RenderQueue.push_back((const Object*) obj);
+	m_RenderQueue.push_back((Object*) obj);
 }
 
 void Renderer::Flush()
 {
 	while (!m_RenderQueue.empty())
 	{
-		const Object* obj = m_RenderQueue.front();
+		Object* obj = m_RenderQueue.front();
 
 		if (obj->GetTexture().IsCubeMap() == true)
 		{
@@ -81,7 +81,7 @@ void Renderer::Draw(const VertexArray& vao, const IndexBuffer& ibo, const Shader
 	}*/
 }
 
-void Renderer::Draw(const Object* obj) const
+void Renderer::Draw(Object* obj) const
 {
 	if (obj->GetTexture().IsCubeMap() == true)
 	{

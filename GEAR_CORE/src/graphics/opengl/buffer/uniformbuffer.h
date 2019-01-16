@@ -15,13 +15,16 @@ namespace OPENGL {
 		unsigned int m_BindingIndex;
 
 	public:
-		UniformBuffer(unsigned int count, unsigned int componentcount);
+		UniformBuffer(unsigned int size, unsigned int bindingIndex);
 		~UniformBuffer();
 
 		void Bind() const;
 		void Unbind() const;
 
 		void SubDataBind(const float * data, unsigned int size, unsigned int offset) const;
+
+		void PrintUBOData() const;
+		const float* const GetUBOData() const;
 
 		inline unsigned int GetSize() { return m_Size; }
 		inline unsigned int GetBindingIndex() { return m_BindingIndex; }

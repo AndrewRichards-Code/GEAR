@@ -5,9 +5,12 @@ using namespace GRAPHICS;
 using namespace CROSSPLATFORM;
 using namespace ARM;
 
-Object::Object(const char* objFilePath, const OPENGL::Shader& shader, const OPENGL::Texture& texture, const Mat4& modl)
+bool Object::s_InitialiseUBO = false;
+
+Object::Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const Mat4& modl)
 	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Texture(texture), m_ModlMatrix(modl)
 {
+	InitialiseUBO();
 	LoadObjDataIntoObject();
 	GenVAOandIBO();
 	if (m_Texture.IsCubeMap() == true)
@@ -21,9 +24,10 @@ Object::Object(const char* objFilePath, const OPENGL::Shader& shader, const OPEN
 	SetUniformModlMatrix();
 }
 
-Object::Object(const char* objFilePath, const OPENGL::Shader& shader, const ARM::Vec4& colour, const ARM::Mat4& modl)
+Object::Object(const char* objFilePath, OPENGL::Shader& shader, const ARM::Vec4& colour, const ARM::Mat4& modl)
 	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Colour(colour), m_ModlMatrix(modl)
 {
+	InitialiseUBO();
 	LoadObjDataIntoObject();
 	m_Colours.resize(2 * m_TextCoords.size());
 	for (int i = 0; i < (int)m_Colours.size();)
@@ -39,9 +43,10 @@ Object::Object(const char* objFilePath, const OPENGL::Shader& shader, const ARM:
 	SetUniformModlMatrix();
 }
 
-Object::Object(const char* objFilePath, const OPENGL::Shader& shader, const OPENGL::Texture& texture, const Vec3& position, const Vec2& size)
+Object::Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const Vec3& position, const Vec2& size)
 	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Texture(texture), m_Position(position), m_Size(size)
 {
+	InitialiseUBO();
 	m_ObjData.m_Vertices = { Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0), Vec3(-1, 1, 0) };
 	m_ObjData.m_TexCoords = { Vec2(0, 0), Vec2(1, 0), Vec2(1, 1), Vec2(0, 1) };
 	m_ObjData.m_Normals = { Vec3(0, 0, 1) };
@@ -134,19 +139,31 @@ void Object::UnbindCubeMap() const
 	m_Texture.UnbindCubeMap();
 }
 
-void Object::SetUniformModlMatrix() const
+void Object::SetUniformModlMatrix()
 {
-	m_Shader.Enable();
-	m_Shader.SetUniformMatrix<4>("u_Modl", 1, GL_TRUE, m_ModlMatrix.a);
-	m_Shader.Disable();
+	m_ModelUBO.m_ModlMatrix = m_ModlMatrix;
+	m_ModelUBO.m_ModlMatrix.Transpose();
+	m_Shader.UpdateUBO(1, &m_ModelUBO.m_ModlMatrix.a, sizeof(Mat4), offsetof(ModelUBO, m_ModlMatrix));
 }
 
 void Object::SetUniformModlMatrix(const Mat4& modl)
 {
 	m_ModlMatrix = modl;
-	m_Shader.Enable();
-	m_Shader.SetUniformMatrix<4>("u_Modl", 1, GL_TRUE, m_ModlMatrix.a);
-	m_Shader.Disable();
+	m_ModelUBO.m_ModlMatrix = modl;
+	m_ModelUBO.m_ModlMatrix.Transpose();
+	m_Shader.UpdateUBO(1, &m_ModelUBO.m_ModlMatrix.a, sizeof(Mat4), offsetof(ModelUBO, m_ModlMatrix));
+}
+
+void Object::InitialiseUBO()
+{
+	if (s_InitialiseUBO == false)
+	{
+		m_Shader.AddUBO(sizeof(ModelUBO), 1);
+		s_InitialiseUBO = true;
+	}
+
+	const float zero[sizeof(ModelUBO)] = { 0 };
+	m_Shader.UpdateUBO(1, zero, sizeof(ModelUBO), 0);
 }
 
 void Object::LoadObjDataIntoObject()

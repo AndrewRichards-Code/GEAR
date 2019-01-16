@@ -36,11 +36,11 @@ int main()
 	DebugOpenGL debug;
 #endif
 
-	Shader shader("res/shaders/basic.vert", "res/shaders/basic.frag");
+	Shader shader("res/shaders/GLSL/basic.vert", "res/shaders/GLSL/basic.frag");
 	shader.SetLighting(GEAR_CALC_LIGHT_DIFFUSE + GEAR_CALC_LIGHT_SPECULAR + GEAR_CALC_LIGHT_AMBIENT);
 
-	Shader shaderCube("res/shaders/cube.vert", "res/shaders/cube.frag");
-	//Shader shaderPBR("res/shaders/pbr.vert", "res/shaders/pbr.frag");
+	Shader shaderCube("res/shaders/GLSL/cube.vert", "res/shaders/GLSL/cube.frag");
+	//Shader shaderPBR("res/shaders/GLSL/pbr.vert", "res/shaders/GLSL/pbr.frag");
 
 	Texture::EnableDisableAniostrophicFilting(16.0f);
 	Texture::EnableDisableMipMapping();
@@ -73,19 +73,19 @@ int main()
 	Object quad4("res/obj/quad.obj", shader, texture2, Vec3(1.5f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
 	Object quad5("res/obj/quad.obj", shader, texture3, Vec3(-1.5f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
 
-	Font testFont1(window.GetTitle(),																				"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 700.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont2(window.GetDeviceName(),																			"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 690.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont3("OpenGL: " + window.GetOpenGLVersion() + " | GLSL: " + window.GetGLSLVersion(),					"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 680.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont4("Resolution: " + std::to_string(window.GetWidth()) + " x " + std::to_string(window.GetHeight()), "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 670.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont5("MSAA: " + window.GetAntiAliasingValue() + "x",													"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 660.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont6("Anisotrophic: " + Texture::GetAnisotrophicValue() + "x",										"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 650.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
-	Font testFont7("FPS: " + window.GetFPSString<int>(),															"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 640.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), window);
+	Font testFont1(window.GetTitle(),																				"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 700.0f), Vec4(1.0f, 1.0f, 1.0f, 0.5f), window);
+	Font testFont2(window.GetDeviceName(),																			"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 690.0f), Vec4(1.0f, 0.0f, 0.0f, 0.5f), window);
+	Font testFont3("OpenGL: " + window.GetOpenGLVersion() + " | GLSL: " + window.GetGLSLVersion(),					"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 680.0f), Vec4(0.0f, 0.3f, 0.8f, 0.5f), window);
+	Font testFont4("Resolution: " + std::to_string(window.GetWidth()) + " x " + std::to_string(window.GetHeight()), "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 670.0f), Vec4(1.0f, 1.0f, 1.0f, 0.5f), window);
+	Font testFont5("MSAA: " + window.GetAntiAliasingValue() + "x",													"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 660.0f), Vec4(1.0f, 1.0f, 1.0f, 0.5f), window);
+	Font testFont6("Anisotrophic: " + Texture::GetAnisotrophicValue() + "x",										"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 650.0f), Vec4(1.0f, 1.0f, 1.0f, 0.5f), window);
+	Font testFont7("FPS: " + window.GetFPSString<int>(),															"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 640.0f), Vec4(1.0f, 1.0f, 1.0f, 0.5f), window);
 
 	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, 1.0f, 0.0f));
 
 	Light light_main1(GEAR_LIGHT_SPOT, Vec3(0.0f, 10.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), shader);
 	light_main1.Specular(64.0f, 10.0f);
-	light_main1.Ambient(0.25f);
+	light_main1.Ambient(5.0f);
 	light_main1.Attenuation(0.007f, 0.0002f);
 	light_main1.SpotCone(DegToRad(45));
 
@@ -132,8 +132,8 @@ int main()
 	int fpsTime = 0;
 
 	//Logo Splashscreen
-	{
-		Shader logo_shader("res/shaders/basic.vert", "res/shaders/basic.frag");
+	/*{
+		Shader logo_shader("res/shaders/GLSL/basic.vert", "res/shaders/GLSL/basic.frag");
 		logo_shader.SetLighting(GEAR_CALC_LIGHT_AMBIENT);
 
 		Texture logo_texture("res/gear_core/GEAR_logo_square.png");
@@ -199,8 +199,10 @@ int main()
 			if (window.IsKeyPressed(GLFW_KEY_ENTER)) break;
 			time++;
 		}
-	}
+	}*/
+	shader.SetLighting(GEAR_CALC_LIGHT_DIFFUSE + GEAR_CALC_LIGHT_SPECULAR + GEAR_CALC_LIGHT_AMBIENT);
 	
+
 	std::thread AudioThread(AudioThread);
 	AudioThread.detach();
 
@@ -288,7 +290,7 @@ int main()
 				pitch = -pi / 2;
 		}
 
-
+		//Lights
 		if (window.IsKeyPressed(GLFW_KEY_O))
 		{
 			switch (rotateLight)
@@ -417,13 +419,13 @@ int main()
 		//FBO
 		fbo.Unbind();
 		window.Clear();
-		Shader fboShader("res/shaders/fbo.vert", "res/shaders/fbo.frag");
+		Shader fboShader("res/shaders/GLSL/fbo.vert", "res/shaders/GLSL/fbo.frag");
 		Object fboColour("res/obj/quad.obj", fboShader, *fbo.GetColourTexture(), Mat4::Scale(Vec3(1.0f, 1.0f, 1.0f)));
 		Object fboDepth("res/obj/quad.obj", fboShader, *fbo.GetColourTexture(), Mat4::Translation(Vec3(0.75f, 0.75f, 0.0f)) * Mat4::Scale(Vec3(0.25f, 0.25f, 1.0f)));
 		renderer.Draw(&fboDepth);
 		renderer.Draw(&fboColour);
 #endif
-
+		//shader.GetUBO(2).PrintUBOData();
 		window.Update();
 	}
 	

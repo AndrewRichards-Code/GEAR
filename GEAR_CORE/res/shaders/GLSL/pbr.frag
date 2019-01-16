@@ -1,28 +1,33 @@
 #version 450 core
 
+//To Post-Processing
 layout(location = 0) out vec4 colour;
 
-in DATA
+//From Vertex Shader
+layout(location = 0) in vec4 v_Position;
+layout(location = 1) in vec2 v_TextCoord;
+layout(location = 2) in float v_TextIds;
+layout(location = 3) in vec4 v_Normal;
+layout(location = 4) in vec4 v_WorldSpace;
+layout(location = 5) in vec4 v_VertexToCamera;
+layout(location = 6) in vec4 v_Colour;
+
+//From Application
+layout(binding = 0) uniform sampler2D u_Texture;
+layout(binding = 1) uniform sampler2D u_Textures[32];
+
+layout(std140, binding = 4) uniform lightUBO
 {
-	vec4 v_Position;
-	vec2 v_TextCoord;
-	float v_TextIds;
-	vec4 v_Normal;
-	vec4 v_VertexToLight;
-	vec4 v_VertexToCamera;
-	vec4 v_Colour;
-} fs_in;
+	vec4 u_LightColour;
+	vec3 u_LightDirection;
+	vec3 u_F0;
+	vec3 u_Albedo;
+	float u_Metallic;
+	float u_Roughness;
+	float u_AO;
+};
 
-uniform sampler2D u_Texture;
-uniform sampler2D u_Textures[32];
-
-uniform vec4 u_LightColour;
-uniform vec3 u_F0;
-uniform vec3 u_Albedo;
-uniform float u_Metallic;
-uniform float u_Roughness;
-uniform float u_AO;
-
+//Functions
 const float pi = 3.14151926535;
 
 vec3 Fresnel(float cosTheta, vec3 F0)
@@ -69,9 +74,9 @@ vec3 CalcPBRLighting()
 {
 	vec3 lightOut = {0, 0, 0};
 	
-	vec4 unitNormal = normalize(fs_in.v_Normal);
-	vec4 unitVertexToCamera = normalize(fs_in.v_VertexToCamera);
-	vec4 unitVertexToLight = -normalize(fs_in.v_VertexToLight);
+	vec4 unitNormal = normalize(v_Normal);
+	vec4 unitVertexToCamera = normalize(v_VertexToCamera);
+	vec4 unitVertexToLight = normalize(vec4(-u_LightDirection, 0.0));
 	vec4 unitHalfVector = normalize(unitNormal + unitVertexToCamera);
 
 	float distanceVertToCam = length(unitVertexToCamera);
@@ -107,22 +112,22 @@ void main()
 {
 	vec3 lighting = CalcPBRLighting();
 
-	if(fs_in.v_TextIds > 0)
+	if(v_TextIds > 0)
 	{
 		for (int i = 0; i < 32; i++)
 		{
-			int tid = int(fs_in.v_TextIds - 0.5);
+			int tid = int(v_TextIds - 0.5);
 			if(tid == i)
-				colour = vec4(lighting, 1.0) + texture(u_Textures[tid], fs_in.v_TextCoord);
+				colour = vec4(lighting, 1.0) + texture(u_Textures[tid], v_TextCoord);
 		}	
 	}
 	else
 	{
-		colour = vec4(lighting, 1.0) + texture(u_Texture, fs_in.v_TextCoord);
+		colour = vec4(lighting, 1.0) + texture(u_Texture, v_TextCoord);
 	}
 
-	if(fs_in.v_Colour != vec4(0, 0, 0, 0))
+	if(v_Colour != vec4(0, 0, 0, 0))
 	{
-		colour += fs_in.v_Colour;
+		colour += v_Colour;
 	}
 }

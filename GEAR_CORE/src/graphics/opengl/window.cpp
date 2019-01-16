@@ -122,6 +122,7 @@ bool Window::Init()
 	glfwSetCursorPosCallback(m_Window, cursor_position_callback);
 	glfwSetJoystickCallback(joystick_callback);
 
+	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)
 	{
 		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::Window: Failed to initialise GLEW!" << std::endl;

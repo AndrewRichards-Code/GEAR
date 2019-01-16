@@ -23,7 +23,7 @@ private:
 	GLuint m_VAO;
 	GLuint m_VBO;
 	std::unique_ptr<IndexBuffer> m_IBO;
-	const CROSSPLATFORM::Object* m_Object;
+	CROSSPLATFORM::Object* m_Object;
 	GLsizei m_IndexCount;
 
 	CROSSPLATFORM::Object::VertexData* m_BatchBuffer;
@@ -32,7 +32,7 @@ private:
 public:
 	void OpenMapBuffer();
 	void CloseMapBuffer();
-	void Submit(const CROSSPLATFORM::Object* obj) override;
+	void Submit(CROSSPLATFORM::Object* obj) override;
 	void Flush() override;
 	void CopyLights(const std::vector<CROSSPLATFORM::Light*> lights) { std::copy(lights.begin(), lights.end(), std::back_inserter(m_Lights)); }
 

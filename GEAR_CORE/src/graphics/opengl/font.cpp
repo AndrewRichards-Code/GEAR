@@ -28,7 +28,7 @@ Font::Font(const std::string& text, const char* filepath, int fontHeight, const 
 	{
 		if (FT_Error error = FT_Load_Char(m_Face, i, FT_LOAD_RENDER))
 		{
-			std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::Font: Failed to load character: " << i << "! Error Code: 0x" << std::hex << error << std::endl;;
+			std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::Font: Failed to load character: " << i << "! Error Code: 0x" << std::hex << error << std::dec << std::endl;;
 			continue;
 		}
 		
@@ -56,16 +56,15 @@ Font::Font(const std::string& text, const char* filepath, int fontHeight, const 
 		m_GlyphBuffer.emplace_back(CROSSPLATFORM::Object("res/obj/quad.obj", m_Shader, *ch.m_Texture, Vec3(pos_x, pos_y, 0.0f), Vec2(width, height)));
 		m_Position.x += (ch.m_Advance >> 6) * m_WindowRatio * scale;
 	}
-	
-	Mat4 proj = Mat4::Orthographic(0.0f, m_WindowWidth, 0.0f, m_WindowHeight, -1.0f, 1.0f);
-	m_Shader.Enable();
-	m_Shader.SetUniformMatrix<4>("u_Proj", 1, GL_TRUE, proj.a);
-	m_Shader.SetUniform<float>("u_Colour", { m_Colour.r, m_Colour.g, m_Colour.b, m_Colour.a });
-	m_Shader.Disable();
 }
 
 void Font::RenderText()
 {
+	Mat4 proj = Mat4::Orthographic(0.0f, m_WindowWidth, 0.0f, m_WindowHeight, -1.0f, 1.0f);
+	proj.Transpose();
+	m_Shader.UpdateUBO(0, &proj.a, sizeof(Mat4), 0);
+	m_Shader.UpdateUBO(0, (float*)&m_Colour.r, sizeof(Vec4), 128);
+
 	m_FontRenderer.OpenMapBuffer();
 	for (int i = 0; i < (int)m_GlyphBuffer.size(); i++)
 	{

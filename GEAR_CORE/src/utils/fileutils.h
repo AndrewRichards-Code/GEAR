@@ -38,6 +38,24 @@ public:
 		return output;
 	}
 
+	static std::vector<char> read_binary(const char* filepath)
+	{
+		std::ifstream stream(filepath, std::fstream::in | std::fstream::binary | std::fstream::ate);
+		if (!stream.is_open())
+		{
+			std::cout << "ERROR: GEAR::FileUtils::read_file: Could not read file " << filepath << ". File does not exist." << std::endl;
+			return {};
+		}
+
+		std::streamoff size = stream.tellg();
+		stream.seekg(0, std::fstream::beg);
+		std::vector<char> output(static_cast<unsigned int>(size));
+		stream.read(output.data(), size);
+
+		stream.close();
+		return output;
+	}
+
 	struct ObjData
 	{
 		std::vector<ARM::Vec3> m_Vertices;

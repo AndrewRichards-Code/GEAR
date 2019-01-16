@@ -67,7 +67,7 @@ void BatchRenderer2D::CloseMapBuffer()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void BatchRenderer2D::Submit(const Object* obj)
+void BatchRenderer2D::Submit(Object* obj)
 {
 	m_Object = obj;
 	const char* file = obj->GetObjFileName();

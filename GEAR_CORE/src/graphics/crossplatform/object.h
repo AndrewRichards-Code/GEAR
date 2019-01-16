@@ -28,12 +28,17 @@ private:
 
 	std::shared_ptr<OPENGL::VertexArray> m_VAO;
 	std::shared_ptr<OPENGL::IndexBuffer> m_IBO;
-	const OPENGL::Shader& m_Shader;
+	OPENGL::Shader& m_Shader;
 	const OPENGL::Texture& m_Texture = OPENGL::Texture("res/gear_core/GEAR_logo_square.png");
 	ARM::Vec4 m_Colour{ 0.0f, 0.0f, 0.0f, 0.0f };
 
-	ARM::Mat4 m_ModlMatrix;
+	static bool s_InitialiseUBO;
+	struct ModelUBO
+	{
+		ARM::Mat4 m_ModlMatrix;
+	} m_ModelUBO;
 
+	ARM::Mat4 m_ModlMatrix;
 	ARM::Vec3 m_Position;
 	ARM::Vec2 m_Size;
 
@@ -48,13 +53,14 @@ public:
 	};
 
 private:
+	void InitialiseUBO();
 	void LoadObjDataIntoObject();
 	void GenVAOandIBO();
 
 public:
-	Object(const char* objFilePath, const OPENGL::Shader& shader, const OPENGL::Texture& texture, const ARM::Mat4& modl);
-	Object(const char* objFilePath, const OPENGL::Shader& shader, const ARM::Vec4& colour, const ARM::Mat4& modl);
-	Object(const char* objFilePath, const OPENGL::Shader& shader, const OPENGL::Texture& texture, const ARM::Vec3& position, const ARM::Vec2& size); //Doesn't fill the VAO or IBO.
+	Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const ARM::Mat4& modl);
+	Object(const char* objFilePath, OPENGL::Shader& shader, const ARM::Vec4& colour, const ARM::Mat4& modl);
+	Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const ARM::Vec3& position, const ARM::Vec2& size); //Doesn't fill the VAO or IBO.
 	~Object();
 
 	void BindTexture(int slot = 0) const;
@@ -64,8 +70,9 @@ public:
 	void BindCubeMap(int slot) const;
 	void UnbindCubeMap() const;
 
-	void SetUniformModlMatrix() const;
+	void SetUniformModlMatrix();
 	void SetUniformModlMatrix(const ARM::Mat4& modl);
+
 
 	inline const std::shared_ptr<OPENGL::VertexArray> GetVAO() const { return m_VAO; }
 	inline const std::shared_ptr<OPENGL::IndexBuffer> GetIBO() const { return m_IBO; }

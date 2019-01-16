@@ -5,9 +5,13 @@ using namespace GRAPHICS;
 using namespace CROSSPLATFORM;
 using namespace ARM;
 
-Camera::Camera(int projType, const OPENGL::Shader& shader, const ARM::Vec3& position, const ARM::Vec3& forward, const ARM::Vec3 up)
+bool Camera::s_InitialiseUBO = false;
+
+Camera::Camera(int projType, OPENGL::Shader& shader, const ARM::Vec3& position, const ARM::Vec3& forward, const ARM::Vec3 up)
 	:m_ProjectionType(projType), m_Shader(shader), m_Position(position), m_Forward(forward), m_Up(up)
 {
+	InitialiseUBO();
+
 	m_Forward.Normalise();
 	m_Up.Normalise();
 	CalculateRight();
@@ -22,9 +26,8 @@ Camera::~Camera()
 
 void Camera::UpdateCameraPosition()
 {
-	m_Shader.Enable();
-	m_Shader.SetUniform<float>("u_CameraPosition", { m_Position.x,  m_Position.y,  m_Position.z });
-	m_Shader.Disable();
+	m_CameraUBO.m_Position = Vec4(m_Position, 1.0f);
+	m_Shader.UpdateUBO(0, (const float*)&m_CameraUBO.m_Position.x, sizeof(Vec4), offsetof(CameraUBO, m_Position));
 }
 void Camera::CalcuateLookAround(double yaw, double pitch, double roll, bool invertYAxis)
 {
@@ -47,23 +50,23 @@ void Camera::CalcuateLookAround(double yaw, double pitch, double roll, bool inve
 void Camera::DefineView()
 {
 	//m_ViewMatrix = CameraMatrix(m_Position, m_Position + m_Forward, m_Up); TODO: Corect the lookAt matrix or Quaternions
-	m_Matrices.m_ViewMatrix =
+	m_CameraUBO.m_ViewMatrix =
 		Mat4::Rotation(m_Pitch, m_xAxis) *
 		Mat4::Rotation(m_Yaw, m_yAxis) *
 		Mat4::Rotation(m_Roll, m_zAxis) *
 		Mat4::Translation(Vec3(-m_Position.x, -m_Position.y, -m_Position.z));
-	m_Matrices.m_ViewMatrix.Transpose();
+	m_CameraUBO.m_ViewMatrix.Transpose();
 
-	m_MatricesUBO.SubDataBind(&m_Matrices.m_ViewMatrix.a, sizeof(Mat4), offsetof(Matrices, m_ViewMatrix));
+	m_Shader.UpdateUBO(0, &m_CameraUBO.m_ViewMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ViewMatrix));
 }
 void Camera::DefineProjection(float left, float right, float bottom, float top, float near, float far)
 {
 	if (m_ProjectionType == GEAR_CAMERA_ORTHOGRAPHIC)
 	{
-		m_Matrices.m_ProjectionMatrix = Mat4::Orthographic(left, right, bottom, top, near, far);
-		m_Matrices.m_ProjectionMatrix.Transpose();
+		m_CameraUBO.m_ProjectionMatrix = Mat4::Orthographic(left, right, bottom, top, near, far);
+		m_CameraUBO.m_ProjectionMatrix.Transpose();
 
-		m_MatricesUBO.SubDataBind(&m_Matrices.m_ProjectionMatrix.a, sizeof(Mat4), offsetof(Matrices, m_ProjectionMatrix));
+		m_Shader.UpdateUBO(0, &m_CameraUBO.m_ProjectionMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ProjectionMatrix));
 	}
 	else
 	{
@@ -75,10 +78,10 @@ void Camera::DefineProjection(double fov, float aspectRatio, float zNear, float 
 {
 	if (m_ProjectionType == GEAR_CAMERA_PERSPECTIVE)
 	{
-		m_Matrices.m_ProjectionMatrix = Mat4::Perspective(fov, aspectRatio, zNear, zFar);
-		m_Matrices.m_ProjectionMatrix.Transpose();
+		m_CameraUBO.m_ProjectionMatrix = Mat4::Perspective(fov, aspectRatio, zNear, zFar);
+		m_CameraUBO.m_ProjectionMatrix.Transpose();
 
-		m_MatricesUBO.SubDataBind(&m_Matrices.m_ProjectionMatrix.a, sizeof(Mat4), offsetof(Matrices, m_ProjectionMatrix));
+		m_Shader.UpdateUBO(0, &m_CameraUBO.m_ProjectionMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ProjectionMatrix));
 	}
 	else
 	{
@@ -105,4 +108,16 @@ Mat4 Camera::CameraMatrix(const Vec3& camPos, const Vec3& camTarget, const Vec3&
 	Mat4 translation = Mat4::Translation(Vec3(-camPos.x, -camPos.y, -camPos.z));
 	Mat4 output = rotation * translation;
 	return output;
+}
+
+void Camera::InitialiseUBO()
+{
+	if (s_InitialiseUBO == false)
+	{
+		m_Shader.AddUBO(sizeof(CameraUBO), 0);
+		s_InitialiseUBO = true;
+
+		const float zero[sizeof(CameraUBO)] = { 0 };
+		m_Shader.UpdateUBO(0, zero, sizeof(CameraUBO), 0);
+	}
 }

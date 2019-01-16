@@ -36,16 +36,8 @@ void UniformBuffer::SubDataBind(const float* data, unsigned int size, unsigned i
 	{
 		Bind();
 		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
-		
-		/*if (m_BindingIndex == 1)
-		{
-			std::vector<float> dataOut(m_Size);
-			glGetBufferSubData(GL_UNIFORM_BUFFER, 0, m_Size, dataOut.data());
-			for (int i = 0; i < m_Size; i++)
-				std::cout << dataOut[i] << std::endl;
-
-			std::cout << std::endl;
-		}*/
+		/*if (m_BindingIndex == 2)
+			PrintUBOData();*/
 		Unbind();
 	}
 	else
@@ -53,4 +45,34 @@ void UniformBuffer::SubDataBind(const float* data, unsigned int size, unsigned i
 		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::UniformBuffer: The size or offset is too large for the UniformBuffer." << std::endl;
 	}
 	
+}
+
+void UniformBuffer::PrintUBOData() const
+{
+	Bind();
+	system("CLS");
+	std::vector<float> dataOut(m_Size);
+	glGetBufferSubData(GL_UNIFORM_BUFFER, 0, m_Size, dataOut.data());
+
+	for (unsigned int i = 0; i < (m_Size / 4); i += 4)
+	{
+		std::cout << "Offest: "<< 4 * i << " : "
+		<< dataOut[i + 0] << ", "
+		<< dataOut[i + 1] << ", "
+		<< dataOut[i + 2] << ", "
+		<< dataOut[i + 3] << ", "
+		<< std::endl;
+	}
+	std::cout << std::endl;
+	Unbind();
+}
+
+const float* const UniformBuffer::GetUBOData() const
+{
+	Bind();
+	std::vector<float> dataOut(m_Size);
+	glGetBufferSubData(GL_UNIFORM_BUFFER, 0, m_Size, dataOut.data());
+	Unbind();
+	return dataOut.data();
+
 }

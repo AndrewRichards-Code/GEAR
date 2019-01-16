@@ -16,18 +16,18 @@ namespace OPENGL {
 class Renderer
 {
 private:
-	std::deque<const CROSSPLATFORM::Object*> m_RenderQueue;
+	std::deque<CROSSPLATFORM::Object*> m_RenderQueue;
 
 protected:
 	std::vector<CROSSPLATFORM::Light*> m_Lights;
 
 public:
 	void AddLight(CROSSPLATFORM::Light* light);
-	virtual void Submit(const CROSSPLATFORM::Object* obj);
+	virtual void Submit(CROSSPLATFORM::Object* obj);
 	virtual void Flush();
 
 	void Draw(const VertexArray& vao, const IndexBuffer& ibo, const Shader& shader) const;
-	void Draw(const CROSSPLATFORM::Object* obj) const;
+	void Draw(CROSSPLATFORM::Object* obj) const;
 
 	void Clear() const;
 

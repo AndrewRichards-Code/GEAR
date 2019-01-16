@@ -18,6 +18,10 @@ namespace ARM
 	Vec4::Vec4(const Vec2 & a, const Vec2 & b)
 		: x(a.x), y(a.y), z(b.x), w(b.y) {}
 
+	//Constructs a Vec4 from a Vec3 and a 'w' value.
+	Vec4::Vec4(const Vec3& copy, float w)
+		:x(copy.x), y(copy.y), z(copy.z), w(w){}
+
 	//Destructs the Vec4.
 	Vec4::~Vec4() {}
 

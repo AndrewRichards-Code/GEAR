@@ -3,6 +3,8 @@
 #include <vector>
 
 #include "GL/glew.h"
+#include "buffer/vertexarray.h"
+#include "buffer/uniformbuffer.h"
 #include "../../utils/fileutils.h"
 
 #define GEAR_CALC_LIGHT_DIFFUSE  0x00000001
@@ -22,15 +24,31 @@ private:
 	const char* m_FragmentPath;
 	std::string m_VertexCode;
 	std::string m_FragmentCode;
+	std::vector<char> m_VertexBin;
+	std::vector<char> m_FragmentBin;
+
+	static std::vector<std::unique_ptr<UniformBuffer>> m_UBO;
+
+	static bool s_InitialiseUBO;
+	struct SetLightingUBO
+	{
+		float m_Diffuse;
+		float m_Specular;
+		float m_Ambient;
+		float m_Emit;
+	}m_SetLightingUBO;
 
 public:
-	Shader(const char* vertexPath, const char* fragmentPath);
+	Shader(const char * vertexPath, const char * fragmentPath, bool useBinaries = false);
 	~Shader();
 
 	void Enable() const;
 	void Disable() const;
 
-	void SetLighting(int types) const;
+	void AddUBO(unsigned int size, unsigned int bindingIndex);
+	void UpdateUBO(unsigned int bindingIndex, const float* data, unsigned int size, unsigned int offset)const;
+
+	void SetLighting(int types);
 
 	template<typename T> //Consider using switch over if, else if and else statements
 	inline void SetUniform(std::string locationInput, const std::vector<T>& values) const
@@ -105,10 +123,34 @@ public:
 	}
 
 	inline GLuint GetShaderID() const { return m_ShaderID; }
+	inline UniformBuffer& GetUBO(int bindingIndex)
+	{
+		unsigned int index = -1;
+		for (unsigned int i = 0; i < m_UBO.size(); i++)
+		{
+			if (m_UBO[i]->GetBindingIndex() == bindingIndex)
+			{
+				index = i;
+				break;
+			}
+		}
+		if (index == -1)
+		{
+			std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::Shader: Failed to find UBO at Binding Index " << bindingIndex << "." << std::endl;
+			__debugbreak();
+		}
+		return *m_UBO[index];
+	}
 
 private:
 	unsigned int CompileShader(unsigned int type, const std::string& source);
 	unsigned int CreateShader(const std::string& vertexshader, const std::string& fragmentshader);
+	
+	//Binary Loader
+	bool IsBinaryFile(const char * input);
+	std::string AmmendFilePath(const char* filePath, bool fileIsBinary, bool shaderWantsBinary);
+	unsigned int CompileShader(unsigned int type, const std::vector<char>& source);
+	unsigned int CreateShader(const std::vector<char>& vertexshader, const std::vector<char>& fragmentshader);
 };
 }
 }

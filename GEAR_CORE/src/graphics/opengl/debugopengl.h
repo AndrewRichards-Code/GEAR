@@ -111,7 +111,7 @@ public:
 
 
 		std::cout << std::endl << "ERROR: GEAR::DebugOpenGL!" << std::endl;
-		std::cout << id << ": " << _type << " of " << _severity << " severity, raised from " << _source << ": " << std::endl << msg << std::endl;
+		std::cout << "0x" << std::hex << (int)id << ": " << _type << " of " << _severity << " severity, raised from " << _source << ": " << std::endl << msg << std::dec << std::endl;
 		//system("PAUSE");
 	}
 
