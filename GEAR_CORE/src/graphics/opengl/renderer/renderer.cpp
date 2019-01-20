@@ -34,7 +34,7 @@ void Renderer::Flush()
 		obj->GetShader().Enable();
 		obj->GetVAO()->Bind();
 		obj->GetIBO()->Bind();
-		glDrawElements(GL_TRIANGLES, obj->GetIBO()->GetCount(), GL_UNSIGNED_INT, nullptr);
+		glDrawElements(m_DrawMode, obj->GetIBO()->GetCount(), GL_UNSIGNED_INT, nullptr);
 		obj->GetIBO()->Unbind();
 		obj->GetVAO()->Unbind();
 		obj->GetShader().Disable();
@@ -62,7 +62,7 @@ void Renderer::Draw(const VertexArray& vao, const IndexBuffer& ibo, const Shader
 	shader.Enable();
 	vao.Bind();
 	ibo.Bind();
-	glDrawElements(GL_TRIANGLES, ibo.GetCount(), GL_UNSIGNED_INT, nullptr);
+	glDrawElements(m_DrawMode, ibo.GetCount(), GL_UNSIGNED_INT, nullptr);
 	ibo.Unbind();
 	vao.Unbind();
 	shader.Disable();
@@ -95,7 +95,7 @@ void Renderer::Draw(Object* obj) const
 	obj->GetShader().Enable();
 	obj->GetVAO()->Bind();
 	obj->GetIBO()->Bind();
-	glDrawElements(GL_TRIANGLES, obj->GetIBO()->GetCount(), GL_UNSIGNED_INT, nullptr);
+	glDrawElements(m_DrawMode, obj->GetIBO()->GetCount(), GL_UNSIGNED_INT, nullptr);
 	obj->GetIBO()->Unbind();
 	obj->GetVAO()->Unbind();
 	obj->GetShader().Disable();

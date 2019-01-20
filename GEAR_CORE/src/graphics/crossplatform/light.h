@@ -1,13 +1,8 @@
 #pragma once
 
-#include "../opengl/shader.h"
+#include "../opengl/shader/shader.h"
 #include "camera.h"
 #include "../../maths/ARMLib.h"
-
-#define GEAR_LIGHT_POINT 0			//pos
-#define GEAR_LIGHT_DIRECTIONAL 1	//dir
-#define GEAR_LIGHT_SPOT 2			//cone, umbra, penumbra
-#define GEAR_LIGHT_AREA 3			//err...
 
 #define GEAR_MAX_LIGHTS 8
 
@@ -19,10 +14,19 @@ namespace CROSSPLATFORM {
 
 class Light
 {
+public:
+	enum class LightType :int
+	{
+		GEAR_LIGHT_POINT = 0,		//pos
+		GEAR_LIGHT_DIRECTIONAL = 1,	//dir
+		GEAR_LIGHT_SPOT = 2,		//cone, umbra, penumbra
+		GEAR_LIGHT_AREA = 3			//err...
+	};
+
 private:
 	static int s_NumOfLights;
 	int m_LightID;
-	int m_Type;
+	LightType m_Type;
 	OPENGL::Shader& m_Shader;
 
 	static bool s_InitialiseUBO;
@@ -51,7 +55,7 @@ public:
 	ARM::Vec3 m_Direction;
 
 public:
-	Light(int type, const ARM::Vec3& position, ARM::Vec3& direction, const ARM::Vec4& colour, OPENGL::Shader& shader);
+	Light(LightType type, const ARM::Vec3& position, ARM::Vec3& direction, const ARM::Vec4& colour, OPENGL::Shader& shader);
 	~Light();
 
 	void Specular(float shineFactor, float reflectivity);

@@ -4,7 +4,7 @@
 #include "../../../maths/ARMLib.h"
 #include "../buffer/vertexarray.h"
 #include "../buffer/indexbuffer.h"
-#include "../shader.h"
+#include "../shader/shader.h"
 #include "../../crossplatform/camera.h"
 #include "../../crossplatform/object.h"
 #include "../../crossplatform/light.h"
@@ -17,6 +17,7 @@ class Renderer
 {
 private:
 	std::deque<CROSSPLATFORM::Object*> m_RenderQueue;
+	int m_DrawMode = GL_TRIANGLES;
 
 protected:
 	std::vector<CROSSPLATFORM::Light*> m_Lights;

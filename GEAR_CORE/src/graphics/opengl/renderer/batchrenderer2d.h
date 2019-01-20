@@ -5,7 +5,7 @@
 #include "../../../maths/ARMLib.h"
 #include "../buffer/vertexarray.h"
 #include "../buffer/indexbuffer.h"
-#include "../shader.h"
+#include "../shader/shader.h"
 
 #define GEAR_RENDERER_MAX_OBJ           10000
 #define GEAR_RENDERER_VERTEX_SIZE	    sizeof(Object::VertexData)

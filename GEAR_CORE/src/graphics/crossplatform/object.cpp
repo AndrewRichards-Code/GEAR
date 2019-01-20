@@ -39,7 +39,7 @@ Object::Object(const char* objFilePath, OPENGL::Shader& shader, const ARM::Vec4&
 		i += 4;
 	}
 	GenVAOandIBO();
-	m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_Colours[0], m_Colours.size(), 4), GEAR_BUFFER_COLOUR);
+	m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_Colours[0], m_Colours.size(), 4), OPENGL::VertexArray::BufferType::GEAR_BUFFER_COLOUR);
 	SetUniformModlMatrix();
 }
 
@@ -143,7 +143,7 @@ void Object::SetUniformModlMatrix()
 {
 	m_ModelUBO.m_ModlMatrix = m_ModlMatrix;
 	m_ModelUBO.m_ModlMatrix.Transpose();
-	m_Shader.UpdateUBO(1, &m_ModelUBO.m_ModlMatrix.a, sizeof(Mat4), offsetof(ModelUBO, m_ModlMatrix));
+	OPENGL::BufferManager::UpdateUBO(1, &m_ModelUBO.m_ModlMatrix.a, sizeof(Mat4), offsetof(ModelUBO, m_ModlMatrix));
 }
 
 void Object::SetUniformModlMatrix(const Mat4& modl)
@@ -151,19 +151,19 @@ void Object::SetUniformModlMatrix(const Mat4& modl)
 	m_ModlMatrix = modl;
 	m_ModelUBO.m_ModlMatrix = modl;
 	m_ModelUBO.m_ModlMatrix.Transpose();
-	m_Shader.UpdateUBO(1, &m_ModelUBO.m_ModlMatrix.a, sizeof(Mat4), offsetof(ModelUBO, m_ModlMatrix));
+	OPENGL::BufferManager::UpdateUBO(1, &m_ModelUBO.m_ModlMatrix.a, sizeof(Mat4), offsetof(ModelUBO, m_ModlMatrix));
 }
 
 void Object::InitialiseUBO()
 {
 	if (s_InitialiseUBO == false)
 	{
-		m_Shader.AddUBO(sizeof(ModelUBO), 1);
+		OPENGL::BufferManager::AddUBO(sizeof(ModelUBO), 1);
 		s_InitialiseUBO = true;
 	}
 
 	const float zero[sizeof(ModelUBO)] = { 0 };
-	m_Shader.UpdateUBO(1, zero, sizeof(ModelUBO), 0);
+	OPENGL::BufferManager::UpdateUBO(1, zero, sizeof(ModelUBO), 0);
 }
 
 void Object::LoadObjDataIntoObject()
@@ -208,9 +208,9 @@ void Object::GenVAOandIBO()
 	if (m_Vertices.size() && m_TextCoords.size() && m_Normals.size() && m_Indices.size() > 0)
 	{
 		m_VAO = std::make_shared<OPENGL::VertexArray>();
-		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_Vertices[0], m_Vertices.size(), 3), GEAR_BUFFER_POSITIONS);
-		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_TextCoords[0], m_TextCoords.size(), 2), GEAR_BUFFER_TEXTCOORDS);
-		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_Normals[0], m_Normals.size(), 3), GEAR_BUFFER_NORMALS);
+		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_Vertices[0], m_Vertices.size(), 3), OPENGL::VertexArray::BufferType::GEAR_BUFFER_POSITIONS);
+		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_TextCoords[0], m_TextCoords.size(), 2), OPENGL::VertexArray::BufferType::GEAR_BUFFER_TEXTCOORDS);
+		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_Normals[0], m_Normals.size(), 3), OPENGL::VertexArray::BufferType::GEAR_BUFFER_NORMALS);
 
 		m_IBO = std::make_shared<OPENGL::IndexBuffer>(&m_Indices[0], m_Indices.size());
 	}

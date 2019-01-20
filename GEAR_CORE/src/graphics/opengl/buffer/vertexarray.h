@@ -5,12 +5,6 @@
 #include "GL/glew.h"
 #include "vertexbuffer.h"
 
-#define GEAR_BUFFER_POSITIONS 0
-#define GEAR_BUFFER_TEXTCOORDS 1
-#define GEAR_BUFFER_TEXTIDS 2
-#define GEAR_BUFFER_NORMALS 3
-#define GEAR_BUFFER_COLOUR 4
-
 namespace GEAR {
 namespace GRAPHICS {
 namespace OPENGL {
@@ -26,7 +20,15 @@ namespace OPENGL {
 		void Bind() const;
 		void Unbind() const;
 
-		void AddBuffer(std::shared_ptr<VertexBuffer> vbo, GLuint index);
+		enum class BufferType : GLuint
+		{
+			GEAR_BUFFER_POSITIONS = 0, 
+			GEAR_BUFFER_TEXTCOORDS = 1,
+			GEAR_BUFFER_TEXTIDS = 2,
+			GEAR_BUFFER_NORMALS = 3, 
+			GEAR_BUFFER_COLOUR = 4 
+		};
+		void AddBuffer(std::shared_ptr<VertexBuffer> vbo, BufferType type);
 	};
 }
 }

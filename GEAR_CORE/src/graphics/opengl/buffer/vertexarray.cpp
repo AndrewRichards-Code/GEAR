@@ -25,13 +25,13 @@ void VertexArray::Unbind() const
 	glBindVertexArray(0);
 }
 
-void VertexArray::AddBuffer(std::shared_ptr<VertexBuffer> vbo, GLuint index)
+void VertexArray::AddBuffer(std::shared_ptr<VertexBuffer> vbo, BufferType type)
 {
 	m_VertexBuffer.push_back(vbo);
 	Bind();
 	vbo->Bind();
-	glVertexAttribPointer(index, vbo->GetComponentCount(), GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(index);
+	glVertexAttribPointer((GLuint)type, vbo->GetComponentCount(), GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray((GLuint)type);
 	vbo->Unbind();
 	Unbind();
 }

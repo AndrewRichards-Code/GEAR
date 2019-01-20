@@ -1,8 +1,8 @@
 #pragma once
 
 #include <iostream>
-#include "../opengl/shader.h"
-#include "../opengl/buffer/uniformbuffer.h"
+#include "../opengl/shader/shader.h"
+#include "../opengl/buffer/buffermanager.h"
 #include "../../maths/ARMLib.h"
 
 #define GEAR_CAMERA_PERSPECTIVE 0
@@ -26,7 +26,6 @@ private:
 	const ARM::Vec3 m_xAxis = ARM::Vec3(1, 0, 0);
 	const ARM::Vec3 m_yAxis = ARM::Vec3(0, 1, 0);
 	const ARM::Vec3 m_zAxis = ARM::Vec3(0, 0, 1);
-
 
 public:
 	ARM::Vec3 m_Position;

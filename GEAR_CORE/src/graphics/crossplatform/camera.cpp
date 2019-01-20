@@ -27,7 +27,7 @@ Camera::~Camera()
 void Camera::UpdateCameraPosition()
 {
 	m_CameraUBO.m_Position = Vec4(m_Position, 1.0f);
-	m_Shader.UpdateUBO(0, (const float*)&m_CameraUBO.m_Position.x, sizeof(Vec4), offsetof(CameraUBO, m_Position));
+	OPENGL::BufferManager::UpdateUBO(0, (const float*)&m_CameraUBO.m_Position.x, sizeof(Vec4), offsetof(CameraUBO, m_Position));
 }
 void Camera::CalcuateLookAround(double yaw, double pitch, double roll, bool invertYAxis)
 {
@@ -57,7 +57,7 @@ void Camera::DefineView()
 		Mat4::Translation(Vec3(-m_Position.x, -m_Position.y, -m_Position.z));
 	m_CameraUBO.m_ViewMatrix.Transpose();
 
-	m_Shader.UpdateUBO(0, &m_CameraUBO.m_ViewMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ViewMatrix));
+	OPENGL::BufferManager::UpdateUBO(0, &m_CameraUBO.m_ViewMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ViewMatrix));
 }
 void Camera::DefineProjection(float left, float right, float bottom, float top, float near, float far)
 {
@@ -66,7 +66,7 @@ void Camera::DefineProjection(float left, float right, float bottom, float top, 
 		m_CameraUBO.m_ProjectionMatrix = Mat4::Orthographic(left, right, bottom, top, near, far);
 		m_CameraUBO.m_ProjectionMatrix.Transpose();
 
-		m_Shader.UpdateUBO(0, &m_CameraUBO.m_ProjectionMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ProjectionMatrix));
+		OPENGL::BufferManager::UpdateUBO(0, &m_CameraUBO.m_ProjectionMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ProjectionMatrix));
 	}
 	else
 	{
@@ -81,7 +81,7 @@ void Camera::DefineProjection(double fov, float aspectRatio, float zNear, float 
 		m_CameraUBO.m_ProjectionMatrix = Mat4::Perspective(fov, aspectRatio, zNear, zFar);
 		m_CameraUBO.m_ProjectionMatrix.Transpose();
 
-		m_Shader.UpdateUBO(0, &m_CameraUBO.m_ProjectionMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ProjectionMatrix));
+		OPENGL::BufferManager::UpdateUBO(0, &m_CameraUBO.m_ProjectionMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ProjectionMatrix));
 	}
 	else
 	{
@@ -114,10 +114,10 @@ void Camera::InitialiseUBO()
 {
 	if (s_InitialiseUBO == false)
 	{
-		m_Shader.AddUBO(sizeof(CameraUBO), 0);
+		OPENGL::BufferManager::AddUBO(sizeof(CameraUBO), 0);
 		s_InitialiseUBO = true;
 
 		const float zero[sizeof(CameraUBO)] = { 0 };
-		m_Shader.UpdateUBO(0, zero, sizeof(CameraUBO), 0);
+		OPENGL::BufferManager::UpdateUBO(0, zero, sizeof(CameraUBO), 0);
 	}
 }

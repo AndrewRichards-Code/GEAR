@@ -62,8 +62,8 @@ void Font::RenderText()
 {
 	Mat4 proj = Mat4::Orthographic(0.0f, m_WindowWidth, 0.0f, m_WindowHeight, -1.0f, 1.0f);
 	proj.Transpose();
-	m_Shader.UpdateUBO(0, &proj.a, sizeof(Mat4), 0);
-	m_Shader.UpdateUBO(0, (float*)&m_Colour.r, sizeof(Vec4), 128);
+	BufferManager::UpdateUBO(0, &proj.a, sizeof(Mat4), 0);
+	BufferManager::UpdateUBO(0, (float*)&m_Colour.r, sizeof(Vec4), 128);
 
 	m_FontRenderer.OpenMapBuffer();
 	for (int i = 0; i < (int)m_GlyphBuffer.size(); i++)

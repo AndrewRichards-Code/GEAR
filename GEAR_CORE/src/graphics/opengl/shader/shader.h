@@ -3,14 +3,10 @@
 #include <vector>
 
 #include "GL/glew.h"
-#include "buffer/vertexarray.h"
-#include "buffer/uniformbuffer.h"
-#include "../../utils/fileutils.h"
+#include "../buffer/vertexarray.h"
+#include "../buffer/buffermanager.h"
+#include "../../../utils/fileutils.h"
 
-#define GEAR_CALC_LIGHT_DIFFUSE  0x00000001
-#define GEAR_CALC_LIGHT_SPECULAR 0x00000010
-#define GEAR_CALC_LIGHT_AMBIENT  0x00000100
-#define GEAR_CALC_LIGHT_EMIT     0x00001000
 
 namespace GEAR {
 namespace GRAPHICS {
@@ -20,14 +16,14 @@ class Shader
 {
 private:
 	GLuint m_ShaderID;
+	std::vector<unsigned int>m_ShaderModuleIDs;
+	
 	const char* m_VertexPath;
 	const char* m_FragmentPath;
 	std::string m_VertexCode;
 	std::string m_FragmentCode;
 	std::vector<char> m_VertexBin;
 	std::vector<char> m_FragmentBin;
-
-	static std::vector<std::unique_ptr<UniformBuffer>> m_UBO;
 
 	static bool s_InitialiseUBO;
 	struct SetLightingUBO
@@ -45,9 +41,16 @@ public:
 	void Enable() const;
 	void Disable() const;
 
-	void AddUBO(unsigned int size, unsigned int bindingIndex);
-	void UpdateUBO(unsigned int bindingIndex, const float* data, unsigned int size, unsigned int offset)const;
+	void AddAdditionalShaderModule(unsigned int type, const char* shaderPath, bool useBinaries = false);
+	void FinalisePipline();
 
+	enum LightCalculation : int
+	{
+		GEAR_CALC_LIGHT_DIFFUSE   = 1,
+		GEAR_CALC_LIGHT_SPECULAR  = 2,
+		GEAR_CALC_LIGHT_AMBIENT   = 4,
+		GEAR_CALC_LIGHT_EMIT      = 8
+	};
 	void SetLighting(int types);
 
 	template<typename T> //Consider using switch over if, else if and else statements
@@ -123,25 +126,7 @@ public:
 	}
 
 	inline GLuint GetShaderID() const { return m_ShaderID; }
-	inline UniformBuffer& GetUBO(int bindingIndex)
-	{
-		unsigned int index = -1;
-		for (unsigned int i = 0; i < m_UBO.size(); i++)
-		{
-			if (m_UBO[i]->GetBindingIndex() == bindingIndex)
-			{
-				index = i;
-				break;
-			}
-		}
-		if (index == -1)
-		{
-			std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::Shader: Failed to find UBO at Binding Index " << bindingIndex << "." << std::endl;
-			__debugbreak();
-		}
-		return *m_UBO[index];
-	}
-
+	
 private:
 	unsigned int CompileShader(unsigned int type, const std::string& source);
 	unsigned int CreateShader(const std::string& vertexshader, const std::string& fragmentshader);

@@ -26,15 +26,15 @@ void BatchRenderer2D::Init()
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);
 
-	glEnableVertexAttribArray(GEAR_BUFFER_POSITIONS);
-	glEnableVertexAttribArray(GEAR_BUFFER_TEXTCOORDS);
-	glEnableVertexAttribArray(GEAR_BUFFER_TEXTIDS);
-	glEnableVertexAttribArray(GEAR_BUFFER_NORMALS);
+	glEnableVertexAttribArray((GLuint)VertexArray::BufferType::GEAR_BUFFER_POSITIONS);
+	glEnableVertexAttribArray((GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXTCOORDS);
+	glEnableVertexAttribArray((GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXTIDS);
+	glEnableVertexAttribArray((GLuint)VertexArray::BufferType::GEAR_BUFFER_NORMALS);
 
-	glVertexAttribPointer(GEAR_BUFFER_POSITIONS, 3, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)0);
-	glVertexAttribPointer(GEAR_BUFFER_TEXTCOORDS, 2, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)(3 * sizeof(GLfloat)));
-	glVertexAttribPointer(GEAR_BUFFER_TEXTIDS, 1, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)(5 * sizeof(GLfloat)));
-	glVertexAttribPointer(GEAR_BUFFER_NORMALS, 3, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)((6 * sizeof(GLfloat))));
+	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_POSITIONS, 3, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)0);
+	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXTCOORDS, 2, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)(3 * sizeof(GLfloat)));
+	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXTIDS, 1, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)(5 * sizeof(GLfloat)));
+	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_NORMALS, 3, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)((6 * sizeof(GLfloat))));
 	
 	GLuint indicies[GEAR_RENDERER_INDICIES_SIZE];
 	int offset = 0;

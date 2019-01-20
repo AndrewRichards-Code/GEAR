@@ -150,10 +150,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\opengl\buffer\buffermanager.cpp" />
+    <ClCompile Include="src\graphics\opengl\buffer\shaderstoragebuffer.cpp" />
     <ClCompile Include="src\audio\audiosource.cpp" />
     <ClCompile Include="src\audio\listener.cpp" />
     <ClCompile Include="src\graphics\opengl\buffer\framebuffer.cpp" />
     <ClCompile Include="src\graphics\opengl\font.cpp" />
+    <ClCompile Include="src\graphics\opengl\renderer\compute.cpp" />
+    <ClCompile Include="src\graphics\opengl\shader\computeshader.cpp" />
     <ClCompile Include="src\maths\calculus\differentiation.cpp" />
     <ClCompile Include="src\maths\calculus\integration.cpp" />
     <ClCompile Include="src\maths\quaternion\Quat.cpp" />
@@ -165,7 +169,7 @@
     <ClCompile Include="src\graphics\crossplatform\object.cpp" />
     <ClCompile Include="src\graphics\opengl\renderer\batchrenderer2d.cpp" />
     <ClCompile Include="src\graphics\opengl\renderer\renderer.cpp" />
-    <ClCompile Include="src\graphics\opengl\shader.cpp" />
+    <ClCompile Include="src\graphics\opengl\shader\shader.cpp" />
     <ClCompile Include="src\graphics\opengl\texture.cpp" />
     <ClCompile Include="src\graphics\opengl\window.cpp" />
     <ClCompile Include="main.cpp" />
@@ -178,11 +182,15 @@
     <ClCompile Include="src\graphics\opengl\buffer\uniformbuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\graphics\opengl\buffer\buffermanager.h" />
+    <ClInclude Include="src\graphics\opengl\buffer\shaderstoragebuffer.h" />
     <ClInclude Include="src\audio\audiosource.h" />
     <ClInclude Include="src\audio\listener.h" />
     <ClInclude Include="src\gear.h" />
     <ClInclude Include="src\graphics\opengl\buffer\framebuffer.h" />
     <ClInclude Include="src\graphics\opengl\font.h" />
+    <ClInclude Include="src\graphics\opengl\renderer\compute.h" />
+    <ClInclude Include="src\graphics\opengl\shader\computeshader.h" />
     <ClInclude Include="src\input\inputmanager.h" />
     <ClInclude Include="src\maths\calculus\differentiation.h" />
     <ClInclude Include="src\maths\calculus\integration.h" />
@@ -196,7 +204,7 @@
     <ClInclude Include="src\graphics\crossplatform\object.h" />
     <ClInclude Include="src\graphics\opengl\renderer\batchrenderer2d.h" />
     <ClInclude Include="src\graphics\opengl\renderer\renderer.h" />
-    <ClInclude Include="src\graphics\opengl\shader.h" />
+    <ClInclude Include="src\graphics\opengl\shader\shader.h" />
     <ClInclude Include="src\graphics\opengl\texture.h" />
     <ClInclude Include="src\graphics\opengl\window.h" />
     <ClInclude Include="src\maths\ARMLib.h" />
@@ -230,6 +238,9 @@
     <None Include="res\shaders\GLSL\font.vert" />
     <None Include="res\shaders\GLSL\pbr.frag" />
     <None Include="res\shaders\GLSL\pbr.vert" />
+    <None Include="res\shaders\GLSL\reflection.frag" />
+    <None Include="res\shaders\GLSL\reflection.vert" />
+    <None Include="res\shaders\GLSL\test.comp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

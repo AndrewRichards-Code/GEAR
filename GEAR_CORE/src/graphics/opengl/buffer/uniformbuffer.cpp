@@ -10,9 +10,9 @@ UniformBuffer::UniformBuffer(unsigned int size, unsigned int bindingIndex) //Onl
 	glGenBuffers(1, &m_UniformID);
 	glBindBuffer(GL_UNIFORM_BUFFER, m_UniformID);
 	glBufferData(GL_UNIFORM_BUFFER, m_Size, nullptr, GL_DYNAMIC_DRAW);
+	glBindBufferRange(GL_UNIFORM_BUFFER, m_BindingIndex, m_UniformID, 0, m_Size);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-	glBindBufferRange(GL_UNIFORM_BUFFER, m_BindingIndex, m_UniformID, 0, m_Size);
 }
 
 UniformBuffer::~UniformBuffer()
@@ -36,7 +36,7 @@ void UniformBuffer::SubDataBind(const float* data, unsigned int size, unsigned i
 	{
 		Bind();
 		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
-		/*if (m_BindingIndex == 2)
+		/*if (m_BindingIndex == 0)
 			PrintUBOData();*/
 		Unbind();
 	}
@@ -44,7 +44,6 @@ void UniformBuffer::SubDataBind(const float* data, unsigned int size, unsigned i
 	{
 		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::UniformBuffer: The size or offset is too large for the UniformBuffer." << std::endl;
 	}
-	
 }
 
 void UniformBuffer::PrintUBOData() const
@@ -74,5 +73,4 @@ const float* const UniformBuffer::GetUBOData() const
 	glGetBufferSubData(GL_UNIFORM_BUFFER, 0, m_Size, dataOut.data());
 	Unbind();
 	return dataOut.data();
-
 }

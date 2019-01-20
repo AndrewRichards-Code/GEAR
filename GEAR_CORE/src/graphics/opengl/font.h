@@ -4,7 +4,7 @@
 #include "ft2build.h"
 #include FT_FREETYPE_H
 
-#include "shader.h"
+#include "shader/shader.h"
 #include "texture.h"
 #include "renderer/batchrenderer2d.h"
 #include "window.h"

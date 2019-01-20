@@ -1,5 +1,7 @@
 #include "src/gear.h"
 //#include "src/utils/fbxLoader.h"
+//#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+
 
 #define GEAR_USE_FBO 0
 
@@ -37,9 +39,11 @@ int main()
 #endif
 
 	Shader shader("res/shaders/GLSL/basic.vert", "res/shaders/GLSL/basic.frag");
-	shader.SetLighting(GEAR_CALC_LIGHT_DIFFUSE + GEAR_CALC_LIGHT_SPECULAR + GEAR_CALC_LIGHT_AMBIENT);
+	shader.SetLighting(Shader::GEAR_CALC_LIGHT_DIFFUSE | Shader::GEAR_CALC_LIGHT_SPECULAR | Shader::GEAR_CALC_LIGHT_AMBIENT);
 
 	Shader shaderCube("res/shaders/GLSL/cube.vert", "res/shaders/GLSL/cube.frag");
+	Shader shaderReflection("res/shaders/GLSL/reflection.vert", "res/shaders/GLSL/reflection.frag");
+	ComputeShader computeTest("res/shaders/GLSL/test.comp");
 	//Shader shaderPBR("res/shaders/GLSL/pbr.vert", "res/shaders/GLSL/pbr.frag");
 
 	Texture::EnableDisableAniostrophicFilting(16.0f);
@@ -58,11 +62,20 @@ int main()
 		"res/img/mp_arctic/arctic-ice_rt.tga",
 		"res/img/mp_arctic/arctic-ice_lf.tga" });
 
+	Texture textureCube3({
+		"res/img/mp_midnight/midnight-silence_ft.tga",
+		"res/img/mp_midnight/midnight-silence_bk.tga",
+		"res/img/mp_midnight/midnight-silence_up.tga",
+		"res/img/mp_midnight/midnight-silence_dn.tga",
+		"res/img/mp_midnight/midnight-silence_rt.tga",
+		"res/img/mp_midnight/midnight-silence_lf.tga"
+		});
+
 	Object skybox("res/obj/cube.obj", shaderCube, textureSB, Mat4::Scale(Vec3(500, 500, 500)));
 	Object cube1("res/obj/cube.obj", shader, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Mat4::Identity());
 	Object cube2("res/obj/cube.obj", shader, Vec4(1.0f, 0.0f, 0.0f, 1.0f), Mat4::Identity());
-	Object cube3("res/obj/cube.obj", shader, texture3, Mat4::Translation(Vec3(0.0f, 0.0f, 5.0f)) * Mat4::Scale(Vec3(0.5f, 0.5f, 0.5f)));
-	Object stall("res/obj/stall.obj", shader, texture, Mat4::Identity());
+	Object cube3("res/obj/cube.obj", shaderReflection, textureSB, Mat4::Translation(Vec3(0.0f, 0.0f, 5.0f)) * Mat4::Scale(Vec3(0.5f, 0.5f, 0.5f)));
+	Object stall("res/obj/stall.obj", shaderReflection, texture, Mat4::Identity());
 	Object quad1("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(1.5f, 0.0f, -2.0f)));
 	Object quad2("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(-1.5f, 0.0f, -2.0f)));
 	Object floor("res/obj/quad.obj", shader, texture4, Mat4::Translation(Vec3(0.0f, -2.0f, -2.0f)) * Mat4::Rotation(pi / 2, Vec3(1, 0, 0)) * Mat4::Scale(Vec3(500, 500, 1)));
@@ -83,13 +96,13 @@ int main()
 
 	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, 1.0f, 0.0f));
 
-	Light light_main1(GEAR_LIGHT_SPOT, Vec3(0.0f, 10.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), shader);
+	Light light_main1(Light::LightType::GEAR_LIGHT_SPOT, Vec3(0.0f, 10.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), shader);
 	light_main1.Specular(64.0f, 10.0f);
 	light_main1.Ambient(5.0f);
 	light_main1.Attenuation(0.007f, 0.0002f);
 	light_main1.SpotCone(DegToRad(45));
 
-	Light light_main2(GEAR_LIGHT_SPOT, Vec3(0.0f, 10.0f, 30.0f), Vec3(0.0f, -1.0f, 0.0f), Vec4(1.0f, 0.0f, 0.0f, 1.0f), shader);
+	Light light_main2(Light::LightType::GEAR_LIGHT_SPOT, Vec3(0.0f, 10.0f, 30.0f), Vec3(0.0f, -1.0f, 0.0f), Vec4(1.0f, 0.0f, 0.0f, 1.0f), shader);
 	light_main2.Specular(64.0f, 10.0f);
 	light_main2.Ambient(0.05f);
 	light_main2.Attenuation(0.007f, 0.0002f);
@@ -107,6 +120,7 @@ int main()
 
 	BatchRenderer2D br2d;
 	Renderer renderer;
+	Compute compute(computeTest);
 	
 	InputManager main_input(GEAR_INPUT_JOYSTICK_CONTROLLER);
 	FrameBuffer fbo(window);
@@ -132,16 +146,19 @@ int main()
 	int fpsTime = 0;
 
 	//Logo Splashscreen
-	/*{
-		Shader logo_shader("res/shaders/GLSL/basic.vert", "res/shaders/GLSL/basic.frag");
-		logo_shader.SetLighting(GEAR_CALC_LIGHT_AMBIENT);
+	{
+		light_main1.m_Colour = Vec4(0, 0, 0, 0);
+		light_main2.m_Colour = Vec4(0, 0, 0, 0);
+		light_main1.UpdateColour();
+		light_main2.UpdateColour();	
+		shader.SetLighting(Shader::GEAR_CALC_LIGHT_AMBIENT);
 
 		Texture logo_texture("res/gear_core/GEAR_logo_square.png");
 		Texture render_texture("res/gear_core/GEAR_OpenGL.png");
-		Object logo("res/obj/quad.obj", logo_shader, logo_texture, Mat4::Translation(Vec3(0.0f, 0.0f, -1.0f)));
-		Object render("res/obj/quad.obj", logo_shader, render_texture, Mat4::Translation(Vec3(0.0f, 0.0f, -1.0f)));
+		Object logo("res/obj/quad.obj", shader, logo_texture, Mat4::Translation(Vec3(0.0f, 0.0f, -1.0f)));
+		Object render("res/obj/quad.obj", shader, render_texture, Mat4::Translation(Vec3(0.0f, 0.0f, -1.0f)));
 
-		Light logo_light(GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), logo_shader);
+		Light logo_light(Light::LightType::GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), GEAR_MAX_LIGHTS*Vec4(1.0f, 1.0f, 1.0f, 1.0f), shader);
 		logo_light.Attenuation(0, 0);
 
 		int time = 0;
@@ -151,7 +168,7 @@ int main()
 		{
 			window.Clear();
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-			logo_shader.Enable();
+			shader.Enable();
 			if (time < 60)
 			{
 				ambient += increment;
@@ -177,7 +194,7 @@ int main()
 		{
 			window.Clear();
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-			logo_shader.Enable();
+			shader.Enable();
 			if (time < 60 + 300)
 			{
 				ambient += increment;
@@ -199,9 +216,40 @@ int main()
 			if (window.IsKeyPressed(GLFW_KEY_ENTER)) break;
 			time++;
 		}
-	}*/
-	shader.SetLighting(GEAR_CALC_LIGHT_DIFFUSE + GEAR_CALC_LIGHT_SPECULAR + GEAR_CALC_LIGHT_AMBIENT);
+		light_main1.m_Colour = Vec4(1, 1, 1, 1);
+		light_main2.m_Colour = Vec4(1, 0, 0, 1);
+		light_main1.UpdateColour();
+		light_main2.UpdateColour();
+	}
+	shader.SetLighting(Shader::GEAR_CALC_LIGHT_DIFFUSE | Shader::GEAR_CALC_LIGHT_SPECULAR | Shader::GEAR_CALC_LIGHT_AMBIENT);
 	
+	//Compute Task
+	{
+		struct Pos
+		{
+			Vec4 pos[128];
+		}pos;
+		struct Vel
+		{
+			Vec4 vel[128];
+		}vel;
+
+		//Fill with Rand Nums
+		for (int i = 0; i < 128; i++)
+		{
+			float randNum = rand()%10;
+			pos.pos[i] = Vec4(randNum, randNum, randNum, 1);
+			vel.vel[i] = Vec4(randNum, randNum, randNum, 1);
+		}
+
+		compute.AddSSBO(sizeof(Pos), 0);
+		compute.AddSSBO(sizeof(Vel), 1);
+		compute.AccessSSBO(0, (float*)&pos, sizeof(Pos), 0, ShaderStorageBuffer::GEAR_MAP_WRITE_BIT);
+		compute.AccessSSBO(1, (float*)&vel, sizeof(Vel), 0, ShaderStorageBuffer::GEAR_MAP_WRITE_BIT);
+		compute.Dispatch(1, 1, 1);
+		compute.AccessSSBO(0, (float*)&pos, sizeof(Pos), 0, ShaderStorageBuffer::GEAR_MAP_READ_BIT);
+		compute.AccessSSBO(1, (float*)&vel, sizeof(Vel), 0, ShaderStorageBuffer::GEAR_MAP_READ_BIT);
+	}
 
 	std::thread AudioThread(AudioThread);
 	AudioThread.detach();
@@ -366,12 +414,12 @@ int main()
 		//renderer.Submit(&sword);
 		renderer.Submit(&cube1);
 		renderer.Submit(&cube2);
-		renderer.Submit(&cube3);
 		renderer.Submit(&floor);
 		renderer.Submit(&quad1);
 		renderer.Submit(&quad2);
 		renderer.Flush();
 		renderer.Draw(&skybox);
+		renderer.Draw(&cube3);
 		
 		//br2d.CopyLights(renderer.GetLights());
 		br2d.OpenMapBuffer();
@@ -425,7 +473,6 @@ int main()
 		renderer.Draw(&fboDepth);
 		renderer.Draw(&fboColour);
 #endif
-		//shader.GetUBO(2).PrintUBOData();
 		window.Update();
 	}
 	
