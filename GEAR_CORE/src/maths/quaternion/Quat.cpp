@@ -10,10 +10,16 @@ namespace ARM
 	Quat::Quat(float s, float i, float j, float k)
 		:s(s), i(i), j(j), k(k)	{}
 	
-	//Constructs a Quat taking s, and a Vec3.
-	Quat::Quat(float s, const Vec3& ijk)
-		:s(s), i(ijk.x), j(ijk.y), k(ijk.z)	{}
-	
+	//Constructs a Quat taking angle, and an axis.
+	Quat::Quat(float angle, const Vec3& axis)
+	{
+		Vec3 scaledAxis = axis * sinf(angle / 2.0f);
+		s = cosf(angle / 2.0f);
+		i = scaledAxis.x;
+		j = scaledAxis.y;
+		k = scaledAxis.z;
+		Normalise();
+	}
 	//Constructs a Quat taking Vec4.
 	Quat::Quat(const Vec4& sijk)
 		: s(sijk.x), i(sijk.y), j(sijk.z), k(sijk.w) {}
@@ -60,6 +66,18 @@ namespace ARM
 			temp_k /= length
 		);
 		return output;
+	}
+
+	//Converts a Quat and a Vec3.
+	Vec3 Quat::ToVec3(const Quat& other)
+	{
+		Vec3 result = Vec3(other.i, other.j, other.k);
+		float theta = 2 * acosf(other.s);
+		if (theta > 0)
+		{
+			result * (1.0f / sinf(theta / 2.0f));
+		}
+		return result;
 	}
 
 	//Converts the current object to a new Mat4.

@@ -160,10 +160,10 @@ void Object::InitialiseUBO()
 	{
 		OPENGL::BufferManager::AddUBO(sizeof(ModelUBO), 1);
 		s_InitialiseUBO = true;
-	}
 
-	const float zero[sizeof(ModelUBO)] = { 0 };
-	OPENGL::BufferManager::UpdateUBO(1, zero, sizeof(ModelUBO), 0);
+		const float zero[sizeof(ModelUBO)] = { 0 };
+		OPENGL::BufferManager::UpdateUBO(1, zero, sizeof(ModelUBO), 0);
+	}
 }
 
 void Object::LoadObjDataIntoObject()

@@ -43,7 +43,8 @@ namespace ARM
 		//Euler rotations
 		Vec3 RotEul(float x_theta, float y_theta, float z_theta);
 		//Quaternions
-		Vec3 RotQuat(double theta, const Vec3& axis);
+		Vec3 RotQuat(float theta, const Vec3& axis);
+		Vec3 RotQuat(const Quat& q);
 
 		//Equalivence operator==
 		Vec3 operator+ (const Vec3& other) const;

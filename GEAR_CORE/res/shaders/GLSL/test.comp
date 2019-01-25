@@ -2,33 +2,38 @@
 //#extension GL_ARB_compute_shader: enable
 //#entension GL_ARB_shader_storage_buffer_object: enable
 
-layout(local_size_x = 128, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 
 layout(std430, binding = 0) buffer ss_Position
 {
-	vec4 Positions[];	
+	vec4 Positions[1024];	
 };
 
 layout(std430, binding = 1) buffer ss_Velocities
 {
-	vec4 Velocities[];	
+	vec4 Velocities[1024];	
 };
+
+layout(rgba8, binding = 0) uniform image2D u_Image;
 
 void main()
 {
 	const vec4 g = vec4(0, -9.81, 0, 0);
 	const float dt = 0.01;
 
-	uint gid = gl_GlobalInvocationID.x;
+	uvec2 gid = gl_GlobalInvocationID.xy;
+	uint count = (gid.y * 64) + gid.x;
 
-	vec4 p = Positions[gid];
-	vec4 v = Velocities[gid];
+	vec4 p = Positions[count];
+	vec4 v = Velocities[count];
 
 	vec4 p1 = p + (v * dt) + 0.5 * g * dt * dt;
 	vec4 v1 = v + g * dt;
 
-	Positions[gid] = p1;
-	Velocities[gid] = v1;
+	Positions[count] = p1;
+	Velocities[count] = v1;
+
+	imageStore(u_Image, ivec2(gid), vec4(p1.xyz, 1));
 }
 
 /*

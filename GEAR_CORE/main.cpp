@@ -1,7 +1,8 @@
 #include "src/gear.h"
 //#include "src/utils/fbxLoader.h"
-//#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
-
+#if !(_DEBUG)
+#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+#endif
 
 #define GEAR_USE_FBO 0
 
@@ -33,6 +34,13 @@ int main()
 	Window window("GEAR", 1280, 720, 16);
 	//window.Fullscreen();
 	window.UpdateVSync(true);
+
+	/*Vec3 p(1, 0, 0);
+	Quat q((float) pi / 4, Vec3(0, 1, 0));
+	Quat qInv = q.Conjugate();
+
+	Vec3 final = Quat::ToVec3((q * p) * qInv);
+	Vec3 final2 = p.RotQuat(q);*/
 
 #if _DEBUG
 	DebugOpenGL debug;
@@ -223,39 +231,34 @@ int main()
 	}
 	shader.SetLighting(Shader::GEAR_CALC_LIGHT_DIFFUSE | Shader::GEAR_CALC_LIGHT_SPECULAR | Shader::GEAR_CALC_LIGHT_AMBIENT);
 	
-	//Compute Task
-	{
-		struct Pos
-		{
-			Vec4 pos[128];
-		}pos;
-		struct Vel
-		{
-			Vec4 vel[128];
-		}vel;
-
-		//Fill with Rand Nums
-		for (int i = 0; i < 128; i++)
-		{
-			float randNum = rand()%10;
-			pos.pos[i] = Vec4(randNum, randNum, randNum, 1);
-			vel.vel[i] = Vec4(randNum, randNum, randNum, 1);
-		}
-
-		compute.AddSSBO(sizeof(Pos), 0);
-		compute.AddSSBO(sizeof(Vel), 1);
-		compute.AccessSSBO(0, (float*)&pos, sizeof(Pos), 0, ShaderStorageBuffer::GEAR_MAP_WRITE_BIT);
-		compute.AccessSSBO(1, (float*)&vel, sizeof(Vel), 0, ShaderStorageBuffer::GEAR_MAP_WRITE_BIT);
-		compute.Dispatch(1, 1, 1);
-		compute.AccessSSBO(0, (float*)&pos, sizeof(Pos), 0, ShaderStorageBuffer::GEAR_MAP_READ_BIT);
-		compute.AccessSSBO(1, (float*)&vel, sizeof(Vel), 0, ShaderStorageBuffer::GEAR_MAP_READ_BIT);
-	}
-
 	std::thread AudioThread(AudioThread);
 	AudioThread.detach();
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+	//Compute Task Setup
+	struct Pos
+	{
+		Vec4 pos[1024];
+	}pos;
+	struct Vel
+	{
+		Vec4 vel[1024];
+	}vel;
+
+	//Fill with Rand Nums
+	for (int i = 0; i < 1024; i++)
+	{
+		float randNum = static_cast<float>(rand() % 10);
+		pos.pos[i] = Vec4(randNum, randNum, randNum, 1);
+		vel.vel[i] = Vec4(randNum, randNum, randNum, 1);
+	}
+
+	compute.AddImage(Texture::TextureType::GEAR_TEXTURE_2D, Texture::ImageFormat::GEAR_RGBA8, 1, 32, 32, 1, 0);
+	//compute.m_Images[0].Bind(Image::ImageAccess::GEAR_WRITE_ONLY);
+	compute.AddSSBO(sizeof(Pos), 0);
+	compute.AddSSBO(sizeof(Vel), 1);
 	
 	while (!window.Closed())
 	{
@@ -264,6 +267,17 @@ int main()
 		fbo.UseColourTextureAttachment();
 		fbo.UpdateFrameBufferSize();
 #endif
+		//Compute Task
+		{
+			//compute.m_Images[0].Bind(Image::ImageAccess::GEAR_WRITE_ONLY);
+			compute.AccessSSBO(0, (float*)&pos, sizeof(Pos), 0, ShaderStorageBuffer::GEAR_MAP_WRITE_BIT);
+			compute.AccessSSBO(1, (float*)&vel, sizeof(Vel), 0, ShaderStorageBuffer::GEAR_MAP_WRITE_BIT);
+			compute.Dispatch(1, 1, 1);
+			compute.AccessSSBO(0, (float*)&pos, sizeof(Pos), 0, ShaderStorageBuffer::GEAR_MAP_READ_BIT);
+			compute.AccessSSBO(1, (float*)&vel, sizeof(Vel), 0, ShaderStorageBuffer::GEAR_MAP_READ_BIT);
+			//compute.m_Images[0].Unbind();
+		}
+
 		window.Clear();
 		window.CalculateFPS();
 		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);

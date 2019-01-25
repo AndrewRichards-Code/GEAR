@@ -15,7 +15,7 @@ void BufferManager::AddSSBO(unsigned int size, unsigned int bindingIndex)
 		if (ssbo->GetBindingIndex() == bindingIndex)
 		{
 			std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::BufferManager: A SSBO at Binding Index " << bindingIndex << " has already been added." << std::endl;
-			throw;
+			return;
 		}
 	}
 	m_SSBOs.emplace_back(std::make_unique<ShaderStorageBuffer>(size, bindingIndex));
@@ -34,7 +34,7 @@ void BufferManager::AddUBO(unsigned int size, unsigned int bindingIndex)
 		if (ubo->GetBindingIndex() == bindingIndex)
 		{
 			std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::BufferManager: A SSBO at Binding Index " << bindingIndex << " has already been added." << std::endl;
-			throw;
+			return;
 		}
 	}
 	m_UBOs.emplace_back(std::make_unique<UniformBuffer>(size, bindingIndex));

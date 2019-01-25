@@ -23,6 +23,11 @@ Compute::~Compute()
 {
 }
 
+void Compute::AddImage(Texture::TextureType type, Texture::ImageFormat format, int multisample, int width, int height, int depth, int bindingIndex)
+{
+	m_Images.emplace_back(type, format, multisample, width, height, depth, bindingIndex);
+}
+
 void Compute::AddUBO(int size, int bindingIndex) const
 {
 	BufferManager::AddUBO(size, bindingIndex);
@@ -63,6 +68,6 @@ void Compute::Dispatch(int x, int y, int z)
 
 	m_ComputeShader.Enable();
 	glDispatchCompute(x, y, z);
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT|GL_IMAGE_BIT);
 	m_ComputeShader.Disable();
 }

@@ -68,21 +68,34 @@ namespace ARM
 	}
 
 	//Rotates the current object via quaternions and returns a new Vec3.
-	Vec3 Vec3::RotQuat(double theta, const Vec3& axis)
+	Vec3 Vec3::RotQuat(float theta, const Vec3& axis)
 	{
-		float sinOfHalfTheta = static_cast<float>(sin(theta / 2));
-		float cosOfHalfTheta = static_cast<float>(cos(theta / 2));
-
-		float quat_s = cosOfHalfTheta;
-		float quat_i = axis.x * sinOfHalfTheta;
-		float quat_j = axis.y * sinOfHalfTheta;
-		float quat_k = axis.z * sinOfHalfTheta;
-		
-		Quat rotation(quat_s, quat_i, quat_j, quat_k);
+		Quat rotation(theta, axis);
 		Quat rotationConjugate = rotation.Conjugate();
+		Quat temp = (rotation * (*this)) * rotationConjugate;
 
-		Quat temp = (rotation * axis) * rotationConjugate;
-		return Vec3(temp.i, temp.j, temp.k);
+		Vec3 result = Vec3(temp.i, temp.j, temp.k);
+		if (theta > 0)
+		{
+			result * (1.0f / sinf(theta / 2.0f));
+		}
+		return result;
+	}
+
+	//Rotates the current object via quaternions and returns a new Vec3.
+	Vec3 Vec3::RotQuat(const Quat& q)
+	{
+		Quat rotation = q;
+		Quat rotationConjugate = rotation.Conjugate();
+		Quat temp = (rotation * (*this)) * rotationConjugate;
+
+		Vec3 result = Vec3(temp.i, temp.j, temp.k);
+		float theta = 2 * acosf(temp.s);
+		if (theta > 0)
+		{
+			result * (1.0f / sinf(theta / 2.0f));
+		}
+		return result;
 	}
 
 	//Adds two Vec3s.
