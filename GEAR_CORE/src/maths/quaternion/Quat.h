@@ -24,8 +24,8 @@ namespace ARM
 		static Quat Normalise(const Quat& input);
 
 		static Vec3 ToVec3(const Quat & other);
-		Mat4 QuatToMat4();
-		static Mat4 QuatToMat4(const Quat& input);
+		Mat4 ToMat4();
+		static Mat4 ToMat4(const Quat& input);
 
 		Quat operator+ (const Quat& other) const;
 		Quat operator- (const Quat& other) const;
@@ -37,7 +37,7 @@ namespace ARM
 
 		friend std::ostream& operator<< (std::ostream& stream, const Quat& output)
 		{
-			stream << output.s << ", " << output.i << " i, " << output.j << " j, " << output.k << " k" << std::endl;
+			stream << output.s << ", " << output.i << "i, " << output.j << "j, " << output.k << "k" << std::endl;
 			
 			return stream;
 		}

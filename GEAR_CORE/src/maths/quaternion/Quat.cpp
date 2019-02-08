@@ -81,21 +81,34 @@ namespace ARM
 	}
 
 	//Converts the current object to a new Mat4.
-	Mat4 Quat::QuatToMat4()
+	Mat4 Quat::ToMat4()
 	{
-		return Mat4(+s, -i, -j, -k,
+		/*return Mat4(+s, -i, -j, -k,
 					+i, +s, -k, +j,
 					+j, +k, +s, -i,
-					+k, -j, +i, +s);
+					+k, -j, +i, +s);*/
+		Normalise();
+		return Mat4(
+			(powf(s, 2) + powf(i, 2) - powf(j, 2) - powf(k, 2)), 2*(i*j - k*s), 2*(i*k + j*s), 0,
+			2*(i*j + k*s), (powf(s, 2) - powf(i, 2) + powf(j, 2) - powf(k, 2)), 2*(j*k - i*s), 0,
+			2*(i*k - j*s), 2*(j*k + i*s), (powf(s, 2) - powf(i, 2) - powf(j, 2) + powf(k, 2)), 0,
+			0, 0, 0, 1);
 	}
 
 	//Converts the input object to a new Mat4.
-	Mat4 Quat::QuatToMat4(const Quat & input)
+	Mat4 Quat::ToMat4(const Quat& input)
 	{
-		return Mat4(+input.s, -input.i, -input.j, -input.k,
+		/*return Mat4(+input.s, -input.i, -input.j, -input.k,
 					+input.i, +input.s, -input.k, +input.j,
 					+input.j, +input.k, +input.s, -input.i,
-					+input.k, -input.j, +input.i, +input.s);
+					+input.k, -input.j, +input.i, +input.s);*/
+		Quat temp = input;
+		temp.Normalise();
+		return Mat4(
+			(powf(temp.s, 2) + powf(temp.i, 2) - powf(temp.j, 2) - powf(temp.k, 2)), 2*(temp.i*temp.j - temp.k*temp.s), 2*(temp.i*temp.k + temp.j*temp.s), 0,
+			2*(temp.i*temp.j + temp.k*temp.s), (powf(temp.s, 2) - powf(temp.i, 2) + powf(temp.j, 2) - powf(temp.k, 2)), 2*(temp.j*temp.k - temp.i*temp.s), 0,
+			2*(temp.i*temp.k - temp.j*temp.s), 2*(temp.j*temp.k + temp.i*temp.s), (powf(temp.s, 2) + powf(temp.i, 2) - powf(temp.j, 2) + powf(temp.k, 2)), 0,
+			0, 0, 0, 1);
 	}
 
 	//Adds two Quats.

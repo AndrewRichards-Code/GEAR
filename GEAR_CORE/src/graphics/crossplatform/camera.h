@@ -57,10 +57,7 @@ public:
 
 private:
 	void CalculateRight();
-	ARM::Mat4 CameraMatrix(const ARM::Vec3& camPos, const ARM::Vec3& camTarget, const ARM::Vec3& up);
-
 	void InitialiseUBO();
-
 };
 }
 }

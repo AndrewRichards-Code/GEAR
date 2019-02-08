@@ -18,8 +18,8 @@ private:
 	GLuint m_ShaderID;
 	std::vector<unsigned int>m_ShaderModuleIDs;
 	
-	const char* m_VertexPath;
-	const char* m_FragmentPath;
+	std::string m_VertexPath;
+	std::string m_FragmentPath;
 	std::string m_VertexCode;
 	std::string m_FragmentCode;
 	std::vector<char> m_VertexBin;
@@ -35,13 +35,13 @@ private:
 	}m_SetLightingUBO;
 
 public:
-	Shader(const char * vertexPath, const char * fragmentPath, bool useBinaries = false);
+	Shader(const std::string& vertexPath, const std::string& fragmentPath, bool useBinaries = false);
 	~Shader();
 
 	void Enable() const;
 	void Disable() const;
 
-	void AddAdditionalShaderModule(unsigned int type, const char* shaderPath, bool useBinaries = false);
+	void AddAdditionalShaderModule(unsigned int type, const std::string& shaderPath, bool useBinaries = false);
 	void FinalisePipline();
 
 	enum LightCalculation : int
@@ -132,8 +132,8 @@ private:
 	unsigned int CreateShader(const std::string& vertexshader, const std::string& fragmentshader);
 	
 	//Binary Loader
-	bool IsBinaryFile(const char * input);
-	std::string AmmendFilePath(const char* filePath, bool fileIsBinary, bool shaderWantsBinary);
+	bool IsBinaryFile(const std::string& input);
+	std::string AmmendFilePath(const std::string& filePath, bool fileIsBinary, bool shaderWantsBinary);
 	unsigned int CompileShader(unsigned int type, const std::vector<char>& source);
 	unsigned int CreateShader(const std::vector<char>& vertexshader, const std::vector<char>& fragmentshader);
 };

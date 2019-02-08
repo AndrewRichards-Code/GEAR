@@ -8,6 +8,8 @@
 #include "vector/Vec3.h"
 #include "vector/Vec4.h"
 
+#include "quaternion/Quat.h"
+
 #include "MatVecMultiplication.h"
 #include "MatMatMultiplication.h"
 

@@ -17,7 +17,7 @@ namespace GEAR {
 class FileUtils 
 {
 public:
-	static std::string read_file(const char* filepath)
+	static std::string read_file(const std::string& filepath)
 	{
 		std::ifstream stream(filepath, std::fstream::in);
 		std::string output;
@@ -38,12 +38,12 @@ public:
 		return output;
 	}
 
-	static std::vector<char> read_binary(const char* filepath)
+	static std::vector<char> read_binary(const std::string& filepath)
 	{
 		std::ifstream stream(filepath, std::fstream::in | std::fstream::binary | std::fstream::ate);
 		if (!stream.is_open())
 		{
-			std::cout << "ERROR: GEAR::FileUtils::read_file: Could not read file " << filepath << ". File does not exist." << std::endl;
+			std::cout << "ERROR: GEAR::FileUtils::read_binary: Could not read file " << filepath << ". File does not exist." << std::endl;
 			return {};
 		}
 

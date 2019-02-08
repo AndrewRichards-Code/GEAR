@@ -49,14 +49,29 @@ void Camera::CalcuateLookAround(double yaw, double pitch, double roll, bool inve
 
 void Camera::DefineView()
 {
-	//m_ViewMatrix = CameraMatrix(m_Position, m_Position + m_Forward, m_Up); TODO: Corect the lookAt matrix or Quaternions
 	m_CameraUBO.m_ViewMatrix =
 		Mat4::Rotation(m_Pitch, m_xAxis) *
 		Mat4::Rotation(m_Yaw, m_yAxis) *
 		Mat4::Rotation(m_Roll, m_zAxis) *
 		Mat4::Translation(Vec3(-m_Position.x, -m_Position.y, -m_Position.z));
-	m_CameraUBO.m_ViewMatrix.Transpose();
 
+	/*Quat x(m_Pitch, m_xAxis);
+	Quat y(m_Yaw, m_yAxis);
+	Quat orientation = x * y;
+	orientation.Normalise();
+	Mat4 rotation = Quat::ToMat4(orientation);
+	Mat4 translation = Mat4::Translation(Vec3(-m_Position.x, -m_Position.y, -m_Position.z));
+	m_CameraUBO.m_ViewMatrix = rotation * translation;*/
+
+	/*Vec3 p(1, 0, 0);
+	Quat q((float) pi / 4, Vec3(0, 1, 0));
+	Quat qInv = q.Conjugate();
+
+	Vec3 final = Quat::ToVec3((q * p) * qInv);
+	Vec3 final2 = p.RotQuat(q);*/
+
+
+	m_CameraUBO.m_ViewMatrix.Transpose();
 	OPENGL::BufferManager::UpdateUBO(0, &m_CameraUBO.m_ViewMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ViewMatrix));
 }
 void Camera::DefineProjection(float left, float right, float bottom, float top, float near, float far)
@@ -94,20 +109,6 @@ void Camera::DefineProjection(double fov, float aspectRatio, float zNear, float 
 void Camera::CalculateRight()
 {
 	m_Right = Vec3::Normalise(Vec3::Cross(m_Forward, m_Up));
-}
-Mat4 Camera::CameraMatrix(const Vec3& camPos, const Vec3& camTarget, const Vec3& up)
-{
-	Vec3 m_Forward = Vec3::Normalise(camTarget - camPos);
-	Vec3 m_Right = Vec3::Normalise(Vec3::Cross(m_Forward, up));
-	Vec3 m_Up = Vec3::Normalise(Vec3::Cross(m_Forward, m_Right));
-	
-	Mat4 rotation(Vec4( m_Right.x,    m_Right.y,    m_Right.z,   0),
-				  Vec4( m_Up.x,       m_Up.y,       m_Up.z,      0),
-				  Vec4(-m_Forward.x, -m_Forward.y, -m_Forward.z, 0),
-				  Vec4(0, 0, 0, 1));
-	Mat4 translation = Mat4::Translation(Vec3(-camPos.x, -camPos.y, -camPos.z));
-	Mat4 output = rotation * translation;
-	return output;
 }
 
 void Camera::InitialiseUBO()

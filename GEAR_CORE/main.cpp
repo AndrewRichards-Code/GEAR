@@ -35,18 +35,11 @@ int main()
 	//window.Fullscreen();
 	window.UpdateVSync(true);
 
-	/*Vec3 p(1, 0, 0);
-	Quat q((float) pi / 4, Vec3(0, 1, 0));
-	Quat qInv = q.Conjugate();
-
-	Vec3 final = Quat::ToVec3((q * p) * qInv);
-	Vec3 final2 = p.RotQuat(q);*/
-
 #if _DEBUG
 	DebugOpenGL debug;
 #endif
 
-	Shader shader("res/shaders/GLSL/basic.vert", "res/shaders/GLSL/basic.frag");
+	Shader shader("res/shaders/GLSL/basic.vert", "res/shaders/GLSL/basic.frag", true);
 	shader.SetLighting(Shader::GEAR_CALC_LIGHT_DIFFUSE | Shader::GEAR_CALC_LIGHT_SPECULAR | Shader::GEAR_CALC_LIGHT_AMBIENT);
 
 	Shader shaderCube("res/shaders/GLSL/cube.vert", "res/shaders/GLSL/cube.frag");

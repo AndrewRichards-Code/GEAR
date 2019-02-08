@@ -6,15 +6,21 @@ using namespace OPENGL;
 
 bool Shader::s_InitialiseUBO = false;
 
-Shader::Shader(const char* vertexPath, const char* fragmentPath, bool useBinaries)
+Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath, bool useBinaries)
 	:m_VertexPath(vertexPath), m_FragmentPath(fragmentPath)
 {
 	bool isBinaryVert = IsBinaryFile(vertexPath);
 	bool isBinaryFrag = IsBinaryFile(fragmentPath);
 	std::string m_TempVertexPath = AmmendFilePath(m_VertexPath, isBinaryVert, useBinaries);
 	std::string m_TempFragmentPath = AmmendFilePath(m_FragmentPath, isBinaryFrag, useBinaries);
-	m_VertexPath = m_TempVertexPath.c_str();
-	m_FragmentPath = m_TempFragmentPath.c_str();
+	m_VertexPath = m_TempVertexPath;
+	m_FragmentPath = m_TempFragmentPath;
+
+	/*int NumberOfExtensions;
+	glGetIntegerv(GL_NUM_EXTENSIONS, &NumberOfExtensions);
+	std::vector<std::string> ext(NumberOfExtensions);
+	for (int i = 0; i < NumberOfExtensions; i++) 
+		ext[i] = (const char*)glGetStringi(GL_EXTENSIONS, i);*/
 
 	if(useBinaries && GLEW_ARB_gl_spirv && GLEW_ARB_spirv_extensions)
 	{
@@ -48,10 +54,10 @@ void Shader::Disable() const
 	glUseProgram(0);
 }
 
-void Shader::AddAdditionalShaderModule(unsigned int type, const char* shaderPath, bool useBinaries)
+void Shader::AddAdditionalShaderModule(unsigned int type, const std::string& shaderPath, bool useBinaries)
 {
 	bool isBinaryVert = IsBinaryFile(shaderPath);
-	std::string m_ShaderPath = AmmendFilePath(m_VertexPath, isBinaryVert, useBinaries);
+	std::string m_ShaderPath = AmmendFilePath(shaderPath, isBinaryVert, useBinaries);
 
 	unsigned int m_ShaderModuleID;
 	if (useBinaries && GLEW_ARB_gl_spirv && GLEW_ARB_spirv_extensions)
@@ -134,7 +140,7 @@ unsigned int Shader::CreateShader(const std::string& vertexshader, const std::st
 
 //Binary Loader
 
-bool Shader::IsBinaryFile(const char* filePath)
+bool Shader::IsBinaryFile(const std::string& filePath)
 {
 	std::string file = filePath;
 	if (file.find(".spv") != std::string::npos)
@@ -143,7 +149,7 @@ bool Shader::IsBinaryFile(const char* filePath)
 		return false;
 }
 
-std::string Shader::AmmendFilePath(const char* filePath, bool fileIsBinary, bool shaderWantsBinary)
+std::string Shader::AmmendFilePath(const std::string& filePath, bool fileIsBinary, bool shaderWantsBinary)
 {
 #ifdef GEAR_OPENGL
 		std::string folder("SPIR-V_GL");
@@ -209,7 +215,7 @@ std::string Shader::AmmendFilePath(const char* filePath, bool fileIsBinary, bool
 unsigned int Shader::CompileShader(unsigned int type, const std::vector<char>& source)
 {
 	unsigned int id = glCreateShader(type);
-	glShaderBinary(1, &id, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, source.data(), source.size());
+	glShaderBinary(1, &id, GL_SHADER_BINARY_FORMAT_SPIR_V, source.data(), source.size());
 	glSpecializeShader(id, "main", 0, nullptr, nullptr);
 
 	int result;
@@ -221,7 +227,7 @@ unsigned int Shader::CompileShader(unsigned int type, const std::vector<char>& s
 		char* message = (char*)alloca(length * sizeof(char));
 		glGetShaderInfoLog(id, length, &length, message);
 		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::Shader: Failed to compile " <<
-			(type == GL_VERTEX_SHADER ? "vertex" : "fragment") << " shader from binary!" << std::endl;
+			(type == GL_VERTEX_SHADER ? "vertex" : GL_FRAGMENT_SHADER ? "fragment" : GL_GEOMETRY_SHADER ? "geometry" : GL_TESS_CONTROL_SHADER ? "Tessellation Control" : GL_TESS_EVALUATION_SHADER ? "Tessellation Evaluation" : "UNKNOWN") << " shader from binary!" << std::endl;
 		std::cout << message << std::endl;
 		glDeleteShader(id);
 		return 0;

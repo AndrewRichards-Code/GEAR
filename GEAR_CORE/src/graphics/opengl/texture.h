@@ -10,6 +10,19 @@ namespace OPENGL {
 class Texture
 {
 public:
+	enum class TextureType : unsigned int
+	{
+		GEAR_TEXTURE_UNKNOWN = 0,
+		GEAR_TEXTURE_1D = GL_TEXTURE_1D,
+		GEAR_TEXTURE_2D = GL_TEXTURE_2D,
+		GEAR_TEXTURE_3D = GL_TEXTURE_3D,
+		GEAR_TEXTURE_1D_ARRAY = GL_TEXTURE_1D_ARRAY,
+		GEAR_TEXTURE_2D_ARRAY = GL_TEXTURE_2D_ARRAY,
+		GEAR_TEXTURE_2D_MULTISAMPLE = GL_TEXTURE_2D_MULTISAMPLE,
+		GEAR_TEXTURE_2D_MULTISAMPLE_ARRAY = GL_TEXTURE_2D_MULTISAMPLE_ARRAY,
+		GEAR_TEXTURE_CUBE_MAP = GL_TEXTURE_CUBE_MAP,
+		GEAR_TEXTURE_CUBE_MAP_ARRAY = GL_TEXTURE_CUBE_MAP_ARRAY,
+	};
 	enum class ImageFormat : unsigned int
 	{
 		GEAR_IMAGE_UNKNOWN = 0,
@@ -60,25 +73,82 @@ public:
 		GEAR_DEPTH_COMPONENT24 = GL_DEPTH_COMPONENT24,							 //depth_component24
 		GEAR_DEPTH_COMPONENT32 = GL_DEPTH_COMPONENT32,							 //depth_component32
 		GEAR_DEPTH_COMPONENT32F = GL_DEPTH_COMPONENT32F,						 //depth_component32f
+		GEAR_DEPTH_STENCIL	= GL_DEPTH_STENCIL,									 //depth_stencil
+		GEAR_DEPTH24_STENCIL8 = GL_DEPTH24_STENCIL8,							 //depth24_stencil8
 		GEAR_DEPTH32F_STENCIL8 = GL_DEPTH32F_STENCIL8,							 //depth32f_stencil8
-		GEAR_FLOAT_32_UNSIGNED_INT_24_8_REV = GL_FLOAT_32_UNSIGNED_INT_24_8_REV, //float_32_uint24_8_rev
-		GLEAR_DEPTH_STENCIL	= GL_DEPTH_STENCIL,									 //depth_stencil
-		GLEAR_UNSIGNED_INT_24_8 = GL_UNSIGNED_INT_24_8,							 //uint_24_8
-		GLEAR_DEPTH24_STENCIL8 = GL_DEPTH24_STENCIL8							 //depth24_stencil8
+		GEAR_UNSIGNED_INT_24_8 = GL_UNSIGNED_INT_24_8,							 //uint_24_8
+		GEAR_FLOAT_32_UNSIGNED_INT_24_8_REV = GL_FLOAT_32_UNSIGNED_INT_24_8_REV  //float_32_uint24_8_rev
 	};
-	enum class TextureType : unsigned int
+	enum class BaseImageFormat
 	{
-		GEAR_TEXTURE_UNKNOWN = 0,
-		GEAR_TEXTURE_1D = GL_TEXTURE_1D,
-		GEAR_TEXTURE_2D = GL_TEXTURE_2D,
-		GEAR_TEXTURE_3D = GL_TEXTURE_3D,
-		GEAR_TEXTURE_1D_ARRAY = GL_TEXTURE_1D_ARRAY,
-		GEAR_TEXTURE_2D_ARRAY = GL_TEXTURE_2D_ARRAY,
-		GEAR_TEXTURE_2D_MULTISAMPLE = GL_TEXTURE_2D_MULTISAMPLE,
-		GEAR_TEXTURE_2D_MULTISAMPLE_ARRAY = GL_TEXTURE_2D_MULTISAMPLE_ARRAY,
-		GEAR_TEXTURE_CUBE_MAP = GL_TEXTURE_CUBE_MAP,
-		GEAR_TEXTURE_CUBE_MAP_ARRAY = GL_TEXTURE_CUBE_MAP_ARRAY,
+		GEAR_BASE_IMAGE_UNKNOWN = 0,
+		GEAR_RED = GL_RED,
+		GEAR_RG = GL_RG,
+		GEAR_RGB = GL_RGB,
+		GEAR_RGBA = GL_RGBA,
+		GEAR_DEPTH_COMPONENT = GL_DEPTH_COMPONENT,
+		GEAR_DEPTH_STENCIL = GL_DEPTH_STENCIL
 	};
+	BaseImageFormat ToBaseFormat(ImageFormat format)
+	{
+		switch (format)
+		{
+		default: return BaseImageFormat::GEAR_BASE_IMAGE_UNKNOWN;
+		case ImageFormat::GEAR_IMAGE_UNKNOWN: return BaseImageFormat::GEAR_BASE_IMAGE_UNKNOWN;
+		case ImageFormat::GEAR_RGBA32F: return BaseImageFormat::GEAR_RGBA;
+		case ImageFormat::GEAR_RGBA16F: return BaseImageFormat::GEAR_RGBA;
+		case ImageFormat::GEAR_RG32F: return BaseImageFormat::GEAR_RG;
+		case ImageFormat::GEAR_RG16F: return BaseImageFormat::GEAR_RG;
+		case ImageFormat::GEAR_R11F_G11F_B10F: return BaseImageFormat::GEAR_RGB;
+		case ImageFormat::GEAR_R32F: return BaseImageFormat::GEAR_RED;
+		case ImageFormat::GEAR_R16F: return BaseImageFormat::GEAR_RGBA;
+		case ImageFormat::GEAR_RGBA32UI: return BaseImageFormat::GEAR_RGBA;
+		case ImageFormat::GEAR_RGBA16UI: return BaseImageFormat::GEAR_RGBA;
+		case ImageFormat::GEAR_RGB10_A2UI: return BaseImageFormat::GEAR_RGB;
+		case ImageFormat::GEAR_RGBA8UI: return BaseImageFormat::GEAR_RGBA;
+		case ImageFormat::GEAR_RG32UI: return BaseImageFormat::GEAR_RG;
+		case ImageFormat::GEAR_RG16UI: return BaseImageFormat::GEAR_RG;
+		case ImageFormat::GEAR_RG8UI: return BaseImageFormat::GEAR_RG;
+		case ImageFormat::GEAR_R32UI: return BaseImageFormat::GEAR_RED;
+		case ImageFormat::GEAR_R16UI: return BaseImageFormat::GEAR_RED;
+		case ImageFormat::GEAR_R8UI: return BaseImageFormat::GEAR_RED;
+		case ImageFormat::GEAR_RGBA32I: return BaseImageFormat::GEAR_RGBA;
+		case ImageFormat::GEAR_RGBA16I: return BaseImageFormat::GEAR_RGBA;
+		case ImageFormat::GEAR_RGBA8I: return BaseImageFormat::GEAR_RGBA;
+		case ImageFormat::GEAR_RG32I: return BaseImageFormat::GEAR_RG;
+		case ImageFormat::GEAR_RG16I: return BaseImageFormat::GEAR_RG;
+		case ImageFormat::GEAR_RG8I: return BaseImageFormat::GEAR_RG;
+		case ImageFormat::GEAR_R32I: return BaseImageFormat::GEAR_RED;
+		case ImageFormat::GEAR_R16I: return BaseImageFormat::GEAR_RED;
+		case ImageFormat::GEAR_R8I: return BaseImageFormat::GEAR_RED;
+		case ImageFormat::GEAR_RGBA16: return BaseImageFormat::GEAR_RGBA;
+		case ImageFormat::GEAR_RGB10_A2: return BaseImageFormat::GEAR_RGB;
+		case ImageFormat::GEAR_RGBA8: return BaseImageFormat::GEAR_RGBA;
+		case ImageFormat::GEAR_RG16: return BaseImageFormat::GEAR_RG;
+		case ImageFormat::GEAR_RG8: return BaseImageFormat::GEAR_RG;
+		case ImageFormat::GEAR_R16: return BaseImageFormat::GEAR_RED;
+		case ImageFormat::GEAR_R8: return BaseImageFormat::GEAR_RED;
+		case ImageFormat::GEAR_RED: return BaseImageFormat::GEAR_RED;
+		case ImageFormat::GEAR_GREEN: return BaseImageFormat::GEAR_RED;
+		case ImageFormat::GEAR_BLUE: return BaseImageFormat::GEAR_RED;
+		case ImageFormat::GEAR_ALPHA: return BaseImageFormat::GEAR_RED;
+		case ImageFormat::GEAR_RGBA16_SNORM: return BaseImageFormat::GEAR_RGBA;
+		case ImageFormat::GEAR_RGBA8_SNORM: return BaseImageFormat::GEAR_RGBA;
+		case ImageFormat::GEAR_RG16_SNORM: return BaseImageFormat::GEAR_RG;
+		case ImageFormat::GEAR_RG8_SNORM: return BaseImageFormat::GEAR_RG;
+		case ImageFormat::GEAR_R16_SNORM: return BaseImageFormat::GEAR_RED;
+		case ImageFormat::GEAR_R8_SNORM: return BaseImageFormat::GEAR_RED;
+		case ImageFormat::GEAR_DEPTH_COMPONENT16: return BaseImageFormat::GEAR_DEPTH_COMPONENT;
+		case ImageFormat::GEAR_DEPTH_COMPONENT24: return BaseImageFormat::GEAR_DEPTH_COMPONENT;
+		case ImageFormat::GEAR_DEPTH_COMPONENT32: return BaseImageFormat::GEAR_DEPTH_COMPONENT;
+		case ImageFormat::GEAR_DEPTH_COMPONENT32F: return BaseImageFormat::GEAR_DEPTH_COMPONENT;
+		case ImageFormat::GEAR_DEPTH_STENCIL: return BaseImageFormat::GEAR_DEPTH_STENCIL;
+		case ImageFormat::GEAR_DEPTH24_STENCIL8: return BaseImageFormat::GEAR_DEPTH_STENCIL;
+		case ImageFormat::GEAR_DEPTH32F_STENCIL8: return BaseImageFormat::GEAR_DEPTH_STENCIL;
+		case ImageFormat::GEAR_UNSIGNED_INT_24_8: return BaseImageFormat::GEAR_RGBA;
+		case ImageFormat::GEAR_FLOAT_32_UNSIGNED_INT_24_8_REV: return BaseImageFormat::GEAR_RGBA;
+		}
+	}
 
 private:
 	unsigned int m_TextureID;
