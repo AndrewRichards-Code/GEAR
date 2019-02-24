@@ -21,7 +21,7 @@ namespace OPENGL {
 		void Bind() const;
 		void Unbind() const;
 
-		void SubDataBind(const float * data, unsigned int size, unsigned int offset) const;
+		void SubDataBind(const void* data, unsigned int size, unsigned int offset) const;
 
 		void PrintUBOData() const;
 		const float* const GetUBOData() const;

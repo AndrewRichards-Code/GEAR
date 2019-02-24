@@ -15,7 +15,7 @@ namespace OPENGL {
 #define MAX_KEYS 1024 
 #define MAX_BUTTONS 32 
 #define MAX_AXES 6
-#define MAX_JOY_BUTTONS 14
+#define MAX_JOY_BUTTONS 16
 
 class Window
 {

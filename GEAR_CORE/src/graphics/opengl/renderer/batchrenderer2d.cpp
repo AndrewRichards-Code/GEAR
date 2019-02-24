@@ -27,14 +27,16 @@ void BatchRenderer2D::Init()
 	glBindVertexArray(m_VAO);
 
 	glEnableVertexAttribArray((GLuint)VertexArray::BufferType::GEAR_BUFFER_POSITIONS);
-	glEnableVertexAttribArray((GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXTCOORDS);
-	glEnableVertexAttribArray((GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXTIDS);
+	glEnableVertexAttribArray((GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXCOORDS);
+	glEnableVertexAttribArray((GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXIDS);
 	glEnableVertexAttribArray((GLuint)VertexArray::BufferType::GEAR_BUFFER_NORMALS);
+	glEnableVertexAttribArray((GLuint)VertexArray::BufferType::GEAR_BUFFER_COLOURS);
 
-	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_POSITIONS, 3, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)0);
-	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXTCOORDS, 2, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)(3 * sizeof(GLfloat)));
-	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXTIDS, 1, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)(5 * sizeof(GLfloat)));
-	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_NORMALS, 3, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)((6 * sizeof(GLfloat))));
+	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_POSITIONS, 3, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)offsetof(Object::VertexData, m_Vertex));
+	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXCOORDS, 2, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)offsetof(Object::VertexData, m_TexCoord));
+	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXIDS, 1, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)offsetof(Object::VertexData, m_TexId));
+	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_NORMALS, 3, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)offsetof(Object::VertexData, m_Normal));
+	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_COLOURS, 3, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)offsetof(Object::VertexData, m_Colour));
 	
 	GLuint indicies[GEAR_RENDERER_INDICIES_SIZE];
 	int offset = 0;
@@ -71,72 +73,72 @@ void BatchRenderer2D::Submit(Object* obj)
 {
 	m_Object = obj;
 	const char* file = obj->GetObjFileName();
-	bool test = obj->forBatchRenderer2D;
+	bool test = obj->b_ForBatchRenderer2D;
 
 	int textureSlot = 0;
 	unsigned int textureID = obj->GetTextureID();
 
-	if (test == true)
+	if (test == true && file == "res/obj/quad.obj")
 	{
-		if (file == "res/obj/quad.obj")
+		bool found = false;
+		for (int i = 0; i < (int)m_TextureSlots.size(); i++)
 		{
-			bool found = false;
-			for (int i = 0; i < (int)m_TextureSlots.size(); i++)
+			if (m_TextureSlots[i] == textureID)
 			{
-				if (m_TextureSlots[i] == textureID)
-				{
-					textureSlot = i + 1;
-					found = true;
-					break;
-				}
+				textureSlot = i + 1;
+				found = true;
+				break;
 			}
-			if (!found)
-			{
-				if (m_TextureSlots.size() >= GEAR_RENDERER_MAX_TEXTURE_SLOTS)
-				{
-					CloseMapBuffer();
-					Flush();
-					OpenMapBuffer();
-				}
-				m_TextureSlots.push_back(textureID);
-				textureSlot = m_TextureSlots.size();
-			}
-
-			Object::VertexData temp[4];
-
-			int j = 0, k = 0;
-			for (int i = 0; i < 4; i++)
-			{
-				temp[i].m_Vertex.x = obj->GetVertices()[j + 0];
-				temp[i].m_Vertex.y = obj->GetVertices()[j + 1];
-				temp[i].m_Vertex.z = obj->GetVertices()[j + 2];
-				temp[i].m_TextCoord.x = obj->GetTextCoords()[k + 0];
-				temp[i].m_TextCoord.y = obj->GetTextCoords()[k + 1];
-
-				temp[i].m_TextId = (float)textureSlot;
-				//std::cout << "ObjectPtr V: S, I" << std::endl;
-				//std::cout << obj << ", " << i << ": " << textureSlot << ", " << textureID << std::endl << std::endl;
-
-				temp[i].m_Normal.x = obj->GetNormals()[j + 0];
-				temp[i].m_Normal.y = obj->GetNormals()[j + 1];
-				temp[i].m_Normal.z = obj->GetNormals()[j + 2];
-				j += 3;
-				k += 2;
-
-				*m_BatchBuffer = temp[i];
-				m_BatchBuffer++;
-			}
-
-			m_IndexCount += 6;
 		}
-		else
+		if (!found)
 		{
-			std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::BatchRender2D: Submitted object does not use 'res/obj/quad.obj' as its mesh data!" << std::endl << "BatchRender2D only supports quads!" << std::endl;
+			m_TextureSlots.push_back(textureID);
+			if (m_TextureSlots.size() >= GEAR_RENDERER_MAX_TEXTURE_SLOTS)
+			{
+				CloseMapBuffer();
+				Flush();
+				OpenMapBuffer();
+			}
+			textureSlot = m_TextureSlots.size();
 		}
+
+		Object::VertexData temp[4];
+
+		int j = 0, k = 0, l = 0;
+		for (int i = 0; i < 4; i++)
+		{
+			temp[i].m_Vertex.x = obj->GetVertices()[j + 0];
+			temp[i].m_Vertex.y = obj->GetVertices()[j + 1];
+			temp[i].m_Vertex.z = obj->GetVertices()[j + 2];
+
+			temp[i].m_TexCoord.x = obj->GetTextCoords()[k + 0];
+			temp[i].m_TexCoord.y = obj->GetTextCoords()[k + 1];
+
+			temp[i].m_TexId = static_cast<float>(textureSlot);
+			//std::cout << "ObjectPtr V: S, I" << std::endl;
+			//std::cout << obj << ", " << i << ": " << textureSlot << ", " << textureID << std::endl << std::endl;
+			temp[i].m_Normal.x = obj->GetNormals()[j + 0];
+			temp[i].m_Normal.y = obj->GetNormals()[j + 1];
+			temp[i].m_Normal.z = obj->GetNormals()[j + 2];
+
+			temp[i].m_Colour.r = obj->GetColours()[l + 0];
+			temp[i].m_Colour.g = obj->GetColours()[l + 1];
+			temp[i].m_Colour.b = obj->GetColours()[l + 2];
+			temp[i].m_Colour.a = obj->GetColours()[l + 3];
+
+			j += 3;
+			k += 2;
+			l += 4;
+
+			*m_BatchBuffer = temp[i];
+			m_BatchBuffer++;
+		}
+
+		m_IndexCount += 6;
 	}
 	else
 	{
-		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::BatchRender2D: Submitted object did not use the correct constructor!" << std::endl;
+		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::BatchRender2D: Submitted object did not use the correct constructor or 'res/obj/quad.obj' as its mesh data!" << std::endl << "BatchRender2D only supports quads!" << std::endl;
 	}
 }
 
@@ -146,8 +148,14 @@ void BatchRenderer2D::Flush()
 	{
 		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(GL_TEXTURE_2D, m_TextureSlots[i]);
+
+		if (i > GEAR_RENDERER_MAX_TEXTURE_SLOTS - 1)
+		{
+			m_TextureSlots.erase(m_TextureSlots.begin(), m_TextureSlots.begin() + GEAR_RENDERER_MAX_TEXTURE_SLOTS - 1);
+			break;
+		}
 	}
-	
+
 	Object::SetTextureArray(m_Object->GetShader());
 	m_Object->SetUniformModlMatrix();
 	m_Object->GetShader().Enable();

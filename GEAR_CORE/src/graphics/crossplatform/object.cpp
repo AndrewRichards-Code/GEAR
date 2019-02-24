@@ -8,7 +8,7 @@ using namespace ARM;
 bool Object::s_InitialiseUBO = false;
 
 Object::Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const Mat4& modl)
-	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Texture(texture), m_ModlMatrix(modl)
+	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Texture(texture), m_Colour({0.0f, 0.0f, 0.0f, 0.0f}), m_ModlMatrix(modl)
 {
 	InitialiseUBO();
 	LoadObjDataIntoObject();
@@ -39,12 +39,12 @@ Object::Object(const char* objFilePath, OPENGL::Shader& shader, const ARM::Vec4&
 		i += 4;
 	}
 	GenVAOandIBO();
-	m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_Colours[0], m_Colours.size(), 4), OPENGL::VertexArray::BufferType::GEAR_BUFFER_COLOUR);
+	m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_Colours[0], m_Colours.size(), 4), OPENGL::VertexArray::BufferType::GEAR_BUFFER_COLOURS);
 	SetUniformModlMatrix();
 }
 
-Object::Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const Vec3& position, const Vec2& size)
-	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Texture(texture), m_Position(position), m_Size(size)
+Object::Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const Vec4& colour, const Vec3& position, const Vec2& size)
+	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Texture(texture), m_Colour(colour), m_Position(position), m_Size(size)
 {
 	InitialiseUBO();
 	m_ObjData.m_Vertices = { Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0), Vec3(-1, 1, 0) };
@@ -90,8 +90,18 @@ Object::Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Te
 		m_Indices.push_back(m_ObjData.m_VertIndices[i]);
 	}
 
+	m_Colours.resize(2 * m_TextCoords.size());
+	for (int i = 0; i < (int)m_Colours.size();)
+	{
+		m_Colours[i + 0] = m_Colour.r;
+		m_Colours[i + 1] = m_Colour.g;
+		m_Colours[i + 2] = m_Colour.b;
+		m_Colours[i + 3] = m_Colour.a;
+		i += 4;
+	}
+
 	SetUniformModlMatrix(Mat4::Identity());
-	forBatchRenderer2D = true;
+	b_ForBatchRenderer2D = true;
 }
 
 Object::~Object()
@@ -209,7 +219,7 @@ void Object::GenVAOandIBO()
 	{
 		m_VAO = std::make_shared<OPENGL::VertexArray>();
 		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_Vertices[0], m_Vertices.size(), 3), OPENGL::VertexArray::BufferType::GEAR_BUFFER_POSITIONS);
-		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_TextCoords[0], m_TextCoords.size(), 2), OPENGL::VertexArray::BufferType::GEAR_BUFFER_TEXTCOORDS);
+		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_TextCoords[0], m_TextCoords.size(), 2), OPENGL::VertexArray::BufferType::GEAR_BUFFER_TEXCOORDS);
 		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_Normals[0], m_Normals.size(), 3), OPENGL::VertexArray::BufferType::GEAR_BUFFER_NORMALS);
 
 		m_IBO = std::make_shared<OPENGL::IndexBuffer>(&m_Indices[0], m_Indices.size());

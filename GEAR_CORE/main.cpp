@@ -1,5 +1,4 @@
 #include "src/gear.h"
-//#include "src/utils/fbxLoader.h"
 #if !(_DEBUG)
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif
@@ -39,7 +38,7 @@ int main()
 	DebugOpenGL debug;
 #endif
 
-	Shader shader("res/shaders/GLSL/basic.vert", "res/shaders/GLSL/basic.frag", true);
+	Shader shader("res/shaders/GLSL/basic.vert", "res/shaders/GLSL/basic.frag");
 	shader.SetLighting(Shader::GEAR_CALC_LIGHT_DIFFUSE | Shader::GEAR_CALC_LIGHT_SPECULAR | Shader::GEAR_CALC_LIGHT_AMBIENT);
 
 	Shader shaderCube("res/shaders/GLSL/cube.vert", "res/shaders/GLSL/cube.frag");
@@ -76,24 +75,25 @@ int main()
 	Object cube1("res/obj/cube.obj", shader, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Mat4::Identity());
 	Object cube2("res/obj/cube.obj", shader, Vec4(1.0f, 0.0f, 0.0f, 1.0f), Mat4::Identity());
 	Object cube3("res/obj/cube.obj", shaderReflection, textureSB, Mat4::Translation(Vec3(0.0f, 0.0f, 5.0f)) * Mat4::Scale(Vec3(0.5f, 0.5f, 0.5f)));
-	Object stall("res/obj/stall.obj", shaderReflection, texture, Mat4::Identity());
+	Object stall("res/obj/stall.obj", shader, texture, Mat4::Identity());
 	Object quad1("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(1.5f, 0.0f, -2.0f)));
 	Object quad2("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(-1.5f, 0.0f, -2.0f)));
 	Object floor("res/obj/quad.obj", shader, texture4, Mat4::Translation(Vec3(0.0f, -2.0f, -2.0f)) * Mat4::Rotation(pi / 2, Vec3(1, 0, 0)) * Mat4::Scale(Vec3(500, 500, 1)));
 	//Object sword("res/obj/KagemitsuG4.obj", shader, texture3, Mat4::Translation(Vec3(0, 1, 0)));
 
 	//For BatchRender2D
-	Object quad3("res/obj/quad.obj", shader, texture, Vec3(0.0f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
-	Object quad4("res/obj/quad.obj", shader, texture2, Vec3(1.5f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
-	Object quad5("res/obj/quad.obj", shader, texture3, Vec3(-1.5f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
+	Object quad3("res/obj/quad.obj", shader, texture,  Vec4(0, 0, 0, 0), Vec3(0.0f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
+	Object quad4("res/obj/quad.obj", shader, texture2, Vec4(0, 0, 0, 0), Vec3(1.5f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
+	Object quad5("res/obj/quad.obj", shader, texture3, Vec4(0, 0, 0, 0), Vec3(-1.5f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
 
-	Font testFont1(window.GetTitle(),																				"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 700.0f), Vec4(1.0f, 1.0f, 1.0f, 0.5f), window);
-	Font testFont2(window.GetDeviceName(),																			"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 690.0f), Vec4(1.0f, 0.0f, 0.0f, 0.5f), window);
-	Font testFont3("OpenGL: " + window.GetOpenGLVersion() + " | GLSL: " + window.GetGLSLVersion(),					"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 680.0f), Vec4(0.0f, 0.3f, 0.8f, 0.5f), window);
-	Font testFont4("Resolution: " + std::to_string(window.GetWidth()) + " x " + std::to_string(window.GetHeight()), "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 670.0f), Vec4(1.0f, 1.0f, 1.0f, 0.5f), window);
-	Font testFont5("MSAA: " + window.GetAntiAliasingValue() + "x",													"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 660.0f), Vec4(1.0f, 1.0f, 1.0f, 0.5f), window);
-	Font testFont6("Anisotrophic: " + Texture::GetAnisotrophicValue() + "x",										"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 650.0f), Vec4(1.0f, 1.0f, 1.0f, 0.5f), window);
-	Font testFont7("FPS: " + window.GetFPSString<int>(),															"res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, Vec2(10.0f, 640.0f), Vec4(1.0f, 1.0f, 1.0f, 0.5f), window);
+	Font font("res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, window);
+	font.AddLine(window.GetTitle(),																					Vec2(10.0f, 700.0f), Vec4(1.00f, 1.00f, 1.00f, 1.00f));
+	font.AddLine(window.GetDeviceName(),																			Vec2(10.0f, 690.0f), Vec4(1.00f, 0.00f, 0.00f, 1.00f));
+	font.AddLine("OpenGL: " + window.GetOpenGLVersion() + " | GLSL:" + window.GetGLSLVersion(),						Vec2(10.0f, 680.0f), Vec4(0.33f, 0.53f, 0.64f, 1.00f));
+	font.AddLine("Resolution: " + std::to_string(window.GetWidth()) + " x " + std::to_string(window.GetHeight()),   Vec2(10.0f, 670.0f), Vec4(1.00f, 1.00f, 1.00f, 1.00f));
+	font.AddLine("MSAA: " + window.GetAntiAliasingValue() + "x",													Vec2(10.0f, 660.0f), Vec4(1.00f, 1.00f, 1.00f, 1.00f));
+	font.AddLine("Anisotrophic: " + Texture::GetAnisotrophicValue() + "x",											Vec2(10.0f, 650.0f), Vec4(1.00f, 1.00f, 1.00f, 1.00f));
+	font.AddLine("FPS: " + window.GetFPSString<int>(),																Vec2(10.0f, 640.0f), Vec4(1.00f, 1.00f, 1.00f, 1.00f));
 
 	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, shader, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, 1.0f, 0.0f));
 
@@ -277,19 +277,27 @@ int main()
 		
 		//Joystick Input
 		main_input.Update();
+		double deadZone = 0.2;
 		if(main_input.m_JoyStickPresent)
 		{
-			if (main_input.m_Axis[0] > 0.1)
-				cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
-			if (main_input.m_Axis[0] < -0.1)
-				cam_main.m_Position = cam_main.m_Position + Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 2 * increment;
-			if (main_input.m_Axis[1] < -0.1)
-				cam_main.m_Position = cam_main.m_Position - cam_main.m_Forward * 2 * increment;
-			if (main_input.m_Axis[1] > 0.1)
-				cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward * 2 * increment;
+			//main_input.PrintJoystickDetails();
+			if (main_input.m_Axis[0] > deadZone)
+				cam_main.m_Position = cam_main.m_Position - Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 4 * increment;
+			if (main_input.m_Axis[0] < -deadZone)																			  
+				cam_main.m_Position = cam_main.m_Position + Vec3::Normalise(Vec3::Cross(cam_main.m_Up, cam_main.m_Forward)) * 4 * increment;
+			if (main_input.m_Axis[1] < -deadZone)
+				cam_main.m_Position = cam_main.m_Position + cam_main.m_Forward * 4 * increment;
+			if (main_input.m_Axis[1] > deadZone)								 
+				cam_main.m_Position = cam_main.m_Position - cam_main.m_Forward * 4 * increment;
 			
-			pos_x += (main_input.m_Axis[2] * increment);
-			pos_y += (main_input.m_Axis[3] * increment);
+			if (main_input.m_Axis[2] > deadZone)
+				pos_y += main_input.m_Axis[2] * increment;
+			if (main_input.m_Axis[2] < -deadZone)
+				pos_y += main_input.m_Axis[2] * increment;
+			if (main_input.m_Axis[5] > deadZone)
+				pos_x += main_input.m_Axis[5] * increment;
+			if (main_input.m_Axis[5] < -deadZone)
+				pos_x += main_input.m_Axis[5] * increment;
 
 			if (initMouse || main_input.m_Button[0])
 			{
@@ -457,17 +465,11 @@ int main()
 		{
 			if (fpsTime % 60 == 0)
 			{
-				testFont4.UpdateText("Resolution: " + std::to_string(window.GetWidth()) + " x " + std::to_string(window.GetHeight()));
-				testFont7.UpdateText("FPS: " + window.GetFPSString<int>());
+				font.UpdateLine("Resolution: " + std::to_string(window.GetWidth()) + " x " + std::to_string(window.GetHeight()), 3);
+				font.UpdateLine("FPS: " + window.GetFPSString<int>(), 6);
 			}
 			//Severe performance with texture, likely due to no font atlas. 
-			testFont1.RenderText();
-			testFont2.RenderText();
-			testFont3.RenderText();
-			testFont4.RenderText();
-			testFont5.RenderText();
-			testFont6.RenderText();
-			testFont7.RenderText();
+			font.Render();
 		}
 
 #if GEAR_USE_FBO

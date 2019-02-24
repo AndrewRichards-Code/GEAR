@@ -30,7 +30,7 @@ void UniformBuffer::Unbind() const
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
-void UniformBuffer::SubDataBind(const float* data, unsigned int size, unsigned int offset) const
+void UniformBuffer::SubDataBind(const void* data, unsigned int size, unsigned int offset) const
 {
 	if ((size + offset) <= m_Size)
 	{

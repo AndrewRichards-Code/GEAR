@@ -16,9 +16,9 @@ namespace OPENGL {
 
 	public:
 		static void AddSSBO(unsigned int size, unsigned int bindingIndex);
-		static void AccessSSBO(unsigned int bindingIndex, float * data, unsigned int size, unsigned int offset, ShaderStorageBuffer::ShaderStorageAccess access);
+		static void AccessSSBO(unsigned int bindingIndex, void* data, unsigned int size, unsigned int offset, ShaderStorageBuffer::ShaderStorageAccess access);
 		static void AddUBO(unsigned int size, unsigned int bindingIndex);
-		static void UpdateUBO(unsigned int bindingIndex, const float * data, unsigned int size, unsigned int offset);
+		static void UpdateUBO(unsigned int bindingIndex, const void* data, unsigned int size, unsigned int offset);
 		
 
 	private:

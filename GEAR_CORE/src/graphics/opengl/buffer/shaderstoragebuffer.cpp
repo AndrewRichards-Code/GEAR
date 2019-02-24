@@ -29,7 +29,7 @@ void ShaderStorageBuffer::Unbind() const
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
-void ShaderStorageBuffer::Access(float* data, unsigned int size, unsigned int offset, ShaderStorageAccess access) const
+void ShaderStorageBuffer::Access(void* data, unsigned int size, unsigned int offset, ShaderStorageAccess access) const
 {
 	if ((size + offset) <= m_Size)
 	{

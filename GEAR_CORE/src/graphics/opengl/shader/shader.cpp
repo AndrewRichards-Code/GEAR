@@ -249,10 +249,10 @@ unsigned int Shader::CreateShader(const std::vector<char>& vertexshader, const s
 	glValidateProgram(program);
 
 	glBindAttribLocation(program, (GLuint)VertexArray::BufferType::GEAR_BUFFER_POSITIONS, "positions");
-	glBindAttribLocation(program, (GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXTCOORDS, "textCoords");
-	glBindAttribLocation(program, (GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXTIDS, "textIds");
+	glBindAttribLocation(program, (GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXCOORDS, "textCoords");
+	glBindAttribLocation(program, (GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXIDS, "textIds");
 	glBindAttribLocation(program, (GLuint)VertexArray::BufferType::GEAR_BUFFER_NORMALS, "normals");
-	glBindAttribLocation(program, (GLuint)VertexArray::BufferType::GEAR_BUFFER_COLOUR, "colours");
+	glBindAttribLocation(program, (GLuint)VertexArray::BufferType::GEAR_BUFFER_COLOURS, "colours");
 
 	return program;
 }

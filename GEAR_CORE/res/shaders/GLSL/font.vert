@@ -4,6 +4,7 @@
 layout(location = 0) in vec4 positions;
 layout(location = 1) in vec2 textCoords;
 layout(location = 2) in float textIds;
+layout(location = 4) in vec4 colours;
 
 layout(std140, binding = 0) uniform cameraUBO
 {
@@ -31,5 +32,5 @@ void main()
 		v_TextCoord.y = 0.0;
 	}
 	v_TextIds = textIds;
-	v_Colour = u_CameraPosition;
+	v_Colour = colours;
 }

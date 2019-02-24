@@ -62,7 +62,7 @@ public:
 		GEAR_RED = GL_RED,														 //red
 		GEAR_GREEN = GL_GREEN,													 //green
 		GEAR_BLUE = GL_BLUE,													 //blue
-		GEAR_ALPHA= GL_ALPHA,													 //aplha
+		GEAR_ALPHA = GL_ALPHA,													 //aplha
 		GEAR_RGBA16_SNORM = GL_RGBA16_SNORM,									 //rgba16_snorm
 		GEAR_RGBA8_SNORM = GL_RGBA8_SNORM,										 //rgba8_snorm
 		GEAR_RG16_SNORM = GL_RG16_SNORM,										 //rg16_snorm
@@ -73,7 +73,7 @@ public:
 		GEAR_DEPTH_COMPONENT24 = GL_DEPTH_COMPONENT24,							 //depth_component24
 		GEAR_DEPTH_COMPONENT32 = GL_DEPTH_COMPONENT32,							 //depth_component32
 		GEAR_DEPTH_COMPONENT32F = GL_DEPTH_COMPONENT32F,						 //depth_component32f
-		GEAR_DEPTH_STENCIL	= GL_DEPTH_STENCIL,									 //depth_stencil
+		GEAR_DEPTH_STENCIL = GL_DEPTH_STENCIL,									 //depth_stencil
 		GEAR_DEPTH24_STENCIL8 = GL_DEPTH24_STENCIL8,							 //depth24_stencil8
 		GEAR_DEPTH32F_STENCIL8 = GL_DEPTH32F_STENCIL8,							 //depth32f_stencil8
 		GEAR_UNSIGNED_INT_24_8 = GL_UNSIGNED_INT_24_8,							 //uint_24_8
@@ -195,8 +195,6 @@ public:
 	inline bool IsDepthTexture() const { return m_DepthTexture; }
 	inline float GetTileFactor() const { return m_TileFactor; }
 	inline static std::string GetAnisotrophicValue() { return std::to_string(static_cast<int>(m_AnisotrophicValue)); }
-
-	
 
 private:
 	void AniostrophicFilting();

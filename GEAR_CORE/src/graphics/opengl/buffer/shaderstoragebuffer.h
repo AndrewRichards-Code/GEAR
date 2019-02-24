@@ -32,7 +32,7 @@ namespace OPENGL {
 			GEAR_MAP_PERSISTENT_BIT = GL_MAP_PERSISTENT_BIT,
 			GEAR_MAP_COHERENT_BIT = GL_MAP_COHERENT_BIT
 		};
-		void Access(float* data, unsigned int size, unsigned int offset, ShaderStorageAccess access) const;
+		void Access(void* data, unsigned int size, unsigned int offset, ShaderStorageAccess access) const;
 		
 		void PrintUBOData() const;
 		const float* const GetUBOData() const;

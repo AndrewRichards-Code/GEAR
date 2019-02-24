@@ -43,13 +43,14 @@ private:
 	ARM::Vec2 m_Size;
 
 public:
-	bool forBatchRenderer2D = false;
+	bool b_ForBatchRenderer2D = false;
 	struct VertexData
 	{
 		ARM::Vec3 m_Vertex;
-		ARM::Vec2 m_TextCoord;
-		float m_TextId;
+		ARM::Vec2 m_TexCoord;
+		float m_TexId;
 		ARM::Vec3 m_Normal;
+		ARM::Vec4 m_Colour;
 	};
 
 private:
@@ -60,7 +61,7 @@ private:
 public:
 	Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const ARM::Mat4& modl);
 	Object(const char* objFilePath, OPENGL::Shader& shader, const ARM::Vec4& colour, const ARM::Mat4& modl);
-	Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const ARM::Vec3& position, const ARM::Vec2& size); //Doesn't fill the VAO or IBO.
+	Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const ARM::Vec4& colour, const ARM::Vec3& position, const ARM::Vec2& size); //Doesn't fill the VAO or IBO.
 	~Object();
 
 	void BindTexture(int slot = 0) const;
@@ -84,6 +85,7 @@ public:
 	inline const std::vector<float>& GetVertices() const { return m_Vertices; }
 	inline const std::vector<float>& GetTextCoords() const { return m_TextCoords; }
 	inline const std::vector<float>& GetNormals() const { return m_Normals; }
+	inline const std::vector<float>& GetColours() const { return m_Colours; }
 	inline const std::vector<unsigned int>& GetIndices() const { return m_Indices; }
 	inline const char* GetObjFileName() const { return m_ObjFilePath; }
 };

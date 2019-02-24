@@ -23,10 +23,10 @@ namespace OPENGL {
 		enum class BufferType : GLuint
 		{
 			GEAR_BUFFER_POSITIONS = 0, 
-			GEAR_BUFFER_TEXTCOORDS = 1,
-			GEAR_BUFFER_TEXTIDS = 2,
+			GEAR_BUFFER_TEXCOORDS = 1,
+			GEAR_BUFFER_TEXIDS = 2,
 			GEAR_BUFFER_NORMALS = 3, 
-			GEAR_BUFFER_COLOUR = 4 
+			GEAR_BUFFER_COLOURS = 4 
 		};
 		void AddBuffer(std::shared_ptr<VertexBuffer> vbo, BufferType type);
 	};

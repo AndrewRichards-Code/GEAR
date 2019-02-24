@@ -21,7 +21,7 @@ void BufferManager::AddSSBO(unsigned int size, unsigned int bindingIndex)
 	m_SSBOs.emplace_back(std::make_unique<ShaderStorageBuffer>(size, bindingIndex));
 }
 
-void BufferManager::AccessSSBO(unsigned int bindingIndex, float* data, unsigned int size, unsigned int offset, ShaderStorageBuffer::ShaderStorageAccess access)
+void BufferManager::AccessSSBO(unsigned int bindingIndex, void* data, unsigned int size, unsigned int offset, ShaderStorageBuffer::ShaderStorageAccess access)
 {
 	GetSSBO(bindingIndex).Access(data, size, offset, access);
 }
@@ -40,7 +40,7 @@ void BufferManager::AddUBO(unsigned int size, unsigned int bindingIndex)
 	m_UBOs.emplace_back(std::make_unique<UniformBuffer>(size, bindingIndex));
 }
 
-void BufferManager::UpdateUBO(unsigned int bindingIndex, const float* data, unsigned int size, unsigned int offset)
+void BufferManager::UpdateUBO(unsigned int bindingIndex, const void* data, unsigned int size, unsigned int offset)
 {
 	GetUBO(bindingIndex).SubDataBind(data, size, offset);
 }

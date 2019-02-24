@@ -44,7 +44,7 @@ public:
 		}
 	}
 
-	/*void PrintJoystickDetails()
+	void PrintJoystickDetails()
 	{
 		std::cout << glfwGetJoystickName(GLFW_JOYSTICK_1) << std::endl;
 
@@ -54,7 +54,7 @@ public:
 		for (int i = 0; i < m_ButtonsCount; i++)
 			std::cout << "Button " << i << ": " << m_Button[i] << std::endl;
 		system("CLS");
-	}*/
+	}
 
 };
 }
