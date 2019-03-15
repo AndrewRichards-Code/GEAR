@@ -2,10 +2,10 @@
 
 #include "GL/glew.h"
 #include "renderer.h"
-#include "../../../maths/ARMLib.h"
-#include "../buffer/vertexarray.h"
-#include "../buffer/indexbuffer.h"
-#include "../shader/shader.h"
+#include "maths/ARMLib.h"
+#include "graphics/opengl/buffer/vertexarray.h"
+#include "graphics/opengl/buffer/indexbuffer.h"
+#include "graphics/opengl/shader/shader.h"
 
 #define GEAR_RENDERER_MAX_OBJ           10000
 #define GEAR_RENDERER_VERTEX_SIZE	    sizeof(Object::VertexData)

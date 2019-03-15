@@ -1,10 +1,9 @@
 #pragma once
 
-#include <memory>
-#include <array>
+#include "gear_common.h"
 #include "GL/glew.h"
-#include "../texture.h"
-#include "../window.h"
+#include "graphics/opengl/texture.h"
+#include "graphics/opengl/window.h"
 
 namespace GEAR {
 namespace GRAPHICS {

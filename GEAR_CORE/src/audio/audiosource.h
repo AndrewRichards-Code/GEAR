@@ -1,8 +1,8 @@
 #pragma once
 
 #include "AL/al.h"
-#include "../maths/ARMLib.h"
-#include "../utils/fileutils.h"
+#include "maths/ARMLib.h"
+#include "utils/fileutils.h"
 
 namespace GEAR {
 namespace AUDIO {

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <vector>
+#include "gear_common.h"
 
 #include "GL/glew.h"
-#include "../../../utils/fileutils.h"
+#include "utils/fileutils.h"
 
 
 namespace GEAR {

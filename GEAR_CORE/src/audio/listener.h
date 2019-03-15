@@ -2,8 +2,8 @@
 
 #include "AL/al.h"
 #include "AL/alc.h"
-#include "../maths/ARMLib.h"
-#include "../graphics/crossplatform/camera.h"
+#include "maths/ARMLib.h"
+#include "graphics/crossplatform/camera.h"
 
 namespace GEAR {
 namespace AUDIO {

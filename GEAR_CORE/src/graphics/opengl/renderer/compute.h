@@ -1,11 +1,10 @@
 #pragma once
 
+#include "gear_common.h"
 #include "GL/glew.h"
-#include "../shader/computeshader.h"
-#include "../buffer/buffermanager.h"
-#include "../texture.h"
-#include <vector>
-#include <memory>
+#include "graphics/opengl/shader/computeshader.h"
+#include "graphics/opengl/buffer/buffermanager.h"
+#include "graphics/opengl/texture.h"
 
 namespace GEAR {
 namespace GRAPHICS {

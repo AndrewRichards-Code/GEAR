@@ -1,9 +1,9 @@
 #pragma once
 
-#include <iostream>
-#include "../opengl/shader/shader.h"
-#include "../opengl/buffer/buffermanager.h"
-#include "../../maths/ARMLib.h"
+#include "gear_common.h"
+#include "graphics/opengl/shader/shader.h"
+#include "graphics/opengl/buffer/buffermanager.h"
+#include "maths/ARMLib.h"
 
 #define GEAR_CAMERA_PERSPECTIVE 0
 #define GEAR_CAMERA_ORTHOGRAPHIC 1

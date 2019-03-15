@@ -230,6 +230,9 @@
     <ClInclude Include="src\graphics\opengl\buffer\buffermanager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\gear_common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\shaders\GLSL\basic.frag" />

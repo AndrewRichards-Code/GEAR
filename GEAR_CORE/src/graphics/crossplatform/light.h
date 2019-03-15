@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../opengl/shader/shader.h"
+#include "graphics/opengl/shader/shader.h"
 #include "camera.h"
-#include "../../maths/ARMLib.h"
+#include "maths/ARMLib.h"
 
 #define GEAR_MAX_LIGHTS 8
 

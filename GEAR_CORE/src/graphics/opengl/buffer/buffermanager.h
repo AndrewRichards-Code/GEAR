@@ -1,9 +1,8 @@
 #pragma once
 
+#include "gear_common.h"
 #include "shaderstoragebuffer.h"
 #include "uniformbuffer.h"
-#include <vector>
-#include <memory>
 
 namespace GEAR {
 namespace GRAPHICS {

@@ -126,8 +126,6 @@ int main()
 	InputManager main_input(GEAR_INPUT_JOYSTICK_CONTROLLER);
 	FrameBuffer fbo(window);
 
-	//FBX::read_fbx("res/obj/KagemitsuG4.fbx");
-
 	double yaw = 0;
 	double pitch = 0;
 	double roll = 0;
@@ -224,8 +222,8 @@ int main()
 	}
 	shader.SetLighting(Shader::GEAR_CALC_LIGHT_DIFFUSE | Shader::GEAR_CALC_LIGHT_SPECULAR | Shader::GEAR_CALC_LIGHT_AMBIENT);
 	
-	std::thread AudioThread(AudioThread);
-	AudioThread.detach();
+	//std::thread AudioThread(AudioThread);
+	//AudioThread.detach();
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -278,7 +276,8 @@ int main()
 		//Joystick Input
 		main_input.Update();
 		double deadZone = 0.2;
-		if(main_input.m_JoyStickPresent)
+		bool useJoystick =false;
+		if(useJoystick && main_input.m_JoyStickPresent)
 		{
 			//main_input.PrintJoystickDetails();
 			if (main_input.m_Axis[0] > deadZone)
@@ -485,7 +484,7 @@ int main()
 		window.Update();
 	}
 	
-	if (AudioThread.joinable() == true)
-		 AudioThread.join();
+	//if (AudioThread.joinable() == true)
+		 //AudioThread.join();
 			
 }

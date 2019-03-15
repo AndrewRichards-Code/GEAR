@@ -2,7 +2,6 @@
 
 #include "GL/glew.h"
 
-
 namespace GEAR {
 namespace GRAPHICS {
 namespace OPENGL {

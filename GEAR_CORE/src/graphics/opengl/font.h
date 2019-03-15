@@ -9,10 +9,9 @@
 #include "renderer/batchrenderer2d.h"
 #include "window.h"
 
-#include "../../maths/ARMLib.h"
+#include "maths/ARMLib.h"
 
-#include <iostream>
-#include <map>
+#include "gear_common.h"
 #define GEAR_NUM_OF_CHARACTERS 128
 
 namespace GEAR {

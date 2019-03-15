@@ -1,9 +1,6 @@
 #pragma once
 
-#include <iostream>
-#include <string>
-#include <thread>
-#include <chrono>
+#include "gear_common.h"
 
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"

@@ -1,12 +1,12 @@
 #pragma once
 
 #include "GL/glew.h"
-#include "../opengl/buffer/vertexarray.h"
-#include "../opengl/buffer/indexbuffer.h"
-#include "../opengl/shader/shader.h"
-#include "../opengl/texture.h"
-#include "../../utils/fileutils.h"
-#include "../../maths/ARMLib.h"
+#include "graphics/opengl/buffer/vertexarray.h"
+#include "graphics/opengl/buffer/indexbuffer.h"
+#include "graphics/opengl/shader/shader.h"
+#include "graphics/opengl/texture.h"
+#include "utils/fileutils.h"
+#include "maths/ARMLib.h"
 
 namespace GEAR {
 namespace GRAPHICS {

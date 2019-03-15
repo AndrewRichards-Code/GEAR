@@ -91,7 +91,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\STBI\;$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\src;$(SolutionDir)Dependencies\STBI\;$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GEAR_OPENGL;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -105,8 +105,8 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\STBI\;$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\src;$(SolutionDir)Dependencies\STBI\;$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>GEAR_OPENGL;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -121,7 +121,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\STBI\;$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\src;$(SolutionDir)Dependencies\STBI\;$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x86\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GEAR_OPENGL;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -139,8 +139,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Dependencies\STBI\;$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\src;$(SolutionDir)Dependencies\STBI\;$(SolutionDir)Dependencies\FREETYPE\include\;$(SolutionDir)Dependencies\OPENAL\include\;$(SolutionDir)Dependencies\GLEW\include\;$(SolutionDir)Dependencies\GLFW\x64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>GEAR_OPENGL;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -220,6 +220,7 @@
     <ClInclude Include="src\maths\vector\Vec2.h" />
     <ClInclude Include="src\maths\vector\Vec3.h" />
     <ClInclude Include="src\maths\vector\Vec4.h" />
+    <ClInclude Include="src\gear_common.h" />
     <ClInclude Include="src\utils\fileutils.h" />
     <ClInclude Include="src\utils\typesx86x64.h" />
     <ClInclude Include="src\graphics\opengl\buffer\uniformbuffer.h" />

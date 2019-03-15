@@ -1,16 +1,9 @@
 #pragma once
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <array>
-#include <vector>
-#include <deque>
-#include <algorithm>
+#include "gear_common.h"
 
 #include "typesx86x64.h"
-#include "../maths/ARMLib.h"
+#include "maths/ARMLib.h"
 
 namespace GEAR {
 

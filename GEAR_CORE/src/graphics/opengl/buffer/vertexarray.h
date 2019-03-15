@@ -1,7 +1,6 @@
 #pragma once
 
-#include <vector>
-#include <memory>
+#include "gear_common.h"
 #include "GL/glew.h"
 #include "vertexbuffer.h"
 

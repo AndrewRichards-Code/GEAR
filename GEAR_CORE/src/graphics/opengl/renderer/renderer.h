@@ -1,14 +1,14 @@
 #pragma once
 
+#include "gear_common.h"
 #include "GL/glew.h"
-#include "../../../maths/ARMLib.h"
-#include "../buffer/vertexarray.h"
-#include "../buffer/indexbuffer.h"
-#include "../shader/shader.h"
-#include "../../crossplatform/camera.h"
-#include "../../crossplatform/object.h"
-#include "../../crossplatform/light.h"
-#include <deque>
+#include "maths/ARMLib.h"
+#include "graphics/opengl/buffer/vertexarray.h"
+#include "graphics/opengl/buffer/indexbuffer.h"
+#include "graphics/opengl/shader/shader.h"
+#include "graphics/crossplatform/camera.h"
+#include "graphics/crossplatform/object.h"
+#include "graphics/crossplatform/light.h"
 
 namespace GEAR {
 namespace GRAPHICS {
