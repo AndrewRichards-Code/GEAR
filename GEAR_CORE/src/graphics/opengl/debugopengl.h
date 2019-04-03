@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common.h"
+#include "gear_common.h"
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 

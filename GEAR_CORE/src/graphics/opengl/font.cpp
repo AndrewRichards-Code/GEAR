@@ -29,7 +29,7 @@ void Font::AddLine(const std::string& text, const ARM::Vec2& position, const ARM
 		position,
 		colour
 	});
-	GenerateLine(m_Lines.size()-1);
+	GenerateLine(static_cast<unsigned int>(m_Lines.size()-1));
 }
 
 void Font::Render()

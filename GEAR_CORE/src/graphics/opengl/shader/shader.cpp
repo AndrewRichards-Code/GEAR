@@ -215,7 +215,7 @@ std::string Shader::AmmendFilePath(const std::string& filePath, bool fileIsBinar
 unsigned int Shader::CompileShader(unsigned int type, const std::vector<char>& source)
 {
 	unsigned int id = glCreateShader(type);
-	glShaderBinary(1, &id, GL_SHADER_BINARY_FORMAT_SPIR_V, source.data(), source.size());
+	glShaderBinary(1, &id, GL_SHADER_BINARY_FORMAT_SPIR_V, source.data(), static_cast<GLsizei>(source.size()));
 	glSpecializeShader(id, "main", 0, nullptr, nullptr);
 
 	int result;

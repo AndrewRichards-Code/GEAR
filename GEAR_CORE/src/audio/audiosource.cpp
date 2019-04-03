@@ -160,8 +160,8 @@ void AudioSource::SubmitBuffer()
 	switch (m_WavData.m_NextBuffer)
 	{
 	case 1:
-		alBufferData(m_BufferID[1], m_Format, m_WavData.m_Buffer2.data(), m_WavData.m_Buffer2.size(), m_WavData.m_SampleRate);
+		alBufferData(m_BufferID[1], m_Format, m_WavData.m_Buffer2.data(), static_cast<ALsizei>(m_WavData.m_Buffer2.size()), m_WavData.m_SampleRate);
 	case 2:
-		alBufferData(m_BufferID[0], m_Format, m_WavData.m_Buffer1.data(), m_WavData.m_Buffer1.size(), m_WavData.m_SampleRate);
+		alBufferData(m_BufferID[0], m_Format, m_WavData.m_Buffer1.data(), static_cast<ALsizei>(m_WavData.m_Buffer1.size()), m_WavData.m_SampleRate);
 	}
 }

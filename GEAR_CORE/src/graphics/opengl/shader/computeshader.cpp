@@ -154,7 +154,7 @@ std::string folder("SPIR-V_VK");
 unsigned int ComputeShader::CompileShader(unsigned int type, const std::vector<char>& source)
 {
 	unsigned int id = glCreateShader(type);
-	glShaderBinary(1, &id, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, source.data(), source.size());
+	glShaderBinary(1, &id, GL_SHADER_BINARY_FORMAT_SPIR_V_ARB, source.data(), static_cast<GLsizei>(source.size()));
 	glSpecializeShader(id, "main", 0, nullptr, nullptr);
 
 	int result;

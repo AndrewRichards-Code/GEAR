@@ -12,7 +12,7 @@ Window::Window(std::string title, int width, int height, int antiAliasingValue)
 	:m_Title(title), m_Width(width), m_Height(height), m_AntiAliasingValue(antiAliasingValue)
 {
 #ifdef _M_X64
-	m_Title += ": GEAR_CORE(x64-86)";
+	m_Title += ": GEAR_CORE(x64)";
 #elif _M_IX86
 	m_Title += ": GEAR_CORE(x86)";
 #endif

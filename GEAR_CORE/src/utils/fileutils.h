@@ -1,8 +1,6 @@
 #pragma once
 
 #include "gear_common.h"
-
-#include "typesx86x64.h"
 #include "maths/ARMLib.h"
 
 namespace GEAR {
@@ -59,13 +57,13 @@ public:
 		std::vector<unsigned int> m_NormIndices;
 		std::vector<ARM::Vec3> m_UniqueVertices;
 
-		int GetSizeVertices() { return m_Vertices.size(); }
-		int GetSizeTexCoords() { return m_TexCoords.size(); }
-		int GetSizeNormals() { return m_Normals.size(); }
-		int GetSizeVertIndices() { return m_VertIndices.size(); }
-		int GetSizeTextIndices() { return m_TextIndices.size(); }
-		int GetSizeNormIndices() { return m_NormIndices.size(); }
-		int GetSizeUniqueVertices() { return m_UniqueVertices.size(); }
+		int GetSizeVertices() { return static_cast<int>(m_Vertices.size()); }
+		int GetSizeTexCoords() { return static_cast<int>(m_TexCoords.size()); }
+		int GetSizeNormals() { return static_cast<int>(m_Normals.size()); }
+		int GetSizeVertIndices() { return static_cast<int>(m_VertIndices.size()); }
+		int GetSizeTextIndices() { return static_cast<int>(m_TextIndices.size()); }
+		int GetSizeNormIndices() { return static_cast<int>(m_NormIndices.size()); }
+		int GetSizeUniqueVertices() { return static_cast<int>(m_UniqueVertices.size()); }
 	};
 
 	static ObjData read_obj(const char* filepath)
@@ -121,13 +119,13 @@ public:
 
 				for (int i = 0; i < 2; i++)
 				{
-					int x_pos = x.find('/', 0);
+					size_t x_pos = x.find('/', 0);
 					x.replace(x_pos, 1, 1, ' ');
 
-					int y_pos = y.find('/', 0);
+					size_t y_pos = y.find('/', 0);
 					y.replace(y_pos, 1, 1, ' ');
 
-					int z_pos = z.find('/', 0);
+					size_t z_pos = z.find('/', 0);
 					z.replace(z_pos, 1, 1, ' ');
 				}
 
