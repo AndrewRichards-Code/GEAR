@@ -222,8 +222,8 @@ int main()
 	}
 	shader.SetLighting(Shader::GEAR_CALC_LIGHT_DIFFUSE | Shader::GEAR_CALC_LIGHT_SPECULAR | Shader::GEAR_CALC_LIGHT_AMBIENT);
 	
-	//std::thread AudioThread(AudioThread);
-	//AudioThread.detach();
+	std::thread AudioThread(AudioThread);
+	AudioThread.detach();
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -290,13 +290,13 @@ int main()
 				cam_main.m_Position = cam_main.m_Position - cam_main.m_Forward * 4 * increment;
 			
 			if (main_input.m_Axis[2] > deadZone)
-				pos_y += main_input.m_Axis[2] * increment;
+				pos_y += static_cast<double>(main_input.m_Axis[2]) * static_cast<double>(increment);
 			if (main_input.m_Axis[2] < -deadZone)
-				pos_y += main_input.m_Axis[2] * increment;
+				pos_y += static_cast<double>(main_input.m_Axis[2]) * static_cast<double>(increment);
 			if (main_input.m_Axis[5] > deadZone)
-				pos_x += main_input.m_Axis[5] * increment;
+				pos_x += static_cast<double>(main_input.m_Axis[5]) * static_cast<double>(increment);
 			if (main_input.m_Axis[5] < -deadZone)
-				pos_x += main_input.m_Axis[5] * increment;
+				pos_x += static_cast<double>(main_input.m_Axis[5]) * static_cast<double>(increment);
 
 			if (initMouse || main_input.m_Button[0])
 			{
@@ -342,8 +342,8 @@ int main()
 			double offset_pos_y = -pos_y + last_pos_y;
 			last_pos_x = pos_x;
 			last_pos_y = pos_y;
-			offset_pos_x *= increment * increment;
-			offset_pos_y *= increment * increment;
+			offset_pos_x *= static_cast<double>(increment) * static_cast<double>(increment);
+			offset_pos_y *= static_cast<double>(increment) * static_cast<double>(increment);
 			yaw += 2 * offset_pos_x;
 			pitch += offset_pos_y;
 			if (pitch > pi / 2)
@@ -484,7 +484,7 @@ int main()
 		window.Update();
 	}
 	
-	//if (AudioThread.joinable() == true)
-		 //AudioThread.join();
+	if (AudioThread.joinable() == true)
+		 AudioThread.join();
 			
 }

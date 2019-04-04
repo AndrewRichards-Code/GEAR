@@ -243,43 +243,45 @@ public:
 		int m_Size;
 		std::deque<std::streamoff> m_BufferQueue;
 		bool m_LoopBufferQueue;
+		
+		WavData() : m_FilePath(nullptr), m_Stream(nullptr), m_Buffer1({ 0 }), m_Buffer2({ 0 }), m_NextBuffer(0), m_Channels(0), m_SampleRate(0), m_BitsPerSample(0), m_Size(0), m_BufferQueue({ 0 }), m_LoopBufferQueue(false) {};
 	};
 
-	static WavData stream_wav(const char* filepath)
+	static std::shared_ptr<WavData> stream_wav(const char* filepath)
 	{
-		WavData result;
-		result.m_FilePath = filepath;
-		result.m_NextBuffer = 1;
-		result.m_LoopBufferQueue = false;
+		std::shared_ptr<WavData> result = std::make_shared<WavData>();
+		result->m_FilePath = filepath;
+		result->m_NextBuffer = 1;
+		result->m_LoopBufferQueue = false;
 
 		char buffer[4];
 
-		result.m_Stream = std::make_unique<std::ifstream>(filepath, std::ios::binary);
-		result.m_Stream->read(buffer, 4);     //RIFF
+		result->m_Stream = std::make_unique<std::ifstream>(filepath, std::ios::binary);
+		result->m_Stream->read(buffer, 4);     //RIFF
 		if (strncmp(buffer, "RIFF", 4) != 0)
 		{
 			std::cout << "ERROR: GEAR::FileUtils::stream_wav: Could not read file " << filepath << ". File does not exist." << std::endl;
 			return result;
 		}
-		result.m_Stream->read(buffer, 4);
-		result.m_Stream->read(buffer, 4);     //WAVE
-		result.m_Stream->read(buffer, 4);     //fmt
-		result.m_Stream->read(buffer, 4);     //Subchunck1 Size
-		result.m_Stream->read(buffer, 2);     //Audio Format (1 = PCM)
-		result.m_Stream->read(buffer, 2);		//NumChannels
-		result.m_Channels = ConvertToInt(buffer, 2);
+		result->m_Stream->read(buffer, 4);
+		result->m_Stream->read(buffer, 4);     //WAVE
+		result->m_Stream->read(buffer, 4);     //fmt
+		result->m_Stream->read(buffer, 4);     //Subchunck1 Size
+		result->m_Stream->read(buffer, 2);     //Audio Format (1 = PCM)
+		result->m_Stream->read(buffer, 2);		//NumChannels
+		result->m_Channels = ConvertToInt(buffer, 2);
 		
-		result.m_Stream->read(buffer, 4);		//SampleRate
-		result.m_SampleRate = ConvertToInt(buffer, 4);
+		result->m_Stream->read(buffer, 4);		//SampleRate
+		result->m_SampleRate = ConvertToInt(buffer, 4);
 
-		result.m_Stream->read(buffer, 4);		//ByteRate
-		result.m_Stream->read(buffer, 2);		//BlockAllign
-		result.m_Stream->read(buffer, 2);		//BitPerSample
-		result.m_BitsPerSample = ConvertToInt(buffer, 2);
+		result->m_Stream->read(buffer, 4);		//ByteRate
+		result->m_Stream->read(buffer, 2);		//BlockAllign
+		result->m_Stream->read(buffer, 2);		//BitPerSample
+		result->m_BitsPerSample = ConvertToInt(buffer, 2);
 
 		while(true)
 		{
-			result.m_Stream->read(buffer, 4);      //data
+			result->m_Stream->read(buffer, 4);      //data
 			if (strncmp(buffer, "data ", 4) == 0)
 			{
 				break;
@@ -289,13 +291,13 @@ public:
 				continue;
 			}
 		}
-		result.m_Stream->read(buffer, 4);		 //Subchunck2 Size
-		result.m_Size = ConvertToInt(buffer, 4);
+		result->m_Stream->read(buffer, 4);		 //Subchunck2 Size
+		result->m_Size = ConvertToInt(buffer, 4);
 
-		while(result.m_Stream->tellg() <= result.m_Size)
+		while(result->m_Stream->tellg() <= result->m_Size)
 		{
-			result.m_BufferQueue.push_back(result.m_Stream->tellg());
-			result.m_Stream->seekg(result.m_Buffer1.size(), std::ios_base::cur);
+			result->m_BufferQueue.push_back(result->m_Stream->tellg());
+			result->m_Stream->seekg(result->m_Buffer1.size(), std::ios_base::cur);
 		}
 		/*stream.seekg(0, std::ios_base::end);
 		int temp = stream.tellg();*/

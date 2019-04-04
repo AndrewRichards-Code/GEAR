@@ -7,9 +7,9 @@ AudioSource::AudioSource(const char* filepath, const ARM::Vec3& position, const 
 	:m_FilePath(filepath), m_Position(position), m_Direction(direction)
 {
 	m_WavData = FileUtils::stream_wav(m_FilePath);
-	if (m_WavData.m_Channels == 1)
+	if (m_WavData->m_Channels == 1)
 	{
-		if (m_WavData.m_BitsPerSample == 8)
+		if (m_WavData->m_BitsPerSample == 8)
 		{
 			m_Format = AL_FORMAT_MONO8;
 		}
@@ -19,7 +19,7 @@ AudioSource::AudioSource(const char* filepath, const ARM::Vec3& position, const 
 	}
 	else 
 	{
-		if (m_WavData.m_BitsPerSample == 8)
+		if (m_WavData->m_BitsPerSample == 8)
 		{
 			m_Format = AL_FORMAT_STEREO8;
 		}
@@ -92,11 +92,11 @@ void AudioSource::Stream()
 	int processed;
 	alGetSourcei(m_SourceID, AL_BUFFERS_PROCESSED, &processed);
 	/*std::cout << "Buffers: " << processed << std::endl;
-	std::cout << "Next Buffer: " << m_WavData.m_NextBuffer << std::endl;*/
+	std::cout << "Next Buffer: " << m_WavData->m_NextBuffer << std::endl;*/
 	
 	while (processed--)
 	{
-		switch (m_WavData.m_NextBuffer)
+		switch (m_WavData->m_NextBuffer)
 		{
 		case 1:
 			alSourceUnqueueBuffers(m_SourceID, 1, &m_BufferID[0]);
@@ -147,21 +147,21 @@ void AudioSource::Loop()
 {
 	if(m_Looped == false)
 	{
-		m_WavData.m_LoopBufferQueue = true;
+		m_WavData->m_LoopBufferQueue = true;
 	}
 	else if (m_Looped == true)
 	{
-		m_WavData.m_LoopBufferQueue = false;
+		m_WavData->m_LoopBufferQueue = false;
 	}
 }
 void AudioSource::SubmitBuffer()
 {
-	FileUtils::get_next_wav_block(m_WavData);
-	switch (m_WavData.m_NextBuffer)
+	FileUtils::get_next_wav_block(*m_WavData);
+	switch (m_WavData->m_NextBuffer)
 	{
 	case 1:
-		alBufferData(m_BufferID[1], m_Format, m_WavData.m_Buffer2.data(), static_cast<ALsizei>(m_WavData.m_Buffer2.size()), m_WavData.m_SampleRate);
+		alBufferData(m_BufferID[1], m_Format, m_WavData->m_Buffer2.data(), static_cast<ALsizei>(m_WavData->m_Buffer2.size()), m_WavData->m_SampleRate);
 	case 2:
-		alBufferData(m_BufferID[0], m_Format, m_WavData.m_Buffer1.data(), static_cast<ALsizei>(m_WavData.m_Buffer1.size()), m_WavData.m_SampleRate);
+		alBufferData(m_BufferID[0], m_Format, m_WavData->m_Buffer1.data(), static_cast<ALsizei>(m_WavData->m_Buffer1.size()), m_WavData->m_SampleRate);
 	}
 }

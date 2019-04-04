@@ -15,9 +15,9 @@ private:
 public:
 	//Joystick Outputs
 	bool m_JoyStickPresent = false;
-	int m_AxesCount, m_ButtonsCount;
-	const float* m_Axis;
-	const unsigned char* m_Button;
+	int m_AxesCount = 0, m_ButtonsCount = 0;
+	const float* m_Axis = nullptr;
+	const unsigned char* m_Button = nullptr;
 
 public:
 	InputManager(int type)

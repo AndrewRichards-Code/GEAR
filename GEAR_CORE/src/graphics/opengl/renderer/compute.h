@@ -14,6 +14,7 @@ namespace OPENGL {
 	public:
 		enum class ImageAccess : unsigned int
 		{
+			GEAR_UNKNOWN = 0,
 			GEAR_WRITE_ONLY = GL_WRITE_ONLY,
 			GEAR_READ_ONLY = GL_READ_ONLY,
 			GEAR_READ_WRITE = GL_READ_WRITE
@@ -22,14 +23,14 @@ namespace OPENGL {
 	private:
 		Texture m_Texture;
 		Texture::TextureType m_Type; 
+		ImageAccess m_Access;
 		int m_BindingIndex;
 		int m_Multisample; 
 		int m_Width, m_Height, m_Depth;
-		ImageAccess m_Access;
 
 	public:
-		Image(Texture::TextureType type, Texture::ImageFormat format, int multisample, int width, int height, int depth, int bindingIndex)
-			:m_Type(type), m_BindingIndex(bindingIndex), m_Multisample(multisample), m_Width(width), m_Height(height), m_Depth(depth)
+		Image(Texture::TextureType type, Texture::ImageFormat format, int multisample, int width, int height, int depth, int bindingIndex, ImageAccess acesss = ImageAccess::GEAR_UNKNOWN)
+			:m_Type(type), m_BindingIndex(bindingIndex), m_Access(acesss), m_Multisample(multisample), m_Width(width), m_Height(height), m_Depth(depth)
 		{
 			m_Texture = Texture(type, format, multisample, width, height, depth);
 		};

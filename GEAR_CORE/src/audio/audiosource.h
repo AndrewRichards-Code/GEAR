@@ -13,7 +13,7 @@ private:
 	unsigned int m_BufferID[2];
 	unsigned int m_SourceID;
 
-	FileUtils::WavData m_WavData;
+	std::shared_ptr<FileUtils::WavData> m_WavData;
 	unsigned int m_Format;
 
 	ARM::Vec3 m_Position;
