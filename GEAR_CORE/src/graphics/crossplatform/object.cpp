@@ -39,7 +39,7 @@ Object::Object(const char* objFilePath, OPENGL::Shader& shader, const ARM::Vec4&
 		i += 4;
 	}
 	GenVAOandIBO();
-	m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_Colours[0], m_Colours.size(), 4), OPENGL::VertexArray::BufferType::GEAR_BUFFER_COLOURS);
+	m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(m_Colours.data(), static_cast<unsigned int>(m_Colours.size()), 4), OPENGL::VertexArray::BufferType::GEAR_BUFFER_COLOURS);
 	SetUniformModlMatrix();
 }
 
@@ -218,11 +218,11 @@ void Object::GenVAOandIBO()
 	if (m_Vertices.size() && m_TextCoords.size() && m_Normals.size() && m_Indices.size() > 0)
 	{
 		m_VAO = std::make_shared<OPENGL::VertexArray>();
-		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_Vertices[0], m_Vertices.size(), 3), OPENGL::VertexArray::BufferType::GEAR_BUFFER_POSITIONS);
-		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_TextCoords[0], m_TextCoords.size(), 2), OPENGL::VertexArray::BufferType::GEAR_BUFFER_TEXCOORDS);
-		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(&m_Normals[0], m_Normals.size(), 3), OPENGL::VertexArray::BufferType::GEAR_BUFFER_NORMALS);
+		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(m_Vertices.data(), static_cast<unsigned int>(m_Vertices.size()), 3), OPENGL::VertexArray::BufferType::GEAR_BUFFER_POSITIONS);
+		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(m_TextCoords.data(), static_cast<unsigned int>(m_TextCoords.size()), 2), OPENGL::VertexArray::BufferType::GEAR_BUFFER_TEXCOORDS);
+		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(m_Normals.data(), static_cast<unsigned int>(m_Normals.size()), 3), OPENGL::VertexArray::BufferType::GEAR_BUFFER_NORMALS);
 
-		m_IBO = std::make_shared<OPENGL::IndexBuffer>(&m_Indices[0], m_Indices.size());
+		m_IBO = std::make_shared<OPENGL::IndexBuffer>(m_Indices.data(), static_cast<unsigned int>(m_Indices.size()));
 	}
 	else
 	{

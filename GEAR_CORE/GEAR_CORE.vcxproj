@@ -101,6 +101,7 @@
     <Lib>
       <AdditionalLibraryDirectories>$(ProjectDir)dep\FREETYPE\win32;$(ProjectDir)dep\OPENAL\libs\Win32;$(ProjectDir)dep\GLEW\lib\Release\Win32;$(ProjectDir)dep\GLFW\x86\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -119,6 +120,7 @@
     <Lib>
       <AdditionalLibraryDirectories>$(ProjectDir)dep\ASSIMP\lib\x64;$(ProjectDir)dep\FREETYPE\win64;$(ProjectDir)dep\OPENAL\libs\Win64;$(ProjectDir)dep\GLEW\lib\Release\x64;$(ProjectDir)dep\GLFW\x64\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>assimp-vc140-mt.lib;freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -141,6 +143,7 @@
     <Lib>
       <AdditionalLibraryDirectories>$(ProjectDir)dep\FREETYPE\win32;$(ProjectDir)dep\OPENAL\libs\Win32;$(ProjectDir)dep\GLEW\lib\Release\Win32;$(ProjectDir)dep\GLFW\x86\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -163,6 +166,7 @@
     <Lib>
       <AdditionalLibraryDirectories>$(ProjectDir)dep\ASSIMP\lib\x64;$(ProjectDir)dep\FREETYPE\win64;$(ProjectDir)dep\OPENAL\libs\Win64;$(ProjectDir)dep\GLEW\lib\Release\x64;$(ProjectDir)dep\GLFW\x64\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>assimp-vc140-mt.lib;freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
