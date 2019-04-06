@@ -1,9 +1,7 @@
 #pragma once
 
 #include "gear_common.h"
-#include "GL/glew.h"
 #include "graphics/opengl/texture.h"
-#include "graphics/opengl/window.h"
 
 namespace GEAR {
 namespace GRAPHICS {
@@ -11,20 +9,20 @@ namespace OPENGL {
 	class FrameBuffer
 	{
 	private:
-		const Window& m_Window;
 		unsigned int m_FrameID;
 		unsigned int m_RenderBufferID;
+		int m_Width, m_Height;
 		std::array<std::shared_ptr<Texture>, 16> m_ColourTextures;
 		std::shared_ptr<Texture> m_DepthTexture;
 
 	public:
-		FrameBuffer(const Window& window);
+		FrameBuffer(int width, int height);
 		~FrameBuffer();
 
 		void Bind() const;
 		void Unbind() const;
 
-		void UpdateFrameBufferSize();
+		void UpdateFrameBufferSize(int width, int height);
 
 		void AddColourTextureAttachment(int attachment = 0);
 		void UseColourTextureAttachment(int attachment = 0);

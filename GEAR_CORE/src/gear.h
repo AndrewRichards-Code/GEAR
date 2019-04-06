@@ -38,7 +38,7 @@
 #include "graphics/opengl/font.h"
 #endif
 
-//Inout
+//Input
 #include "input/inputmanager.h"
 
 //Utils

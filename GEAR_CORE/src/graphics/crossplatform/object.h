@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GL/glew.h"
+#include "gear_common.h"
 #include "graphics/opengl/buffer/vertexarray.h"
 #include "graphics/opengl/buffer/indexbuffer.h"
 #include "graphics/opengl/shader/shader.h"

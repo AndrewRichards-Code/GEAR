@@ -33,9 +33,6 @@
     <ClCompile Include="src\maths\vector\Vec4.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\maths\quaternion\Quat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -233,22 +230,5 @@
     <ClInclude Include="src\utils\assimp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\shaders\GLSL\basic.frag" />
-    <None Include="res\shaders\GLSL\basic.vert" />
-    <None Include="res\shaders\GLSL\cube.frag" />
-    <None Include="res\shaders\GLSL\cube.vert" />
-    <None Include="res\shaders\GLSL\depth.frag" />
-    <None Include="res\shaders\GLSL\depth.vert" />
-    <None Include="res\shaders\GLSL\fbo.frag" />
-    <None Include="res\shaders\GLSL\fbo.vert" />
-    <None Include="res\shaders\GLSL\font.frag" />
-    <None Include="res\shaders\GLSL\font.vert" />
-    <None Include="res\shaders\GLSL\pbr.frag" />
-    <None Include="res\shaders\GLSL\pbr.vert" />
-    <None Include="res\shaders\GLSL\reflection.vert" />
-    <None Include="res\shaders\GLSL\reflection.frag" />
-    <None Include="res\shaders\GLSL\test.comp" />
   </ItemGroup>
 </Project>

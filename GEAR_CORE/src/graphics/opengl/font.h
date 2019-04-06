@@ -1,17 +1,13 @@
 #pragma once
 
-#include "GL/glew.h"
-#include "ft2build.h"
-#include FT_FREETYPE_H
+#include "gear_common.h"
 
 #include "shader/shader.h"
 #include "texture.h"
 #include "renderer/batchrenderer2d.h"
-#include "window.h"
 
 #include "maths/ARMLib.h"
 
-#include "gear_common.h"
 #define GEAR_NUM_OF_CHARACTERS 128
 
 namespace GEAR {
@@ -22,10 +18,9 @@ class Font
 private:
 	const char* m_FilePath;
 	int m_FontHeight;
-	const Window& m_Window;
-	float m_WindowWidth = static_cast<float>(m_Window.GetWidth());
-	float m_WindowHeight = static_cast<float>(m_Window.GetHeight());
-	float m_WindowRatio = static_cast<float>(m_Window.GetRatio());
+	float m_WindowWidth;
+	float m_WindowHeight;
+	float m_WindowRatio;
 	Shader m_Shader = Shader("res/shaders/GLSL/font.vert", "res/shaders/GLSL/font.frag");
 	BatchRenderer2D m_FontRenderer;
 
@@ -56,7 +51,7 @@ private:
 	std::vector<CROSSPLATFORM::Object> m_RenderGlyphBuffer;
 
 public:
-	Font(const char* filepath, int fontHeight, const Window& window);
+	Font(const char* filepath, int fontHeight, int width, int height, float ratio);
 	~Font();
 	void AddLine(const std::string& text, const ARM::Vec2& position, const ARM::Vec4& colour);
 	void Render();

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GL/glew.h"
+#include "gear_common.h"
 
 namespace GEAR {
 namespace GRAPHICS {

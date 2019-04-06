@@ -1,7 +1,6 @@
 #pragma once
 
 #include "gear_common.h"
-#include "GL/glew.h"
 #include "maths/ARMLib.h"
 #include "graphics/opengl/buffer/vertexarray.h"
 #include "graphics/opengl/buffer/indexbuffer.h"

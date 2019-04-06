@@ -15,7 +15,7 @@ namespace CROSSPLATFORM {
 class Light
 {
 public:
-	enum class LightType :int
+	enum class LightType : int
 	{
 		GEAR_LIGHT_POINT = 0,		//pos
 		GEAR_LIGHT_DIRECTIONAL = 1,	//dir
@@ -55,7 +55,7 @@ public:
 	ARM::Vec3 m_Direction;
 
 public:
-	Light(LightType type, const ARM::Vec3& position, ARM::Vec3& direction, const ARM::Vec4& colour, OPENGL::Shader& shader);
+	Light(LightType type, const ARM::Vec3& position, const ARM::Vec3& direction, const ARM::Vec4& colour, OPENGL::Shader& shader);
 	~Light();
 
 	void Specular(float shineFactor, float reflectivity);

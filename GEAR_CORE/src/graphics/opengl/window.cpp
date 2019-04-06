@@ -1,5 +1,4 @@
 #include "window.h"
-#include "stb_image.h"
 
 using namespace GEAR;
 using namespace GRAPHICS;

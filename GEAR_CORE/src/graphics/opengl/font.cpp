@@ -6,8 +6,8 @@ using namespace OPENGL;
 using namespace ARM;
 using namespace CROSSPLATFORM;
 
-Font::Font(const char* filepath, int fontHeight, const Window& window)
-	:m_FilePath(filepath), m_FontHeight(fontHeight), m_Window(window)
+Font::Font(const char* filepath, int fontHeight, int width, int height, float ratio)
+	:m_FilePath(filepath), m_FontHeight(fontHeight), m_WindowWidth(static_cast<float>(width)), m_WindowHeight(static_cast<float>(height)), m_WindowRatio(ratio)
 {
 	GenerateCharacterMap();
 }

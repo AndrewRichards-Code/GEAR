@@ -1,0 +1,35 @@
+#texture Fabric_BlueTarpooling
+1024x1024
+Blue Tarpooling
+Max Boughen
+Horizontally & Vertically
+http://www.mb3d.co.uk/mb3d/Fabric_Seamless_and_Tileable_High_Res_Textures.html
+
+#texture Steel_02_UV_H_CM_1
+1024x1024
+Steel Sheet 2
+Max Boughen
+Horizontally & Vertically
+http://www.mb3d.co.uk/mb3d/Metal_Rusty_and_Patterned_Seamless_and_Tileable_High_Res_Textures.html
+
+No payment or royalties are required to use these Textures. The use of Textures is non-exclusive, royalty free, and you have the right to modify them for the uses given under the clause Conditions of Use.
+
+Conditions of Use:
+Use of the Textures is only allowed under one or more of the following conditions if downloaded through www.maxTextures.com or www.mb3d.co.uk:
+-Use in 2D or 3D private or commercial computer graphics, movies.
+-Incorporation in computer games, 3D models.
+It is NOT permitted to:
+-Enable access to duplicated material or provide links to any of the content in maxTextures without credit to ‘copyright www.maxtextures.com’.
+
+Copyright 2018 'www.maxtextures.com'. For creators, please go to 'www.mb3d.co.uk' for texture downloads.
+
+
+#texture tileable_wood_texture_01_by_goodtextures-d31qde8
+2048x2048
+Tileable Wood texture 01
+SimoonMurray
+Horizontally & Vertically
+
+Creative Commons 3.0
+https://www.deviantart.com/simoonmurray/art/Tileable-Wood-texture-01-184308560
+

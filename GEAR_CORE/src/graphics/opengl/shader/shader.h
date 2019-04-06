@@ -2,7 +2,6 @@
 
 #include "gear_common.h"
 
-#include "GL/glew.h"
 #include "graphics/opengl/buffer/vertexarray.h"
 #include "graphics/opengl/buffer/buffermanager.h"
 #include "utils/fileutils.h"

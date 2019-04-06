@@ -4,8 +4,8 @@ using namespace GEAR;
 using namespace GRAPHICS;
 using namespace OPENGL;
 
-FrameBuffer::FrameBuffer(const Window& window)
-	:m_Window(window)
+FrameBuffer::FrameBuffer(int width, int height)
+	:m_Width(width), m_Height(height)
 {
 	glGenFramebuffers(1, &m_FrameID);
 	glGenRenderbuffers(1, &m_RenderBufferID);
@@ -42,10 +42,12 @@ void FrameBuffer::Unbind() const
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void FrameBuffer::UpdateFrameBufferSize()
+void FrameBuffer::UpdateFrameBufferSize(int width, int height)
 {
-	if (m_Window.GetWidth() != m_DepthTexture->GetWidth() || m_Window.GetHeight() != m_DepthTexture->GetHeight())
+	if (m_Width != m_DepthTexture->GetWidth() || m_Height != m_DepthTexture->GetHeight())
 	{
+		m_Width = width;
+		m_Height = height;
 		for (int i = 0; i < static_cast<signed int>(m_ColourTextures.size()); i++)
 		{
 			if (m_ColourTextures[i] != nullptr)
@@ -73,7 +75,7 @@ void FrameBuffer::AddColourTextureAttachment(int attachment)
 		return;
 	}
 
-	m_ColourTextures[attachment] = std::make_shared<Texture>(m_Window.GetWidth(), m_Window.GetHeight(), false);
+	m_ColourTextures[attachment] = std::make_shared<Texture>(m_Width, m_Height, false);
 	if (m_ColourTextures[attachment]->IsDepthTexture() == false)
 	{
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, GL_TEXTURE_2D, m_ColourTextures[attachment]->GetTextureID(), 0);
@@ -87,7 +89,7 @@ void FrameBuffer::UseColourTextureAttachment(int attachment)
 
 void FrameBuffer::AddDepthTextureAttachment()
 {
-	m_DepthTexture = std::make_shared<Texture>(m_Window.GetWidth(), m_Window.GetHeight(), true);
+	m_DepthTexture = std::make_shared<Texture>(m_Width, m_Height, true);
 	if (m_DepthTexture->IsDepthTexture() == true)
 	{
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_DepthTexture->GetTextureID(), 0);
@@ -96,6 +98,6 @@ void FrameBuffer::AddDepthTextureAttachment()
 
 void FrameBuffer::AddDepthBufferAttachment()
 {
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_Window.GetWidth(), m_Window.GetHeight()); 
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_Width, m_Height); 
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_RenderBufferID);
 }

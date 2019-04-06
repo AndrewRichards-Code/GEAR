@@ -1,6 +1,5 @@
 #pragma once
 
-#include "GL/glew.h"
 #include "renderer.h"
 #include "maths/ARMLib.h"
 #include "graphics/opengl/buffer/vertexarray.h"

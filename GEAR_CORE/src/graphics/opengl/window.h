@@ -1,9 +1,7 @@
 #pragma once
 
+#define STB_IMAGE_IMPLEMENTATION
 #include "gear_common.h"
-
-#include "GL/glew.h"
-#include "GLFW/glfw3.h"
 
 namespace GEAR {
 namespace GRAPHICS {

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "gear_common.h"
-#include "GL/glew.h"
 #include "graphics/opengl/shader/computeshader.h"
 #include "graphics/opengl/buffer/buffermanager.h"
 #include "graphics/opengl/texture.h"

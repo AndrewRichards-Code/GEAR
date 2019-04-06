@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AL/al.h"
+#include "gear_common.h"
 #include "maths/ARMLib.h"
 #include "utils/fileutils.h"
 

@@ -1,7 +1,6 @@
 #pragma once
 
-#include "AL/al.h"
-#include "AL/alc.h"
+#include "gear_common.h"
 #include "maths/ARMLib.h"
 #include "graphics/crossplatform/camera.h"
 
