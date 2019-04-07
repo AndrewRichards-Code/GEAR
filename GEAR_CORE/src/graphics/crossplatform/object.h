@@ -13,7 +13,6 @@ namespace GRAPHICS {
 namespace CROSSPLATFORM {
 
 #ifdef GEAR_OPENGL
-
 class Object
 {
 private:
@@ -89,7 +88,8 @@ public:
 	inline const std::vector<unsigned int>& GetIndices() const { return m_Indices; }
 	inline const char* GetObjFileName() const { return m_ObjFilePath; }
 };
-}
-}
-}
 #endif
+
+}
+}
+}

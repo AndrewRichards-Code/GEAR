@@ -93,6 +93,8 @@
       <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GEAR_OPENGL;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <AdditionalDependencies>freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -112,6 +114,8 @@
       <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GEAR_OPENGL;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <AdditionalDependencies>assimp-vc140-mt.lib;freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -133,6 +137,8 @@
       <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GEAR_OPENGL;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -156,6 +162,8 @@
       <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GEAR_OPENGL;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -170,6 +178,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\graphics\crossplatform\material.cpp" />
     <ClCompile Include="src\graphics\opengl\buffer\buffermanager.cpp" />
     <ClCompile Include="src\graphics\opengl\buffer\shaderstoragebuffer.cpp" />
     <ClCompile Include="src\audio\audiosource.cpp" />
@@ -201,6 +210,7 @@
     <ClCompile Include="src\graphics\opengl\buffer\uniformbuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\graphics\crossplatform\material.h" />
     <ClInclude Include="src\graphics\opengl\buffer\buffermanager.h" />
     <ClInclude Include="src\graphics\opengl\buffer\shaderstoragebuffer.h" />
     <ClInclude Include="src\audio\audiosource.h" />

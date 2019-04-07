@@ -16,15 +16,35 @@ layout(location = 6) in vec4 v_Colour;
 layout(binding = 0) uniform sampler2D u_Texture;
 layout(binding = 1) uniform sampler2D u_Textures[32];
 
-layout(std140, binding = 4) uniform lightUBO
+struct Light
 {
-	vec4 u_LightColour;
-	vec3 u_LightDirection;
-	vec3 u_F0;
-	vec3 u_Albedo;
+	vec4  Colour;
+	vec4  Position;
+	vec4  Direction;
+	float Type;
+	float ShineFactor;
+	float Reflectivity;
+	float AmbientFactor;
+	float AttenuationConstant;
+	float AttenuationLinear;
+	float AttenuationQuadratic;
+	float CutOff; 
+};
+const int MAX_LIGHTS = 8;
+
+layout(std140, binding = 2) uniform lightUBO
+{
+	Light[MAX_LIGHTS] u_Lights;
+};
+
+layout(std140, binding = 4) uniform PBRInfoUBO
+{
+	vec4 u_F0;
+	vec4 u_Albedo;
 	float u_Metallic;
 	float u_Roughness;
 	float u_AO;
+	float _pad;
 };
 
 //Functions
@@ -70,20 +90,20 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     return ggx1 * ggx2;
 }
 
-vec3 CalcPBRLighting()
+vec3 CalcPBRLighting(int i)
 {
 	vec3 lightOut = {0, 0, 0};
 	
 	vec4 unitNormal = normalize(v_Normal);
 	vec4 unitVertexToCamera = normalize(v_VertexToCamera);
-	vec4 unitVertexToLight = normalize(vec4(-u_LightDirection, 0.0));
+	vec4 unitVertexToLight = normalize(vec4(-u_Lights[i].Direction));
 	vec4 unitHalfVector = normalize(unitNormal + unitVertexToCamera);
 
 	float distanceVertToCam = length(unitVertexToCamera);
 	float attenuation =  1.0 / (distanceVertToCam * distanceVertToCam);
-	vec3 radiance = u_LightColour.xyz * attenuation;
+	vec3 radiance = u_Lights[i].Colour.xyz * attenuation;
 
-	vec3 F0 = mix(u_F0, u_Albedo, u_Metallic);
+	vec3 F0 = mix(u_F0.xyz, u_Albedo.xyz, u_Metallic);
 	vec3 F  = Fresnel(max(dot(unitHalfVector, unitVertexToCamera), 0.0), F0);
 
 	float NDF = DistributionGGX(unitNormal.xyz, unitHalfVector.xyz, u_Roughness);
@@ -97,9 +117,9 @@ vec3 CalcPBRLighting()
 	vec3 kDiffused = vec3(1.0) - kSpecular;
 	kDiffused *= 1.0 - u_Metallic;
 
-	lightOut = ((kDiffused  * u_Albedo / pi) + specular) * radiance * max(dot(unitNormal, unitVertexToLight), 0.0);
+	lightOut = ((kDiffused  * u_Albedo.xyz / pi) + specular) * radiance * max(dot(unitNormal, unitVertexToLight), 0.0);
 
-	vec3 ambient = vec3(0.03) * u_Albedo * u_AO;
+	vec3 ambient = vec3(0.03) * u_Albedo.xyz * u_AO;
 	vec3 colourOut  = ambient + lightOut; 
 
 	colourOut = colourOut / (colourOut + vec3(1.0));
@@ -110,7 +130,11 @@ vec3 CalcPBRLighting()
 
 void main()
 {
-	vec3 lighting = CalcPBRLighting();
+	vec3 lighting;
+	for(int i = 0; i < MAX_LIGHTS; i++)
+	{
+		lighting += CalcPBRLighting(i);
+	}
 
 	if(v_TextIds > 0)
 	{

@@ -3,7 +3,7 @@
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif
 
-#define GEAR_USE_FBO 1
+#define GEAR_USE_FBO 0
 
 using namespace GEAR;
 using namespace GRAPHICS;
@@ -33,6 +33,9 @@ int main()
 	Window window("GEAR", 1280, 720, 16);
 	//window.Fullscreen();
 	window.UpdateVSync(true);
+
+	std::vector<AssimpLoader::Mesh> meshes = AssimpLoader::LoadModel("res/obj/KagemitsuG4.fbx");
+	FileUtils::ObjData test = FileUtils::read_obj("res/obj/cube.obj");
 
 #if _DEBUG
 	DebugOpenGL debug;

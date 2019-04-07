@@ -102,6 +102,9 @@
     <ClCompile Include="src\graphics\opengl\buffer\buffermanager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\crossplatform\material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\maths\matrix\Mat2.h">
@@ -228,6 +231,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\utils\assimp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\crossplatform\material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

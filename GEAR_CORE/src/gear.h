@@ -11,6 +11,8 @@
 //Crossplatform
 #include "graphics/crossplatform/light.h"
 #include "graphics/crossplatform/camera.h"
+#include "graphics/crossplatform/object.h"
+#include "graphics/crossplatform/material.h"
 
 //OpenGL
 #if GEAR_OPENGL
@@ -43,3 +45,4 @@
 
 //Utils
 #include "utils/fileutils.h"
+#include "utils/assimp.h"

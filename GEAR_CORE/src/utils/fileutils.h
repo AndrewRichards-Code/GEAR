@@ -65,7 +65,11 @@ public:
 		int GetSizeNormIndices() { return static_cast<int>(m_NormIndices.size()); }
 		int GetSizeUniqueVertices() { return static_cast<int>(m_UniqueVertices.size()); }
 	};
-
+/*#if defined(_MSC_VER)
+	__declspec(deprecated("Function Depracated: Please use AssimpLoader instead."))
+#elif
+	[[deprecated("Function Depracated: Please use AssimpLoader instead.")]]
+#endif*/
 	static ObjData read_obj(const char* filepath)
 	{
 		ObjData result;

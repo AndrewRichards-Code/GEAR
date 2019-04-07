@@ -44,7 +44,7 @@ void FrameBuffer::Unbind() const
 
 void FrameBuffer::UpdateFrameBufferSize(int width, int height)
 {
-	if (m_Width != m_DepthTexture->GetWidth() || m_Height != m_DepthTexture->GetHeight())
+	if (width != m_DepthTexture->GetWidth() || height != m_DepthTexture->GetHeight())
 	{
 		m_Width = width;
 		m_Height = height;
