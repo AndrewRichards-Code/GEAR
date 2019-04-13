@@ -86,7 +86,7 @@ public:
 		GEAR_DEPTH_COMPONENT = GL_DEPTH_COMPONENT,
 		GEAR_DEPTH_STENCIL = GL_DEPTH_STENCIL
 	};
-	BaseImageFormat ToBaseFormat(ImageFormat format)
+	static BaseImageFormat ToBaseFormat(ImageFormat format)
 	{
 		switch (format)
 		{
@@ -149,13 +149,13 @@ public:
 
 private:
 	unsigned int m_TextureID;
-	std::string m_FilePath;
-	std::vector<std::string> m_FilePaths;
+	std::string m_Filepath;
+	std::vector<std::string> m_CubemapFilepaths;
 	unsigned char* m_LocalBuffer;
-	int m_Width, m_Height, m_Depth, m_BPP; //BPP = Bits per pixel
+	int m_Width = 0, m_Height = 0, m_Depth = 0, m_BPP = 0; //BPP = Bits per pixel
 	TextureType m_Type = TextureType::GEAR_TEXTURE_UNKNOWN;
 	ImageFormat m_Format = ImageFormat::GEAR_IMAGE_UNKNOWN;
-	bool m_CubeMap = false;
+	bool m_Cubemap = false;
 	bool m_DepthTexture = false;
 	float m_TileFactor = 1.0f;
 	int m_Multisample = 1;
@@ -164,13 +164,20 @@ private:
 	static float m_AnisotrophicValue;
 
 public:
-	Texture(const std::string& filepath); //Assumes GL_TEXTURE_2D!
-	Texture(const std::vector<std::string>& filepaths); //For CubeMaps only! Submit in filepaths in order of: front, back, top, bottom, right and left.
-	Texture(unsigned char* buffer, int width, int height); //For Fonts only!
-	Texture(int width = 1024, int height = 1024, bool depthTexture = false); //For FrameBuffer only!
-	Texture(TextureType type, ImageFormat format, int multisample = 1, int width = 0, int height = 0, int depth = 0); //General Texture constructor, suitable for compute shaders!
-	Texture(TextureType type, std::vector<unsigned char*> buffer, ImageFormat format, int multisample = 1, int width = 0, int height = 0, int depth = 0); //General Texture constructor, suitable for compute shaders!
-	Texture(TextureType type, const std::vector<std::string>& filepath, ImageFormat format, int multisample = 1, int width = 0, int height = 0, int depth = 0); //General Texture constructor, suitable for compute shaders!
+	//Assumes GL_TEXTURE_2D!
+	Texture(const std::string& filepath); 
+	//For CubeMaps only! Submit in filepaths in order of: front, back, top, bottom, right and left.
+	Texture(const std::vector<std::string>& filepaths); 
+	//For Fonts only!
+	Texture(unsigned char* buffer, int width, int height); 
+	//For FrameBuffer only!
+	Texture(int width = 1024, int height = 1024, bool depthTexture = false, int multisample = 1, ImageFormat format = ImageFormat::GEAR_RGBA8); 
+	//General Texture constructor, suitable for compute shaders!
+	Texture(TextureType type, ImageFormat format, int multisample = 1, int width = 0, int height = 0, int depth = 0); 
+	//General Texture constructor, suitable for compute shaders!
+	Texture(TextureType type, std::vector<unsigned char*> buffer, ImageFormat format, int multisample = 1, int width = 0, int height = 0, int depth = 0); 
+	//General Texture constructor, suitable for compute shaders!
+	Texture(TextureType type, const std::vector<std::string>& filepath, ImageFormat format, int multisample = 1, int width = 0, int height = 0, int depth = 0);
 	~Texture();
 
 	void Bind(unsigned int slot = 0) const;
@@ -188,7 +195,7 @@ public:
 	inline int GetHeight() const { return m_Height; }
 	inline int GetBPP() const { return m_BPP; }
 	inline unsigned int GetTextureID() const { return m_TextureID; }
-	inline bool IsCubeMap() const { return m_CubeMap; }
+	inline bool IsCubeMap() const { return m_Cubemap; }
 	inline bool IsDepthTexture() const { return m_DepthTexture; }
 	inline float GetTileFactor() const { return m_TileFactor; }
 	inline static std::string GetAnisotrophicValue() { return std::to_string(static_cast<int>(m_AnisotrophicValue)); }

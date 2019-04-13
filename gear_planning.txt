@@ -1,84 +1,25 @@
-VertexArray.AddBuffer(&vbo, sizeof(vbo), layoutLocation)
-{
-//Add layoutLocations
-GEAR_BUFFER_POSITIONS;
-GEAR_BUFFER_NORMALS;
-GEAR_BUFFER_TEXTCOORDS;
-GEAR_BUFFER_COLOUR;
-	
-//Auto calc sizeof(vbo)
-} DONE!
+GEAR Features to implement:
 
----------------------------------------------------------------------------------------
+Broad changes:
+DONE: GEAR-CORE build as static library .lib (.dll for a C# WPF Editor? - Doubtful)
 
-Object(OBJFile, Shader(), Uniform[], Texture());
-Object(OBJFile, Shader(), Uniforms[]));
-{
-Constructs ObjData.
-One Mesh =  One Texture indices will be the same.
-Constructs std::vector<VertexArray> and std::vector<IndexBuffer> and populate.
-Pull all need texture files, and constructs std::vector<Texture> and populate.
-Enable shader;
-Bind textures
-SetUniforms
+Class:
+DONE: CROSSPLATFORM::Material class
+DONE: CROSSPLATFORM::Probe for environment look-up and reflection
 
-Pass Object to the Renderer (implement: m_RenderQueue<deque>, Submit() and Flush()) DONE!
-}
-struct ObjData
-{
-	std::vector<MeshData>;TODO!
-	struct MeshData
-	{
-		const char* mtlFilePath;
-		const char* mtlName;
+On-going:
+Assimp Model loading
+Fix PBR
 
-		std::vector<ARM::Vec3> m_Vertices;
-		std::vector<ARM::Vec2> m_TexCoords;
-		std::vector<ARM::Vec3> m_Normals;
-		std::vector<unsigned int> m_VertIndices;
-		std::vector<unsigned int> m_TextIndices;
-		std::vector<unsigned int> m_NormIndices;
-		std::vector<ARM::Vec3> m_UniqueVertices;
+Scripting: 
+Pick language: C++/C#/Lua/Python - Mono?
 
-		int GetSizeVertices() { return m_Vertices.size(); }
-		int GetSizeTexCoords() { return m_TexCoords.size(); }
-		int GetSizeNormals() { return m_Normals.size(); }
-		int GetSizeVertIndices() { return m_VertIndices.size(); }
-		int GetSizeTextIndices() { return m_TextIndices.size(); }
-		int GetSizeNormIndices() { return m_NormIndices.size(); }
-		int GetSizeUniqueVertices() { return m_UniqueVertices.size(); }
-	};
-//Read and use mtl file from obj file.
-};
+Scene Graph and File:
+.txt/.bin or other?
 
-------------------------------------------------------------------------------------------
+Save Models and Textures as .bin for quick read.
 
-Camera(int projType, Vec3 pos, float yaw, float pitch, float roll);
-{
-switch(projType)
-case GEAR_CAMERA_PERSPECTIVE: DefineProjection(fov, aspect, zNear, zFar);
-case GEAR_CAMERA_ORTHOGRAPHIC: DefineProjection(left, right, bottom, top, near, far);
-
-//Define a projection and view matrix
-GEAR_CAMERA_PERSPECTIVE;
-GEAR_CAMERA_ORTHOGRAPHIC;
-}DONE!
-
-Light(int type, Vec3 pos/direction, Vec4 Colour, Camera())
-{
-//type
-GEAR_LIGHT_POINT;	//pos
-GEAR_LIGHT_DIRECTIONAL;	//dir
-GEAR_LIGHT_SPOT;	//cone, umbra, penumbra
-GEAR_LIGHT_AREA;	//err...
-} DONE!
-
-Add to Shader()
-{
-//Add GeometryShader? TODO!
-//CalcLightType
-GEAR_CALC_LIGHT_DIFFUSE;
-GEAR_CALC_LIGHT_SPECULAR;
-GEAR_CALC_LIGHT_AMIBIENT;
-GEAR_CALC_LIGHT_EMIT;
-}DONE!
+Long-Term:
+Vulkan Support
+Physics Engine - PEAR
+Editor using Qt - GEAR-Editor

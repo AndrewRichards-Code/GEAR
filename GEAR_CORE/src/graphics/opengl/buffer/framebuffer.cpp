@@ -4,11 +4,14 @@ using namespace GEAR;
 using namespace GRAPHICS;
 using namespace OPENGL;
 
-FrameBuffer::FrameBuffer(int width, int height)
-	:m_Width(width), m_Height(height)
+FrameBuffer::FrameBuffer(int width, int height, bool cubeMap, int multisample, Texture::ImageFormat format)
+	:m_Width(width), m_Height(height), m_CubeMap(cubeMap), m_Multisample(multisample), m_Format(format)
 {
 	glGenFramebuffers(1, &m_FrameID);
 	glGenRenderbuffers(1, &m_RenderBufferID);
+	if (m_Multisample > 1)
+		m_ResolvedFBO = std::make_unique<FrameBuffer>(m_Width, m_Height, m_CubeMap, 1, m_Format);
+	
 	Bind();
 
 	AddColourTextureAttachment(0);
@@ -63,22 +66,22 @@ void FrameBuffer::UpdateFrameBufferSize(int width, int height)
 
 void FrameBuffer::AddColourTextureAttachment(int attachment)
 {
-	if (attachment > static_cast<signed int>(m_ColourTextures.size()))
+	if (!m_CubeMap)
 	{
-		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::FrameBuffer: Attachment slot unavailable! Only 16 available slots." << std::endl;
-		return;
+		CheckColourTextureAttachments(attachment);
+		m_ColourTextures[attachment] = std::make_shared<Texture>(m_Width, m_Height, false, m_Multisample, m_Format);
+		if (m_ColourTextures[attachment]->IsDepthTexture() == false)
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, m_Multisample > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, m_ColourTextures[attachment]->GetTextureID(), 0);
 	}
-	
-	if (m_ColourTextures[attachment] != nullptr)
+	else
 	{
-		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::FrameBuffer: Attachment slot is already taken!" << std::endl;
-		return;
-	}
-
-	m_ColourTextures[attachment] = std::make_shared<Texture>(m_Width, m_Height, false);
-	if (m_ColourTextures[attachment]->IsDepthTexture() == false)
-	{
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment, GL_TEXTURE_2D, m_ColourTextures[attachment]->GetTextureID(), 0);
+		for (int i = 0; i < 6; i++)
+		{
+			CheckColourTextureAttachments(attachment + i);
+			m_ColourTextures[attachment + i] = std::make_shared<Texture>(m_Width, m_Height, false, m_Multisample, m_Format);
+			if (m_ColourTextures[attachment + i]->IsDepthTexture() == false)
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + attachment + i, m_Multisample > 1 ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, m_ColourTextures[attachment + i]->GetTextureID(), 0);
+		}
 	}
 }
 
@@ -87,9 +90,33 @@ void FrameBuffer::UseColourTextureAttachment(int attachment)
 	glDrawBuffer(GL_COLOR_ATTACHMENT0 + attachment);
 }
 
+void FrameBuffer::Resolve()
+{
+	if (m_ResolvedFBO == nullptr)
+		return;
+
+	//Adds any addition attachments to the resolvedFBO.
+	int start = m_CubeMap ? 6 : 1;//The Constructor provide a colour attachment at 0, 0-5 for a cubemap.
+	m_ResolvedFBO->Bind();
+	for (int i = start; i < static_cast<signed int>(m_ResolvedFBO->m_ColourTextures.size()); i++)
+	{
+		if (m_ColourTextures[i] == nullptr)
+			break;
+		else
+			m_ResolvedFBO->AddColourTextureAttachment(i);
+
+	}
+	m_ResolvedFBO->Unbind();
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_FrameID);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_ResolvedFBO->m_FrameID);
+	glBlitFramebuffer(0, 0, m_Width, m_Height, 0, 0, m_Width, m_Height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void FrameBuffer::AddDepthTextureAttachment()
 {
-	m_DepthTexture = std::make_shared<Texture>(m_Width, m_Height, true);
+	m_DepthTexture = std::make_shared<Texture>(m_Width, m_Height, true, m_Multisample, m_Format);
 	if (m_DepthTexture->IsDepthTexture() == true)
 	{
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_DepthTexture->GetTextureID(), 0);
@@ -98,6 +125,25 @@ void FrameBuffer::AddDepthTextureAttachment()
 
 void FrameBuffer::AddDepthBufferAttachment()
 {
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_Width, m_Height); 
+	if (m_Multisample > 1)
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, m_Multisample, GL_DEPTH_COMPONENT, m_Width, m_Height);
+	else
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_Width, m_Height); 
+	
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_RenderBufferID);
+}
+
+void FrameBuffer::CheckColourTextureAttachments(int attachment)
+{
+	if (attachment > static_cast<signed int>(m_ColourTextures.size()))
+	{
+		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::FrameBuffer: Attachment slot unavailable! Only 16 available slots." << std::endl;
+		return;
+	}
+
+	if (m_ColourTextures[attachment] != nullptr)
+	{
+		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::FrameBuffer: Attachment slot is already taken!" << std::endl;
+		return;
+	}
 }

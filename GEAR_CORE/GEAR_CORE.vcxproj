@@ -179,6 +179,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\graphics\crossplatform\material.cpp" />
+    <ClCompile Include="src\graphics\crossplatform\probe.cpp" />
     <ClCompile Include="src\graphics\opengl\buffer\buffermanager.cpp" />
     <ClCompile Include="src\graphics\opengl\buffer\shaderstoragebuffer.cpp" />
     <ClCompile Include="src\audio\audiosource.cpp" />
@@ -211,6 +212,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\graphics\crossplatform\material.h" />
+    <ClInclude Include="src\graphics\crossplatform\probe.h" />
     <ClInclude Include="src\graphics\opengl\buffer\buffermanager.h" />
     <ClInclude Include="src\graphics\opengl\buffer\shaderstoragebuffer.h" />
     <ClInclude Include="src\audio\audiosource.h" />

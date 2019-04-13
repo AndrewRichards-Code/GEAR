@@ -16,7 +16,6 @@ public:
 	enum class TextureType : int
 	{
 		GEAR_TEXTURE_UNKNOWN = 0,		//Pre-Initialised value
-		GEAR_TEXTURE_COLOUR,			//For standard colour
 		GEAR_TEXTURE_DIFFUSE,			//For diffuse
 		GEAR_TEXTURE_SPECULAR,			//For specular
 		GEAR_TEXTURE_AMBIENT,			//For ambient
@@ -76,7 +75,9 @@ public:
 	void AddTexture(const OPENGL::Texture& texture, TextureType type = TextureType::GEAR_TEXTURE_UNKNOWN);
 	void ChangeTextureType(const OPENGL::Texture& texture, TextureType type);
 	void AddProperties(std::string name, int twoSided, int shadingModel, int wireframe, int blendFunc, float opacity, float shininess, float reflectivity, float shininessStrength, float refractiveIndex, const ARM::Vec4& colourDiffuse, const ARM::Vec4& colourAmbient, const ARM::Vec4& colourSpecular, const ARM::Vec4& colourEmissive, const ARM::Vec4& colourTransparent, const ARM::Vec4& colourReflective);
-	void SetPBRParameters(const ARM::Vec4& fersnel, const ARM::Vec4& albedo, float metallic, float roughness, float ambientOcclusion);
+	void SetPBRParameters(const ARM::Vec4& fersnel = ARM::Vec4(0, 0, 0, 0), const ARM::Vec4& albedo = ARM::Vec4(0, 0, 0, 0), float metallic = 0.0f, float roughness = 0.0f, float ambientOcclusion = 0.0f);
+	void BindPBRTextures();
+	void UnbindPBRTextures();
 
 	inline const OPENGL::Shader& GetShader() const { return m_Shader; }
 	inline const std::map<const OPENGL::Texture*, TextureType>& GetTextures() const { return m_Textures; }

@@ -72,7 +72,7 @@ Object::Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Te
 	{
 		Vec2 temp = m_ObjData.m_TexCoords[(unsigned int)m_ObjData.m_UniqueVertices[i].y];
 		m_TextCoords.push_back(temp.x * m_Texture.GetTileFactor());
-		m_TextCoords.push_back(temp.y * m_Texture.GetTileFactor());;
+		m_TextCoords.push_back(temp.y * m_Texture.GetTileFactor());
 	}
 
 	m_Normals.reserve(m_ObjData.GetSizeVertices() * 3);
@@ -194,7 +194,7 @@ void Object::LoadObjDataIntoObject()
 	{
 		Vec2 temp = m_ObjData.m_TexCoords[(unsigned int)m_ObjData.m_UniqueVertices[i].y];
 		m_TextCoords.push_back(temp.x * m_Texture.GetTileFactor());
-		m_TextCoords.push_back(temp.y * m_Texture.GetTileFactor());;
+		m_TextCoords.push_back(temp.y * m_Texture.GetTileFactor());
 	}
 
 	m_Normals.reserve(m_ObjData.GetSizeVertices() * 3);

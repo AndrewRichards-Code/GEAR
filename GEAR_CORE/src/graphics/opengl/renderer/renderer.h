@@ -31,7 +31,8 @@ public:
 
 	void Clear() const;
 
-	inline std::vector<CROSSPLATFORM::Light*> GetLights() const { return m_Lights; }
+	inline const std::vector<CROSSPLATFORM::Light*>& GetLights() const { return m_Lights; }
+	inline std::deque<CROSSPLATFORM::Object*>& GetRenderQueue() { return m_RenderQueue; };
 };
 }
 }

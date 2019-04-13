@@ -7,8 +7,8 @@ using namespace ARM;
 
 bool Camera::s_InitialiseUBO = false;
 
-Camera::Camera(int projType, OPENGL::Shader& shader, const ARM::Vec3& position, const ARM::Vec3& forward, const ARM::Vec3 up)
-	:m_ProjectionType(projType), m_Shader(shader), m_Position(position), m_Forward(forward), m_Up(up)
+Camera::Camera(int projType, const ARM::Vec3& position, const ARM::Vec3& forward, const ARM::Vec3 up)
+	:m_ProjectionType(projType), m_Position(position), m_Forward(forward), m_Up(up)
 {
 	InitialiseUBO();
 
@@ -55,9 +55,12 @@ void Camera::DefineView()
 		Mat4::Rotation(m_Roll, m_zAxis) *
 		Mat4::Translation(Vec3(-m_Position.x, -m_Position.y, -m_Position.z));
 
-	/*Quat x(m_Pitch, m_xAxis);
-	Quat y(m_Yaw, m_yAxis);
-	Quat orientation = x * y;
+	/*CalculateRight();
+	//std::cout <<"Forward: "<< m_Forward << ", Right: " << m_Right << ", Up: " << m_Up << std::endl;
+	//system("CLS");
+	Quat x((float)m_Pitch, m_Right);
+	Quat y((float)m_Yaw, m_yAxis);
+	Quat orientation = y * x;
 	orientation.Normalise();
 	Mat4 rotation = Quat::ToMat4(orientation);
 	Mat4 translation = Mat4::Translation(Vec3(-m_Position.x, -m_Position.y, -m_Position.z));
@@ -70,7 +73,12 @@ void Camera::DefineView()
 	Vec3 final = Quat::ToVec3((q * p) * qInv);
 	Vec3 final2 = p.RotQuat(q);*/
 
-
+	m_CameraUBO.m_ViewMatrix.Transpose();
+	OPENGL::BufferManager::UpdateUBO(0, &m_CameraUBO.m_ViewMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ViewMatrix));
+}
+void Camera::DefineView(const Mat4& viewMatrix)
+{
+	m_CameraUBO.m_ViewMatrix = viewMatrix * Mat4::Translation(Vec3(-m_Position.x, -m_Position.y, -m_Position.z));
 	m_CameraUBO.m_ViewMatrix.Transpose();
 	OPENGL::BufferManager::UpdateUBO(0, &m_CameraUBO.m_ViewMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ViewMatrix));
 }
@@ -89,11 +97,15 @@ void Camera::DefineProjection(float left, float right, float bottom, float top, 
 		throw;
 	}
 }
-void Camera::DefineProjection(double fov, float aspectRatio, float zNear, float zFar)
+void Camera::DefineProjection(double fov, float aspectRatio, float zNear, float zFar, bool flipX, bool flipY)
 {
 	if (m_ProjectionType == GEAR_CAMERA_PERSPECTIVE)
 	{
 		m_CameraUBO.m_ProjectionMatrix = Mat4::Perspective(fov, aspectRatio, zNear, zFar);
+		if (flipX)
+			m_CameraUBO.m_ProjectionMatrix.a *= -1;
+		if (flipY)
+			m_CameraUBO.m_ProjectionMatrix.f *= -1;
 		m_CameraUBO.m_ProjectionMatrix.Transpose();
 
 		OPENGL::BufferManager::UpdateUBO(0, &m_CameraUBO.m_ProjectionMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ProjectionMatrix));
@@ -109,6 +121,10 @@ void Camera::DefineProjection(double fov, float aspectRatio, float zNear, float 
 void Camera::CalculateRight()
 {
 	m_Right = Vec3::Normalise(Vec3::Cross(m_Forward, m_Up));
+}
+void Camera::CalculateUp()
+{
+	m_Up = Vec3::Normalise(Vec3::Cross(m_Forward, m_Right));
 }
 
 void Camera::InitialiseUBO()

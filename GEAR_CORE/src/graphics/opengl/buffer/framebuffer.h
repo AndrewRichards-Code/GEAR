@@ -12,11 +12,16 @@ namespace OPENGL {
 		unsigned int m_FrameID;
 		unsigned int m_RenderBufferID;
 		int m_Width, m_Height;
+		bool m_CubeMap; 
+		int m_Multisample;
+		Texture::ImageFormat m_Format;
 		std::array<std::shared_ptr<Texture>, 16> m_ColourTextures;
 		std::shared_ptr<Texture> m_DepthTexture;
 
+		std::unique_ptr<FrameBuffer> m_ResolvedFBO = nullptr;
+
 	public:
-		FrameBuffer(int width, int height);
+		FrameBuffer(int width, int height, bool cubeMap = false, int multisample = 1, Texture::ImageFormat format = Texture::ImageFormat::GEAR_RGBA8);
 		~FrameBuffer();
 
 		void Bind() const;
@@ -27,12 +32,29 @@ namespace OPENGL {
 		void AddColourTextureAttachment(int attachment = 0);
 		void UseColourTextureAttachment(int attachment = 0);
 
-		inline std::shared_ptr<Texture> GetColourTexture(int slot = 0) const { return m_ColourTextures[slot]; }
-		inline std::shared_ptr<Texture> GetDepthTexture() const { return m_DepthTexture; }
+		void Resolve();
+
+		inline std::shared_ptr<Texture> GetColourTexture(int slot = 0, bool getResolvedFBO = true) const 
+		{
+			if(m_ResolvedFBO && getResolvedFBO)
+				return m_ResolvedFBO->m_ColourTextures[slot];
+			else
+				return m_ColourTextures[slot]; 
+		}
+		inline std::shared_ptr<Texture> GetDepthTexture(bool getResolvedFBO = true) const
+		{
+			if(m_ResolvedFBO && getResolvedFBO)
+				return m_ResolvedFBO->m_DepthTexture;
+			else
+				return m_DepthTexture; 
+		}
+
+		inline int GetMultisampleValue() const { return m_Multisample; }
 
 	private:
 		void AddDepthTextureAttachment();
 		void AddDepthBufferAttachment();
+		void CheckColourTextureAttachments(int attachment);
 	};
 }
 }

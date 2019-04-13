@@ -1,7 +1,6 @@
 #pragma once
 
 #include "gear_common.h"
-#include "graphics/opengl/shader/shader.h"
 #include "graphics/opengl/buffer/buffermanager.h"
 #include "maths/ARMLib.h"
 
@@ -18,7 +17,6 @@ class Camera
 {
 private:
 	int m_ProjectionType;
-	OPENGL::Shader& m_Shader;
 	double m_Yaw = 0;
 	double m_Pitch = 0;
 	double m_Roll = 0;
@@ -45,18 +43,20 @@ private:
 	} m_CameraUBO;
 
 public:
-	Camera(int projType, OPENGL::Shader& shader, const ARM::Vec3& position, const ARM::Vec3& forward, const ARM::Vec3 up);
+	Camera(int projType, const ARM::Vec3& position, const ARM::Vec3& forward, const ARM::Vec3 up);
 	~Camera();
 
 	void UpdateCameraPosition();
 	void CalcuateLookAround(double yaw, double pitch, double roll, bool invertYAxis = false);
 
 	void DefineView();
-	void DefineProjection(double fov, float aspectRatio, float zNear, float zFar);
+	void DefineView(const ARM::Mat4& viewMatrix);
+	void DefineProjection(double fov, float aspectRatio, float zNear, float zFar, bool flipX = false, bool flipY = false);
 	void DefineProjection(float left, float right, float bottom, float top, float near, float far);
 
 private:
 	void CalculateRight();
+	void CalculateUp();
 	void InitialiseUBO();
 };
 }

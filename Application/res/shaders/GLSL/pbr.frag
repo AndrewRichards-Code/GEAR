@@ -13,7 +13,7 @@ layout(location = 5) in vec4 v_VertexToCamera;
 layout(location = 6) in vec4 v_Colour;
 
 //From Application
-layout(binding = 0) uniform sampler2D u_Texture;
+layout(binding = 0) uniform samplerCube u_Texture;
 layout(binding = 1) uniform sampler2D u_Textures[32];
 
 struct Light
@@ -46,14 +46,59 @@ layout(std140, binding = 4) uniform PBRInfoUBO
 	float u_AO;
 	float _pad;
 };
+	
+layout(binding = 5) uniform sampler2D u_TextureAlbedo;
+layout(binding = 6) uniform sampler2D u_TextureMetallic;
+layout(binding = 7) uniform sampler2D u_TextureRoughness;
+layout(binding = 8) uniform sampler2D u_TextureAO;
+layout(binding = 9) uniform sampler2D u_TextureNormal;
+layout(binding = 10) uniform samplerCube u_TextureEnvironment;
 
 //Functions
 const float pi = 3.14151926535;
+const float gamma = 2.2;
 
-vec3 Fresnel(float cosTheta, vec3 F0)
+vec4 GetAlbedo()
+{
+	return pow(texture(u_TextureAlbedo, v_TextCoord), vec4(gamma));
+}
+float GetMetallic()
+{
+	return pow(texture(u_TextureMetallic, v_TextCoord).x, gamma);
+}
+float GetRoughness()
+{
+	return pow(texture(u_TextureRoughness, v_TextCoord).x, gamma);
+}
+float GetSmothness()
+{	
+	return 1.0 - GetRoughness();
+}
+float GetAO()
+{
+	return pow(texture(u_TextureAO, v_TextCoord).x, gamma);
+}
+vec4 GetNormals()
+{
+	vec4 normalMap = texture(u_TextureNormal, v_TextCoord) * 2.0 - 1.0;
+	normalMap = v_Normal * normalMap;
+	normalMap = normalize(normalMap);
+	return normalMap;
+}
+vec3 FinalGamma(vec3 colour)
+{
+	return pow(colour, vec3(1.0 / gamma));
+}
+
+vec3 FresnelSchlick(float cosTheta, vec3 F0)
 {
 	return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
+
+vec3 FresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+} 
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -94,36 +139,37 @@ vec3 CalcPBRLighting(int i)
 {
 	vec3 lightOut = {0, 0, 0};
 	
-	vec4 unitNormal = normalize(v_Normal);
+	vec4 unitNormal = normalize(GetNormals());
 	vec4 unitVertexToCamera = normalize(v_VertexToCamera);
-	vec4 unitVertexToLight = normalize(vec4(-u_Lights[i].Direction));
+	vec4 unitVertexToLight = normalize(u_Lights[i].Position - v_WorldSpace);
 	vec4 unitHalfVector = normalize(unitNormal + unitVertexToCamera);
 
 	float distanceVertToCam = length(unitVertexToCamera);
 	float attenuation =  1.0 / (distanceVertToCam * distanceVertToCam);
 	vec3 radiance = u_Lights[i].Colour.xyz * attenuation;
 
-	vec3 F0 = mix(u_F0.xyz, u_Albedo.xyz, u_Metallic);
-	vec3 F  = Fresnel(max(dot(unitHalfVector, unitVertexToCamera), 0.0), F0);
+	vec3 F0 = mix(u_F0.xyz, GetAlbedo().xyz, GetMetallic());
+	vec3 F = FresnelSchlickRoughness(max(dot(unitHalfVector, unitVertexToCamera), 0.0), F0, GetRoughness());
 
-	float NDF = DistributionGGX(unitNormal.xyz, unitHalfVector.xyz, u_Roughness);
-	float G = GeometrySmith(unitNormal.xyz, unitVertexToCamera.xyz, unitVertexToLight.xyz, u_Roughness);
+	float NDF = DistributionGGX(unitNormal.xyz, unitHalfVector.xyz, GetRoughness());
+	float G = GeometrySmith(unitNormal.xyz, unitVertexToCamera.xyz, unitVertexToLight.xyz, GetRoughness());
 
 	vec3 numerator = NDF * G * F;
 	float denominator = 4.0 * (max(dot(unitNormal, unitVertexToCamera), 0.0) * max(dot(unitNormal, unitVertexToLight), 0.0));
 	vec3 specular = numerator / max(denominator, 0.001); 
 
+
 	vec3 kSpecular = F;
 	vec3 kDiffused = vec3(1.0) - kSpecular;
-	kDiffused *= 1.0 - u_Metallic;
+	kDiffused *= 1.0 - GetMetallic();
+	vec3 irradiance = texture(u_TextureEnvironment, unitNormal.xyz).xyz;
+	vec3 diffuse = irradiance * GetAlbedo().xyz;
+	vec3 ambient = kDiffused * diffuse * GetAO(); 
 
-	lightOut = ((kDiffused  * u_Albedo.xyz / pi) + specular) * radiance * max(dot(unitNormal, unitVertexToLight), 0.0);
+	lightOut = ((kDiffused  * GetAlbedo().xyz / pi) + specular) * radiance * max(dot(unitNormal, unitVertexToLight), 0.0);
 
-	vec3 ambient = vec3(0.03) * u_Albedo.xyz * u_AO;
 	vec3 colourOut  = ambient + lightOut; 
-
-	colourOut = colourOut / (colourOut + vec3(1.0));
-	colourOut = pow(colourOut, vec3(1.0/2.2)); 
+	colourOut = FinalGamma(colourOut);
 
 	return colourOut;
 }
@@ -135,23 +181,5 @@ void main()
 	{
 		lighting += CalcPBRLighting(i);
 	}
-
-	if(v_TextIds > 0)
-	{
-		for (int i = 0; i < 32; i++)
-		{
-			int tid = int(v_TextIds - 0.5);
-			if(tid == i)
-				colour = vec4(lighting, 1.0) + texture(u_Textures[tid], v_TextCoord);
-		}	
-	}
-	else
-	{
-		colour = vec4(lighting, 1.0) + texture(u_Texture, v_TextCoord);
-	}
-
-	if(v_Colour != vec4(0, 0, 0, 0))
-	{
-		colour += v_Colour;
-	}
+	colour = vec4(lighting, 1.0f) *  GetAlbedo();
 }

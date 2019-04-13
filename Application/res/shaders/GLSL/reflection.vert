@@ -22,7 +22,6 @@ layout(location = 1) out vec3 v_TextCoord;
 layout(location = 2) out vec4 v_ReflectionDirection;
 layout(location = 3) out vec4 v_RefractionDirection;
 
-
 void main()
 {
 	gl_Position = u_Proj * u_View * u_Modl * positions;

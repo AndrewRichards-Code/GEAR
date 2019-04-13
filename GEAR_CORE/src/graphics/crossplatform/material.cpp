@@ -15,7 +15,7 @@ Material::Material(const OPENGL::Shader& shader)
 
 Material::~Material()
 {
-	SetAllToZero();
+	UnbindPBRTextures();
 }
 
 void Material::AddTexture(const OPENGL::Texture& texture, TextureType type)
@@ -87,6 +87,43 @@ void Material::SetPBRParameters(const ARM::Vec4& fersnel, const ARM::Vec4& albed
 	m_PBRInfoUBO.m_Pad = 0;
 
 	OPENGL::BufferManager::UpdateUBO(4, (const float*)&m_PBRInfoUBO, sizeof(PBRInfoUBO), 0);
+}
+
+void Material::BindPBRTextures()
+{
+	int slot = 10;
+	m_Shader.Enable();
+	for (auto& texture : m_Textures)
+	{
+		std::string uniformName;
+		switch (texture.second)
+		{
+		case TextureType::GEAR_TEXTURE_ALBEDO:
+			uniformName = "u_TextureAlbedo"; break;
+		case TextureType::GEAR_TEXTURE_METALLIC:
+			uniformName = "u_TextureMetallic"; break;
+		case TextureType::GEAR_TEXTURE_ROUGHNESS:
+			uniformName = "u_TextureRoughness"; break;
+		case TextureType::GEAR_TEXTURE_AMBIENT_OCCLUSION:
+			uniformName = "u_TextureAO"; break;
+		case TextureType::GEAR_TEXTURE_NORMAL:
+			uniformName = "u_TextureNormal"; break;
+		case TextureType::GEAR_TEXTURE_AMBIENT:
+			uniformName = "u_TextureEnvironment"; break;
+		}
+		texture.first->Bind(slot);
+		m_Shader.SetUniform<int>(uniformName, { slot });
+		slot++;
+	}
+	m_Shader.Disable();
+}
+
+void Material::UnbindPBRTextures()
+{
+	for (auto& texture : m_Textures)
+	{
+		texture.first->Unbind();
+	}
 }
 
 void Material::InitialiseUBO()

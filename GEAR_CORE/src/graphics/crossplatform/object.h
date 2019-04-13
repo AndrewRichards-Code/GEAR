@@ -5,6 +5,7 @@
 #include "graphics/opengl/buffer/indexbuffer.h"
 #include "graphics/opengl/shader/shader.h"
 #include "graphics/opengl/texture.h"
+#include "graphics/crossplatform/material.h"
 #include "utils/fileutils.h"
 #include "maths/ARMLib.h"
 

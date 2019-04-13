@@ -13,6 +13,7 @@
 #include "graphics/crossplatform/camera.h"
 #include "graphics/crossplatform/object.h"
 #include "graphics/crossplatform/material.h"
+#include "graphics/crossplatform/probe.h"
 
 //OpenGL
 #if GEAR_OPENGL

@@ -94,31 +94,31 @@ private:
 					switch(i)
 					{
 					case aiTextureType::aiTextureType_NONE:
-						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_UNKNOWN;
+						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_UNKNOWN; break;
 					case aiTextureType::aiTextureType_DIFFUSE:
-						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_DIFFUSE;
+						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_DIFFUSE; break;
 					case aiTextureType::aiTextureType_SPECULAR:
-						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_SPECULAR;
+						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_SPECULAR; break;
 					case aiTextureType::aiTextureType_AMBIENT:
-						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_AMBIENT;
+						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_AMBIENT; break;
 					case aiTextureType::aiTextureType_EMISSIVE:
-						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_EMISSIVE;
+						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_EMISSIVE; break;
 					case aiTextureType::aiTextureType_HEIGHT:
-						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_HEIGHT;
+						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_HEIGHT; break;
 					case aiTextureType::aiTextureType_NORMALS:
-						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_NORMAL;
+						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_NORMAL; break;
 					case aiTextureType::aiTextureType_SHININESS:
-						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_SMOOTHNESS;
+						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_SMOOTHNESS; break;
 					case aiTextureType::aiTextureType_OPACITY:
-						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_OPACITY;
+						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_OPACITY; break;
 					case aiTextureType::aiTextureType_LIGHTMAP:
-						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_AMBIENT_OCCLUSION;
+						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_AMBIENT_OCCLUSION; break;
 					case aiTextureType::aiTextureType_REFLECTION:
-						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_REFLECTION;
+						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_REFLECTION; break;
 					case aiTextureType::aiTextureType_UNKNOWN:
-						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_UNKNOWN;
+						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_UNKNOWN; break;
 					default:
-						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_UNKNOWN;
+						type = GRAPHICS::CROSSPLATFORM::Material::TextureType::GEAR_TEXTURE_UNKNOWN; break;
 					}
 					result.m_Material.AddTexture(GRAPHICS::OPENGL::Texture(filepath), type);
 				}

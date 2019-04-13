@@ -5,7 +5,7 @@ using namespace GRAPHICS;
 using namespace OPENGL;
 
 Texture::Texture(const std::string& filepath)
-	:m_FilePath(filepath), m_LocalBuffer(nullptr), m_Width(0), m_Height(0), m_BPP(0), m_Type(TextureType::GEAR_TEXTURE_2D), m_Format(ImageFormat::GEAR_RGBA8)
+	:m_Filepath(filepath), m_LocalBuffer(nullptr), m_Type(TextureType::GEAR_TEXTURE_2D), m_Format(ImageFormat::GEAR_RGBA8)
 {
 	stbi_set_flip_vertically_on_load(1);
 	m_LocalBuffer = stbi_load(filepath.c_str(), &m_Width, &m_Height, &m_BPP, 4);
@@ -25,17 +25,17 @@ Texture::Texture(const std::string& filepath)
 		stbi_image_free(m_LocalBuffer);
 }
 
-Texture::Texture(const std::vector<std::string>& filepaths)
-	:m_FilePaths(filepaths), m_LocalBuffer(nullptr), m_Width(0), m_Height(0), m_BPP(0), m_Type(TextureType::GEAR_TEXTURE_CUBE_MAP), m_Format(ImageFormat::GEAR_RGBA8), m_CubeMap(true)
+Texture::Texture(const std::vector<std::string>& cubemapFilepaths)
+	:m_CubemapFilepaths(cubemapFilepaths), m_LocalBuffer(nullptr), m_Type(TextureType::GEAR_TEXTURE_CUBE_MAP), m_Format(ImageFormat::GEAR_RGBA8), m_Cubemap(true)
 {	
 	glGenTextures(1, &m_TextureID);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
 		
-	if (m_FilePaths.size() == 6)
+	if (m_CubemapFilepaths.size() == 6)
 	for (int i = 0; i < 6; i++)
 	{
 		stbi_set_flip_vertically_on_load(0);
-		m_LocalBuffer = stbi_load(filepaths[i].c_str(), &m_Width, &m_Height, &m_BPP, 4);
+		m_LocalBuffer = stbi_load(cubemapFilepaths[i].c_str(), &m_Width, &m_Height, &m_BPP, 4);
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, (unsigned int)m_Format, m_Width, m_Height, 0, (unsigned int)ToBaseFormat(m_Format), GL_UNSIGNED_BYTE, m_LocalBuffer);
 		
 		if (m_LocalBuffer)
@@ -73,31 +73,42 @@ Texture::Texture(unsigned char* buffer, int width, int height)
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-Texture::Texture(int width, int height, bool depthTexture)
-	:m_Width(width), m_Height(height), m_Type(TextureType::GEAR_TEXTURE_2D), m_Format(ImageFormat::GEAR_IMAGE_UNKNOWN), m_DepthTexture(depthTexture)
+Texture::Texture(int width, int height, bool depthTexture, int multisample, ImageFormat format)
+	:m_LocalBuffer(nullptr), m_Width(width), m_Height(height), m_DepthTexture(depthTexture), m_Multisample(multisample)
 {
-	glGenTextures(1, &m_TextureID);
-	glBindTexture(GL_TEXTURE_2D, m_TextureID);
-	
 	if (m_DepthTexture)
-	{
 		m_Format = ImageFormat::GEAR_DEPTH_COMPONENT24;
-		glTexImage2D(GL_TEXTURE_2D, 0, (unsigned int)m_Format, width, height, 0, (unsigned int)ToBaseFormat(m_Format), GL_FLOAT, nullptr);
-	}
 	else
+		m_Format = format;
+
+	if (m_Multisample > 1)
+		m_Type = TextureType::GEAR_TEXTURE_2D_MULTISAMPLE;
+	else
+		m_Type = TextureType::GEAR_TEXTURE_2D;
+		
+	unsigned int Type = (unsigned int)m_Type;
+	unsigned int Format = (unsigned int)m_Format;
+	glGenTextures(1, &m_TextureID);
+	glBindTexture(Type, m_TextureID);
+
+	if (m_Type == TextureType::GEAR_TEXTURE_2D)
 	{
-		m_Format = ImageFormat::GEAR_RGBA8;
-		glTexImage2D(GL_TEXTURE_2D, 0, (unsigned int)m_Format, width, height, 0, (unsigned int)ToBaseFormat(m_Format), GL_UNSIGNED_BYTE, nullptr);
+		glTexImage2D(Type, 0, Format, m_Width, m_Height, 0, (unsigned int)ToBaseFormat(m_Format), GL_UNSIGNED_BYTE, nullptr);
+		glTexParameteri(Type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(Type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(Type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(Type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+	else if (m_Type == TextureType::GEAR_TEXTURE_2D_MULTISAMPLE)
+	{
+		glTexImage2DMultisample(Type, m_Multisample, Format, m_Width, m_Height, true);
 	}
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		
-	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindTexture(Type, 0);
 }
 
 Texture::Texture(TextureType type, ImageFormat format, int multisample, int width, int height, int depth)
-	:m_Width(width), m_Height(height), m_Depth(depth), m_BPP(0), m_Type(type), m_Format(format), m_Multisample(multisample)
+	:m_LocalBuffer(nullptr), m_Width(width), m_Height(height), m_Depth(depth), m_BPP(0), m_Type(type), m_Format(format), m_Multisample(multisample)
 {
 	unsigned int Type = (unsigned int)m_Type;
 	unsigned int Format = (unsigned int)m_Format;
@@ -106,8 +117,11 @@ Texture::Texture(TextureType type, ImageFormat format, int multisample, int widt
 
 	if (m_Type == TextureType::GEAR_TEXTURE_CUBE_MAP || m_Type == TextureType::GEAR_TEXTURE_CUBE_MAP_ARRAY)
 	{
+		m_Cubemap = true;
 		for (int i = 0; i < 6; i++)
+		{
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, Format, m_Width, m_Height, 0, (unsigned int)ToBaseFormat(m_Format), GL_UNSIGNED_BYTE, nullptr);
+		}
 
 		glTexParameteri(Type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(Type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -130,8 +144,6 @@ Texture::Texture(TextureType type, ImageFormat format, int multisample, int widt
 		else if (m_Type == TextureType::GEAR_TEXTURE_2D_MULTISAMPLE && m_Multisample > 1)
 		{
 			glTexImage2DMultisample(Type, m_Multisample, Format, m_Width, m_Height, true);
-			glTexParameteri(Type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(Type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		}
 		else if (m_Type == TextureType::GEAR_TEXTURE_3D || m_Type == TextureType::GEAR_TEXTURE_2D_ARRAY)
 		{
@@ -143,17 +155,17 @@ Texture::Texture(TextureType type, ImageFormat format, int multisample, int widt
 		else if (m_Type == TextureType::GEAR_TEXTURE_2D_MULTISAMPLE_ARRAY && m_Multisample > 1)
 		{
 			glTexImage3DMultisample(Type, m_Multisample, Format, m_Width, m_Height, m_Depth, true);
-			glTexParameteri(Type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-			glTexParameteri(Type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexParameteri(Type, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 		}
 		else
 		{
 			std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::Texture: Invalid Texture type and/or multisample value." << std::endl;
 		}
 	}
-	glTexParameteri(Type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(Type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	if(m_Multisample == 1)
+	{ 
+		glTexParameteri(Type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(Type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
 	
 	glBindTexture(Type, 0);
 }
@@ -170,6 +182,7 @@ Texture::Texture(TextureType type, std::vector<unsigned char*> buffer, ImageForm
 	{
 		if (m_Type == TextureType::GEAR_TEXTURE_CUBE_MAP || m_Type == TextureType::GEAR_TEXTURE_CUBE_MAP_ARRAY)
 		{
+			m_Cubemap = true;
 			for (int i = 0; i < 6; i++)
 				glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, Format, m_Width, m_Height, 0, (unsigned int)ToBaseFormat(m_Format), GL_UNSIGNED_BYTE, buffer[i]);
 
@@ -233,7 +246,7 @@ Texture::Texture(TextureType type, std::vector<unsigned char*> buffer, ImageForm
 }
 
 Texture::Texture(TextureType type, const std::vector<std::string>& filepaths, ImageFormat format, int multisample, int width, int height, int depth)
-	:m_FilePaths(filepaths), m_Width(width), m_Height(height), m_Depth(depth), m_BPP(0), m_Type(type), m_Format(format), m_Multisample(multisample)
+	:m_CubemapFilepaths(filepaths), m_LocalBuffer(nullptr), m_Width(width), m_Height(height), m_Depth(depth), m_BPP(0), m_Type(type), m_Format(format), m_Multisample(multisample)
 {
 	unsigned int Type = (unsigned int)m_Type;
 	unsigned int Format = (unsigned int)m_Format;
@@ -244,6 +257,7 @@ Texture::Texture(TextureType type, const std::vector<std::string>& filepaths, Im
 	{
 		if (m_Type == TextureType::GEAR_TEXTURE_CUBE_MAP || m_Type == TextureType::GEAR_TEXTURE_CUBE_MAP_ARRAY)
 		{
+			m_Cubemap = true;
 			for (int i = 0; i < 6; i++)
 			{
 				stbi_set_flip_vertically_on_load(0);
@@ -265,11 +279,11 @@ Texture::Texture(TextureType type, const std::vector<std::string>& filepaths, Im
 	}
 	else if (filepaths.size() == 1)
 	{
-		m_FilePath = filepaths[0];
-		m_FilePaths.clear();
+		m_Filepath = filepaths[0];
+		m_CubemapFilepaths.clear();
 
 		stbi_set_flip_vertically_on_load(0);
-		m_LocalBuffer = stbi_load(m_FilePath.c_str(), &m_Width, &m_Height, &m_BPP, 4);
+		m_LocalBuffer = stbi_load(m_Filepath.c_str(), &m_Width, &m_Height, &m_BPP, 4);
 
 		if (m_Type == TextureType::GEAR_TEXTURE_1D)
 		{
@@ -382,7 +396,7 @@ void Texture::EnableDisableMipMapping()
 
 void Texture::MipMapping() //Call in the constructor or bind texture beforehand.
 {
-	if (m_CubeMap == true)
+	if (m_Cubemap == true)
 	{
 		if (m_MipMapping == true)
 		{
@@ -396,7 +410,7 @@ void Texture::MipMapping() //Call in the constructor or bind texture beforehand.
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		}
 	}
-	else if (m_CubeMap == false)
+	else if (m_Cubemap == false)
 	{
 		if (m_MipMapping == true)
 		{
