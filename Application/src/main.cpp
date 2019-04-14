@@ -3,7 +3,7 @@
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif
 
-#define GEAR_USE_FBO 0
+#define GEAR_USE_FBO 1
 
 using namespace GEAR;
 using namespace GRAPHICS;
@@ -33,6 +33,7 @@ int main()
 	Window window("GEAR", 1280, 720, 16);
 	//window.Fullscreen();
 	window.UpdateVSync(false);
+	FrameBuffer fbo(window.GetWidth(), window.GetHeight(), 1);
 
 	std::vector<AssimpLoader::Mesh> meshes = AssimpLoader::LoadModel("res/obj/KagemitsuG4.fbx");
 
@@ -89,13 +90,14 @@ int main()
 
 	Object skybox("res/obj/cube.obj", shaderCube, textureSB, Mat4::Scale(Vec3(500, 500, 500)));
 	Object cube1("res/obj/cube.obj", shader, Vec4(1.0f, 1.0f, 1.0f, 1.0f), Mat4::Identity());
+	Object cube2("res/obj/cube.obj", shader, Vec4(1.0f, 0.0f, 0.0f, 1.0f), Mat4::Identity());
 	Object spherePBR("res/obj/stall.obj", shaderPBR, textureSB, Mat4::Translation(Vec3(0.0f, 0.0f, 5.0f)) * Mat4::Scale(Vec3(0.5f, 0.5f, 0.5f)));
 	Object sphere("res/obj/sphere.obj", shaderReflection, textureSB, Mat4::Translation(Vec3(5.0f, 1.0f, 5.0f)) * Mat4::Scale(Vec3(0.5f, 0.5f, 0.5f)));
 	Object stall("res/obj/stall.obj", shader, texture, Mat4::Translation(Vec3(5.0f, -2.0f, -5.0f)) * Mat4::Rotation(pi, Vec3(0, 1, 0)));
 	Object stall2("res/obj/stall.obj", shader, texture, Mat4::Translation(Vec3(-5.0f, -2.0f, -5.0f)) * Mat4::Rotation(pi, Vec3(0, 1, 0)));
 	Object quad1("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(1.5f, 0.0f, -2.0f)));
 	Object quad2("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(-1.5f, 0.0f, -2.0f)));
-	Object floor("res/obj/quad.obj", shader, texture4, Mat4::Translation(Vec3(0.0f, -2.0f, -2.0f)) * Mat4::Rotation(pi / 2, Vec3(1, 0, 0)) * Mat4::Scale(Vec3(500, 500, 1)));
+	Object floor("res/obj/quad.obj", shader, texture4, Mat4::Translation(Vec3(0.0f, -2.0f, -2.0f)) * Mat4::Rotation(-pi / 2, Vec3(1, 0, 0)) * Mat4::Scale(Vec3(500, 500, 1)));
 
 	//For BatchRender2D
 	Object quad3("res/obj/quad.obj", shader, texture,  Vec4(0, 0, 0, 0), Vec3(0.0f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
@@ -107,12 +109,12 @@ int main()
 	font.AddLine(window.GetDeviceName(),																			Vec2(10.0f, 690.0f), Vec4(1.00f, 0.00f, 0.00f, 1.00f));
 	font.AddLine("OpenGL: " + window.GetOpenGLVersion() + " | GLSL:" + window.GetGLSLVersion(),						Vec2(10.0f, 680.0f), Vec4(0.33f, 0.53f, 0.64f, 1.00f));
 	font.AddLine("Resolution: " + std::to_string(window.GetWidth()) + " x " + std::to_string(window.GetHeight()),   Vec2(10.0f, 670.0f), Vec4(1.00f, 1.00f, 1.00f, 1.00f));
-	font.AddLine("MSAA: " + window.GetAntiAliasingValue() + "x",													Vec2(10.0f, 660.0f), Vec4(1.00f, 1.00f, 1.00f, 1.00f));
+	font.AddLine("MSAA: " + std::to_string(fbo.GetMultisampleValue()) + "x",										Vec2(10.0f, 660.0f), Vec4(1.00f, 1.00f, 1.00f, 1.00f));
 	font.AddLine("Anisotrophic: " + Texture::GetAnisotrophicValue() + "x",											Vec2(10.0f, 650.0f), Vec4(1.00f, 1.00f, 1.00f, 1.00f));
 	font.AddLine("FPS: " + window.GetFPSString<int>(),																Vec2(10.0f, 640.0f), Vec4(1.00f, 1.00f, 1.00f, 1.00f));
 
 	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, 1.0f, 0.0f));
-	Probe environmentProbe(Vec3(-5.0f, 1.0f, 5.0f), 32, 32, 1, Texture::ImageFormat::GEAR_RGBA8);
+	Probe environmentProbe(Vec3(-5.0f, 1.0f, 5.0f), 128, 8, Texture::ImageFormat::GEAR_RGBA8);
 	
 	Light light_main1(Light::LightType::GEAR_LIGHT_POINT, Vec3(0.0f, 10.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), shader);
 	light_main1.Specular(64.0f, 10.0f);
@@ -120,11 +122,11 @@ int main()
 	light_main1.Attenuation(0.007f, 0.0002f);
 	light_main1.SpotCone(DegToRad(45));
 
-	//Light light_main2(Light::LightType::GEAR_LIGHT_SPOT, Vec3(0.0f, 10.0f, 30.0f), Vec3(0.0f, -1.0f, 0.0f), Vec4(1.0f, 0.0f, 0.0f, 1.0f), shader);
-	//light_main2.Specular(64.0f, 10.0f);
-	//light_main2.Ambient(0.05f);
-	//light_main2.Attenuation(0.007f, 0.0002f);
-	//light_main2.SpotCone(DegToRad(45));
+	Light light_main2(Light::LightType::GEAR_LIGHT_SPOT, Vec3(0.0f, 10.0f, 30.0f), Vec3(0.0f, -1.0f, 0.0f), Vec4(1.0f, 0.0f, 0.0f, 1.0f), shader);
+	light_main2.Specular(64.0f, 10.0f);
+	light_main2.Ambient(0.05f);
+	light_main2.Attenuation(0.007f, 0.0002f);
+	light_main2.SpotCone(DegToRad(45));
 
 	Listener listener_main(cam_main);
 
@@ -133,7 +135,6 @@ int main()
 	Compute compute(computeTest);
 	
 	InputManager main_input(GEAR_INPUT_JOYSTICK_CONTROLLER);
-	FrameBuffer fbo(window.GetWidth(), window.GetHeight(), false, 1);
 
 	double yaw = 0;
 	double pitch = 0;
@@ -234,6 +235,8 @@ int main()
 	//std::thread AudioThread(AudioThread);
 	//AudioThread.detach();
 
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
@@ -262,11 +265,6 @@ int main()
 	
 	while (!window.Closed())
 	{
-#if GEAR_USE_FBO
-		fbo.Bind();
-		fbo.UseColourTextureAttachment();
-		fbo.UpdateFrameBufferSize(window.GetWidth(), window.GetHeight());
-#endif
 		//Compute Task
 		{
 			//compute.m_Images[0].Bind(Image::ImageAccess::GEAR_WRITE_ONLY);
@@ -414,7 +412,7 @@ int main()
 		}
 	
 		cube1.SetUniformModlMatrix(Mat4::Translation(light_main1.m_Position) * Mat4::Scale(Vec3(0.1f, 0.1f, 0.1f)));
-		//cube2.SetUniformModlMatrix(Mat4::Translation(light_main2.m_Position) * Mat4::Scale(Vec3(0.1f, 0.1f, 0.1f)));
+		cube2.SetUniformModlMatrix(Mat4::Translation(light_main2.m_Position) * Mat4::Scale(Vec3(0.1f, 0.1f, 0.1f)));
 
 		//Main Render
 		//Object Submission
@@ -423,6 +421,7 @@ int main()
 		renderer.Submit(&stall);
 		renderer.Submit(&stall2);
 		renderer.Submit(&cube1);
+		renderer.Submit(&cube2);
 		renderer.Submit(&sphere);
 		renderer.Submit(&floor);
 		renderer.Submit(&quad1);
@@ -440,12 +439,18 @@ int main()
 		listener_main.UpdateListenerPosVelOri();
 
 		//Render to Screen
+#if GEAR_USE_FBO
+		fbo.Bind();
+		fbo.DrawToColourTextureAttachment();
+		fbo.UpdateFrameBufferSize(window.GetWidth(), window.GetHeight());
+		fbo.Clear();
+#endif
 		renderer.Flush();
 
 		std::shared_ptr<Texture> enviromentMap;
-		enviromentMap = environmentProbe.ConstructCubemap();
-		Object sphere2("res/obj/sphere.obj", shaderReflection, *enviromentMap, Mat4::Translation(Vec3(-5.0f, 1.0f, 5.0f)) *Mat4::Scale(Vec3(0.5f, 0.5f, 0.5f)));
-		renderer.Draw(&sphere2);
+		enviromentMap = environmentProbe.GetCubemap();
+		Object cube2("res/obj/cube.obj", shaderCube, *enviromentMap, Mat4::Translation(Vec3(-5.0f, 1.0f, 5.0f)) * Mat4::Scale(Vec3(0.5f, 0.5f, 0.5f)));
+		renderer.Draw(&cube2);
 
 		rustedIron.AddTexture(*enviromentMap, Material::TextureType::GEAR_TEXTURE_AMBIENT);
 		rustedIron.BindPBRTextures();
@@ -490,11 +495,11 @@ int main()
 #if GEAR_USE_FBO
 		//FBO
 		fbo.Unbind();
-		window.Clear();
 		fbo.Resolve();
 		Shader fboShader("res/shaders/GLSL/fbo.vert", "res/shaders/GLSL/fbo.frag");
 		Object fboColour("res/obj/quad.obj", fboShader, *(fbo.GetColourTexture()), Mat4::Scale(Vec3(1.0f, 1.0f, 1.0f)));
 		Object fboDepth("res/obj/quad.obj", fboShader, *(fbo.GetColourTexture()), Mat4::Translation(Vec3(0.75f, 0.75f, 0.0f)) * Mat4::Scale(Vec3(0.25f, 0.25f, 1.0f)));
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		renderer.Draw(&fboDepth);
 		renderer.Draw(&fboColour);
 #endif

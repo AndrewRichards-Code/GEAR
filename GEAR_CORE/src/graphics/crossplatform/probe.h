@@ -16,15 +16,14 @@ class Probe
 {
 private:
 	const ARM::Vec3 m_Position;
-	int m_Width, m_Height;
+	int m_Size;
 	int m_Multisample;
 	OPENGL::Texture::ImageFormat m_Format;
 
 	std::shared_ptr<OPENGL::FrameBuffer> m_FrameBuffer;
 	std::unique_ptr<Camera> m_Camera;
-	bool m_IsResolved = false;
 
-	std::shared_ptr<OPENGL::Texture> m_Cubemap = std::make_shared<OPENGL::Texture>(OPENGL::Texture::TextureType::GEAR_TEXTURE_CUBE_MAP, m_Format, 1, m_Width, m_Height);
+	std::shared_ptr<OPENGL::Texture> m_Cubemap = std::make_shared<OPENGL::Texture>(OPENGL::Texture::TextureType::GEAR_TEXTURE_CUBE_MAP, m_Format, 1, m_Size, m_Size);
 
 	const ARM::Vec3 m_X = ARM::Vec3(1, 0, 0);
 	const ARM::Vec3 m_Y = ARM::Vec3(0, 1, 0);
@@ -40,10 +39,10 @@ private:
 	};
 
 public:
-	Probe(const ARM::Vec3& position, int width, int height, int multisample = 1, OPENGL::Texture::ImageFormat format = OPENGL::Texture::ImageFormat::GEAR_RGBA8);
+	Probe(const ARM::Vec3& position, int size, int multisample = 1, OPENGL::Texture::ImageFormat format = OPENGL::Texture::ImageFormat::GEAR_RGBA8);
 	~Probe();
 
-	std::shared_ptr<OPENGL::Texture> ConstructCubemap();
+	std::shared_ptr<OPENGL::Texture> GetCubemap();
 	void Resolve();
 	void Render(const std::deque<Object*> renderQueue, int windowWidth, int windowHeight);
 

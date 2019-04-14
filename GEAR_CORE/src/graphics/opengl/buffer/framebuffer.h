@@ -21,16 +21,21 @@ namespace OPENGL {
 		std::unique_ptr<FrameBuffer> m_ResolvedFBO = nullptr;
 
 	public:
-		FrameBuffer(int width, int height, bool cubeMap = false, int multisample = 1, Texture::ImageFormat format = Texture::ImageFormat::GEAR_RGBA8);
+		FrameBuffer(int width, int height, int multisample = 1, bool cubeMap = false, Texture::ImageFormat format = Texture::ImageFormat::GEAR_RGBA8);
 		~FrameBuffer();
 
 		void Bind() const;
 		void Unbind() const;
+		void BindResolved() const;
+		void UnbindResolved() const;
 
 		void UpdateFrameBufferSize(int width, int height);
 
 		void AddColourTextureAttachment(int attachment = 0);
-		void UseColourTextureAttachment(int attachment = 0);
+		void DrawToColourTextureAttachment(int attachment = 0);
+		void ReadFromColourTextureAttachment(int attachment = 0);
+
+		inline void Clear() { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); }
 
 		void Resolve();
 

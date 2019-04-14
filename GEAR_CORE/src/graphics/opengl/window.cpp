@@ -43,8 +43,6 @@ Window::~Window()
 
 void Window::Clear() const
 {
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 

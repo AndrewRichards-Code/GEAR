@@ -4,13 +4,20 @@ using namespace GEAR;
 using namespace GRAPHICS;
 using namespace OPENGL;
 
-FrameBuffer::FrameBuffer(int width, int height, bool cubeMap, int multisample, Texture::ImageFormat format)
-	:m_Width(width), m_Height(height), m_CubeMap(cubeMap), m_Multisample(multisample), m_Format(format)
+FrameBuffer::FrameBuffer(int width, int height, int multisample, bool cubeMap, Texture::ImageFormat format)
+	:m_Width(width), m_Height(height), m_Multisample(1), m_CubeMap(cubeMap), m_Format(format)
 {
+	if (multisample % 2 != 0)
+		m_Multisample = 1;
+	else if (multisample > 8)
+		m_Multisample = 8;
+	else
+		m_Multisample = multisample;
+
 	glGenFramebuffers(1, &m_FrameID);
 	glGenRenderbuffers(1, &m_RenderBufferID);
 	if (m_Multisample > 1)
-		m_ResolvedFBO = std::make_unique<FrameBuffer>(m_Width, m_Height, m_CubeMap, 1, m_Format);
+		m_ResolvedFBO = std::make_unique<FrameBuffer>(m_Width, m_Height, 1, m_CubeMap, m_Format);
 	
 	Bind();
 
@@ -43,6 +50,22 @@ void FrameBuffer::Unbind() const
 {
 	glBindRenderbuffer(GL_RENDERBUFFER,0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void FrameBuffer::BindResolved() const
+{
+	if (m_ResolvedFBO)
+		glBindFramebuffer(GL_FRAMEBUFFER, m_ResolvedFBO->m_FrameID);
+	else
+		Bind();
+}
+
+void FrameBuffer::UnbindResolved() const
+{
+	if (m_ResolvedFBO)
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	else
+		Unbind();
 }
 
 void FrameBuffer::UpdateFrameBufferSize(int width, int height)
@@ -85,9 +108,19 @@ void FrameBuffer::AddColourTextureAttachment(int attachment)
 	}
 }
 
-void FrameBuffer::UseColourTextureAttachment(int attachment)
+void FrameBuffer::DrawToColourTextureAttachment(int attachment)
 {
-	glDrawBuffer(GL_COLOR_ATTACHMENT0 + attachment);
+	if(m_ColourTextures[attachment])
+		glDrawBuffer(GL_COLOR_ATTACHMENT0 + attachment);
+	else
+		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::FrameBuffer: Can't draw to attachment "<< attachment << ". No associated texture." << std::endl;
+}
+void FrameBuffer::ReadFromColourTextureAttachment(int attachment)
+{
+	if (m_ColourTextures[attachment])
+		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachment);
+	else
+		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::FrameBuffer: Can't read from attachment " << attachment << ". No associated texture." << std::endl;
 }
 
 void FrameBuffer::Resolve()
@@ -96,7 +129,7 @@ void FrameBuffer::Resolve()
 		return;
 
 	//Adds any addition attachments to the resolvedFBO.
-	int start = m_CubeMap ? 6 : 1;//The Constructor provide a colour attachment at 0, 0-5 for a cubemap.
+	int start = m_CubeMap ? 6 : 1; //The Constructor provides a colour attachment at 0, 0-5 for a cubemap.
 	m_ResolvedFBO->Bind();
 	for (int i = start; i < static_cast<signed int>(m_ResolvedFBO->m_ColourTextures.size()); i++)
 	{
@@ -104,13 +137,21 @@ void FrameBuffer::Resolve()
 			break;
 		else
 			m_ResolvedFBO->AddColourTextureAttachment(i);
-
 	}
 	m_ResolvedFBO->Unbind();
 
+
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_FrameID);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_ResolvedFBO->m_FrameID);
-	glBlitFramebuffer(0, 0, m_Width, m_Height, 0, 0, m_Width, m_Height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	for (int i = 0; i < static_cast<signed int>(m_ResolvedFBO->m_ColourTextures.size()); i++)
+	{
+		if (m_ColourTextures[i] == nullptr)
+			break;
+
+		ReadFromColourTextureAttachment(i);
+		DrawToColourTextureAttachment(i);
+		glBlitFramebuffer(0, 0, m_Width, m_Height, 0, 0, m_Width, m_Height, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 

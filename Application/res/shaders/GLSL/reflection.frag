@@ -18,5 +18,5 @@ void main()
 	vec4 refractionColour = texture(u_CubeMap, v_RefractionDirection.xyz);
 	vec4 compositeColour = mix(reflectionColour, refractionColour, 0);
 
-	colour = colour = mix(vec4(0.7, 0.7, 0.7, 1), compositeColour, 0.65);    
+	colour = colour = mix(vec4(0.7, 0.7, 0.7, 1), compositeColour, 1);    
 }
