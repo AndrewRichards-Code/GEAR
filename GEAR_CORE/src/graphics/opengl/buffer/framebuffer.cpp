@@ -123,6 +123,21 @@ void FrameBuffer::ReadFromColourTextureAttachment(int attachment)
 		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::FrameBuffer: Can't read from attachment " << attachment << ". No associated texture." << std::endl;
 }
 
+void FrameBuffer::DrawToDepthTextureAttachment()
+{
+	if (m_DepthTexture)
+		glDrawBuffer(GL_NONE);
+	else
+		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::FrameBuffer: Can't draw to attachment. No valid depth texture." << std::endl;
+}
+void FrameBuffer::ReadFromDepthTextureAttachment()
+{
+	if (m_DepthTexture)
+		glReadBuffer(GL_NONE);
+	else
+		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::FrameBuffer: Can't read from attachment. No valid depth texture." << std::endl;
+}
+
 void FrameBuffer::Resolve()
 {
 	if (m_ResolvedFBO == nullptr)

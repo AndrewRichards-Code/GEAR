@@ -87,6 +87,7 @@ public:
 	inline const std::vector<float>& GetNormals() const { return m_Normals; }
 	inline const std::vector<float>& GetColours() const { return m_Colours; }
 	inline const std::vector<unsigned int>& GetIndices() const { return m_Indices; }
+	inline const int GetNumOfUniqueVertices() { return m_ObjData.GetSizeUniqueVertices(); }
 	inline const char* GetObjFileName() const { return m_ObjFilePath; }
 };
 #endif

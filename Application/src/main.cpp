@@ -1,9 +1,9 @@
 #include "gear.h"
-#if !(_DEBUG)
-#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
-#endif
+//#if !(_DEBUG)
+//#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+//#endif
 
-#define GEAR_USE_FBO 1
+#define GEAR_USE_FBO 0
 
 using namespace GEAR;
 using namespace GRAPHICS;
@@ -35,7 +35,7 @@ int main()
 	window.UpdateVSync(false);
 	FrameBuffer fbo(window.GetWidth(), window.GetHeight(), 1);
 
-	std::vector<AssimpLoader::Mesh> meshes = AssimpLoader::LoadModel("res/obj/KagemitsuG4.fbx");
+	//std::vector<AssimpLoader::Mesh> meshes = AssimpLoader::LoadModel("res/obj/KagemitsuG4.fbx");
 
 #if _DEBUG
 	DebugOpenGL debug;
@@ -46,6 +46,7 @@ int main()
 
 	Shader shaderCube("res/shaders/GLSL/cube.vert", "res/shaders/GLSL/cube.frag");
 	Shader shaderReflection("res/shaders/GLSL/reflection.vert", "res/shaders/GLSL/reflection.frag");
+	Shader shaderDepth("res/shaders/GLSL/depth.vert", "res/shaders/GLSL/depth.frag");
 	ComputeShader computeTest("res/shaders/GLSL/test.comp");
 	Shader shaderPBR("res/shaders/GLSL/pbr.vert", "res/shaders/GLSL/pbr.frag");
 	
@@ -100,9 +101,14 @@ int main()
 	Object floor("res/obj/quad.obj", shader, texture4, Mat4::Translation(Vec3(0.0f, -2.0f, -2.0f)) * Mat4::Rotation(-pi / 2, Vec3(1, 0, 0)) * Mat4::Scale(Vec3(500, 500, 1)));
 
 	//For BatchRender2D
-	Object quad3("res/obj/quad.obj", shader, texture,  Vec4(0, 0, 0, 0), Vec3(0.0f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
-	Object quad4("res/obj/quad.obj", shader, texture2, Vec4(0, 0, 0, 0), Vec3(1.5f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
-	Object quad5("res/obj/quad.obj", shader, texture3, Vec4(0, 0, 0, 0), Vec3(-1.5f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
+	Object quad3("res/obj/quad.obj", shader, texture,  Vec4(0, 0, 0, 1), Vec3(0.0f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
+	Object quad4("res/obj/quad.obj", shader, texture2, Vec4(0, 0, 0, 1), Vec3(1.5f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
+	Object quad5("res/obj/quad.obj", shader, texture3, Vec4(0, 0, 0, 1), Vec3(-1.5f, 0.0f, 2.0f), Vec2(0.5f, 0.5f));
+	
+	//For BatchRender3D
+	Object quad6("res/obj/quad.obj", shader, texture,  Mat4::Translation(Vec3(0.0f, 0.0f, 2.0f)));
+	Object quad7("res/obj/quad.obj", shader, texture2, Mat4::Translation(Vec3(3.0f, 0.0f, 2.0f)));
+	Object quad8("res/obj/quad.obj", shader, texture3, Mat4::Translation(Vec3(-3.0f, 0.0f, 2.0f)));
 
 	Font font("res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, window.GetWidth(), window.GetHeight(), window.GetRatio());
 	font.AddLine(window.GetTitle(),																					Vec2(10.0f, 700.0f), Vec4(1.00f, 1.00f, 1.00f, 1.00f));
@@ -114,15 +120,15 @@ int main()
 	font.AddLine("FPS: " + window.GetFPSString<int>(),																Vec2(10.0f, 640.0f), Vec4(1.00f, 1.00f, 1.00f, 1.00f));
 
 	Camera cam_main(GEAR_CAMERA_PERSPECTIVE, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec3(0.0f, 1.0f, 0.0f));
-	Probe environmentProbe(Vec3(-5.0f, 1.0f, 5.0f), 128, 8, Texture::ImageFormat::GEAR_RGBA8);
+	OmniProbe environmentProbe(Vec3(-5.0f, 1.0f, 5.0f), 128, 8, Texture::ImageFormat::GEAR_RGBA8);
 	
-	Light light_main1(Light::LightType::GEAR_LIGHT_POINT, Vec3(0.0f, 10.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f), shader);
+	Light light_main1(Light::LightType::GEAR_LIGHT_POINT, Vec3(0.0f, 10.0f, 0.0f), Vec3(0.0f, -1.0f, 0.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	light_main1.Specular(64.0f, 10.0f);
 	light_main1.Ambient(5.0f);
 	light_main1.Attenuation(0.007f, 0.0002f);
 	light_main1.SpotCone(DegToRad(45));
 
-	Light light_main2(Light::LightType::GEAR_LIGHT_SPOT, Vec3(0.0f, 10.0f, 30.0f), Vec3(0.0f, -1.0f, 0.0f), Vec4(1.0f, 0.0f, 0.0f, 1.0f), shader);
+	Light light_main2(Light::LightType::GEAR_LIGHT_SPOT, Vec3(0.0f, 10.0f, 30.0f), Vec3(0.0f, -1.0f, 0.0f), Vec4(1.0f, 0.0f, 0.0f, 1.0f));
 	light_main2.Specular(64.0f, 10.0f);
 	light_main2.Ambient(0.05f);
 	light_main2.Attenuation(0.007f, 0.0002f);
@@ -131,6 +137,7 @@ int main()
 	Listener listener_main(cam_main);
 
 	BatchRenderer2D br2d;
+	BatchRenderer3D br3d;
 	Renderer renderer;
 	Compute compute(computeTest);
 	
@@ -167,7 +174,7 @@ int main()
 		Object logo("res/obj/quad.obj", shader, logo_texture, Mat4::Translation(Vec3(0.0f, 0.0f, -1.0f)));
 		Object render("res/obj/quad.obj", shader, render_texture, Mat4::Translation(Vec3(0.0f, 0.0f, -1.0f)));
 
-		Light logo_light(Light::LightType::GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), GEAR_MAX_LIGHTS*Vec4(1.0f, 1.0f, 1.0f, 1.0f), shader);
+		Light logo_light(Light::LightType::GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), GEAR_MAX_LIGHTS*Vec4(1.0f, 1.0f, 1.0f, 1.0f));
 		logo_light.Attenuation(0, 0);
 
 		int time = 0;
@@ -420,7 +427,7 @@ int main()
 		renderer.Submit(&skybox);
 		renderer.Submit(&stall);
 		renderer.Submit(&stall2);
-		renderer.Submit(&cube1);
+		//renderer.Submit(&cube1);
 		renderer.Submit(&cube2);
 		renderer.Submit(&sphere);
 		renderer.Submit(&floor);
@@ -429,6 +436,10 @@ int main()
 
 		//Render to Probe
 		environmentProbe.Render(renderer.GetRenderQueue(), window.GetWidth(), window.GetHeight());
+
+		//Render to Light depth textures
+		light_main1.SetDepthParameters(0.1f, 500.0f);
+		light_main1.RenderDepthTexture(renderer.GetRenderQueue(), window.GetWidth(), window.GetHeight());
 
 		//Camera Update
 		cam_main.DefineProjection(DegToRad(90), window.GetRatio(), 0.01f, 1500.0f);
@@ -441,15 +452,17 @@ int main()
 		//Render to Screen
 #if GEAR_USE_FBO
 		fbo.Bind();
-		fbo.DrawToColourTextureAttachment();
 		fbo.UpdateFrameBufferSize(window.GetWidth(), window.GetHeight());
 		fbo.Clear();
 #endif
 		renderer.Flush();
 
+		std::shared_ptr<Texture> shadowMap;
+		shadowMap = light_main1.GetDepthTexture();
+
 		std::shared_ptr<Texture> enviromentMap;
 		enviromentMap = environmentProbe.GetCubemap();
-		Object cube2("res/obj/cube.obj", shaderCube, *enviromentMap, Mat4::Translation(Vec3(-5.0f, 1.0f, 5.0f)) * Mat4::Scale(Vec3(0.5f, 0.5f, 0.5f)));
+		Object cube2("res/obj/cube.obj", shaderCube, *shadowMap, Mat4::Translation(Vec3(-5.0f, 1.0f, 5.0f)) * Mat4::Scale(Vec3(0.5f, 0.5f, 0.5f)));
 		renderer.Draw(&cube2);
 
 		rustedIron.AddTexture(*enviromentMap, Material::TextureType::GEAR_TEXTURE_AMBIENT);
@@ -457,12 +470,20 @@ int main()
 		renderer.Draw(&spherePBR);
 		rustedIron.UnbindPBRTextures();
 		
-		br2d.OpenMapBuffer();
-		br2d.Submit(&quad3);
-		br2d.Submit(&quad4);
-		br2d.Submit(&quad5);
-		br2d.CloseMapBuffer();
-		br2d.Flush();
+		//br2d.OpenMapBuffer();
+		//br2d.Submit(&quad3);
+		//br2d.Submit(&quad4);
+		//br2d.Submit(&quad5);
+		//br2d.CloseMapBuffer();
+		//br2d.Flush();
+
+		br3d.OpenMapBuffer();
+		br3d.Submit(&quad6);
+		br3d.Submit(&cube1);
+		br3d.Submit(&quad7);
+		br3d.Submit(&quad8);
+		br3d.CloseMapBuffer();
+		br3d.Flush();
 		
 		fpsTime++;
 		if (window.IsKeyPressed(GLFW_KEY_F3))
@@ -498,7 +519,7 @@ int main()
 		fbo.Resolve();
 		Shader fboShader("res/shaders/GLSL/fbo.vert", "res/shaders/GLSL/fbo.frag");
 		Object fboColour("res/obj/quad.obj", fboShader, *(fbo.GetColourTexture()), Mat4::Scale(Vec3(1.0f, 1.0f, 1.0f)));
-		Object fboDepth("res/obj/quad.obj", fboShader, *(fbo.GetColourTexture()), Mat4::Translation(Vec3(0.75f, 0.75f, 0.0f)) * Mat4::Scale(Vec3(0.25f, 0.25f, 1.0f)));
+		Object fboDepth("res/obj/quad.obj", fboShader, *(fbo.GetDepthTexture()), Mat4::Translation(Vec3(0.75f, 0.75f, 0.0f)) * Mat4::Scale(Vec3(0.25f, 0.25f, 1.0f)));
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		renderer.Draw(&fboDepth);
 		renderer.Draw(&fboColour);

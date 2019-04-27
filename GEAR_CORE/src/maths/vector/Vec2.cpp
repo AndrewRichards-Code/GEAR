@@ -49,6 +49,12 @@ namespace ARM
 		return other * (1 / sqrt(pow(other.x, 2) + pow(other.y, 2)));
 	}
 
+	//Returns the length of the Vector.
+	float Vec2::Length()
+	{
+		return sqrtf(x * x + y * y);
+	}
+
 	//Rotates the Vec2 by the input angle (in degrees). 
 	//Rounds output Vec2 to nearest int. Uses with Vec2<int>!
 	Vec2 Vec2::RotDegRound(double theta)

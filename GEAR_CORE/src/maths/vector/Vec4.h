@@ -27,6 +27,8 @@ namespace ARM
 		Vec4 Normalise();
 		Vec4 Normalise(const Vec4& other);
 
+		float Length();
+
 		//Angles betweem vectors and normals
 
 		//ROTATIONS

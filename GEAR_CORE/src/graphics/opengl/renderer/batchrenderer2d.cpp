@@ -21,7 +21,7 @@ void BatchRenderer2D::Init()
 {
 	glGenBuffers(1, &m_VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-	glBufferData(GL_ARRAY_BUFFER, GEAR_RENDERER_BUFFER_SIZE, NULL, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, GEAR_BATCH_RENDERER_2D_BUFFER_SIZE, NULL, GL_DYNAMIC_DRAW);
 
 	glGenVertexArrays(1, &m_VAO);
 	glBindVertexArray(m_VAO);
@@ -32,15 +32,15 @@ void BatchRenderer2D::Init()
 	glEnableVertexAttribArray((GLuint)VertexArray::BufferType::GEAR_BUFFER_NORMALS);
 	glEnableVertexAttribArray((GLuint)VertexArray::BufferType::GEAR_BUFFER_COLOURS);
 
-	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_POSITIONS, 3, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)offsetof(Object::VertexData, m_Vertex));
-	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXCOORDS, 2, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)offsetof(Object::VertexData, m_TexCoord));
-	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXIDS, 1, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)offsetof(Object::VertexData, m_TexId));
-	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_NORMALS, 3, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)offsetof(Object::VertexData, m_Normal));
-	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_COLOURS, 3, GL_FLOAT, GL_FALSE, GEAR_RENDERER_VERTEX_SIZE, (const GLvoid*)offsetof(Object::VertexData, m_Colour));
+	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_POSITIONS, 3, GL_FLOAT, GL_FALSE, GEAR_BATCH_RENDERER_2D_VERTEX_SIZE, (const GLvoid*)offsetof(Object::VertexData, m_Vertex));
+	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXCOORDS, 2, GL_FLOAT, GL_FALSE, GEAR_BATCH_RENDERER_2D_VERTEX_SIZE, (const GLvoid*)offsetof(Object::VertexData, m_TexCoord));
+	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_TEXIDS, 1, GL_FLOAT, GL_FALSE, GEAR_BATCH_RENDERER_2D_VERTEX_SIZE, (const GLvoid*)offsetof(Object::VertexData, m_TexId));
+	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_NORMALS, 3, GL_FLOAT, GL_FALSE, GEAR_BATCH_RENDERER_2D_VERTEX_SIZE, (const GLvoid*)offsetof(Object::VertexData, m_Normal));
+	glVertexAttribPointer((GLuint)VertexArray::BufferType::GEAR_BUFFER_COLOURS, 4, GL_FLOAT, GL_FALSE, GEAR_BATCH_RENDERER_2D_VERTEX_SIZE, (const GLvoid*)offsetof(Object::VertexData, m_Colour));
 	
-	GLuint indicies[GEAR_RENDERER_INDICIES_SIZE];
+	GLuint indicies[GEAR_BATCH_RENDERER_2D_INDICIES_SIZE];
 	int offset = 0;
-	for (int i = 0; i < GEAR_RENDERER_INDICIES_SIZE; i += 6)
+	for (int i = 0; i < GEAR_BATCH_RENDERER_2D_INDICIES_SIZE; i += 6)
 	{
 		indicies[i + 0] = offset + 0;
 		indicies[i + 1] = offset + 1;
@@ -51,7 +51,7 @@ void BatchRenderer2D::Init()
 		offset += 4;
 	}
 
-	m_IBO = std::make_unique<IndexBuffer>(indicies, GEAR_RENDERER_INDICIES_SIZE);
+	m_IBO = std::make_unique<IndexBuffer>(indicies, GEAR_BATCH_RENDERER_2D_INDICIES_SIZE);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -93,7 +93,7 @@ void BatchRenderer2D::Submit(Object* obj)
 		if (!found)
 		{
 			m_TextureSlots.push_back(textureID);
-			if (m_TextureSlots.size() >= GEAR_RENDERER_MAX_TEXTURE_SLOTS)
+			if (m_TextureSlots.size() >= GEAR_BATCH_RENDERER_2D_MAX_TEXTURE_SLOTS)
 			{
 				CloseMapBuffer();
 				Flush();
@@ -149,9 +149,9 @@ void BatchRenderer2D::Flush()
 		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(GL_TEXTURE_2D, m_TextureSlots[i]);
 
-		if (i > GEAR_RENDERER_MAX_TEXTURE_SLOTS - 1)
+		if (i > GEAR_BATCH_RENDERER_2D_MAX_TEXTURE_SLOTS - 1)
 		{
-			m_TextureSlots.erase(m_TextureSlots.begin(), m_TextureSlots.begin() + GEAR_RENDERER_MAX_TEXTURE_SLOTS - 1);
+			m_TextureSlots.erase(m_TextureSlots.begin(), m_TextureSlots.begin() + GEAR_BATCH_RENDERER_2D_MAX_TEXTURE_SLOTS - 1);
 			break;
 		}
 	}

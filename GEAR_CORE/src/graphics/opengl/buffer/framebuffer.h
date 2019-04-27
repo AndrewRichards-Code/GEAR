@@ -34,6 +34,8 @@ namespace OPENGL {
 		void AddColourTextureAttachment(int attachment = 0);
 		void DrawToColourTextureAttachment(int attachment = 0);
 		void ReadFromColourTextureAttachment(int attachment = 0);
+		void DrawToDepthTextureAttachment();
+		void ReadFromDepthTextureAttachment();
 
 		inline void Clear() { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); }
 

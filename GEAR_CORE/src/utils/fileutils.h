@@ -199,12 +199,15 @@ public:
 		std::sort(result.m_UniqueVertices.begin(), result.m_UniqueVertices.end(),
 			[&](ARM::Vec3 a, ARM::Vec3 b) {return a.x < b.x;});
 		
-		for (int i = 0; i < (int)result.GetSizeVertices();)
+		for (int i = 0; i < (int)result.GetSizeUniqueVertices();)
 		{
-			if (i == result.GetSizeVertices() - 1) break;
+			if (i == result.GetSizeUniqueVertices() - 1) 
+				break;
 			if (result.m_UniqueVertices[i].x == result.m_UniqueVertices[i + 1].x)
 			{
 				result.m_UniqueVertices.erase(result.m_UniqueVertices.begin() + i + 1);
+				if (i == result.GetSizeUniqueVertices() - 1) 
+					break;
 			}
 			if (result.m_UniqueVertices[i].x != result.m_UniqueVertices[i + 1].x)
 			{

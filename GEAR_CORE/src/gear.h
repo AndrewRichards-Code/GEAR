@@ -30,6 +30,7 @@
 #include "graphics/opengl/buffer/vertexbuffer.h"
 
 #include "graphics/opengl/renderer/batchrenderer2d.h"
+#include "graphics/opengl/renderer/batchrenderer3d.h"
 #include "graphics/opengl/renderer/compute.h"
 #include "graphics/opengl/renderer/renderer.h"
 

@@ -93,7 +93,7 @@ Texture::Texture(int width, int height, bool depthTexture, int multisample, Imag
 
 	if (m_Type == TextureType::GEAR_TEXTURE_2D)
 	{
-		glTexImage2D(Type, 0, Format, m_Width, m_Height, 0, (unsigned int)ToBaseFormat(m_Format), GL_UNSIGNED_BYTE, nullptr);
+		glTexImage2D(Type, 0, Format, m_Width, m_Height, 0, (unsigned int)ToBaseFormat(m_Format), GL_FLOAT, nullptr);
 		glTexParameteri(Type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(Type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(Type, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

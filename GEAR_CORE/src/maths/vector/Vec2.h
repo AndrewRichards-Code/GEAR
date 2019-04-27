@@ -27,6 +27,8 @@ namespace ARM
 
 		Vec2 Normalise();
 		Vec2 Normalise(const Vec2& other);
+
+		float Length();
 		
 		//Angles betweem vectors and normals
 

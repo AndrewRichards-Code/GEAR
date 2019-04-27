@@ -33,7 +33,7 @@ void BufferManager::AddUBO(unsigned int size, unsigned int bindingIndex)
 	{
 		if (ubo->GetBindingIndex() == bindingIndex)
 		{
-			std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::BufferManager: A SSBO at Binding Index " << bindingIndex << " has already been added." << std::endl;
+			std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::BufferManager: A UBO at Binding Index " << bindingIndex << " has already been added." << std::endl;
 			return;
 		}
 	}

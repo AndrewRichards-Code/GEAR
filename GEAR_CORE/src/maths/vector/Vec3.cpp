@@ -39,7 +39,7 @@ namespace ARM
 		return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
 	}
 
-	//Takes the cross product of the current object and another Vec3. LHRule.
+	//Takes the cross product of the current object and another Vec3. RHRule.
 	Vec3 Vec3::Cross(const Vec3& other)
 	{
 		Mat3 mat(Vec3(1, 1, 1), Vec3(x, y, z), Vec3(other.x, other.y, other.z));
@@ -47,7 +47,7 @@ namespace ARM
 		return output;
 	}
 
-	//Takes the cross product of two Vec3s. LHRule.
+	//Takes the cross product of two Vec3s. RHRule.
 	Vec3 Vec3::Cross(const Vec3& a, const Vec3& b)
 	{
 		Mat3 mat(Vec3(1, 1, 1), Vec3(a.x, a.y, a.z), Vec3(b.x, b.y, b.z));
@@ -65,6 +65,12 @@ namespace ARM
 	Vec3 Vec3::Normalise(const Vec3& other)
 	{
 		return other * (1 / sqrt(pow(other.x, 2) + pow(other.y, 2) + pow(other.z, 2)));
+	}
+
+	//Returns the length of the Vector.
+	float Vec3::Length()
+	{
+		return sqrtf(x * x + y * y + z * z);
 	}
 
 	//Rotates the current object via quaternions and returns a new Vec3.
@@ -110,7 +116,7 @@ namespace ARM
 		return Vec3 (x - other.x, y - other.y, z - other.z);
 	}
 
-	//Scales the Vec3 by the scaler a. floathe scaler go on the rhs of the object.
+	//Scales the Vec3 by the scaler a. The scaler go on the rhs of the object.
 	Vec3 Vec3::operator* (float a) const
 	{
 		return Vec3 (a * x, a * y, a * z);

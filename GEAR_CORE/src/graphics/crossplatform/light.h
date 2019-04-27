@@ -2,6 +2,7 @@
 
 #include "graphics/opengl/shader/shader.h"
 #include "camera.h"
+#include "probe.h"
 #include "maths/ARMLib.h"
 
 #define GEAR_MAX_LIGHTS 8
@@ -27,7 +28,6 @@ private:
 	static int s_NumOfLights;
 	int m_LightID;
 	LightType m_Type;
-	OPENGL::Shader& m_Shader;
 
 	static bool s_InitialiseUBO;
 	struct LightUBO
@@ -44,10 +44,19 @@ private:
 		float m_AttenuationQuadratic;		//72
 		float m_CutOff;						//76
 	}m_LightUBO;							//80 Total Size
-
+	
 	//Depth Shader for Shadows
-	//const Shader m_DepthShader = Shader("res/shaders/GLSL/depth.vert", "res/shaders/GLSL/depth.frag");
-	//Camera m_LightCam = Camera(GEAR_CAMERA_ORTHOGRAPHIC, m_DepthShader, m_PosDir, ARM::Vec3(0, 0, 1), ARM::Vec3(0, 1, 0));
+	const OPENGL::Shader m_DepthShader = OPENGL::Shader("res/shaders/GLSL/depth.vert", "res/shaders/GLSL/depth.frag");
+	const int m_DepthRenderSize = 128;
+	std::unique_ptr<OmniProbe> m_DepthRenderTargetOmniProbe; 
+	std::unique_ptr<UniProbe> m_DepthRenderTargetUniProbe; 
+	struct DepthUBO
+	{
+		float u_Near;
+		float u_Far;
+		float u_Linear;
+		float u_Reverse;
+	}m_DepthUBO;
 
 public:
 	ARM::Vec4 m_Colour;
@@ -55,7 +64,7 @@ public:
 	ARM::Vec3 m_Direction;
 
 public:
-	Light(LightType type, const ARM::Vec3& position, const ARM::Vec3& direction, const ARM::Vec4& colour, OPENGL::Shader& shader);
+	Light(LightType type, const ARM::Vec3& position, const ARM::Vec3& direction, const ARM::Vec4& colour);
 	~Light();
 
 	void Specular(float shineFactor, float reflectivity);
@@ -68,9 +77,10 @@ public:
 	void Spot();
 	void Area();
 
-	//inline const Shader& GetDepthShader() const { return m_DepthShader; }
+	void SetDepthParameters(float near, float far, bool linear = true, bool reverse = true);
+	void RenderDepthTexture(const std::deque<Object*>& renderQueue, int windowWidth, int windowHeight);
+	std::shared_ptr<OPENGL::Texture> GetDepthTexture();
 
-	void CalculateLightMVP();
 	void UpdateColour();
 	void UpdatePosition();
 	void UpdateDirection();
@@ -79,6 +89,7 @@ public:
 private:
 	void InitialiseUBO();
 	void SetAllToZero();
+	void SetDepthUBOToZero();
 };
 }
 }

@@ -32,6 +32,8 @@ namespace ARM
 		Vec3 Normalise();
 		static Vec3 Normalise(const Vec3& other);
 
+		float Length();
+
 
 		//Angles betweem vectors and normals
 

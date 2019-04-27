@@ -43,6 +43,12 @@ namespace ARM
 		return other * (1 / sqrt(pow(other.x, 2) + pow(other.y, 2) + pow(other.z, 2) + pow(other.w, 2)));
 	}
 
+	//Returns the length of the Vector.
+	float Vec4::Length()
+	{
+		return sqrtf(x * x + y * y + z * z + w * w);
+	}
+
 	//Adds two Vec4s.
 	Vec4 Vec4::operator+ (const Vec4& other) const
 	{

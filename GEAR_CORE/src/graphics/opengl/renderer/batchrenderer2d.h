@@ -1,17 +1,15 @@
 #pragma once
 
-#include "renderer.h"
+#include "gear_common.h"
 #include "maths/ARMLib.h"
-#include "graphics/opengl/buffer/vertexarray.h"
-#include "graphics/opengl/buffer/indexbuffer.h"
-#include "graphics/opengl/shader/shader.h"
+#include "renderer.h"
 
-#define GEAR_RENDERER_MAX_OBJ           10000
-#define GEAR_RENDERER_VERTEX_SIZE	    sizeof(Object::VertexData)
-#define GEAR_RENDERER_OBJ_SIZE          GEAR_RENDERER_VERTEX_SIZE * 4
-#define GEAR_RENDERER_BUFFER_SIZE       GEAR_RENDERER_OBJ_SIZE * GEAR_RENDERER_MAX_OBJ
-#define GEAR_RENDERER_INDICIES_SIZE     GEAR_RENDERER_MAX_OBJ * 6
-#define GEAR_RENDERER_MAX_TEXTURE_SLOTS 32
+#define GEAR_BATCH_RENDERER_2D_MAX_OBJ           10000
+#define GEAR_BATCH_RENDERER_2D_VERTEX_SIZE	     sizeof(Object::VertexData)
+#define GEAR_BATCH_RENDERER_2D_OBJ_SIZE          GEAR_BATCH_RENDERER_2D_VERTEX_SIZE * 4
+#define GEAR_BATCH_RENDERER_2D_BUFFER_SIZE       GEAR_BATCH_RENDERER_2D_OBJ_SIZE * GEAR_BATCH_RENDERER_2D_MAX_OBJ
+#define GEAR_BATCH_RENDERER_2D_INDICIES_SIZE     GEAR_BATCH_RENDERER_2D_MAX_OBJ * 6
+#define GEAR_BATCH_RENDERER_2D_MAX_TEXTURE_SLOTS 32
 
 namespace GEAR {
 namespace GRAPHICS {
@@ -33,7 +31,6 @@ public:
 	void CloseMapBuffer();
 	void Submit(CROSSPLATFORM::Object* obj) override;
 	void Flush() override;
-	void CopyLights(const std::vector<CROSSPLATFORM::Light*> lights) { std::copy(lights.begin(), lights.end(), std::back_inserter(m_Lights)); }
 
 	BatchRenderer2D();
 	~BatchRenderer2D();
