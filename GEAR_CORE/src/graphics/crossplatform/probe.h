@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gear_common.h"
-#include "maths/ARMLib.h"
+#include "ARMLib.h"
 #include "graphics/opengl/buffer/framebuffer.h"
 #include "graphics/opengl/renderer/batchrenderer3d.h"
 #include "camera.h"

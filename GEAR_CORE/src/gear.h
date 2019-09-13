@@ -1,7 +1,7 @@
 #pragma once
 
 //Maths Libratry
-#include "maths/ARMLib.h"
+#include "ARMLib.h"
 
 //Audio
 #include "audio/listener.h"

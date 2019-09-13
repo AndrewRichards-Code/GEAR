@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gear_common.h"
-#include "maths/ARMLib.h"
+#include "ARMLib.h"
 #include "renderer.h"
 
 #define GEAR_BATCH_RENDERER_3D_VERTEX_SIZE	     sizeof(Object::VertexData)

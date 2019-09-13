@@ -1,7 +1,7 @@
 #pragma once
 #ifdef _M_X64
 #include "gear_common.h"
-#include "maths/ARMLib.h"
+#include "ARMLib.h"
 #include "graphics/crossplatform/material.h"
 
 namespace GEAR {

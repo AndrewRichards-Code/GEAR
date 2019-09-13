@@ -141,7 +141,7 @@ void BatchRenderer3D::Flush()
 			m_Indicies.push_back((m_Counts[i - 1] * sizeof(unsigned int)) + m_Indicies[i - 1]);
 	}
 	for (auto& index : m_Indicies)
-		m_GLIndicies.push_back((GLvoid*)(index));
+		m_GLIndicies.push_back((GLvoid*)index);
 	
 	//Bind textures
 	for (int i = 0; i < (int)m_TextureSlots.size(); i++)

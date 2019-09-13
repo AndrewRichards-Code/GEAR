@@ -56,7 +56,7 @@ unsigned int ComputeShader::CompileShader(unsigned int type, const std::string& 
 		char* message = (char*)alloca(length * sizeof(char));
 		glGetShaderInfoLog(id, length, &length, message);
 		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::Shader: Failed to compile " <<
-			(type == GL_VERTEX_SHADER ? "vertex" : "fragment") << " shader!" << std::endl;
+			(type == GL_COMPUTE_SHADER ? "compute" : "unknown") << " shader!" << std::endl;
 		std::cout << message << std::endl;
 		glDeleteShader(id);
 		return 0;
@@ -166,7 +166,7 @@ unsigned int ComputeShader::CompileShader(unsigned int type, const std::vector<c
 		char* message = (char*)alloca(length * sizeof(char));
 		glGetShaderInfoLog(id, length, &length, message);
 		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::Shader: Failed to compile " <<
-			(type == GL_VERTEX_SHADER ? "vertex" : "fragment") << " shader from binary!" << std::endl;
+			(type == GL_VERTEX_SHADER ? "compute" : "unknown") << " shader from binary!" << std::endl;
 		std::cout << message << std::endl;
 		glDeleteShader(id);
 		return 0;
@@ -174,10 +174,10 @@ unsigned int ComputeShader::CompileShader(unsigned int type, const std::vector<c
 	return id;
 }
 
-unsigned int ComputeShader::CreateShader(const std::vector<char>& vertexshader)
+unsigned int ComputeShader::CreateShader(const std::vector<char>& computeshader)
 {
 	unsigned int program = glCreateProgram();
-	unsigned int cs = ComputeShader::CompileShader(GL_COMPUTE_SHADER, vertexshader);
+	unsigned int cs = ComputeShader::CompileShader(GL_COMPUTE_SHADER, computeshader);
 
 	glAttachShader(program, cs);
 	glLinkProgram(program);

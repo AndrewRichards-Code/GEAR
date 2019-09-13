@@ -6,7 +6,7 @@
 #include "texture.h"
 #include "renderer/batchrenderer2d.h"
 
-#include "maths/ARMLib.h"
+#include "ARMLib.h"
 
 #define GEAR_NUM_OF_CHARACTERS 128
 

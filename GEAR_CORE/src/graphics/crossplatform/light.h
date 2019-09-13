@@ -3,7 +3,7 @@
 #include "graphics/opengl/shader/shader.h"
 #include "camera.h"
 #include "probe.h"
-#include "maths/ARMLib.h"
+#include "ARMLib.h"
 
 #define GEAR_MAX_LIGHTS 8
 

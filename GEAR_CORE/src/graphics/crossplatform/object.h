@@ -7,7 +7,7 @@
 #include "graphics/opengl/texture.h"
 #include "graphics/crossplatform/material.h"
 #include "utils/fileutils.h"
-#include "maths/ARMLib.h"
+#include "ARMLib.h"
 
 namespace GEAR {
 namespace GRAPHICS {

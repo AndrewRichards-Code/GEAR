@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gear_common.h"
-#include "maths/ARMLib.h"
+#include "ARMLib.h"
 
 namespace GEAR {
 
