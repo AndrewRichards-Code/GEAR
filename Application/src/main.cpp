@@ -1,4 +1,4 @@
-#include "gear.h"
+#include "gear_core.h"
 //#if !(_DEBUG)
 //#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 //#endif

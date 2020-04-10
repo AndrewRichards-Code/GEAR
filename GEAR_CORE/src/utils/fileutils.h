@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gear_common.h"
+#include "gear_core_common.h"
 #include "mars.h"
 
 namespace GEAR {
