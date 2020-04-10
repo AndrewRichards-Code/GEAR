@@ -11,7 +11,7 @@ using namespace CROSSPLATFORM;
 using namespace OPENGL;
 using namespace AUDIO;
 using namespace INPUT;
-using namespace ARM;
+using namespace mars;
 
 void AudioThread()
 {
@@ -32,7 +32,7 @@ int main()
 {
 	Window window("GEAR", 1280, 720, 16);
 	//window.Fullscreen();
-	window.UpdateVSync(false);
+	window.UpdateVSync(true);
 	FrameBuffer fbo(window.GetWidth(), window.GetHeight(), 1);
 
 	//std::vector<AssimpLoader::Mesh> meshes = AssimpLoader::LoadModel("res/obj/KagemitsuG4.fbx");
@@ -239,8 +239,8 @@ int main()
 	}
 	shader.SetLighting(Shader::GEAR_CALC_LIGHT_DIFFUSE | Shader::GEAR_CALC_LIGHT_SPECULAR | Shader::GEAR_CALC_LIGHT_AMBIENT);
 	
-	//std::thread AudioThread(AudioThread);
-	//AudioThread.detach();
+	std::thread AudioThread(AudioThread);
+	AudioThread.detach();
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
@@ -527,7 +527,7 @@ int main()
 		window.Update();
 	}
 	
-	//if (AudioThread.joinable() == true)
-		// AudioThread.join();
+	if (AudioThread.joinable() == true)
+		AudioThread.join();
 			
 }

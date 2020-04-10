@@ -3,7 +3,7 @@
 using namespace GEAR;
 using namespace GRAPHICS;
 using namespace OPENGL;
-using namespace ARM;
+using namespace mars;
 using namespace CROSSPLATFORM;
 
 BatchRenderer3D::BatchRenderer3D()

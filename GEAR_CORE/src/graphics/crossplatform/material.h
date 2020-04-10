@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gear_common.h"
-#include "ARMLib.h"
+#include "mars.h"
 #include "graphics/opengl/shader/shader.h"
 #include "graphics/opengl/texture.h"
 
@@ -37,8 +37,8 @@ private:
 	static bool s_InitialiseUBO;
 	struct PBRInfoUBO
 	{
-		ARM::Vec4 m_Fersnel;
-		ARM::Vec4 m_Albedo;
+		mars::Vec4 m_Fersnel;
+		mars::Vec4 m_Albedo;
 		float m_Metallic;
 		float m_Roughness;
 		float m_AmbientOcclusion;
@@ -57,12 +57,12 @@ private:
 		float m_Reflectivity;
 		float m_ShininessStrength;
 		float m_RefractiveIndex;
-		ARM::Vec4 m_ColourDiffuse;
-		ARM::Vec4 m_ColourAmbient;
-		ARM::Vec4 m_ColourSpecular;
-		ARM::Vec4 m_ColourEmissive;
-		ARM::Vec4 m_ColourTransparent;
-		ARM::Vec4 m_ColourReflective;
+		mars::Vec4 m_ColourDiffuse;
+		mars::Vec4 m_ColourAmbient;
+		mars::Vec4 m_ColourSpecular;
+		mars::Vec4 m_ColourEmissive;
+		mars::Vec4 m_ColourTransparent;
+		mars::Vec4 m_ColourReflective;
 	}m_Properties;
 
 	const OPENGL::Shader& m_Shader;
@@ -74,8 +74,8 @@ public:
 
 	void AddTexture(const OPENGL::Texture& texture, TextureType type = TextureType::GEAR_TEXTURE_UNKNOWN);
 	void ChangeTextureType(const OPENGL::Texture& texture, TextureType type);
-	void AddProperties(std::string name, int twoSided, int shadingModel, int wireframe, int blendFunc, float opacity, float shininess, float reflectivity, float shininessStrength, float refractiveIndex, const ARM::Vec4& colourDiffuse, const ARM::Vec4& colourAmbient, const ARM::Vec4& colourSpecular, const ARM::Vec4& colourEmissive, const ARM::Vec4& colourTransparent, const ARM::Vec4& colourReflective);
-	void SetPBRParameters(const ARM::Vec4& fersnel = ARM::Vec4(0, 0, 0, 0), const ARM::Vec4& albedo = ARM::Vec4(0, 0, 0, 0), float metallic = 0.0f, float roughness = 0.0f, float ambientOcclusion = 0.0f);
+	void AddProperties(std::string name, int twoSided, int shadingModel, int wireframe, int blendFunc, float opacity, float shininess, float reflectivity, float shininessStrength, float refractiveIndex, const mars::Vec4& colourDiffuse, const mars::Vec4& colourAmbient, const mars::Vec4& colourSpecular, const mars::Vec4& colourEmissive, const mars::Vec4& colourTransparent, const mars::Vec4& colourReflective);
+	void SetPBRParameters(const mars::Vec4& fersnel = mars::Vec4(0, 0, 0, 0), const mars::Vec4& albedo = mars::Vec4(0, 0, 0, 0), float metallic = 0.0f, float roughness = 0.0f, float ambientOcclusion = 0.0f);
 	void BindPBRTextures();
 	void UnbindPBRTextures();
 

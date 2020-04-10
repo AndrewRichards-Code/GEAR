@@ -3,7 +3,7 @@
 using namespace GEAR;
 using namespace GRAPHICS;
 using namespace CROSSPLATFORM;
-using namespace ARM;
+using namespace mars;
 
 //--------OmniProbe--------//
 OmniProbe::OmniProbe(const Vec3& position, int size, int multisample, OPENGL::Texture::ImageFormat format)
@@ -86,7 +86,7 @@ void OmniProbe::UpdatePosition(const Vec3& position)
 }
 
 //--------UniProbe--------//
-UniProbe::UniProbe(const Vec3& position, const ARM::Vec3& direction, int size, int projectionType, int multisample, OPENGL::Texture::ImageFormat format)
+UniProbe::UniProbe(const Vec3& position, const mars::Vec3& direction, int size, int projectionType, int multisample, OPENGL::Texture::ImageFormat format)
 	:m_Position(position), m_Direction(direction), m_Size(size), m_Multisample(multisample), m_Format(format)
 {
 	m_FrameBuffer = std::make_shared<OPENGL::FrameBuffer>(m_Size, m_Size, m_Multisample, false, m_Format);

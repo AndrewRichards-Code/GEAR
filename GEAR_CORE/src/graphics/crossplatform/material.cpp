@@ -3,7 +3,7 @@
 using namespace GEAR;
 using namespace GRAPHICS;
 using namespace CROSSPLATFORM;
-using namespace ARM;
+using namespace mars;
 
 bool Material::s_InitialiseUBO = false;
 
@@ -52,12 +52,12 @@ void Material::AddProperties(
 	float reflectivity,
 	float shininessStrength,
 	float refractiveIndex,
-	const ARM::Vec4& colourDiffuse,
-	const ARM::Vec4& colourAmbient,
-	const ARM::Vec4& colourSpecular,
-	const ARM::Vec4& colourEmissive,
-	const ARM::Vec4& colourTransparent,
-	const ARM::Vec4& colourReflective)
+	const mars::Vec4& colourDiffuse,
+	const mars::Vec4& colourAmbient,
+	const mars::Vec4& colourSpecular,
+	const mars::Vec4& colourEmissive,
+	const mars::Vec4& colourTransparent,
+	const mars::Vec4& colourReflective)
 {
 	m_Properties.m_Name = name;
 	m_Properties.m_TwoSided = twoSided;
@@ -77,7 +77,7 @@ void Material::AddProperties(
 	m_Properties.m_ColourReflective = colourReflective;
 }
 
-void Material::SetPBRParameters(const ARM::Vec4& fersnel, const ARM::Vec4& albedo, float metallic, float roughness, float ambientOcclusion)
+void Material::SetPBRParameters(const mars::Vec4& fersnel, const mars::Vec4& albedo, float metallic, float roughness, float ambientOcclusion)
 {
 	m_PBRInfoUBO.m_Fersnel = fersnel;
 	m_PBRInfoUBO.m_Albedo = albedo;

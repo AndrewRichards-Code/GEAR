@@ -6,7 +6,7 @@
 #include "texture.h"
 #include "renderer/batchrenderer2d.h"
 
-#include "ARMLib.h"
+#include "mars.h"
 
 #define GEAR_NUM_OF_CHARACTERS 128
 
@@ -31,9 +31,9 @@ private:
 	struct Line
 	{
 		std::string m_Text;
-		ARM::Vec2 m_InitPosition;
-		ARM::Vec2 m_Position;
-		ARM::Vec4 m_Colour;
+		mars::Vec2 m_InitPosition;
+		mars::Vec2 m_Position;
+		mars::Vec4 m_Colour;
 		std::vector<CROSSPLATFORM::Object> m_GlyphBuffer;
 	};
 	std::vector<Line> m_Lines;
@@ -41,11 +41,11 @@ private:
 	struct Character
 	{
 		std::shared_ptr<Texture> m_Texture;
-		ARM::Vec2 m_Size;
-		ARM::Vec2 m_Bearing;
+		mars::Vec2 m_Size;
+		mars::Vec2 m_Bearing;
 		unsigned int m_Advance;
 	};
-	std::map<GLchar, Character> m_CharMap;
+	std::map<GLchar, Character> m_Charmap;
 
 	bool b_GenerateRenderGlyphBuffer = true;
 	std::vector<CROSSPLATFORM::Object> m_RenderGlyphBuffer;
@@ -53,7 +53,7 @@ private:
 public:
 	Font(const char* filepath, int fontHeight, int width, int height, float ratio);
 	~Font();
-	void AddLine(const std::string& text, const ARM::Vec2& position, const ARM::Vec4& colour);
+	void AddLine(const std::string& text, const mars::Vec2& position, const mars::Vec4& colour);
 	void Render();
 	void UpdateLine(const std::string& input, unsigned int lineIndex);
 

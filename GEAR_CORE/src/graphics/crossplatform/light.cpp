@@ -3,7 +3,7 @@
 using namespace GEAR;
 using namespace GRAPHICS;
 using namespace CROSSPLATFORM;
-using namespace ARM;
+using namespace mars;
 
 int Light::s_NumOfLights = 0;
 bool Light::s_InitialiseUBO = false;

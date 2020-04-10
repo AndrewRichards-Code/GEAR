@@ -3,11 +3,11 @@
 using namespace GEAR;
 using namespace GRAPHICS;
 using namespace CROSSPLATFORM;
-using namespace ARM;
+using namespace mars;
 
 bool Camera::s_InitialiseUBO = false;
 
-Camera::Camera(int projType, const ARM::Vec3& position, const ARM::Vec3& forward, const ARM::Vec3 up)
+Camera::Camera(int projType, const mars::Vec3& position, const mars::Vec3& forward, const mars::Vec3 up)
 	:m_ProjectionType(projType), m_Position(position), m_Forward(forward), m_Up(up)
 {
 	InitialiseUBO();

@@ -3,7 +3,7 @@
 #include "graphics/opengl/shader/shader.h"
 #include "camera.h"
 #include "probe.h"
-#include "ARMLib.h"
+#include "mars.h"
 
 #define GEAR_MAX_LIGHTS 8
 
@@ -32,9 +32,9 @@ private:
 	static bool s_InitialiseUBO;
 	struct LightUBO
 	{
-		ARM::Vec4 m_Colour;					//00
-		ARM::Vec4 m_Position;				//16
-		ARM::Vec4 m_Direction;				//32
+		mars::Vec4 m_Colour;					//00
+		mars::Vec4 m_Position;				//16
+		mars::Vec4 m_Direction;				//32
 		float m_Type;						//48
 		float m_ShineFactor;				//52
 		float m_Reflectivity;				//56
@@ -59,12 +59,12 @@ private:
 	}m_DepthUBO;
 
 public:
-	ARM::Vec4 m_Colour;
-	ARM::Vec3 m_Position;
-	ARM::Vec3 m_Direction;
+	mars::Vec4 m_Colour;
+	mars::Vec3 m_Position;
+	mars::Vec3 m_Direction;
 
 public:
-	Light(LightType type, const ARM::Vec3& position, const ARM::Vec3& direction, const ARM::Vec4& colour);
+	Light(LightType type, const mars::Vec3& position, const mars::Vec3& direction, const mars::Vec4& colour);
 	~Light();
 
 	void Specular(float shineFactor, float reflectivity);

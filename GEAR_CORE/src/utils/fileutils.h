@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gear_common.h"
-#include "ARMLib.h"
+#include "mars.h"
 
 namespace GEAR {
 
@@ -49,13 +49,13 @@ public:
 
 	struct ObjData
 	{
-		std::vector<ARM::Vec3> m_Vertices;
-		std::vector<ARM::Vec2> m_TexCoords;
-		std::vector<ARM::Vec3> m_Normals;
+		std::vector<mars::Vec3> m_Vertices;
+		std::vector<mars::Vec2> m_TexCoords;
+		std::vector<mars::Vec3> m_Normals;
 		std::vector<unsigned int> m_VertIndices;
 		std::vector<unsigned int> m_TextIndices;
 		std::vector<unsigned int> m_NormIndices;
-		std::vector<ARM::Vec3> m_UniqueVertices;
+		std::vector<mars::Vec3> m_UniqueVertices;
 
 		int GetSizeVertices() { return static_cast<int>(m_Vertices.size()); }
 		int GetSizeTexCoords() { return static_cast<int>(m_TexCoords.size()); }
@@ -97,7 +97,7 @@ public:
 				float x, y, z;
 
 				sstream >> x >> y >> z;
-				result.m_Vertices.emplace_back(ARM::Vec3(x, y, z));
+				result.m_Vertices.emplace_back(mars::Vec3(x, y, z));
 			}
 
 			else if (flag == "vt")
@@ -105,7 +105,7 @@ public:
 				float u, v;
 
 				sstream >> u >> v;
-				result.m_TexCoords.emplace_back(ARM::Vec2(u, v));
+				result.m_TexCoords.emplace_back(mars::Vec2(u, v));
 			}
 			
 			else if (flag == "vn")
@@ -113,7 +113,7 @@ public:
 				float x, y, z;
 
 				sstream >> x >> y >> z;
-				result.m_Normals.emplace_back(ARM::Vec3(x, y, z));
+				result.m_Normals.emplace_back(mars::Vec3(x, y, z));
 			}
 
 			else if (flag == "f")
@@ -193,11 +193,11 @@ public:
 		result.m_UniqueVertices.reserve(result.GetSizeVertIndices());
 		for (int i = 0; i < result.GetSizeVertIndices(); i++)
 		{
-			result.m_UniqueVertices.emplace_back(ARM::Vec3((float)result.m_VertIndices[i], (float)result.m_TextIndices[i], (float)result.m_NormIndices[i]));
+			result.m_UniqueVertices.emplace_back(mars::Vec3((float)result.m_VertIndices[i], (float)result.m_TextIndices[i], (float)result.m_NormIndices[i]));
 		}
 		
 		std::sort(result.m_UniqueVertices.begin(), result.m_UniqueVertices.end(),
-			[&](ARM::Vec3 a, ARM::Vec3 b) {return a.x < b.x;});
+			[&](mars::Vec3 a, mars::Vec3 b) {return a.x < b.x;});
 		
 		for (int i = 0; i < (int)result.GetSizeUniqueVertices();)
 		{

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gear_common.h"
-#include "ARMLib.h"
+#include "mars.h"
 #include "utils/fileutils.h"
 
 namespace GEAR {
@@ -16,15 +16,15 @@ private:
 	std::shared_ptr<FileUtils::WavData> m_WavData;
 	unsigned int m_Format;
 
-	ARM::Vec3 m_Position;
-	ARM::Vec3 m_Velocity = { 0.0f, 0.0f, 0.0f };
-	ARM::Vec3 m_Direction;
+	mars::Vec3 m_Position;
+	mars::Vec3 m_Velocity = { 0.0f, 0.0f, 0.0f };
+	mars::Vec3 m_Direction;
 
 	bool m_Looped = false;
 	bool m_Ended = false;
 	
 public:
-	AudioSource(const char* filepath, const ARM::Vec3& position, const ARM::Vec3& direction);
+	AudioSource(const char* filepath, const mars::Vec3& position, const mars::Vec3& direction);
 	~AudioSource();
 
 	void UpdateSourcePosVelOri();

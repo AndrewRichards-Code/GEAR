@@ -3,7 +3,7 @@
 using namespace GEAR;
 using namespace AUDIO;
 
-AudioSource::AudioSource(const char* filepath, const ARM::Vec3& position, const ARM::Vec3& direction)
+AudioSource::AudioSource(const char* filepath, const mars::Vec3& position, const mars::Vec3& direction)
 	:m_FilePath(filepath), m_Position(position), m_Direction(direction)
 {
 	m_WavData = FileUtils::stream_wav(m_FilePath);

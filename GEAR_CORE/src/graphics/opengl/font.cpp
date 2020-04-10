@@ -3,7 +3,7 @@
 using namespace GEAR;
 using namespace GRAPHICS;
 using namespace OPENGL;
-using namespace ARM;
+using namespace mars;
 using namespace CROSSPLATFORM;
 
 Font::Font(const char* filepath, int fontHeight, int width, int height, float ratio)
@@ -19,7 +19,7 @@ Font::~Font()
 }
 
 
-void Font::AddLine(const std::string& text, const ARM::Vec2& position, const ARM::Vec4& colour)
+void Font::AddLine(const std::string& text, const mars::Vec2& position, const mars::Vec4& colour)
 {
 	m_Lines.emplace_back(
 	Line
@@ -95,7 +95,7 @@ void Font::GenerateCharacterMap()
 			(unsigned int)m_Face->glyph->advance.x
 		};
 
-		m_CharMap.insert(std::pair<GLchar, Character>(i, character));
+		m_Charmap.insert(std::pair<GLchar, Character>(i, character));
 	}
 }
 
@@ -105,7 +105,7 @@ void Font::GenerateLine(unsigned int lineIndex)
 	std::string::const_iterator it;
 	for (it = m_Lines[lineIndex].m_Text.begin(); it != m_Lines[lineIndex].m_Text.end(); it++)
 	{
-		Character ch = m_CharMap[*it];
+		Character ch = m_Charmap[*it];
 		float scale = (float)m_FontHeight / 1000.0f;
 		float pos_x = m_Lines[lineIndex].m_Position.x + ch.m_Bearing.x * scale;
 		float pos_y = m_Lines[lineIndex].m_Position.y - (ch.m_Size.y - ch.m_Bearing.y) * scale;

@@ -3,7 +3,7 @@
 using namespace GEAR;
 using namespace GRAPHICS;
 using namespace CROSSPLATFORM;
-using namespace ARM;
+using namespace mars;
 
 bool Object::s_InitialiseUBO = false;
 
@@ -24,7 +24,7 @@ Object::Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Te
 	SetUniformModlMatrix();
 }
 
-Object::Object(const char* objFilePath, OPENGL::Shader& shader, const ARM::Vec4& colour, const ARM::Mat4& modl)
+Object::Object(const char* objFilePath, OPENGL::Shader& shader, const mars::Vec4& colour, const mars::Mat4& modl)
 	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Colour(colour), m_ModlMatrix(modl)
 {
 	InitialiseUBO();

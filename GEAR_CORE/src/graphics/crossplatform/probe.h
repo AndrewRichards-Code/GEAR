@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gear_common.h"
-#include "ARMLib.h"
+#include "mars.h"
 #include "graphics/opengl/buffer/framebuffer.h"
 #include "graphics/opengl/renderer/batchrenderer3d.h"
 #include "camera.h"
@@ -16,7 +16,7 @@ namespace CROSSPLATFORM {
 class OmniProbe
 {
 private:
-	const ARM::Vec3 m_Position;
+	const mars::Vec3 m_Position;
 	int m_Size;
 	int m_Multisample;
 	OPENGL::Texture::ImageFormat m_Format;
@@ -26,28 +26,28 @@ private:
 
 	std::shared_ptr<OPENGL::Texture> m_Cubemap = std::make_shared<OPENGL::Texture>(OPENGL::Texture::TextureType::GEAR_TEXTURE_CUBE_MAP, m_Format, 1, m_Size, m_Size);
 
-	const ARM::Vec3 m_X = ARM::Vec3(1, 0, 0);
-	const ARM::Vec3 m_Y = ARM::Vec3(0, 1, 0);
-	const ARM::Vec3 m_Z = ARM::Vec3(0, 0, 1);
-	ARM::Mat4 m_ViewMatrices[6] = 
+	const mars::Vec3 m_X = mars::Vec3(1, 0, 0);
+	const mars::Vec3 m_Y = mars::Vec3(0, 1, 0);
+	const mars::Vec3 m_Z = mars::Vec3(0, 0, 1);
+	mars::Mat4 m_ViewMatrices[6] = 
 	{
-		ARM::Quat(static_cast<float>(+ARM::pi / 2), m_Y).ToMat4(),	//+X
-		ARM::Quat(static_cast<float>(-ARM::pi / 2), m_Y).ToMat4(),	//-X
-		ARM::Quat(static_cast<float>(-ARM::pi / 2), m_X).ToMat4(),	//+Y
-		ARM::Quat(static_cast<float>(+ARM::pi / 2), m_X).ToMat4(),	//-Y
-		ARM::Quat(static_cast<float>(+ARM::pi	 ), m_Y).ToMat4(),	//-Z
-		ARM::Quat(static_cast<float>(0			 ), m_Y).ToMat4(),	//+Z
+		mars::Quat(static_cast<float>(+mars::pi / 2), m_Y).ToMat4(),	//+X
+		mars::Quat(static_cast<float>(-mars::pi / 2), m_Y).ToMat4(),	//-X
+		mars::Quat(static_cast<float>(-mars::pi / 2), m_X).ToMat4(),	//+Y
+		mars::Quat(static_cast<float>(+mars::pi / 2), m_X).ToMat4(),	//-Y
+		mars::Quat(static_cast<float>(+mars::pi	 ), m_Y).ToMat4(),	//-Z
+		mars::Quat(static_cast<float>(0			 ), m_Y).ToMat4(),	//+Z
 	};
 
 	OPENGL::BatchRenderer3D r;
 
 public:
-	OmniProbe(const ARM::Vec3& position, int size, int multisample = 1, OPENGL::Texture::ImageFormat format = OPENGL::Texture::ImageFormat::GEAR_RGBA8);
+	OmniProbe(const mars::Vec3& position, int size, int multisample = 1, OPENGL::Texture::ImageFormat format = OPENGL::Texture::ImageFormat::GEAR_RGBA8);
 	~OmniProbe();
 
 	void Resolve();
 	void Render(const std::deque<Object*>& renderQueue, int windowWidth, int windowHeight, const OPENGL::Shader* overrideShader = nullptr);
-	void UpdatePosition(const ARM::Vec3& position);
+	void UpdatePosition(const mars::Vec3& position);
 
 	inline std::shared_ptr<OPENGL::Texture> GetCubemap() { return m_Cubemap; }
 	inline std::shared_ptr<OPENGL::FrameBuffer> GetFrameBuffer() { return m_FrameBuffer; }
@@ -56,8 +56,8 @@ public:
 class UniProbe
 {
 private:
-	const ARM::Vec3 m_Position;
-	const ARM::Vec3 m_Direction;
+	const mars::Vec3 m_Position;
+	const mars::Vec3 m_Direction;
 	int m_Size;
 	int m_Multisample;
 	OPENGL::Texture::ImageFormat m_Format;
@@ -70,12 +70,12 @@ private:
 	OPENGL::BatchRenderer3D r;
 
 public:
-	UniProbe(const ARM::Vec3& position, const ARM::Vec3& direction, int size, int projectionType = GEAR_CAMERA_PERSPECTIVE, int multisample = 1, OPENGL::Texture::ImageFormat format = OPENGL::Texture::ImageFormat::GEAR_RGBA8);
+	UniProbe(const mars::Vec3& position, const mars::Vec3& direction, int size, int projectionType = GEAR_CAMERA_PERSPECTIVE, int multisample = 1, OPENGL::Texture::ImageFormat format = OPENGL::Texture::ImageFormat::GEAR_RGBA8);
 	~UniProbe();
 
 	void Resolve();
 	void Render(const std::deque<Object*>& renderQueue, int windowWidth, int windowHeight, const OPENGL::Shader* overrideShader = nullptr);
-	void UpdatePosition(const ARM::Vec3& position);
+	void UpdatePosition(const mars::Vec3& position);
 
 	inline std::shared_ptr<OPENGL::Texture> GetTexture() { return m_Texture; }
 	inline std::shared_ptr<OPENGL::FrameBuffer> GetFrameBuffer() { return m_FrameBuffer; }

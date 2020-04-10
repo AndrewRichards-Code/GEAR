@@ -7,7 +7,7 @@
 #include "graphics/opengl/texture.h"
 #include "graphics/crossplatform/material.h"
 #include "utils/fileutils.h"
-#include "ARMLib.h"
+#include "mars.h"
 
 namespace GEAR {
 namespace GRAPHICS {
@@ -30,27 +30,27 @@ private:
 	std::shared_ptr<OPENGL::IndexBuffer> m_IBO;
 	OPENGL::Shader& m_Shader;
 	const OPENGL::Texture& m_Texture = OPENGL::Texture("res/gear_core/GEAR_logo_square.png");
-	ARM::Vec4 m_Colour{ 0.0f, 0.0f, 0.0f, 0.0f };
+	mars::Vec4 m_Colour{ 0.0f, 0.0f, 0.0f, 0.0f };
 
 	static bool s_InitialiseUBO;
 	struct ModelUBO
 	{
-		ARM::Mat4 m_ModlMatrix;
+		mars::Mat4 m_ModlMatrix;
 	} m_ModelUBO;
 
-	ARM::Mat4 m_ModlMatrix;
-	ARM::Vec3 m_Position;
-	ARM::Vec2 m_Size;
+	mars::Mat4 m_ModlMatrix;
+	mars::Vec3 m_Position;
+	mars::Vec2 m_Size;
 
 public:
 	bool b_ForBatchRenderer2D = false;
 	struct VertexData
 	{
-		ARM::Vec3 m_Vertex;
-		ARM::Vec2 m_TexCoord;
+		mars::Vec3 m_Vertex;
+		mars::Vec2 m_TexCoord;
 		float m_TexId;
-		ARM::Vec3 m_Normal;
-		ARM::Vec4 m_Colour;
+		mars::Vec3 m_Normal;
+		mars::Vec4 m_Colour;
 	};
 
 private:
@@ -59,9 +59,9 @@ private:
 	void GenVAOandIBO();
 
 public:
-	Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const ARM::Mat4& modl);
-	Object(const char* objFilePath, OPENGL::Shader& shader, const ARM::Vec4& colour, const ARM::Mat4& modl);
-	Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const ARM::Vec4& colour, const ARM::Vec3& position, const ARM::Vec2& size); //Doesn't fill the VAO or IBO.
+	Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const mars::Mat4& modl);
+	Object(const char* objFilePath, OPENGL::Shader& shader, const mars::Vec4& colour, const mars::Mat4& modl);
+	Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const mars::Vec4& colour, const mars::Vec3& position, const mars::Vec2& size); //Doesn't fill the VAO or IBO.
 	~Object();
 
 	void BindTexture(int slot = 0) const;
@@ -72,7 +72,7 @@ public:
 	void UnbindCubeMap() const;
 
 	void SetUniformModlMatrix();
-	void SetUniformModlMatrix(const ARM::Mat4& modl);
+	void SetUniformModlMatrix(const mars::Mat4& modl);
 
 
 	inline const std::shared_ptr<OPENGL::VertexArray> GetVAO() const { return m_VAO; }
@@ -80,7 +80,7 @@ public:
 	inline const OPENGL::Shader& GetShader() const { return m_Shader; }
 	inline const OPENGL::Texture& GetTexture() const { return m_Texture; }
 	inline const unsigned int GetTextureID() const { return m_Texture.GetTextureID(); }
-	inline const ARM::Mat4 GetModlMatrix() const { return m_ModlMatrix; }
+	inline const mars::Mat4 GetModlMatrix() const { return m_ModlMatrix; }
 
 	inline const std::vector<float>& GetVertices() const { return m_Vertices; }
 	inline const std::vector<float>& GetTextCoords() const { return m_TextCoords; }

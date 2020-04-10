@@ -28,26 +28,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -91,7 +91,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\ARM\ARM\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\MARS\MARS\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GEAR_OPENGL;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
@@ -101,8 +101,8 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\FREETYPE\win32;$(SolutionDir)Dependencies\OPENAL\libs\Win32;$(SolutionDir)Dependencies\GLEW\lib\Release\Win32;$(SolutionDir)Dependencies\GLFW\x86\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>C:\Users\Andrew\source\repos\ARM\ARM\lib\$(Platform)\$(Configuration);$(ProjectDir)dep\FREETYPE\win32;$(ProjectDir)dep\OPENAL\libs\Win32;$(ProjectDir)dep\GLEW\lib\Release\Win32;$(ProjectDir)dep\GLFW\x86\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ARM.lib;freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Andrew\source\repos\MARS\MARS\lib\$(Platform)\$(Configuration);$(ProjectDir)dep\FREETYPE\win32;$(ProjectDir)dep\OPENAL\libs\Win32;$(ProjectDir)dep\GLEW\lib\Release\Win32;$(ProjectDir)dep\GLFW\x86\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>MARS.lib;freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
@@ -112,7 +112,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\ARM\ARM\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\MARS\MARS\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GEAR_OPENGL;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
@@ -122,8 +122,8 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\ASSIMP\lib\x64;$(SolutionDir)Dependencies\FREETYPE\win64;$(SolutionDir)Dependencies\OPENAL\libs\Win64;$(SolutionDir)Dependencies\GLEW\lib\Release\x64;$(SolutionDir)Dependencies\GLFW\x64\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>C:\Users\Andrew\source\repos\ARM\ARM\lib\$(Platform)\$(Configuration);$(ProjectDir)dep\ASSIMP\lib\x64;$(ProjectDir)dep\FREETYPE\win64;$(ProjectDir)dep\OPENAL\libs\Win64;$(ProjectDir)dep\GLEW\lib\Release\x64;$(ProjectDir)dep\GLFW\x64\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ARM.lib;assimp-vc140-mt.lib;freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Andrew\source\repos\MARS\MARS\lib\$(Platform)\$(Configuration);$(ProjectDir)dep\ASSIMP\lib\x64;$(ProjectDir)dep\FREETYPE\win64;$(ProjectDir)dep\OPENAL\libs\Win64;$(ProjectDir)dep\GLEW\lib\Release\x64;$(ProjectDir)dep\GLFW\x64\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>MARS.lib;assimp-vc140-mt.lib;freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
@@ -135,7 +135,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\ARM\ARM\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\MARS\MARS\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GEAR_OPENGL;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
@@ -147,8 +147,8 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\FREETYPE\win32;$(SolutionDir)Dependencies\OPENAL\libs\Win32;$(SolutionDir)Dependencies\GLEW\lib\Release\Win32;$(SolutionDir)Dependencies\GLFW\x86\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>C:\Users\Andrew\source\repos\ARM\ARM\lib\$(Platform)\$(Configuration);C:\Users\Andrew\source\repos\ARM\ARM\lib\$(Platform)\$(Configuration);$(ProjectDir)dep\FREETYPE\win32;$(ProjectDir)dep\OPENAL\libs\Win32;$(ProjectDir)dep\GLEW\lib\Release\Win32;$(ProjectDir)dep\GLFW\x86\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ARM.lib;freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Andrew\source\repos\MARS\MARS\lib\$(Platform)\$(Configuration);C:\Users\Andrew\source\repos\ARM\ARM\lib\$(Platform)\$(Configuration);$(ProjectDir)dep\FREETYPE\win32;$(ProjectDir)dep\OPENAL\libs\Win32;$(ProjectDir)dep\GLEW\lib\Release\Win32;$(ProjectDir)dep\GLFW\x86\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>MARS.lib;freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
@@ -160,7 +160,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\ARM\ARM\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\MARS\MARS\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GEAR_OPENGL;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
@@ -172,8 +172,8 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\ASSIMP\lib\x64;$(SolutionDir)Dependencies\FREETYPE\win64;$(SolutionDir)Dependencies\OPENAL\libs\Win64;$(SolutionDir)Dependencies\GLEW\lib\Release\x64;$(SolutionDir)Dependencies\GLFW\x64\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>C:\Users\Andrew\source\repos\ARM\ARM\lib\$(Platform)\$(Configuration);$(ProjectDir)dep\ASSIMP\lib\x64;$(ProjectDir)dep\FREETYPE\win64;$(ProjectDir)dep\OPENAL\libs\Win64;$(ProjectDir)dep\GLEW\lib\Release\x64;$(ProjectDir)dep\GLFW\x64\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ARM.lib;assimp-vc140-mt.lib;freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Users\Andrew\source\repos\MARS\MARS\lib\$(Platform)\$(Configuration);$(ProjectDir)dep\ASSIMP\lib\x64;$(ProjectDir)dep\FREETYPE\win64;$(ProjectDir)dep\OPENAL\libs\Win64;$(ProjectDir)dep\GLEW\lib\Release\x64;$(ProjectDir)dep\GLFW\x64\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>MARS.lib;assimp-vc140-mt.lib;freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>

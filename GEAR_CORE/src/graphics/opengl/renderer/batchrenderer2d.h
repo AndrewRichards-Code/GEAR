@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gear_common.h"
-#include "ARMLib.h"
+#include "mars.h"
 #include "renderer.h"
 
 #define GEAR_BATCH_RENDERER_2D_MAX_OBJ           10000
