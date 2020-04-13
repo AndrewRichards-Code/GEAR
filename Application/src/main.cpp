@@ -1,3 +1,4 @@
+#if 0
 #include "gear_core.h"
 //#if !(_DEBUG)
 //#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
@@ -530,4 +531,85 @@ int main()
 	if (AudioThread.joinable() == true)
 		AudioThread.join();
 			
+}
+#endif
+
+#include "gear_core.h"
+
+using namespace GEAR;
+using namespace GRAPHICS;
+
+using namespace miru;
+using namespace miru::crossplatform;
+
+int main()
+{
+	Window window("GEAR_MIRU_TEST", 400, 300, 1, true, false);
+	GraphicsAPI::LoadRenderDoc();
+
+	CommandPool::CreateInfo cmdPoolCI;
+	cmdPoolCI.debugName = "";
+	cmdPoolCI.pContext = window.GetContext();
+	cmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
+	cmdPoolCI.queueFamilyIndex = 0;
+	Ref<CommandPool> cmdPool = CommandPool::Create(&cmdPoolCI);
+	CommandBuffer::CreateInfo cmdBufferCI;
+	cmdBufferCI.debugName = "";
+	cmdBufferCI.pCommandPool = cmdPool;
+	cmdBufferCI.level = CommandBuffer::Level::PRIMARY;
+	cmdBufferCI.commandBufferCount = 2;
+	Ref<CommandBuffer> cmdBuffer = CommandBuffer::Create(&cmdBufferCI);;
+
+	auto RecordPresentCmdBuffers = [&]()
+	{
+		for (size_t i = 0; i < 2; i++)
+		{
+			cmdBuffer->Begin(i, CommandBuffer::UsageBit::SIMULTANEOUS);
+
+			Barrier::CreateInfo bCI;
+			bCI.type = Barrier::Type::IMAGE;
+			bCI.srcAccess = Barrier::AccessBit::COLOUR_ATTACHMENT_READ_BIT;
+			bCI.dstAccess = Barrier::AccessBit::COLOUR_ATTACHMENT_WRITE_BIT;
+			bCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
+			bCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
+			bCI.pImage = window.GetSwapchain()->m_SwapchainImages[i];
+			bCI.oldLayout = Image::Layout::UNKNOWN;
+			bCI.newLayout = Image::Layout::PRESENT_SRC;
+			bCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
+			Ref<Barrier> b = Barrier::Create(&bCI);
+
+			cmdBuffer->PipelineBarrier(i, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT, { b });
+			cmdBuffer->ClearColourImage(i,
+				window.GetSwapchain()->m_SwapchainImages[i],
+				Image::Layout::PRESENT_SRC,
+				{ { 1.0f, 0.0f, 0.0f, 1.0f } },
+				{ {Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1} });
+
+			cmdBuffer->End(i);
+		}
+	};
+
+	RecordPresentCmdBuffers();
+
+	Fence::CreateInfo fenceCI;
+	fenceCI.debugName = "DrawFence";
+	fenceCI.device = window.GetDevice();
+	fenceCI.signaled = true;
+	fenceCI.timeout = UINT64_MAX;
+	std::vector<Ref<Fence>>draws = { Fence::Create(&fenceCI), Fence::Create(&fenceCI) };
+	Semaphore::CreateInfo semaphoreCI = { "Seamphore", window.GetDevice() };
+	std::vector<Ref<Semaphore>>acquire = { Semaphore::Create(&semaphoreCI), Semaphore::Create(&semaphoreCI) };
+	std::vector<Ref<Semaphore>>submit = { Semaphore::Create(&semaphoreCI), Semaphore::Create(&semaphoreCI) };
+	bool windowResize;
+	while (!window.Closed())
+	{
+		if (window.GetSwapchain()->m_Resized)
+		{
+			RecordPresentCmdBuffers();
+			window.GetSwapchain()->m_Resized = false;
+		}
+
+		cmdBuffer->Present({ 0, 1 }, window.GetSwapchain(), draws, acquire, submit, windowResize);
+		window.Update();
+	}
 }

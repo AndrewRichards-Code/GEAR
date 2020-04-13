@@ -1,7 +1,7 @@
 #pragma once
 #include "gear_core_common.h"
 #include "mars.h"
-#include "graphics/OBJECTS/material.h"
+#include "objects/material.h"
 
 namespace GEAR {
 

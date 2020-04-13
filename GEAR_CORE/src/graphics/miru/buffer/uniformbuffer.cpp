@@ -2,75 +2,78 @@
 
 using namespace GEAR;
 using namespace GRAPHICS;
-using namespace OPENGL;
 
-UniformBuffer::UniformBuffer(unsigned int size, unsigned int bindingIndex) //Only one UBO can be used with a single binding specifier. 
-	:m_Size(size), m_BindingIndex(bindingIndex)
+using namespace miru;
+using namespace miru::crossplatform;
+
+miru::Ref<miru::crossplatform::Context> UniformBuffer::s_Context = nullptr;
+miru::Ref<miru::crossplatform::MemoryBlock> UniformBuffer::s_MB_CPU_Upload = nullptr;
+miru::Ref<miru::crossplatform::MemoryBlock> UniformBuffer::s_MB_GPU_Usage = nullptr;
+
+UniformBuffer::UniformBuffer(void* device, unsigned int size, unsigned int bindingIndex)
+	:m_Device(device), m_Size(size), m_BindingIndex(bindingIndex)
 {
-	glGenBuffers(1, &m_UniformID);
-	glBindBuffer(GL_UNIFORM_BUFFER, m_UniformID);
-	glBufferData(GL_UNIFORM_BUFFER, m_Size, nullptr, GL_DYNAMIC_DRAW);
-	glBindBufferRange(GL_UNIFORM_BUFFER, m_BindingIndex, m_UniformID, 0, m_Size);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	m_UniformBufferUploadCI.debugName = "GEAR_CORE_UniformBufferUpload";
+	m_UniformBufferUploadCI.device = m_Device;
+	m_UniformBufferUploadCI.usage = Buffer::UsageBit::TRANSFER_SRC;
+	m_UniformBufferUploadCI.size = m_Size;
+	m_UniformBufferUploadCI.data;
+	m_UniformBufferUploadCI.pMemoryBlock = s_MB_CPU_Upload;
+	m_UniformBufferUpload = Buffer::Create(&m_UniformBufferUploadCI);
 
+	m_UniformBufferCI.debugName = "GEAR_CORE_UniformBufferUsage";
+	m_UniformBufferCI.device = m_Device;
+	m_UniformBufferCI.usage = Buffer::UsageBit::TRANSFER_DST | Buffer::UsageBit::UNIFORM;
+	m_UniformBufferCI.size = 0;
+	m_UniformBufferCI.data = nullptr;
+	m_UniformBufferCI.pMemoryBlock = s_MB_GPU_Usage;
+	m_UniformBuffer = Buffer::Create(&m_UniformBufferCI);
+
+	m_UniformBufferViewCI.debugName = "GEAR_CORE_UniformBufferViewUsage";
+	m_UniformBufferViewCI.device = m_Device;
+	m_UniformBufferViewCI.type = BufferView::Type::UNIFORM;
+	m_UniformBufferViewCI.pBuffer = m_UniformBuffer;
+	m_UniformBufferViewCI.offset = 0;
+	m_UniformBufferViewCI.size = m_Size;
+	m_UniformBufferViewCI.stride = 0;
+	m_UniformBufferView = BufferView::Create(&m_UniformBufferViewCI);
 }
 
 UniformBuffer::~UniformBuffer()
 {
-	glDeleteBuffers(1, &m_UniformID);
 }
 
-void UniformBuffer::Bind() const
+void UniformBuffer::InitialiseMemory()
 {
-	glBindBuffer(GL_UNIFORM_BUFFER, m_UniformID);
-}
-
-void UniformBuffer::Unbind() const
-{
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-}
-
-void UniformBuffer::SubDataBind(const void* data, unsigned int size, unsigned int offset) const
-{
-	if ((size + offset) <= m_Size)
+	MemoryBlock::CreateInfo mbCI;
+	if (!s_MB_CPU_Upload)
 	{
-		Bind();
-		glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
-		/*if (m_BindingIndex == 0)
-			PrintUBOData();*/
-		Unbind();
+		mbCI.debugName = "GEAR_CORE_MB_CPU_UniformBufferUpload";
+		mbCI.pContext = s_Context;
+		mbCI.blockSize = MemoryBlock::BlockSize::BLOCK_SIZE_32MB;
+		mbCI.properties = MemoryBlock::PropertiesBit::HOST_VISIBLE_BIT | MemoryBlock::PropertiesBit::HOST_COHERENT_BIT;
+		s_MB_CPU_Upload = MemoryBlock::Create(&mbCI);
 	}
-	else
+	if (!s_MB_GPU_Usage)
 	{
-		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::UniformBuffer: The size or offset is too large for the UniformBuffer." << std::endl;
+		mbCI.debugName = "GEAR_CORE_MB_GPU_UniformBuffereUsage";
+		mbCI.pContext = s_Context;
+		mbCI.blockSize = MemoryBlock::BlockSize::BLOCK_SIZE_32MB;
+		mbCI.properties = MemoryBlock::PropertiesBit::DEVICE_LOCAL_BIT;
+		s_MB_GPU_Usage = MemoryBlock::Create(&mbCI);
 	}
 }
 
-void UniformBuffer::PrintUBOData() const
+void UniformBuffer::SubmitData(const void* data, unsigned int size, unsigned int offset) const
 {
-	Bind();
-	system("CLS");
-	std::vector<float> dataOut(m_Size);
-	glGetBufferSubData(GL_UNIFORM_BUFFER, 0, m_Size, dataOut.data());
-
-	for (unsigned int i = 0; i < (m_Size / 4); i += 4)
-	{
-		std::cout << "Offest: "<< 4 * i << " : "
-		<< dataOut[i + 0] << ", "
-		<< dataOut[i + 1] << ", "
-		<< dataOut[i + 2] << ", "
-		<< dataOut[i + 3] << ", "
-		<< std::endl;
-	}
-	std::cout << std::endl;
-	Unbind();
+	s_MB_CPU_Upload->SubmitData(m_UniformBufferUpload->GetResource(), (size_t)size, (void*)((unsigned int*)data + offset));
 }
 
-const float* const UniformBuffer::GetUBOData() const
+void UniformBuffer::Upload(miru::Ref<miru::crossplatform::CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex, bool force)
 {
-	Bind();
-	std::vector<float> dataOut(m_Size);
-	glGetBufferSubData(GL_UNIFORM_BUFFER, 0, m_Size, dataOut.data());
-	Unbind();
-	return dataOut.data();
+	if (m_Upload || force)
+	{
+		cmdBuffer->CopyBuffer(cmdBufferIndex, m_UniformBufferUpload, m_UniformBuffer, { {0, 0, m_Size} });
+		m_Upload = true;
+	}
 }

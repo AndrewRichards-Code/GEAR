@@ -7,25 +7,17 @@ using namespace mars;
 
 bool Object::s_InitialiseUBO = false;
 
-Object::Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const Mat4& modl)
-	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Texture(texture), m_Colour({0.0f, 0.0f, 0.0f, 0.0f}), m_ModlMatrix(modl)
+Object::Object(void* device, const char* objFilePath, std::shared_ptr<GRAPHICS::Pipeline> pipeline, std::shared_ptr<GRAPHICS::Texture> texture, const mars::Mat4& modl)
+	:m_Device(device), m_ObjFilePath(objFilePath), m_Pipeline(pipeline), m_Texture(texture), m_Colour({0.0f, 0.0f, 0.0f, 0.0f}), m_ModlMatrix(modl)
 {
 	InitialiseUBO();
 	LoadObjDataIntoObject();
-	GenVAOandIBO();
-	if (m_Texture.IsCubeMap() == true)
-	{
-		BindCubeMap(0);
-	}
-	else
-	{
-		BindTexture(0);
-	}
+	GenVBOandIBO();
 	SetUniformModlMatrix();
 }
 
-Object::Object(const char* objFilePath, OPENGL::Shader& shader, const mars::Vec4& colour, const mars::Mat4& modl)
-	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Colour(colour), m_ModlMatrix(modl)
+Object::Object(void* device, const char* objFilePath, std::shared_ptr<GRAPHICS::Pipeline> pipeline, const mars::Vec4& colour, const mars::Mat4& modl)
+	:m_Device(device), m_ObjFilePath(objFilePath), m_Pipeline(pipeline), m_Colour(colour), m_ModlMatrix(modl)
 {
 	InitialiseUBO();
 	LoadObjDataIntoObject();
@@ -38,13 +30,12 @@ Object::Object(const char* objFilePath, OPENGL::Shader& shader, const mars::Vec4
 		m_Colours[i + 3] = m_Colour.a;
 		i += 4;
 	}
-	GenVAOandIBO();
-	m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(m_Colours.data(), static_cast<unsigned int>(m_Colours.size()), 4), OPENGL::VertexArray::BufferType::GEAR_BUFFER_COLOURS);
+	GenVBOandIBO();
 	SetUniformModlMatrix();
 }
 
-Object::Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const Vec4& colour, const Vec3& position, const Vec2& size)
-	:m_ObjFilePath(objFilePath), m_Shader(shader), m_Texture(texture), m_Colour(colour), m_Position(position), m_Size(size)
+Object::Object(void* device, const char* objFilePath, std::shared_ptr<GRAPHICS::Pipeline> pipeline, std::shared_ptr<GRAPHICS::Texture> texture, const mars::Vec4& colour, const mars::Vec3& position, const mars::Vec2& size)
+	:m_Device(device), m_ObjFilePath(objFilePath), m_Pipeline(pipeline), m_Texture(texture), m_Colour(colour), m_Position(position), m_Size(size)
 {
 	InitialiseUBO();
 	m_ObjData.m_Vertices = { Vec3(-1, -1, 0), Vec3(1, -1, 0), Vec3(1, 1, 0), Vec3(-1, 1, 0) };
@@ -71,8 +62,8 @@ Object::Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Te
 	for (int i = 0; i < m_ObjData.GetSizeVertices(); i++)
 	{
 		Vec2 temp = m_ObjData.m_TexCoords[(unsigned int)m_ObjData.m_UniqueVertices[i].y];
-		m_TextCoords.push_back(temp.x * m_Texture.GetTileFactor());
-		m_TextCoords.push_back(temp.y * m_Texture.GetTileFactor());
+		m_TextCoords.push_back(temp.x * m_Texture->GetTileFactor());
+		m_TextCoords.push_back(temp.y * m_Texture->GetTileFactor());
 	}
 
 	m_Normals.reserve(m_ObjData.GetSizeVertices() * 3);
@@ -108,52 +99,11 @@ Object::~Object()
 {
 }
 
-void Object::BindTexture(int slot) const
-{
-	m_Shader.Enable();
-	m_Texture.Bind(slot);
-	m_Shader.SetUniform<int>("u_Texture", { slot });
-	m_Shader.Disable();
-}
-
-void Object::UnbindTexture() const
-{
-	m_Texture.Unbind();
-}
-
-void Object::SetTextureArray(const OPENGL::Shader& shader)
-{
-	int m_TextIDs[] = { 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31 };
-	shader.Enable();
-	shader.SetUniformArray<int>("u_Textures", 1, 32, m_TextIDs);
-	shader.Disable();
-}
-
-void Object::UnsetTextureArray(const OPENGL::Shader& shader)
-{
-	shader.Enable();
-	shader.SetUniformArray<int>("u_Textures", 1, 32, nullptr);
-	shader.Disable();
-}
-
-void Object::BindCubeMap(int slot) const
-{
-	m_Shader.Enable();
-	m_Texture.BindCubeMap();
-	m_Shader.SetUniform<int>("u_CubeMap", { slot });
-	m_Shader.Disable();
-}
-
-void Object::UnbindCubeMap() const
-{
-	m_Texture.UnbindCubeMap();
-}
-
 void Object::SetUniformModlMatrix()
 {
 	m_ModelUBO.m_ModlMatrix = m_ModlMatrix;
 	m_ModelUBO.m_ModlMatrix.Transpose();
-	OPENGL::BufferManager::UpdateUBO(1, &m_ModelUBO.m_ModlMatrix.a, sizeof(Mat4), offsetof(ModelUBO, m_ModlMatrix));
+	m_UBO->SubmitData(&m_ModelUBO.m_ModlMatrix.a, sizeof(Mat4), offsetof(ModelUBO, m_ModlMatrix));
 }
 
 void Object::SetUniformModlMatrix(const Mat4& modl)
@@ -161,18 +111,18 @@ void Object::SetUniformModlMatrix(const Mat4& modl)
 	m_ModlMatrix = modl;
 	m_ModelUBO.m_ModlMatrix = modl;
 	m_ModelUBO.m_ModlMatrix.Transpose();
-	OPENGL::BufferManager::UpdateUBO(1, &m_ModelUBO.m_ModlMatrix.a, sizeof(Mat4), offsetof(ModelUBO, m_ModlMatrix));
+	m_UBO->SubmitData(&m_ModelUBO.m_ModlMatrix.a, sizeof(Mat4), offsetof(ModelUBO, m_ModlMatrix));
 }
 
 void Object::InitialiseUBO()
 {
 	if (s_InitialiseUBO == false)
 	{
-		OPENGL::BufferManager::AddUBO(sizeof(ModelUBO), 1);
+		m_UBO = std::make_shared<UniformBuffer>(m_Device, sizeof(ModelUBO), 1);
 		s_InitialiseUBO = true;
 
 		const float zero[sizeof(ModelUBO)] = { 0 };
-		OPENGL::BufferManager::UpdateUBO(1, zero, sizeof(ModelUBO), 0);
+		m_UBO->SubmitData(zero, sizeof(ModelUBO), 0);
 	}
 }
 
@@ -193,8 +143,8 @@ void Object::LoadObjDataIntoObject()
 	for (int i = 0; i < m_ObjData.GetSizeVertices(); i++)
 	{
 		Vec2 temp = m_ObjData.m_TexCoords[(unsigned int)m_ObjData.m_UniqueVertices[i].y];
-		m_TextCoords.push_back(temp.x * m_Texture.GetTileFactor());
-		m_TextCoords.push_back(temp.y * m_Texture.GetTileFactor());
+		m_TextCoords.push_back(temp.x * m_Texture->GetTileFactor());
+		m_TextCoords.push_back(temp.y * m_Texture->GetTileFactor());
 	}
 
 	m_Normals.reserve(m_ObjData.GetSizeVertices() * 3);
@@ -213,16 +163,15 @@ void Object::LoadObjDataIntoObject()
 	}
 }
 
-void Object::GenVAOandIBO()
+void Object::GenVBOandIBO()
 {
 	if (m_Vertices.size() && m_TextCoords.size() && m_Normals.size() && m_Indices.size() > 0)
 	{
-		m_VAO = std::make_shared<OPENGL::VertexArray>();
-		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(m_Vertices.data(), static_cast<unsigned int>(m_Vertices.size()), 3), OPENGL::VertexArray::BufferType::GEAR_BUFFER_POSITIONS);
-		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(m_TextCoords.data(), static_cast<unsigned int>(m_TextCoords.size()), 2), OPENGL::VertexArray::BufferType::GEAR_BUFFER_TEXCOORDS);
-		m_VAO->AddBuffer(std::make_shared<OPENGL::VertexBuffer>(m_Normals.data(), static_cast<unsigned int>(m_Normals.size()), 3), OPENGL::VertexArray::BufferType::GEAR_BUFFER_NORMALS);
+		m_VBOs.emplace_back(std::make_shared<GRAPHICS::VertexBuffer>(m_Device, m_Vertices.data(), static_cast<unsigned int>(m_Vertices.size()), 3));
+		m_VBOs.emplace_back(std::make_shared<GRAPHICS::VertexBuffer>(m_Device, m_TextCoords.data(), static_cast<unsigned int>(m_TextCoords.size()), 2));
+		m_VBOs.emplace_back(std::make_shared<GRAPHICS::VertexBuffer>(m_Device, m_Normals.data(), static_cast<unsigned int>(m_Normals.size()), 3));
 
-		m_IBO = std::make_shared<OPENGL::IndexBuffer>(m_Indices.data(), static_cast<unsigned int>(m_Indices.size()));
+		m_IBO = std::make_shared<GRAPHICS::IndexBuffer>(m_Device, m_Indices.data(), static_cast<unsigned int>(m_Indices.size()));
 	}
 	else
 	{

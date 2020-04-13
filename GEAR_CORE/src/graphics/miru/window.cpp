@@ -174,6 +174,56 @@ bool Window::Init()
 	m_SwapchainCI.vSync = m_VSync;
 	m_Swapchain = Swapchain::Create(&m_SwapchainCI);
 
+	MemoryBlock::CreateInfo dpethMBCI;
+	dpethMBCI.debugName = "GEAR_CORE_MB_GPU_SwapchainDepthImage";
+	dpethMBCI.pContext = m_Context;
+	dpethMBCI.blockSize = MemoryBlock::BlockSize::BLOCK_SIZE_32MB;
+	dpethMBCI.properties = MemoryBlock::PropertiesBit::DEVICE_LOCAL_BIT;
+	m_DepthMB = MemoryBlock::Create(&dpethMBCI);
+
+	m_DepthImageCI.debugName = "GEAR_CORE_SwapchainDepthImage";
+	m_DepthImageCI.device = m_Context->GetDevice();
+	m_DepthImageCI.type = Image::Type::TYPE_2D;
+	m_DepthImageCI.format = Image::Format::D32_SFLOAT;
+	m_DepthImageCI.width = m_Width;
+	m_DepthImageCI.height = m_Height;
+	m_DepthImageCI.depth = 1;
+	m_DepthImageCI.mipLevels = 1;
+	m_DepthImageCI.arrayLayers = 1;
+	m_DepthImageCI.sampleCount = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	m_DepthImageCI.usage = Image::UsageBit::DEPTH_STENCIL_ATTACHMENT_BIT;
+	m_DepthImageCI.layout = Image::Layout::UNKNOWN;
+	m_DepthImageCI.size = 0;
+	m_DepthImageCI.data = nullptr;
+	m_DepthImageCI.pMemoryBlock = m_DepthMB;
+	m_DepthImage = Image::Create(&m_DepthImageCI);
+
+	m_DepthImageViewCI.debugName = "GEAR_CORE_SwapchainDepthImageView";
+	m_DepthImageViewCI.device = m_Context->GetDevice();
+	m_DepthImageViewCI.pImage = m_DepthImage;
+	m_DepthImageViewCI.subresourceRange = { Image::AspectBit::DEPTH_BIT, 0, 1, 0, 1 };
+	m_DepthImageView = ImageView::Create(&m_DepthImageViewCI);
+
+	m_RenderPassCI.debugName = "GEAR_CORE_DefaultRenderPass";
+	m_RenderPassCI.device = m_Context->GetDevice();
+	m_RenderPassCI.attachments =
+	{
+		{Image::Format::B8G8R8A8_UNORM, Image::SampleCountBit::SAMPLE_COUNT_1_BIT, RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE,RenderPass::AttachmentLoadOp::DONT_CARE, RenderPass::AttachmentStoreOp::DONT_CARE, Image::Layout::UNKNOWN, Image::Layout::PRESENT_SRC},
+		{Image::Format::D32_SFLOAT, Image::SampleCountBit::SAMPLE_COUNT_1_BIT, RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::DONT_CARE,RenderPass::AttachmentLoadOp::DONT_CARE, RenderPass::AttachmentStoreOp::DONT_CARE, Image::Layout::UNKNOWN, Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL}
+	};
+	m_RenderPassCI.subpassDescriptions =
+	{
+		{PipelineType::GRAPHICS, {}, {{0, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL}}, {}, {{1, Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL}}, {}}
+	};
+	m_RenderPassCI.subpassDependencies =
+	{
+		{MIRU_SUBPASS_EXTERNAL, 0, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT,
+		(Barrier::AccessBit)0, Barrier::AccessBit::COLOUR_ATTACHMENT_READ_BIT | Barrier::AccessBit::COLOUR_ATTACHMENT_WRITE_BIT}
+	};
+	m_RenderPass = RenderPass::Create(&m_RenderPassCI);
+
+	CreateFramebuffer();
+
 	glfwSetWindowUserPointer(m_Window, this);
 	glfwSetWindowSizeCallback(m_Window, window_resize);
 	glfwSetKeyCallback(m_Window, key_callback);
@@ -182,6 +232,19 @@ bool Window::Init()
 	glfwSetJoystickCallback(joystick_callback);
 
 	return true;
+}
+
+void Window::CreateFramebuffer()
+{
+	m_FramebufferCI.debugName = "GEAR_CORE_DefaultRenderPass";;
+	m_FramebufferCI.device = m_Context->GetDevice();;
+	m_FramebufferCI.renderPass = m_RenderPass;
+	m_FramebufferCI.attachments = {m_Swapchain->m_SwapchainImageViews[0], m_DepthImageView};
+	m_FramebufferCI.width = m_Width;
+	m_FramebufferCI.height = m_Height;
+	m_Framebuffers[0] = Framebuffer::Create(&m_FramebufferCI);
+	m_FramebufferCI.attachments = {m_Swapchain->m_SwapchainImageViews[1], m_DepthImageView};
+	m_Framebuffers[1] = Framebuffer::Create(&m_FramebufferCI);
 }
 
 bool Window::IsKeyPressed(unsigned int keycode) const
@@ -221,11 +284,20 @@ void Window::GetJoyAxes(double& x1, double& y1, double& x2, double& y2, double& 
 	y3 = m_yJoy3;
 }
 	
-
 void Window::window_resize(GLFWwindow* window, int width, int height)
 {
 	Window* win = (Window*)glfwGetWindowUserPointer(window);
-	win->m_Swapchain->Resize(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+	win->m_Width = width;
+	win->m_Height = height;
+
+	win->m_Swapchain->Resize(static_cast<uint32_t>(win->m_Width), static_cast<uint32_t>(win->m_Height));
+	if (width < 3840 && height < 2160)
+	{
+		win->m_DepthImageCI.width = win->m_Width;
+		win->m_DepthImageCI.height = win->m_Height;
+		win->m_DepthImage = Image::Create(&win->m_DepthImageCI);
+	}
+	win->CreateFramebuffer();
 }
 
 void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)

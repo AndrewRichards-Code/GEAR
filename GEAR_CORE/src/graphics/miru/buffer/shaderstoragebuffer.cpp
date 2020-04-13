@@ -2,81 +2,75 @@
 
 using namespace GEAR;
 using namespace GRAPHICS;
-using namespace OPENGL;
 
-ShaderStorageBuffer::ShaderStorageBuffer(unsigned int size, unsigned int bindingIndex) //Only one SSBO can be used with a single binding specifier.
+using namespace miru;
+using namespace miru::crossplatform;
+
+miru::Ref<miru::crossplatform::Context> ShaderStorageBuffer::s_Context = nullptr;
+miru::Ref<miru::crossplatform::MemoryBlock> ShaderStorageBuffer::s_MB_CPU_Upload = nullptr;
+miru::Ref<miru::crossplatform::MemoryBlock> ShaderStorageBuffer::s_MB_GPU_Usage = nullptr;
+
+ShaderStorageBuffer::ShaderStorageBuffer(unsigned int size, unsigned int bindingIndex)
 	:m_Size(size), m_BindingIndex(bindingIndex)
 {
-	glGenBuffers(1, &m_ShaderStorageID);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_ShaderStorageID);
-	glBufferData(GL_SHADER_STORAGE_BUFFER, m_Size, nullptr, GL_DYNAMIC_DRAW);
-	glBindBufferRange(GL_SHADER_STORAGE_BUFFER, m_BindingIndex, m_ShaderStorageID, 0, m_Size);
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+	m_ShaderStorageBufferUploadCI.debugName = "GEAR_CORE_ShaderStorageBufferUpload";
+	m_ShaderStorageBufferUploadCI.device = m_Device;
+	m_ShaderStorageBufferUploadCI.usage = Buffer::UsageBit::TRANSFER_SRC | Buffer::UsageBit::TRANSFER_DST;
+	m_ShaderStorageBufferUploadCI.size = m_Size;
+	m_ShaderStorageBufferUploadCI.data;
+	m_ShaderStorageBufferUploadCI.pMemoryBlock;
+	m_ShaderStorageBufferUpload = Buffer::Create(&m_ShaderStorageBufferUploadCI);
+
+	m_ShaderStorageBufferCI.debugName = "GEAR_CORE_ShaderStorageBufferUsage";
+	m_ShaderStorageBufferCI.device = m_Device;
+	m_ShaderStorageBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC | Buffer::UsageBit::TRANSFER_DST | Buffer::UsageBit::STORAGE;
+	m_ShaderStorageBufferCI.size = 0;
+	m_ShaderStorageBufferCI.data = nullptr;
+	m_ShaderStorageBufferCI.pMemoryBlock;
+	m_ShaderStorageBuffer = Buffer::Create(&m_ShaderStorageBufferCI);
 }
 
 ShaderStorageBuffer::~ShaderStorageBuffer()
 {
-	glDeleteBuffers(1, &m_ShaderStorageID);
 }
 
-void ShaderStorageBuffer::Bind() const
+void ShaderStorageBuffer::InitialiseMemory()
 {
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_ShaderStorageID);
-}
-
-void ShaderStorageBuffer::Unbind() const
-{
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-}
-
-void ShaderStorageBuffer::Access(void* data, unsigned int size, unsigned int offset, ShaderStorageAccess access) const
-{
-	if ((size + offset) <= m_Size)
+	MemoryBlock::CreateInfo mbCI;
+	if (!s_MB_CPU_Upload)
 	{
-		Bind();
-		void* gpuData = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, offset, size, (GLbitfield)access);
-		
-		if ((access & GEAR_MAP_READ_BIT) != 0)
-			memcpy(data, gpuData, size);
-		if ((access & GEAR_MAP_WRITE_BIT) != 0)
-			memcpy(gpuData, data, size);
-		if((access & GEAR_MAP_READ_BIT) != 0 && (access & GEAR_MAP_WRITE_BIT) != 0)
-			data = static_cast<float*>(gpuData);
-
-		glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-		Unbind();
+		mbCI.debugName = "GEAR_CORE_MB_CPU_ShaderStorageBufferUpload";
+		mbCI.pContext = s_Context;
+		mbCI.blockSize = MemoryBlock::BlockSize::BLOCK_SIZE_64MB;
+		mbCI.properties = MemoryBlock::PropertiesBit::HOST_VISIBLE_BIT | MemoryBlock::PropertiesBit::HOST_COHERENT_BIT;
+		s_MB_CPU_Upload = MemoryBlock::Create(&mbCI);
 	}
-	else
+	if (!s_MB_GPU_Usage)
 	{
-		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::ShaderStorageBuffer: The size or offset is too large for the ShaderStorageBuffer." << std::endl;
+		mbCI.debugName = "GEAR_CORE_MB_GPU_ShaderStorageBuffereUsage";
+		mbCI.pContext = s_Context;
+		mbCI.blockSize = MemoryBlock::BlockSize::BLOCK_SIZE_64MB;
+		mbCI.properties = MemoryBlock::PropertiesBit::DEVICE_LOCAL_BIT;
+		s_MB_GPU_Usage = MemoryBlock::Create(&mbCI);
 	}
 }
 
-void ShaderStorageBuffer::PrintUBOData() const
+void ShaderStorageBuffer::SubmitData(const void* data, unsigned int size, unsigned int offset) const
 {
-	Bind();
-	system("CLS");
-	std::vector<float> dataOut(m_Size);
-	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, m_Size, dataOut.data());
-
-	for (unsigned int i = 0; i < (m_Size / 4); i += 4)
-	{
-		std::cout << "Offest: " << 4 * i << " : "
-			<< dataOut[i + 0] << ", "
-			<< dataOut[i + 1] << ", "
-			<< dataOut[i + 2] << ", "
-			<< dataOut[i + 3] << ", "
-			<< std::endl;
-	}
-	std::cout << std::endl;
-	Unbind();
+	s_MB_CPU_Upload->SubmitData(m_ShaderStorageBufferUpload->GetResource(), (size_t)size, (void*)((unsigned int*)data + offset));
 }
 
-const float* const ShaderStorageBuffer::GetUBOData() const
+void ShaderStorageBuffer::Upload(CommandBuffer& cmdBuffer, uint32_t cmdBufferIndex)
 {
-	Bind();
-	std::vector<float> dataOut(m_Size);
-	glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, m_Size, dataOut.data());
-	Unbind();
-	return dataOut.data();
+	cmdBuffer.CopyBuffer(cmdBufferIndex, m_ShaderStorageBufferUpload, m_ShaderStorageBuffer, { {0, 0, m_Size} });
+}
+
+void ShaderStorageBuffer::Download(CommandBuffer& cmdBuffer, uint32_t cmdBufferIndex)
+{
+	cmdBuffer.CopyBuffer(cmdBufferIndex, m_ShaderStorageBuffer, m_ShaderStorageBufferUpload, { {0, 0, m_Size} });
+}
+
+void ShaderStorageBuffer::AccessData(void* data, unsigned int size, unsigned int offset) const
+{
+	s_MB_CPU_Upload->AccessData(m_ShaderStorageBufferUpload->GetResource(), (size_t)size, (void*)((unsigned int*)data + offset));
 }

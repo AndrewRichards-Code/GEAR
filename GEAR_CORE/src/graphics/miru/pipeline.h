@@ -42,6 +42,8 @@ public:
 	void SetRenderPass(miru::Ref<miru::crossplatform::RenderPass> renderPass, uint32_t subpassIndex) { m_RenderPass = renderPass; m_SubpassIndex = subpassIndex; };
 
 	void FinalisePipline();
+
+	inline miru::Ref<miru::crossplatform::Pipeline> GetPipeline() { return m_Pipeline; };
 };
 }
 }

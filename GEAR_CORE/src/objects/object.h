@@ -1,11 +1,11 @@
 #pragma once
 
-#include "gear_common.h"
-#include "graphics/opengl/buffer/vertexarray.h"
-#include "graphics/opengl/buffer/indexbuffer.h"
-#include "graphics/opengl/shader/shader.h"
-#include "graphics/opengl/texture.h"
-#include "graphics/OBJECTS/material.h"
+#include "gear_core_common.h"
+#include "graphics/miru/buffer/vertexbuffer.h"
+#include "graphics/miru/buffer/indexbuffer.h"
+#include "graphics/miru/buffer/uniformbuffer.h"
+#include "graphics/miru/pipeline.h"
+#include "graphics/miru/texture.h"
 #include "utils/fileutils.h"
 #include "mars.h"
 
@@ -24,10 +24,12 @@ private:
 	std::vector<unsigned int> m_Indices;
 	std::vector<float> m_Colours;
 
-	std::shared_ptr<OPENGL::VertexArray> m_VAO;
-	std::shared_ptr<OPENGL::IndexBuffer> m_IBO;
-	OPENGL::Shader& m_Shader;
-	const OPENGL::Texture& m_Texture = OPENGL::Texture("res/gear_core/GEAR_logo_square.png");
+	void* m_Device;
+
+	std::vector<std::shared_ptr<GRAPHICS::VertexBuffer>> m_VBOs;
+	std::shared_ptr<GRAPHICS::IndexBuffer> m_IBO;
+	std::shared_ptr<GRAPHICS::Pipeline> m_Pipeline;
+	std::shared_ptr<GRAPHICS::Texture> m_Texture;
 	mars::Vec4 m_Colour{ 0.0f, 0.0f, 0.0f, 0.0f };
 
 	static bool s_InitialiseUBO;
@@ -35,6 +37,7 @@ private:
 	{
 		mars::Mat4 m_ModlMatrix;
 	} m_ModelUBO;
+	std::shared_ptr<GRAPHICS::UniformBuffer> m_UBO;
 
 	mars::Mat4 m_ModlMatrix;
 	mars::Vec3 m_Position;
@@ -54,30 +57,22 @@ public:
 private:
 	void InitialiseUBO();
 	void LoadObjDataIntoObject();
-	void GenVAOandIBO();
+	void GenVBOandIBO();
 
 public:
-	Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const mars::Mat4& modl);
-	Object(const char* objFilePath, OPENGL::Shader& shader, const mars::Vec4& colour, const mars::Mat4& modl);
-	Object(const char* objFilePath, OPENGL::Shader& shader, const OPENGL::Texture& texture, const mars::Vec4& colour, const mars::Vec3& position, const mars::Vec2& size); //Doesn't fill the VAO or IBO.
+	Object(void* device, const char* objFilePath, std::shared_ptr<GRAPHICS::Pipeline> pipeline, std::shared_ptr<GRAPHICS::Texture> texture, const mars::Mat4& modl);
+	Object(void* device, const char* objFilePath, std::shared_ptr<GRAPHICS::Pipeline> pipeline, const mars::Vec4& colour, const mars::Mat4& modl);
+	Object(void* device, const char* objFilePath, std::shared_ptr<GRAPHICS::Pipeline> pipeline, std::shared_ptr<GRAPHICS::Texture> texture, const mars::Vec4& colour, const mars::Vec3& position, const mars::Vec2& size); //Doesn't fill the VAO or IBO.
 	~Object();
-
-	void BindTexture(int slot = 0) const;
-	void UnbindTexture() const;
-	static void SetTextureArray(const OPENGL::Shader& shader);
-	static void UnsetTextureArray(const OPENGL::Shader& shader);
-	void BindCubeMap(int slot) const;
-	void UnbindCubeMap() const;
 
 	void SetUniformModlMatrix();
 	void SetUniformModlMatrix(const mars::Mat4& modl);
 
-
-	inline const std::shared_ptr<OPENGL::VertexArray> GetVAO() const { return m_VAO; }
-	inline const std::shared_ptr<OPENGL::IndexBuffer> GetIBO() const { return m_IBO; }
-	inline const OPENGL::Shader& GetShader() const { return m_Shader; }
-	inline const OPENGL::Texture& GetTexture() const { return m_Texture; }
-	inline const unsigned int GetTextureID() const { return m_Texture.GetTextureID(); }
+	inline const std::vector<std::shared_ptr<GRAPHICS::VertexBuffer>> GetVBOs() const { return m_VBOs; }
+	inline const std::shared_ptr<GRAPHICS::IndexBuffer> GetIBO() const { return m_IBO; }
+	inline const std::shared_ptr<GRAPHICS::Pipeline> GetPipeline() const { return m_Pipeline; }
+	inline const std::shared_ptr<GRAPHICS::Texture> GetTexture() const { return m_Texture; }
+	inline const std::shared_ptr<GRAPHICS::UniformBuffer> GetUBO() const { return m_UBO; }
 	inline const mars::Mat4 GetModlMatrix() const { return m_ModlMatrix; }
 
 	inline const std::vector<float>& GetVertices() const { return m_Vertices; }

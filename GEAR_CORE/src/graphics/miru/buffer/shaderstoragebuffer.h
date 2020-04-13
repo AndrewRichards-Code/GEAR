@@ -1,14 +1,20 @@
 #pragma once
 
-#include "gear_common.h"
+#include "gear_core_common.h"
 
 namespace GEAR {
 namespace GRAPHICS {
-namespace OPENGL {
 	class ShaderStorageBuffer
 	{
 	private:
-		unsigned int m_ShaderStorageID;
+		void* m_Device;
+
+		static miru::Ref<miru::crossplatform::Context> s_Context;
+		static miru::Ref<miru::crossplatform::MemoryBlock> s_MB_CPU_Upload, s_MB_GPU_Usage;
+
+		miru::Ref<miru::crossplatform::Buffer> m_ShaderStorageBuffer, m_ShaderStorageBufferUpload;
+		miru::crossplatform::Buffer::CreateInfo m_ShaderStorageBufferCI, m_ShaderStorageBufferUploadCI;
+
 		unsigned int m_Size;
 		unsigned int m_BindingIndex;
 
@@ -16,28 +22,16 @@ namespace OPENGL {
 		ShaderStorageBuffer(unsigned int size, unsigned int bindingIndex);
 		~ShaderStorageBuffer();
 
-		void Bind() const;
-		void Unbind() const;
+		inline static void SetContext(miru::Ref<miru::crossplatform::Context> context) { s_Context = context; };
+		void InitialiseMemory();
 
-		enum ShaderStorageAccess : int
-		{
-			GEAR_MAP_READ_BIT = GL_MAP_READ_BIT,
-			GEAR_MAP_WRITE_BIT = GL_MAP_WRITE_BIT,
-			GEAR_MAP_INVALIDATE_RANGE_BIT = GL_MAP_INVALIDATE_RANGE_BIT,
-			GEAR_MAP_INVALIDATE_BUFFER_BIT = GL_MAP_INVALIDATE_BUFFER_BIT,
-			GEAR_MAP_FLUSH_EXPLICIT_BIT = GL_MAP_FLUSH_EXPLICIT_BIT,
-			GEAR_MAP_UNSYNCHRONIZED_BIT = GL_MAP_UNSYNCHRONIZED_BIT,
-			GEAR_MAP_PERSISTENT_BIT = GL_MAP_PERSISTENT_BIT,
-			GEAR_MAP_COHERENT_BIT = GL_MAP_COHERENT_BIT
-		};
-		void Access(void* data, unsigned int size, unsigned int offset, ShaderStorageAccess access) const;
-		
-		void PrintUBOData() const;
-		const float* const GetUBOData() const;
+		void SubmitData(const void* data, unsigned int size, unsigned int offset) const;
+		void Upload(miru::crossplatform::CommandBuffer& cmdBuffer, uint32_t cmdBufferIndex = 0);
+		void Download(miru::crossplatform::CommandBuffer& cmdBuffer, uint32_t cmdBufferIndex = 0);
+		void AccessData(void* data, unsigned int size, unsigned int offset) const;
 
 		inline unsigned int GetSize() { return m_Size; }
 		inline unsigned int GetBindingIndex() { return m_BindingIndex; }
 	};
-}
 }
 }

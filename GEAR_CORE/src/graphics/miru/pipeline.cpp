@@ -102,7 +102,7 @@ void GEAR::GRAPHICS::Pipeline::FinalisePipline()
 			for (auto& rbds : shader->GetRBDs())
 			{
 				uint32_t set = rbds.first;
-				m_DescSetLayoutCIs.resize(std::max((size_t)set, m_DescSetLayoutCIs.size()));
+				m_DescSetLayoutCIs.resize(std::max((size_t)set + 1, m_DescSetLayoutCIs.size()));
 
 				for (auto& rbd : rbds.second)
 				{

@@ -17,7 +17,7 @@ Texture::Texture(void* device, const std::string& filepath)
 
 	m_LocalBuffer = stbi_load(filepath.c_str(), &m_Width, &m_Height, &m_BPP, 4);
 
-	m_TextureUploadBufferCI.debugName = (std::string("GEAR_CORE_TextureUploadBuffer:") + filepath).c_str();;
+	m_TextureUploadBufferCI.debugName = (std::string("GEAR_CORE_TextureUploadBuffer:") + filepath).c_str();
 	m_TextureUploadBufferCI.device;
 	m_TextureUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC;
 	m_TextureUploadBufferCI.size = m_Width * m_Height * m_BPP;
@@ -305,36 +305,40 @@ void Texture::GetInitialTransition(std::vector<Ref<Barrier>>& barriers)
 	barriers.push_back(m_InitialBarrier); 
 }
 
-void Texture::Upload(CommandBuffer& cmdBuffer, uint32_t cmdBufferIndex)
+void Texture::Upload(Ref<CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex, bool force)
 {
-	std::vector<Image::BufferImageCopy> bics;
-	if (m_Cubemap)
+	if (m_Upload || force)
 	{
-		for (size_t i = 0; i < 6; i++)
+		std::vector<Image::BufferImageCopy> bics;
+		if (m_Cubemap)
+		{
+			for (size_t i = 0; i < 6; i++)
+			{
+				Image::BufferImageCopy bic;
+				bic.bufferOffset = (i * m_Width * m_Height * m_BPP);
+				bic.bufferRowLength = 0;
+				bic.bufferImageHeight = 0;
+				bic.imageSubresource = { Image::AspectBit::COLOUR_BIT, 0, (uint32_t)i, 1 };
+				bic.imageOffset = { 0, 0, 0 };
+				bic.imageExtent = { (uint32_t)m_Width, (uint32_t)m_Height, (uint32_t)m_Depth };
+				bics.push_back(bic);
+			}
+		}
+		else
 		{
 			Image::BufferImageCopy bic;
-			bic.bufferOffset = (i * m_Width * m_Height * m_BPP);
+			bic.bufferOffset = 0;
 			bic.bufferRowLength = 0;
 			bic.bufferImageHeight = 0;
-			bic.imageSubresource = { Image::AspectBit::COLOUR_BIT, 0, i, 1 };
+			bic.imageSubresource = { Image::AspectBit::COLOUR_BIT, 0, 0, 1 };
 			bic.imageOffset = { 0, 0, 0 };
-			bic.imageExtent = { m_Width, m_Height, m_Depth };
+			bic.imageExtent = { (uint32_t)m_Width, (uint32_t)m_Height, (uint32_t)m_Depth };
 			bics.push_back(bic);
 		}
-	}
-	else
-	{
-		Image::BufferImageCopy bic;
-		bic.bufferOffset = 0;
-		bic.bufferRowLength = 0;
-		bic.bufferImageHeight = 0;
-		bic.imageSubresource = { Image::AspectBit::COLOUR_BIT, 0, 0, 1 };
-		bic.imageOffset = { 0, 0, 0 };
-		bic.imageExtent = { m_Width, m_Height, m_Depth };
-		bics.push_back(bic);
-	}
 
-	cmdBuffer.CopyBufferToImage(cmdBufferIndex, m_TextureUploadBuffer, m_Texture, Image::Layout::TRANSFER_DST_OPTIMAL, bics);
+		cmdBuffer->CopyBufferToImage(cmdBufferIndex, m_TextureUploadBuffer, m_Texture, Image::Layout::TRANSFER_DST_OPTIMAL, bics);
+		m_Upload = true;
+	}
 }
 
 void Texture::GetFinalTransition(std::vector<Ref<Barrier>>& barriers) 
@@ -342,17 +346,24 @@ void Texture::GetFinalTransition(std::vector<Ref<Barrier>>& barriers)
 	barriers.push_back(m_FinalBarrier); 
 }
 
-bool Texture::m_AnisotrophicFilter = false;
-float Texture::m_AnisotrophicValue = 1.0f;
-void Texture::EnableDisableAniostrophicFilting(float anisostrphicVal)
+void Texture::CreateSampler()
 {
-	m_AnisotrophicValue = anisostrphicVal;
-	if (m_AnisotrophicFilter == true)
-	{	
-		m_AnisotrophicFilter = false;
-	}
-	else if (m_AnisotrophicFilter == false)
-	{
-		m_AnisotrophicFilter = true;
-	}
+	m_SamplerCI.debugName = (std::string("GEAR_CORE_Sampler:") + m_Filepath).c_str();
+	m_SamplerCI.device = m_Device;
+	m_SamplerCI.magFilter = Sampler::Filter::LINEAR;
+	m_SamplerCI.minFilter = Sampler::Filter::LINEAR;
+	m_SamplerCI.mipmapMode = Sampler::MipmapMode::LINEAR;
+	m_SamplerCI.addressModeU = m_TileFactor > 1.0f ? Sampler::AddressMode::REPEAT : Sampler::AddressMode::CLAMP_TO_EDGE;
+	m_SamplerCI.addressModeV = m_TileFactor > 1.0f ? Sampler::AddressMode::REPEAT : Sampler::AddressMode::CLAMP_TO_EDGE;
+	m_SamplerCI.addressModeW = m_TileFactor > 1.0f ? Sampler::AddressMode::REPEAT : Sampler::AddressMode::CLAMP_TO_EDGE;
+	m_SamplerCI.mipLodBias = 1.0f;
+	m_SamplerCI.anisotropyEnable =  m_AnisotrophicValue > 1.0f;
+	m_SamplerCI.maxAnisotropy = m_AnisotrophicValue;
+	m_SamplerCI.compareEnable = false;
+	m_SamplerCI.compareOp = CompareOp::NEVER;
+	m_SamplerCI.minLod = 0.0f;
+	m_SamplerCI.maxLod = 1.0f;
+	m_SamplerCI.borderColour = Sampler::BorderColour::FLOAT_OPAQUE_BLACK;
+	m_SamplerCI.unnormalisedCoordinates = m_TileFactor > 1.0f;
+	m_Sampler = Sampler::Create(&m_SamplerCI);
 }

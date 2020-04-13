@@ -3,7 +3,7 @@
 using namespace GEAR;
 using namespace AUDIO;
 
-Listener::Listener(const GEAR::GRAPHICS::OBJECTS::Camera& camera)
+Listener::Listener(const GEAR::OBJECTS::Camera& camera)
 	: m_Camera(camera)
 {
 	m_Device = alcOpenDevice(NULL);

@@ -22,6 +22,9 @@ private:
 	miru::Ref<miru::crossplatform::ImageView> m_TextureImageView;
 	miru::crossplatform::ImageView::CreateInfo m_TextureImageViewCI;
 
+	miru::Ref<miru::crossplatform::Sampler> m_Sampler;
+	miru::crossplatform::Sampler::CreateInfo m_SamplerCI;
+
 	std::string m_Filepath;
 	std::vector<std::string> m_CubemapFilepaths;
 	unsigned char* m_LocalBuffer;
@@ -30,8 +33,8 @@ private:
 	bool m_DepthTexture = false;
 	float m_TileFactor = 1.0f;
 	int m_Multisample = 1;
-	static bool m_AnisotrophicFilter;
-	static float m_AnisotrophicValue;
+	float m_AnisotrophicValue;
+	bool m_Upload = false;
 
 public:
 	//Simple Texture 2D.
@@ -48,7 +51,7 @@ public:
 	void InitialiseMemory();
 
 	void GetInitialTransition(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers);
-	void Upload(miru::crossplatform::CommandBuffer& cmdBuffer, uint32_t cmdBufferIndex = 0);
+	void Upload(miru::Ref<miru::crossplatform::CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
 	void GetFinalTransition(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers);
 
 	inline int GetWidth() const { return m_Width; }
@@ -57,18 +60,21 @@ public:
 
 	inline miru::Ref<miru::crossplatform::Image>GetTexture() const { return m_Texture; }
 	inline miru::Ref<miru::crossplatform::ImageView>GetTextureImageView() const { return m_TextureImageView; }
+	inline miru::Ref<miru::crossplatform::Sampler>GetTextureSampler() const { return m_Sampler; }
 	inline bool IsCubeMap() const { return m_Cubemap; }
 	inline bool IsDepthTexture() const { return m_DepthTexture; }
 
-	inline void SetTileFactor(float factor) { m_TileFactor = factor; }
+	inline void SetTileFactor(float factor) { m_TileFactor = factor; CreateSampler();}
 	inline float GetTileFactor() const { return m_TileFactor; }
 
-	static void EnableDisableAniostrophicFilting(float anisostrphicVal);
-	inline static std::string GetAnisotrophicValue() { return std::to_string(static_cast<int>(m_AnisotrophicValue)); }
+	inline void GetAnisotrophicValue(float anisostrphicVal) { m_AnisotrophicValue = anisostrphicVal; CreateSampler();};
+	inline float SetAnisotrophicValue() const { return m_AnisotrophicValue; };
+	inline std::string GetAnisotrophicValue() { return std::to_string(static_cast<int>(m_AnisotrophicValue)); }
 
 private:
 	void AniostrophicFilting();
 	void MipMapping();
+	void CreateSampler();
 };
 }
 }

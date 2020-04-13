@@ -22,6 +22,19 @@ private:
 	miru::Ref<miru::crossplatform::Swapchain> m_Swapchain;
 	miru::crossplatform::Swapchain::CreateInfo m_SwapchainCI;
 
+	//DepthImage
+	miru::Ref<miru::crossplatform::MemoryBlock> m_DepthMB;
+	miru::Ref<miru::crossplatform::Image> m_DepthImage;
+	miru::crossplatform::Image::CreateInfo m_DepthImageCI;
+	miru::Ref<miru::crossplatform::ImageView> m_DepthImageView;
+	miru::crossplatform::ImageView::CreateInfo m_DepthImageViewCI;
+
+	//RenderPass and Framebuffer
+	miru::Ref<miru::crossplatform::RenderPass> m_RenderPass;
+	miru::crossplatform::RenderPass::CreateInfo m_RenderPassCI;
+	miru::Ref<miru::crossplatform::Framebuffer> m_Framebuffers[2];
+	miru::crossplatform::Framebuffer::CreateInfo m_FramebufferCI;
+
 	//Window
 	std::string m_Title;
 	int m_Width, m_Height;
@@ -54,6 +67,10 @@ public:
 	inline miru::Ref<miru::crossplatform::Context> GetContext() { return m_Context; };
 	inline miru::Ref<miru::crossplatform::Swapchain> GetSwapchain() { return m_Swapchain; };
 	inline void* GetDevice() { return m_Context->GetDevice(); }
+	inline miru::Ref<miru::crossplatform::RenderPass> GetRenderPass() { return m_RenderPass; }
+	inline miru::Ref<miru::crossplatform::ImageView> GetSwapchainImageView(size_t index) { return m_Swapchain->m_SwapchainImageViews[index]; }
+	inline miru::Ref<miru::crossplatform::ImageView> GetSwapchainDepthImageView() { return m_DepthImageView; }
+	inline miru::Ref<miru::crossplatform::Framebuffer>* GetFramebuffers() { return m_Framebuffers; }
 
 	inline int GetWidth() const { return m_Width; }
 	inline int GetHeight() const { return m_Height; }
@@ -73,6 +90,7 @@ public:
 
 private:
 	bool Init();
+	void CreateFramebuffer();
 	static void window_resize(GLFWwindow* window, int width, int height);
 	static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 	static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);

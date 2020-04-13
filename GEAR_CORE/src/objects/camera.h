@@ -1,11 +1,14 @@
 #pragma once
 
-#include "gear_common.h"
-#include "graphics/opengl/buffer/buffermanager.h"
+#include "gear_core_common.h"
+#include "graphics/miru/buffer/uniformbuffer.h"
 #include "mars.h"
 
 #define GEAR_CAMERA_PERSPECTIVE 0
 #define GEAR_CAMERA_ORTHOGRAPHIC 1
+
+#undef far
+#undef near
 
 namespace GEAR {
 namespace OBJECTS {
@@ -13,6 +16,8 @@ namespace OBJECTS {
 class Camera
 {
 private:
+	void* m_Device;
+
 	int m_ProjectionType;
 	double m_Yaw = 0;
 	double m_Pitch = 0;
@@ -38,9 +43,11 @@ private:
 		mars::Vec4 m_Position;
 		
 	} m_CameraUBO;
+	std::shared_ptr<GRAPHICS::UniformBuffer> m_UBO;
+	
 
 public:
-	Camera(int projType, const mars::Vec3& position, const mars::Vec3& forward, const mars::Vec3 up);
+	Camera(void* device, int projType, const mars::Vec3& position, const mars::Vec3& forward, const mars::Vec3 up);
 	~Camera();
 
 	void UpdateCameraPosition();
@@ -50,6 +57,8 @@ public:
 	void DefineView(const mars::Mat4& viewMatrix);
 	void DefineProjection(double fov, float aspectRatio, float zNear, float zFar, bool flipX = false, bool flipY = false);
 	void DefineProjection(float left, float right, float bottom, float top, float near, float far);
+
+	std::shared_ptr<GRAPHICS::UniformBuffer> GetUBO() { return m_UBO; };
 
 private:
 	void CalculateRight();
