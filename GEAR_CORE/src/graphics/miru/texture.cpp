@@ -18,7 +18,7 @@ Texture::Texture(void* device, const std::string& filepath)
 	m_LocalBuffer = stbi_load(filepath.c_str(), &m_Width, &m_Height, &m_BPP, 4);
 
 	m_TextureUploadBufferCI.debugName = (std::string("GEAR_CORE_TextureUploadBuffer:") + filepath).c_str();
-	m_TextureUploadBufferCI.device;
+	m_TextureUploadBufferCI.device = m_Device;
 	m_TextureUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC;
 	m_TextureUploadBufferCI.size = m_Width * m_Height * m_BPP;
 	m_TextureUploadBufferCI.data = m_LocalBuffer;
@@ -26,7 +26,7 @@ Texture::Texture(void* device, const std::string& filepath)
 	m_TextureUploadBuffer = Buffer::Create(&m_TextureUploadBufferCI);
 
 	m_TextureCI.debugName = (std::string("GEAR_CORE_Texture:") + filepath).c_str();
-	m_TextureCI.device;
+	m_TextureCI.device = m_Device;;
 	m_TextureCI.type = Image::Type::TYPE_2D;
 	m_TextureCI.format = m_BPP == 3 ? Image::Format::R8G8B8_UNORM : Image::Format::R8G8B8A8_UNORM;
 	m_TextureCI.width = m_Width;
@@ -72,6 +72,8 @@ Texture::Texture(void* device, const std::string& filepath)
 	m_TextureImageViewCI.pImage = m_Texture;
 	m_TextureImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
 	m_TextureImageView = ImageView::Create(&m_TextureImageViewCI);
+
+	CreateSampler();
 }
 
 Texture::Texture(void* device, const std::vector<std::string>& cubemapFilepaths)
@@ -99,7 +101,7 @@ Texture::Texture(void* device, const std::vector<std::string>& cubemapFilepaths)
 	InitialiseMemory();
 
 	m_TextureUploadBufferCI.debugName = (std::string("GEAR_CORE_TextureUploadBuffer:") + m_CubemapFilepaths[0]).c_str();;
-	m_TextureUploadBufferCI.device;
+	m_TextureUploadBufferCI.device = m_Device;
 	m_TextureUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC;
 	m_TextureUploadBufferCI.size = cubemapImageData.size();
 	m_TextureUploadBufferCI.data = cubemapImageData.data();
@@ -107,7 +109,7 @@ Texture::Texture(void* device, const std::vector<std::string>& cubemapFilepaths)
 	m_TextureUploadBuffer = Buffer::Create(&m_TextureUploadBufferCI);
 
 	m_TextureCI.debugName = (std::string("GEAR_CORE_Texture:") + m_CubemapFilepaths[0]).c_str();
-	m_TextureCI.device;
+	m_TextureCI.device = m_Device;
 	m_TextureCI.type = Image::Type::TYPE_CUBE;
 	m_TextureCI.format = m_BPP == 3 ? Image::Format::R8G8B8_UNORM : Image::Format::R8G8B8A8_UNORM;
 	m_TextureCI.width = m_Width;
@@ -150,6 +152,8 @@ Texture::Texture(void* device, const std::vector<std::string>& cubemapFilepaths)
 	m_TextureImageViewCI.pImage = m_Texture;
 	m_TextureImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 6 };
 	m_TextureImageView = ImageView::Create(&m_TextureImageViewCI);
+
+	CreateSampler();
 }
 
 Texture::Texture(void* device, unsigned char* buffer, int width, int height)
@@ -158,7 +162,7 @@ Texture::Texture(void* device, unsigned char* buffer, int width, int height)
 	InitialiseMemory();
 	
 	m_TextureUploadBufferCI.debugName = (std::string("GEAR_CORE_TextureUploadBuffer:")).c_str();;
-	m_TextureUploadBufferCI.device;
+	m_TextureUploadBufferCI.device = m_Device;
 	m_TextureUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC;
 	m_TextureUploadBufferCI.size = m_Width * m_Height * m_BPP;
 	m_TextureUploadBufferCI.data = buffer;
@@ -166,7 +170,7 @@ Texture::Texture(void* device, unsigned char* buffer, int width, int height)
 	m_TextureUploadBuffer = Buffer::Create(&m_TextureUploadBufferCI);
 
 	m_TextureCI.debugName = (std::string("GEAR_CORE_Texture:")).c_str();
-	m_TextureCI.device;
+	m_TextureCI.device = m_Device;
 	m_TextureCI.type = Image::Type::TYPE_2D;
 	m_TextureCI.format = m_BPP == 3 ? Image::Format::R8G8B8_UNORM : Image::Format::R8G8B8A8_UNORM;
 	m_TextureCI.width = m_Width;
@@ -209,6 +213,8 @@ Texture::Texture(void* device, unsigned char* buffer, int width, int height)
 	m_TextureImageViewCI.pImage = m_Texture;
 	m_TextureImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
 	m_TextureImageView = ImageView::Create(&m_TextureImageViewCI);
+
+	CreateSampler();
 }
 
 Texture::Texture(void* device, unsigned char* buffer, Image::Type type, Image::Format format, int multisample, int width, int height, int depth)
@@ -219,7 +225,7 @@ Texture::Texture(void* device, unsigned char* buffer, Image::Type type, Image::F
 	if (buffer)
 	{
 		m_TextureUploadBufferCI.debugName = (std::string("GEAR_CORE_TextureUploadBuffer:")).c_str();;
-		m_TextureUploadBufferCI.device;
+		m_TextureUploadBufferCI.device = m_Device;
 		m_TextureUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC;
 		m_TextureUploadBufferCI.size = m_Width * m_Height * m_Depth * m_BPP;
 		m_TextureUploadBufferCI.data = buffer;
@@ -230,7 +236,7 @@ Texture::Texture(void* device, unsigned char* buffer, Image::Type type, Image::F
 	m_DepthTexture = format >= Image::Format::D16_UNORM;
 
 	m_TextureCI.debugName = (std::string("GEAR_CORE_Texture:")).c_str();
-	m_TextureCI.device;
+	m_TextureCI.device = m_Device;
 	m_TextureCI.type = type;
 	m_TextureCI.format = format;
 	m_TextureCI.width = m_Width;
@@ -273,6 +279,8 @@ Texture::Texture(void* device, unsigned char* buffer, Image::Type type, Image::F
 	m_TextureImageViewCI.pImage = m_Texture;
 	m_TextureImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
 	m_TextureImageView = ImageView::Create(&m_TextureImageViewCI);
+
+	CreateSampler();
 }
 
 Texture::~Texture()
@@ -307,7 +315,7 @@ void Texture::GetInitialTransition(std::vector<Ref<Barrier>>& barriers)
 
 void Texture::Upload(Ref<CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex, bool force)
 {
-	if (m_Upload || force)
+	if (!m_Upload || force)
 	{
 		std::vector<Image::BufferImageCopy> bics;
 		if (m_Cubemap)

@@ -58,6 +58,10 @@ public:
 	void DefineProjection(double fov, float aspectRatio, float zNear, float zFar, bool flipX = false, bool flipY = false);
 	void DefineProjection(float left, float right, float bottom, float top, float near, float far);
 
+	inline static void SetContext(miru::Ref<miru::crossplatform::Context> context)
+	{
+		GRAPHICS::UniformBuffer::SetContext(context);
+	};
 	std::shared_ptr<GRAPHICS::UniformBuffer> GetUBO() { return m_UBO; };
 
 private:

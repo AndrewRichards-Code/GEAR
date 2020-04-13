@@ -91,10 +91,18 @@ void GEAR::GRAPHICS::Pipeline::FinalisePipline()
 {
 	if (m_Shaders.size() > 1)
 	{
+		std::vector<VertexInputBindingDescription> vibds;
 		std::vector<VertexInputAttributeDescription> viads;
+		uint32_t i = 0;
 		for (auto& vsiad : m_Shaders[0]->GetVSIADs())
 		{
-			viads.push_back({ vsiad.location, vsiad.binding, vsiad.vertexType, vsiad.offset, vsiad.semanticName.c_str() });
+			uint32_t typeSize = 4;
+			if (vsiad.vertexType > VertexType::VEC4 && vsiad.vertexType < VertexType::INT)
+				typeSize = 8;
+
+			vibds.push_back({ i, (((uint32_t)vsiad.vertexType % 4) + 1) * typeSize, VertexInputRate::VERTEX });
+			viads.push_back({ vsiad.location, vsiad.binding + i, vsiad.vertexType, vsiad.offset, vsiad.semanticName.c_str() });
+			i++;
 		}
 
 		for (auto& shader : m_Shaders)
@@ -106,6 +114,8 @@ void GEAR::GRAPHICS::Pipeline::FinalisePipline()
 
 				for (auto& rbd : rbds.second)
 				{
+					m_DescSetLayoutCIs[set].debugName = (std::string("GEAR_CORE_DescSetLayout_Set:") + std::to_string(set)).c_str();
+					m_DescSetLayoutCIs[set].device = m_Device;
 					m_DescSetLayoutCIs[set].descriptorSetLayoutBinding.push_back({
 						rbd.binding,
 						rbd.type,
@@ -122,7 +132,7 @@ void GEAR::GRAPHICS::Pipeline::FinalisePipline()
 		m_PipelineCI.debugName = "GEAR_CORE_Pipeline";
 		m_PipelineCI.device = m_Device;
 		m_PipelineCI.type = PipelineType::GRAPHICS;
-		m_PipelineCI.vertexInputState.vertexInputBindingDescriptions = { { 0, 0, VertexInputRate::VERTEX } };
+		m_PipelineCI.vertexInputState.vertexInputBindingDescriptions = vibds;
 		m_PipelineCI.vertexInputState.vertexInputAttributeDescriptions = viads;
 		m_PipelineCI.inputAssemblyState = { PrimitiveTopology::TRIANGLE_LIST, false };
 		m_PipelineCI.tessellationState = {};
@@ -147,6 +157,8 @@ void GEAR::GRAPHICS::Pipeline::FinalisePipline()
 
 			for (auto& rbd : rbds.second)
 			{
+				m_DescSetLayoutCIs[set].debugName = (std::string("GEAR_CORE_DescSetLayout_Set:") + std::to_string(set)).c_str();
+				m_DescSetLayoutCIs[set].device = m_Device;
 				m_DescSetLayoutCIs[set].descriptorSetLayoutBinding.push_back({
 					rbd.binding,
 					rbd.type,

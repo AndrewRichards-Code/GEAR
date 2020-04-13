@@ -45,12 +45,16 @@ void Renderer::Submit(Object* obj)
 
 void Renderer::Flush()
 {
+	//Upload CmdBufer
 	Semaphore::CreateInfo transSemaphoreCI = { "GEAR_CORE_SemaphoreRenderTransfer", m_TransCmdPoolCI.pContext->GetDevice() };
 	Ref<Semaphore> transfer = Semaphore::Create(&transSemaphoreCI);
+	Fence::CreateInfo transFenceCI = { "GEAR_CORE_FenceRenderTransfer", m_TransCmdPoolCI.pContext->GetDevice(), false, UINT64_MAX };
+	Ref<Fence> transferFence = Fence::Create(&transFenceCI);
 	{
-
 		m_TransCmdBuffer->Begin(0, CommandBuffer::UsageBit::SIMULTANEOUS);
 		m_Camera->GetUBO()->Upload(m_TransCmdBuffer, 0);
+		m_Lights[0]->GetUBO0()->Upload(m_TransCmdBuffer, 0);
+		m_Lights[0]->GetUBO1()->Upload(m_TransCmdBuffer, 0);
 
 		std::vector<Ref<Barrier>> initialBarrier;
 		for (auto& obj : m_RenderQueue)
@@ -73,8 +77,8 @@ void Renderer::Flush()
 		m_TransCmdBuffer->End(0);
 	}
 	m_TransCmdBuffer->Submit({ 0 }, {}, { transfer }, PipelineStageBit::TRANSFER_BIT, nullptr);
-
 	{
+		m_CmdBuffer->Begin(2, CommandBuffer::UsageBit::SIMULTANEOUS);
 		std::vector<Ref<Barrier>> finalBarrier;
 		for (auto& obj : m_RenderQueue)
 		{
@@ -82,52 +86,68 @@ void Renderer::Flush()
 		}
 
 		m_CmdBuffer->PipelineBarrier(2, PipelineStageBit::TRANSFER_BIT, PipelineStageBit::FRAGMENT_SHADER_BIT, finalBarrier);
+		m_CmdBuffer->End(2);
 	}
-	m_CmdBuffer->Submit({ 2 }, { transfer }, {}, PipelineStageBit::TRANSFER_BIT, nullptr);
+	m_CmdBuffer->Submit({ 2 }, { transfer }, {}, PipelineStageBit::TRANSFER_BIT, transferFence);
 
+	while (transferFence->Wait())
+	{
+	}
+
+	//Build DescriptorPools and Sets
 	m_DescPoolCI.debugName = "GEAR_CORE_DescPoolRenderer";
 	m_DescPoolCI.device = m_TransCmdPoolCI.pContext->GetDevice();
-	m_DescPoolCI.poolSizes = { {DescriptorType::COMBINED_IMAGE_SAMPLER, (uint32_t)m_RenderQueue.size()}, {DescriptorType::UNIFORM_BUFFER, (uint32_t)m_RenderQueue.size() + 1} };
-	m_DescPoolCI.maxSets = (uint32_t)m_RenderQueue.size() + 1;
+	m_DescPoolCI.poolSizes = { {DescriptorType::COMBINED_IMAGE_SAMPLER, (uint32_t)m_RenderQueue.size()}, {DescriptorType::UNIFORM_BUFFER, (uint32_t)m_RenderQueue.size() + 3} };
+	m_DescPoolCI.maxSets = (uint32_t)m_RenderQueue.size() + 3;
 	m_DescPool = DescriptorPool::Create(&m_DescPoolCI);
 
 	DescriptorSetLayout::CreateInfo descSetLayoutCI;
 	descSetLayoutCI.debugName = "GEAR_CORE_DescSetLayoutRenderer";
 	descSetLayoutCI.device = m_TransCmdPoolCI.pContext->GetDevice();
-	descSetLayoutCI.descriptorSetLayoutBinding = { {0, DescriptorType::UNIFORM_BUFFER, 1, Shader::StageBit::VERTEX_BIT}, {1, DescriptorType::COMBINED_IMAGE_SAMPLER, 1, Shader::StageBit::FRAGMENT_BIT} };
-	Ref<DescriptorSetLayout> descSetLayout1 = DescriptorSetLayout::Create(&descSetLayoutCI);
 	descSetLayoutCI.descriptorSetLayoutBinding = { {0, DescriptorType::UNIFORM_BUFFER, 1, Shader::StageBit::VERTEX_BIT} };
-	Ref<DescriptorSetLayout> descSetLayout0 = DescriptorSetLayout::Create(&descSetLayoutCI);
+	m_DescSetLayouts.push_back(DescriptorSetLayout::Create(&descSetLayoutCI));
+	descSetLayoutCI.descriptorSetLayoutBinding = { {0, DescriptorType::UNIFORM_BUFFER, 1, Shader::StageBit::VERTEX_BIT}, {1, DescriptorType::COMBINED_IMAGE_SAMPLER, 1, Shader::StageBit::FRAGMENT_BIT} };
+	m_DescSetLayouts.push_back(DescriptorSetLayout::Create(&descSetLayoutCI));
+	descSetLayoutCI.descriptorSetLayoutBinding = { {0, DescriptorType::UNIFORM_BUFFER, 1, Shader::StageBit::FRAGMENT_BIT} };
+	m_DescSetLayouts.push_back(DescriptorSetLayout::Create(&descSetLayoutCI));
+	descSetLayoutCI.descriptorSetLayoutBinding = { {0, DescriptorType::UNIFORM_BUFFER, 1, Shader::StageBit::FRAGMENT_BIT} };
+	m_DescSetLayouts.push_back(DescriptorSetLayout::Create(&descSetLayoutCI));
 
 	m_DescSetCI.debugName = "GEAR_CORE_DescSetRenderer";
 	m_DescSetCI.pDescriptorPool = m_DescPool;
-	m_DescSetCI.pDescriptorSetLayouts = { descSetLayout0 };
+	m_DescSetCI.pDescriptorSetLayouts = { m_DescSetLayouts[0] };
 	m_DescSetCamera = DescriptorSet::Create(&m_DescSetCI);
 	m_DescSetCamera->AddBuffer(0, 0, { { m_Camera->GetUBO()->GetBufferView() } });
 	m_DescSetCamera->Update();
 
+	m_DescSetCI.pDescriptorSetLayouts = { m_DescSetLayouts[2], m_DescSetLayouts[3] };
+	m_DescSetLight = DescriptorSet::Create(&m_DescSetCI);
+	m_DescSetLight->AddBuffer(0, 0, { { m_Lights[0]->GetUBO0()->GetBufferView() } });
+	m_DescSetLight->AddBuffer(1, 0, { { m_Lights[0]->GetUBO1()->GetBufferView() } });
+	m_DescSetLight->Update();
+
+	//Record Present CmdBuffers
 	for (uint32_t i = 0; i < 2; i++)
 	{
 		m_CmdBuffer->Begin(i, CommandBuffer::UsageBit::SIMULTANEOUS);
-		m_CmdBuffer->BeginRenderPass(i, m_Framebuffers[i], { {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0} });
+		m_CmdBuffer->BeginRenderPass(i, m_Framebuffers[i], { {0.5f, 0.5f, 0.5f, 1.0f}, {0.0f, 0} });
 		while (!m_RenderQueue.empty())
 		{
 			Object* obj = m_RenderQueue.front();
 			m_CmdBuffer->BindPipeline(i, obj->GetPipeline()->GetPipeline());
+			
+			m_DescSetCI.pDescriptorSetLayouts = { m_DescSetLayouts[1] };
+			m_DescSetObj.emplace_back(DescriptorSet::Create(&m_DescSetCI));
+			m_DescSetObj.back()->AddImage(0, 1, { {obj->GetTexture()->GetTextureSampler(), obj->GetTexture()->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
+			m_DescSetObj.back()->AddBuffer(0, 0, { { obj->GetUBO()->GetBufferView() } });
+			m_DescSetObj.back()->Update();
+			m_CmdBuffer->BindDescriptorSets(i, { m_DescSetCamera, m_DescSetObj.back(), m_DescSetLight }, obj->GetPipeline()->GetPipeline());
 			
 			std::vector<Ref<BufferView>> vbv;
 			for (auto& vb : obj->GetVBOs())
 				vbv.push_back(vb->GetVertexBufferView());
 			m_CmdBuffer->BindVertexBuffers(i, vbv);
 			m_CmdBuffer->BindIndexBuffer(i, obj->GetIBO()->GetIndexBufferView());
-
-			m_DescSetCI.pDescriptorSetLayouts = { descSetLayout1 };
-			m_DescSetObj.emplace_back(DescriptorSet::Create(&m_DescSetCI).get());
-			m_DescSetObj.back()->AddImage(1, 1, { {obj->GetTexture()->GetTextureSampler(), obj->GetTexture()->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
-			m_DescSetObj.back()->AddBuffer(1, 0, { { obj->GetUBO()->GetBufferView() } });
-			m_DescSetObj.back()->Update();
-			m_CmdBuffer->BindDescriptorSets(i, { m_DescSetCamera, m_DescSetObj.back() }, obj->GetPipeline()->GetPipeline());
-
 			m_CmdBuffer->DrawIndexed(i, obj->GetIBO()->GetCount());
 
 			m_RenderQueue.pop_front();

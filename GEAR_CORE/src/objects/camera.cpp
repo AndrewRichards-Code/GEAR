@@ -73,13 +73,11 @@ void Camera::DefineView()
 	Vec3 final = Quat::ToVec3((q * p) * qInv);
 	Vec3 final2 = p.RotQuat(q);*/
 
-	m_CameraUBO.m_ViewMatrix.Transpose();
 	m_UBO->SubmitData(&m_CameraUBO.m_ViewMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ViewMatrix));
 }
 void Camera::DefineView(const Mat4& viewMatrix)
 {
 	m_CameraUBO.m_ViewMatrix = viewMatrix * Mat4::Translation(Vec3(-m_Position.x, -m_Position.y, -m_Position.z));
-	m_CameraUBO.m_ViewMatrix.Transpose();
 	m_UBO->SubmitData(&m_CameraUBO.m_ViewMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ViewMatrix));
 }
 void Camera::DefineProjection(float left, float right, float bottom, float top, float near, float far)
@@ -87,8 +85,6 @@ void Camera::DefineProjection(float left, float right, float bottom, float top, 
 	if (m_ProjectionType == GEAR_CAMERA_ORTHOGRAPHIC)
 	{
 		m_CameraUBO.m_ProjectionMatrix = Mat4::Orthographic(left, right, bottom, top, near, far);
-		m_CameraUBO.m_ProjectionMatrix.Transpose();
-
 		m_UBO->SubmitData(&m_CameraUBO.m_ProjectionMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ProjectionMatrix));
 	}
 	else
@@ -106,7 +102,6 @@ void Camera::DefineProjection(double fov, float aspectRatio, float zNear, float 
 			m_CameraUBO.m_ProjectionMatrix.a *= -1;
 		if (flipY)
 			m_CameraUBO.m_ProjectionMatrix.f *= -1;
-		m_CameraUBO.m_ProjectionMatrix.Transpose();
 
 		m_UBO->SubmitData(&m_CameraUBO.m_ProjectionMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ProjectionMatrix));
 	}

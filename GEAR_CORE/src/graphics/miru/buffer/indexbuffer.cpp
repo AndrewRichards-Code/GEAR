@@ -13,12 +13,14 @@ miru::Ref<miru::crossplatform::MemoryBlock> IndexBuffer::s_MB_GPU_Usage = nullpt
 IndexBuffer::IndexBuffer(void* device, const unsigned int* data, unsigned int count)
 	:m_Device(device), m_Count(count)
 {
+	InitialiseMemory();
+
 	m_IndexBufferUploadCI.debugName = "GEAR_CORE_IndexBufferUpload";
 	m_IndexBufferUploadCI.device = m_Device;
 	m_IndexBufferUploadCI.usage = Buffer::UsageBit::TRANSFER_SRC;
 	m_IndexBufferUploadCI.size = m_Count * sizeof(unsigned int);
 	m_IndexBufferUploadCI.data = (void*)data;
-	m_IndexBufferUploadCI.pMemoryBlock;
+	m_IndexBufferUploadCI.pMemoryBlock = s_MB_CPU_Upload;
 	m_IndexBufferUpload = Buffer::Create(&m_IndexBufferUploadCI);
 
 	m_IndexBufferCI.debugName = "GEAR_CORE_IndexBufferUsage";
@@ -26,7 +28,7 @@ IndexBuffer::IndexBuffer(void* device, const unsigned int* data, unsigned int co
 	m_IndexBufferCI.usage = Buffer::UsageBit::TRANSFER_DST | Buffer::UsageBit::INDEX;
 	m_IndexBufferCI.size = 0;
 	m_IndexBufferCI.data = nullptr;
-	m_IndexBufferCI.pMemoryBlock;
+	m_IndexBufferCI.pMemoryBlock = s_MB_GPU_Usage;
 	m_IndexBuffer = Buffer::Create(&m_IndexBufferCI);
 
 	m_IndexBufferViewCI.debugName = "GEAR_CORE_VertexBufferViewUsage";;

@@ -13,12 +13,14 @@ miru::Ref<miru::crossplatform::MemoryBlock> VertexBuffer::s_MB_GPU_Usage = nullp
 VertexBuffer::VertexBuffer(void* device, const float* data, unsigned int count, unsigned int componentCount)
 	:m_Device(device), m_Count(count), m_ComponentCount(componentCount)
 {
+	InitialiseMemory();
+
 	m_VertexBufferUploadCI.debugName = "GEAR_CORE_VertexBufferUpload";
 	m_VertexBufferUploadCI.device = m_Device;
 	m_VertexBufferUploadCI.usage = Buffer::UsageBit::TRANSFER_SRC;
 	m_VertexBufferUploadCI.size = m_Count * sizeof(float);
 	m_VertexBufferUploadCI.data = (void*)data;
-	m_VertexBufferUploadCI.pMemoryBlock;
+	m_VertexBufferUploadCI.pMemoryBlock = s_MB_CPU_Upload;
 	m_VertexBufferUpload = Buffer::Create(&m_VertexBufferUploadCI);
 
 	m_VertexBufferCI.debugName = "GEAR_CORE_VertexBufferUsage";
@@ -26,7 +28,7 @@ VertexBuffer::VertexBuffer(void* device, const float* data, unsigned int count, 
 	m_VertexBufferCI.usage = Buffer::UsageBit::TRANSFER_DST | Buffer::UsageBit::VERTEX;
 	m_VertexBufferCI.size = 0;
 	m_VertexBufferCI.data = nullptr;
-	m_VertexBufferCI.pMemoryBlock;
+	m_VertexBufferCI.pMemoryBlock = s_MB_GPU_Usage;
 	m_VertexBuffer = Buffer::Create(&m_VertexBufferCI);
 
 	m_VertexBufferViewCI.debugName = "GEAR_CORE_VertexBufferViewUsage";;

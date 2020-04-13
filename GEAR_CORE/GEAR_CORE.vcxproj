@@ -111,6 +111,7 @@
     <ClCompile Include="src\graphics\miru\texture.cpp" />
     <ClCompile Include="src\graphics\miru\window.cpp" />
     <ClCompile Include="src\objects\camera.cpp" />
+    <ClCompile Include="src\objects\light.cpp" />
     <ClCompile Include="src\objects\object.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -129,6 +130,7 @@
     <ClInclude Include="src\graphics\miru\window.h" />
     <ClInclude Include="src\input\inputmanager.h" />
     <ClInclude Include="src\objects\camera.h" />
+    <ClInclude Include="src\objects\light.h" />
     <ClInclude Include="src\objects\object.h" />
     <ClInclude Include="src\utils\fileutils.h" />
   </ItemGroup>

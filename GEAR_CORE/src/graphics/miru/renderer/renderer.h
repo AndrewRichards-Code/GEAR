@@ -8,6 +8,7 @@
 #include "graphics/miru/pipeline.h"
 #include "objects/object.h"
 #include "objects/camera.h"
+#include "objects/light.h"
 
 namespace GEAR {
 namespace GRAPHICS {
@@ -28,24 +29,31 @@ private:
 
 	miru::Ref<miru::crossplatform::DescriptorPool> m_DescPool;
 	miru::crossplatform::DescriptorPool::CreateInfo m_DescPoolCI;
+
+	std::vector<miru::Ref<miru::crossplatform::DescriptorSetLayout>> m_DescSetLayouts;
+	
 	miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetCamera;
 	std::vector<miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSetObj;
+	miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetLight;
 	miru::crossplatform::DescriptorSet::CreateInfo m_DescSetCI;
 
 	miru::Ref<miru::crossplatform::Framebuffer>* m_Framebuffers;
 	std::deque<OBJECTS::Object*> m_RenderQueue;
-	std::shared_ptr<OBJECTS::Camera> m_Camera;
+	OBJECTS::Camera* m_Camera;
+	std::vector<OBJECTS::Light*> m_Lights;
 
 public:
 	Renderer(miru::Ref<miru::crossplatform::Context> context);
 	virtual ~Renderer();
 
 	virtual void SubmitFramebuffer(miru::Ref<miru::crossplatform::Framebuffer>* framebuffers) { m_Framebuffers = framebuffers; };
-	virtual void SubmitCamera(std::shared_ptr<OBJECTS::Camera> camera) { m_Camera = camera; };
+	virtual void SubmitCamera(OBJECTS::Camera* camera) { m_Camera = camera; };
+	virtual void SubmitLights(std::vector<OBJECTS::Light*> lights) { m_Lights = lights; };
 	virtual void Submit(OBJECTS::Object* obj);
 	virtual void Flush();
 
 	inline std::deque<OBJECTS::Object*>& GetRenderQueue() { return m_RenderQueue; };
+	inline miru::Ref<miru::crossplatform::CommandBuffer> GetCmdBuffer() { return m_CmdBuffer; };
 };
 }
 }

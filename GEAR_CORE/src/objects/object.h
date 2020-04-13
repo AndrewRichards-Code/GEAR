@@ -68,6 +68,14 @@ public:
 	void SetUniformModlMatrix();
 	void SetUniformModlMatrix(const mars::Mat4& modl);
 
+	inline static void SetContext(miru::Ref<miru::crossplatform::Context> context)
+	{
+		GRAPHICS::VertexBuffer::SetContext(context);
+		GRAPHICS::IndexBuffer::SetContext(context);
+		GRAPHICS::UniformBuffer::SetContext(context);
+		GRAPHICS::Texture::SetContext(context);
+	};
+
 	inline const std::vector<std::shared_ptr<GRAPHICS::VertexBuffer>> GetVBOs() const { return m_VBOs; }
 	inline const std::shared_ptr<GRAPHICS::IndexBuffer> GetIBO() const { return m_IBO; }
 	inline const std::shared_ptr<GRAPHICS::Pipeline> GetPipeline() const { return m_Pipeline; }

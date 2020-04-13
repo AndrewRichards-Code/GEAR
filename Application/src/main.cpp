@@ -538,58 +538,50 @@ int main()
 
 using namespace GEAR;
 using namespace GRAPHICS;
+using namespace OBJECTS;
 
 using namespace miru;
 using namespace miru::crossplatform;
 
+using namespace mars;
+
 int main()
 {
 	Window window("GEAR_MIRU_TEST", 400, 300, 1, true, false);
-	GraphicsAPI::LoadRenderDoc();
 
-	CommandPool::CreateInfo cmdPoolCI;
-	cmdPoolCI.debugName = "";
-	cmdPoolCI.pContext = window.GetContext();
-	cmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
-	cmdPoolCI.queueFamilyIndex = 0;
-	Ref<CommandPool> cmdPool = CommandPool::Create(&cmdPoolCI);
-	CommandBuffer::CreateInfo cmdBufferCI;
-	cmdBufferCI.debugName = "";
-	cmdBufferCI.pCommandPool = cmdPool;
-	cmdBufferCI.level = CommandBuffer::Level::PRIMARY;
-	cmdBufferCI.commandBufferCount = 2;
-	Ref<CommandBuffer> cmdBuffer = CommandBuffer::Create(&cmdBufferCI);;
+	std::shared_ptr<GRAPHICS::Pipeline> basic = std::make_shared<GRAPHICS::Pipeline>(window.GetDevice(), "res/shaders/bin/basic.vert.spv", "res/shaders/bin/basic.frag.spv");
+	basic->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
+	basic->SetRasterisationState(false, false, PolygonMode::FILL, CullModeBit::BACK_BIT, FrontFace::COUNTER_CLOCKWISE, false, 0, 0, 0, 0);
+	basic->SetMultisampleState(Image::SampleCountBit::SAMPLE_COUNT_1_BIT, false, 1.0f, false, false);
+	basic->SetDepthStencilState(true, true, CompareOp::GREATER, false, false, {}, {}, 0.0f, 1.0f);
+	float blendConsts[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	basic->SetColourBlendState(false, LogicOp::COPY, { {true, BlendFactor::SRC_ALPHA, BlendFactor::ONE_MINUS_SRC_ALPHA, BlendOp::ADD,
+											BlendFactor::ONE, BlendFactor::ZERO, BlendOp::ADD, (ColourComponentBit)15 } }, blendConsts);
+	basic->SetRenderPass(window.GetRenderPass(), 0);
+	basic->FinalisePipline();
 
-	auto RecordPresentCmdBuffers = [&]()
-	{
-		for (size_t i = 0; i < 2; i++)
-		{
-			cmdBuffer->Begin(i, CommandBuffer::UsageBit::SIMULTANEOUS);
+	Texture::SetContext(window.GetContext());
+	std::shared_ptr<Texture> logo =  std::make_shared<Texture>(window.GetDevice(), "res/img/andrew_manga_3_square.png");
 
-			Barrier::CreateInfo bCI;
-			bCI.type = Barrier::Type::IMAGE;
-			bCI.srcAccess = Barrier::AccessBit::COLOUR_ATTACHMENT_READ_BIT;
-			bCI.dstAccess = Barrier::AccessBit::COLOUR_ATTACHMENT_WRITE_BIT;
-			bCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
-			bCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
-			bCI.pImage = window.GetSwapchain()->m_SwapchainImages[i];
-			bCI.oldLayout = Image::Layout::UNKNOWN;
-			bCI.newLayout = Image::Layout::PRESENT_SRC;
-			bCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
-			Ref<Barrier> b = Barrier::Create(&bCI);
+	Object::SetContext(window.GetContext());
+	Object quad(window.GetDevice(), "res/obj/quad.obj", basic, logo, mars::Mat4::Translation({ 0, 0, -2 }));
 
-			cmdBuffer->PipelineBarrier(i, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT, { b });
-			cmdBuffer->ClearColourImage(i,
-				window.GetSwapchain()->m_SwapchainImages[i],
-				Image::Layout::PRESENT_SRC,
-				{ { 1.0f, 0.0f, 0.0f, 1.0f } },
-				{ {Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1} });
+	Light::SetContext(window.GetContext());
+	Light light(window.GetDevice(), Light::LightType::GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), GEAR_MAX_LIGHTS * Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	light.Ambient(1.0f);
+	light.Attenuation(0.0f, 0.0f);
 
-			cmdBuffer->End(i);
-		}
-	};
+	Camera::SetContext(window.GetContext());
+	Camera cam(window.GetDevice(), GEAR_CAMERA_PERSPECTIVE, Vec3(0, 0, 0), Vec3(0, 0, -1), Vec3(0, 1, 0));
+	cam.DefineProjection(DegToRad(90), window.GetRatio(), 0.01f, 5.0f, false, true);
+	cam.DefineView();
 
-	RecordPresentCmdBuffers();
+	Renderer renderer(window.GetContext());
+	renderer.SubmitFramebuffer(window.GetFramebuffers());
+	renderer.SubmitCamera(&cam);
+	renderer.SubmitLights({&light});
+	renderer.Submit(&quad);
+	renderer.Flush();
 
 	Fence::CreateInfo fenceCI;
 	fenceCI.debugName = "DrawFence";
@@ -603,13 +595,12 @@ int main()
 	bool windowResize;
 	while (!window.Closed())
 	{
-		if (window.GetSwapchain()->m_Resized)
+		/*if (window.GetSwapchain()->m_Resized)
 		{
-			RecordPresentCmdBuffers();
 			window.GetSwapchain()->m_Resized = false;
-		}
+		}*/
 
-		cmdBuffer->Present({ 0, 1 }, window.GetSwapchain(), draws, acquire, submit, windowResize);
+		renderer.GetCmdBuffer()->Present({ 0, 1 }, window.GetSwapchain(), draws, acquire, submit, windowResize);
 		window.Update();
 	}
 }

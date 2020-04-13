@@ -15,7 +15,10 @@ Window::Window(std::string title, int width, int height, int antiAliasingValue, 
 	m_Title += ": GEAR_CORE(x64)";
 	
 	if (!Init())
+	{
+		glfwDestroyWindow(m_Window);
 		glfwTerminate();
+	}
 	m_InitWidth = m_Width;
 	m_InitHeight = m_Height;
 
@@ -37,6 +40,7 @@ Window::Window(std::string title, int width, int height, int antiAliasingValue, 
 
 Window::~Window()
 {
+	glfwDestroyWindow(m_Window);
 	glfwTerminate();
 }
 
@@ -132,11 +136,13 @@ bool Window::Init()
 		std::cout << "ERROR: GEAR::GRAPHICS::Window: Failed to initialise GLFW!" << std::endl;
 		return false;
 	}
-
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	m_Window = glfwCreateWindow(m_Width, m_Height, m_Title.c_str(), NULL, NULL);
 
 	if (!m_Window)
 	{
+		glfwDestroyWindow(m_Window);
 		glfwTerminate();
 		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::Window: Failed to create GLFW window!" << std::endl;
 		return false;

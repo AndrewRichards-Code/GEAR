@@ -9,7 +9,7 @@
 
 //Graphics
 //OBJECTS
-//#include "objects/light.h"
+#include "objects/light.h"
 #include "objects/camera.h"
 #include "objects/object.h"
 //#include "objects/material.h"

@@ -13,11 +13,13 @@ miru::Ref<miru::crossplatform::MemoryBlock> UniformBuffer::s_MB_GPU_Usage = null
 UniformBuffer::UniformBuffer(void* device, unsigned int size, unsigned int bindingIndex)
 	:m_Device(device), m_Size(size), m_BindingIndex(bindingIndex)
 {
+	InitialiseMemory();
+
 	m_UniformBufferUploadCI.debugName = "GEAR_CORE_UniformBufferUpload";
 	m_UniformBufferUploadCI.device = m_Device;
 	m_UniformBufferUploadCI.usage = Buffer::UsageBit::TRANSFER_SRC;
 	m_UniformBufferUploadCI.size = m_Size;
-	m_UniformBufferUploadCI.data;
+	m_UniformBufferUploadCI.data = nullptr;
 	m_UniformBufferUploadCI.pMemoryBlock = s_MB_CPU_Upload;
 	m_UniformBufferUpload = Buffer::Create(&m_UniformBufferUploadCI);
 
@@ -71,7 +73,7 @@ void UniformBuffer::SubmitData(const void* data, unsigned int size, unsigned int
 
 void UniformBuffer::Upload(miru::Ref<miru::crossplatform::CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex, bool force)
 {
-	if (m_Upload || force)
+	if (!m_Upload || force)
 	{
 		cmdBuffer->CopyBuffer(cmdBufferIndex, m_UniformBufferUpload, m_UniformBuffer, { {0, 0, m_Size} });
 		m_Upload = true;

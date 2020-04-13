@@ -102,7 +102,6 @@ Object::~Object()
 void Object::SetUniformModlMatrix()
 {
 	m_ModelUBO.m_ModlMatrix = m_ModlMatrix;
-	m_ModelUBO.m_ModlMatrix.Transpose();
 	m_UBO->SubmitData(&m_ModelUBO.m_ModlMatrix.a, sizeof(Mat4), offsetof(ModelUBO, m_ModlMatrix));
 }
 
@@ -110,7 +109,6 @@ void Object::SetUniformModlMatrix(const Mat4& modl)
 {
 	m_ModlMatrix = modl;
 	m_ModelUBO.m_ModlMatrix = modl;
-	m_ModelUBO.m_ModlMatrix.Transpose();
 	m_UBO->SubmitData(&m_ModelUBO.m_ModlMatrix.a, sizeof(Mat4), offsetof(ModelUBO, m_ModlMatrix));
 }
 
