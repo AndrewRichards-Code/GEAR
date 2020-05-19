@@ -38,7 +38,7 @@ Light::Light(void* device, LightType type, const Vec3& position, const Vec3& dir
 	m_LightingUBO.u_Specular = 0.0f;
 	m_LightingUBO.u_Ambient= 1.0f;
 	m_LightingUBO.u_Emit= 0.0f;
-	m_UBO1->SubmitData(&m_LightingUBO.u_Diffuse, sizeof(LightingUBO), 0);
+	m_UBO1->SubmitData(&m_LightingUBO.u_Diffuse, sizeof(LightingUBO));
 }
 
 Light::~Light()
@@ -51,24 +51,24 @@ void Light::Specular(float shineFactor, float reflectivity)
 {
 	m_LightUBO.m_ShineFactor = shineFactor;
 	m_LightUBO.m_Reflectivity = reflectivity;
-	m_UBO0->SubmitData(&m_LightUBO.m_ShineFactor, 2 * sizeof(float), offsetof(LightUBO, m_ShineFactor) + m_LightID * sizeof(LightUBO));
+	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
 }
 void Light::Ambient(float ambientFactor)
 {
 	m_LightUBO.m_AmbientFactor = ambientFactor;
-	m_UBO0->SubmitData(&m_LightUBO.m_AmbientFactor, sizeof(float), offsetof(LightUBO, m_AmbientFactor) + m_LightID * sizeof(LightUBO));
+	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
 }
 void Light::Attenuation(float linear, float quadratic)
 {
 	m_LightUBO.m_AttenuationConstant = 1.0f;
 	m_LightUBO.m_AttenuationLinear = linear;
 	m_LightUBO.m_AttenuationQuadratic = quadratic;
-	m_UBO0->SubmitData(&m_LightUBO.m_AttenuationConstant, 3 * sizeof(float), offsetof(LightUBO, m_AttenuationConstant) + m_LightID * sizeof(LightUBO));
+	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
 }
 void Light::SpotCone(double theta)
 {
 	m_LightUBO.m_CutOff = static_cast<float>(cos(theta));
-	m_UBO0->SubmitData(&m_LightUBO.m_CutOff, sizeof(float), offsetof(LightUBO, m_CutOff) + m_LightID * sizeof(LightUBO));
+	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
 }
 
 void Light::Point()
@@ -79,9 +79,7 @@ void Light::Point()
 	/*m_DepthRenderTargetOmniProbe = std::make_unique<OmniProbe>(m_Position, m_DepthRenderSize);
 	m_DepthRenderTargetUniProbe = nullptr;*/
 
-	m_UBO0->SubmitData(&m_LightUBO.m_Type, sizeof(float), offsetof(LightUBO, m_Type) + m_LightID * sizeof(LightUBO));
-	m_UBO0->SubmitData((const float*)&m_LightUBO.m_Colour, sizeof(Vec4), offsetof(LightUBO, m_Colour) + m_LightID * sizeof(LightUBO));
-	m_UBO0->SubmitData((const float*)&m_LightUBO.m_Position, sizeof(Vec4), offsetof(LightUBO, m_Position) + m_LightID * sizeof(LightUBO));
+	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
 }
 void Light::Directional()
 {
@@ -91,9 +89,7 @@ void Light::Directional()
 	/*m_DepthRenderTargetOmniProbe = nullptr;
 	m_DepthRenderTargetUniProbe = std::make_unique<UniProbe>(m_Position, m_Direction, m_DepthRenderSize, GEAR_CAMERA_ORTHOGRAPHIC);*/
 
-	m_UBO0->SubmitData(&m_LightUBO.m_Type, sizeof(float), offsetof(LightUBO, m_Type) + m_LightID * sizeof(LightUBO));
-	m_UBO0->SubmitData((const float*)&m_LightUBO.m_Colour, sizeof(Vec4), offsetof(LightUBO, m_Colour) + m_LightID * sizeof(LightUBO));
-	m_UBO0->SubmitData((const float*)&m_LightUBO.m_Direction, sizeof(Vec4), offsetof(LightUBO, m_Direction) + m_LightID * sizeof(LightUBO));
+	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
 }
 void Light::Spot()
 {
@@ -104,18 +100,14 @@ void Light::Spot()
 	/*m_DepthRenderTargetOmniProbe = nullptr;
 	m_DepthRenderTargetUniProbe = std::make_unique<UniProbe>(m_Position, m_Direction, m_DepthRenderSize, GEAR_CAMERA_PERSPECTIVE);*/
 
-	m_UBO0->SubmitData(&m_LightUBO.m_Type, sizeof(float), offsetof(LightUBO, m_Type) + m_LightID * sizeof(LightUBO));
-	m_UBO0->SubmitData((const float*)&m_LightUBO.m_Colour, sizeof(Vec4), offsetof(LightUBO, m_Colour) + m_LightID * sizeof(LightUBO));
-	m_UBO0->SubmitData((const float*)&m_LightUBO.m_Position, sizeof(Vec4), offsetof(LightUBO, m_Position) + m_LightID * sizeof(LightUBO));
-	m_UBO0->SubmitData((const float*)&m_LightUBO.m_Direction, sizeof(Vec4), offsetof(LightUBO, m_Direction) + m_LightID * sizeof(LightUBO));
+	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
 }
 void Light::Area()
 {
 	m_LightUBO.m_Type = (float)LightType::GEAR_LIGHT_AREA;
 	m_LightUBO.m_Colour = m_Colour;
 
-	m_UBO0->SubmitData(&m_LightUBO.m_Type, sizeof(float), offsetof(LightUBO, m_Type) + m_LightID * sizeof(LightUBO));
-	m_UBO0->SubmitData((const float*)&m_LightUBO.m_Colour, sizeof(Vec4), offsetof(LightUBO, m_Colour) + m_LightID * sizeof(LightUBO));
+	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
 }
 
 /*void Light::SetDepthParameters(float near, float far, bool linear, bool reverse)
@@ -155,17 +147,17 @@ std::shared_ptr<OPENGL::Texture> Light::GetDepthTexture()
 void Light::UpdateColour()
 {
 	m_LightUBO.m_Colour = m_Colour;
-	m_UBO0->SubmitData((const float*)&m_LightUBO.m_Colour, sizeof(Vec4), offsetof(LightUBO, m_Colour) + m_LightID * sizeof(LightUBO));
+	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
 }
 void Light::UpdatePosition()
 {
 	m_LightUBO.m_Position = Vec4(m_Position, 1.0f);
-	m_UBO0->SubmitData((const float*)&m_LightUBO.m_Position, sizeof(Vec4), offsetof(LightUBO, m_Position) + m_LightID * sizeof(LightUBO));
+	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
 }
 void Light::UpdateDirection()
 {
 	m_LightUBO.m_Direction = Vec4(m_Direction, 0.0f);
-	m_UBO0->SubmitData((const float*)&m_LightUBO.m_Direction, sizeof(Vec4), offsetof(LightUBO, m_Direction) + m_LightID * sizeof(LightUBO));
+	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
 }
 void Light::UpdateDirection(double yaw, double pitch, double roll, bool invertYAxis)
 {
@@ -183,7 +175,7 @@ void Light::UpdateDirection(double yaw, double pitch, double roll, bool invertYA
 	m_Direction = Vec3::Normalise(direction);
 
 	m_LightUBO.m_Direction = Vec4(m_Direction, 0.0f);
-	m_UBO0->SubmitData((const float*)&m_LightUBO.m_Direction, sizeof(Vec4), offsetof(LightUBO, m_Direction) + m_LightID * sizeof(LightUBO));
+	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
 }
 
 void Light::InitialiseUBO()
@@ -195,16 +187,16 @@ void Light::InitialiseUBO()
 		s_InitialiseUBO = true;
 		{
 			const float zero[sizeof(LightUBO) * GEAR_MAX_LIGHTS] = { 0 };
-			m_UBO0->SubmitData(zero, sizeof(LightUBO) * GEAR_MAX_LIGHTS, 0);
+			m_UBO0->SubmitData(zero, sizeof(LightUBO) * GEAR_MAX_LIGHTS);
 		}
 		{
 			const float zero[sizeof(LightingUBO)] = { 0 };
-			m_UBO1->SubmitData(zero, sizeof(LightingUBO), 0);
+			m_UBO1->SubmitData(zero, sizeof(LightingUBO));
 		}
 	}
 }
 void Light::SetAllToZero()
 {
 	const float zero[sizeof(LightUBO)] = { 0 };
-	m_UBO0->SubmitData(zero, sizeof(LightUBO), m_LightID * sizeof(LightUBO));
+	m_UBO0->SubmitData(zero, sizeof(LightUBO));
 }

@@ -33,7 +33,7 @@ private:
 	std::vector<miru::Ref<miru::crossplatform::DescriptorSetLayout>> m_DescSetLayouts;
 	
 	miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetCamera;
-	std::vector<miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSetObj;
+	std::map<OBJECTS::Object*, miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSetObj;
 	miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetLight;
 	miru::crossplatform::DescriptorSet::CreateInfo m_DescSetCI;
 
@@ -51,6 +51,8 @@ public:
 	virtual void SubmitLights(std::vector<OBJECTS::Light*> lights) { m_Lights = lights; };
 	virtual void Submit(OBJECTS::Object* obj);
 	virtual void Flush();
+
+	virtual void UpdateCamera();
 
 	inline std::deque<OBJECTS::Object*>& GetRenderQueue() { return m_RenderQueue; };
 	inline miru::Ref<miru::crossplatform::CommandBuffer> GetCmdBuffer() { return m_CmdBuffer; };

@@ -47,7 +47,7 @@ Window::~Window()
 void Window::Update()
 {
 	glfwPollEvents();
-	glfwGetFramebufferSize(m_Window, &m_Width, &m_Height);
+	//glfwGetFramebufferSize(m_Window, &m_Width, &m_Height);
 }
 
 bool Window::Closed() const
@@ -136,6 +136,46 @@ bool Window::Init()
 		std::cout << "ERROR: GEAR::GRAPHICS::Window: Failed to initialise GLFW!" << std::endl;
 		return false;
 	}
+	miru::GraphicsAPI::SetAPI(miru::GraphicsAPI::API::VULKAN);
+
+#ifdef _DEBUG
+	GraphicsAPI::LoadGraphicsDebugger();
+#endif 
+
+	m_ContextCI.applicationName = m_Title.c_str();
+	m_ContextCI.api_version_major = 1;
+	m_ContextCI.api_version_minor = 1;
+#ifdef _DEBUG
+	m_ContextCI.instanceLayers = { "VK_LAYER_LUNARG_standard_validation" };
+	m_ContextCI.instanceExtensions = { "VK_KHR_surface", "VK_KHR_win32_surface" };
+	m_ContextCI.deviceLayers = { "VK_LAYER_LUNARG_standard_validation" };
+	m_ContextCI.deviceExtensions = { "VK_KHR_swapchain" };
+#else
+	m_ContextCI.instanceLayers = {};
+	m_ContextCI.instanceExtensions = { "VK_KHR_surface", "VK_KHR_win32_surface" };
+	m_ContextCI.deviceLayers = {};
+	m_ContextCI.deviceExtensions = { "VK_KHR_swapchain" };
+#endif
+	m_ContextCI.deviceDebugName = "GEAR_CORE_Context";
+	m_Context = Context::Create(&m_ContextCI);
+
+	if (miru::GraphicsAPI::IsVulkan())
+	{
+		if (glfwVulkanSupported() == GLFW_FALSE)
+		{
+			std::cout << "ERROR: GEAR::GRAPHICS::Window: GLFW does not support Vulkan" << std::endl;
+			return false;
+		}
+
+		bool glfwPresentationSupport = false;
+		glfwPresentationSupport = glfwGetPhysicalDevicePresentationSupport(ref_cast<vulkan::Context>(m_Context)->m_Instance, ref_cast<vulkan::Context>(m_Context)->m_PhysicalDevices.m_PhysicalDevices[0], 0);
+		if (!glfwPresentationSupport)
+		{
+			std::cout << "ERROR: GEAR::GRAPHICS::Window: The Vulkan queue family doesn't support presentation to GLFW!" << std::endl;
+			return false;
+		}
+	}
+	
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	m_Window = glfwCreateWindow(m_Width, m_Height, m_Title.c_str(), NULL, NULL);
@@ -152,25 +192,6 @@ bool Window::Init()
 	icon[0].pixels = stbi_load("res/gear_core/GEAR_logo_icon.png", &icon->width, &icon->height, 0, 4);
 	glfwSetWindowIcon(m_Window, 1, icon);
 
-	miru::GraphicsAPI::SetAPI(miru::GraphicsAPI::API::VULKAN);
-
-	m_ContextCI.applicationName = m_Title.c_str();
-	m_ContextCI.api_version_major = 1;
-	m_ContextCI.api_version_minor = 2;
-#ifdef _DEBUG
-	m_ContextCI.instanceLayers = { "VK_LAYER_LUNARG_standard_validation" };
-	m_ContextCI.instanceExtensions = { "VK_KHR_surface", "VK_KHR_win32_surface" };
-	m_ContextCI.deviceLayers = { "VK_LAYER_LUNARG_standard_validation" };
-	m_ContextCI.deviceExtensions = { "VK_KHR_swapchain" };
-#else
-	m_ContextCI.instanceLayers = {};
-	m_ContextCI.instanceExtensions = { "VK_KHR_surface", "VK_KHR_win32_surface" };
-	m_ContextCI.deviceLayers = {};
-	m_ContextCI.deviceExtensions = { "VK_KHR_swapchain" };
-#endif
-	m_ContextCI.deviceDebugName = "GEAR_CORE_Context";
-	m_Context = Context::Create(&m_ContextCI);
-
 	m_SwapchainCI.debugName = "GEAR_CORE_Swapchain";
 	m_SwapchainCI.pContext = m_Context;
 	m_SwapchainCI.pWindow = glfwGetWin32Window(m_Window);
@@ -179,6 +200,7 @@ bool Window::Init()
 	m_SwapchainCI.swapchainCount = 2;
 	m_SwapchainCI.vSync = m_VSync;
 	m_Swapchain = Swapchain::Create(&m_SwapchainCI);
+	m_Swapchain->m_Resized = true;
 
 	MemoryBlock::CreateInfo dpethMBCI;
 	dpethMBCI.debugName = "GEAR_CORE_MB_GPU_SwapchainDepthImage";
@@ -214,8 +236,8 @@ bool Window::Init()
 	m_RenderPassCI.device = m_Context->GetDevice();
 	m_RenderPassCI.attachments =
 	{
-		{Image::Format::B8G8R8A8_UNORM, Image::SampleCountBit::SAMPLE_COUNT_1_BIT, RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE,RenderPass::AttachmentLoadOp::DONT_CARE, RenderPass::AttachmentStoreOp::DONT_CARE, Image::Layout::UNKNOWN, Image::Layout::PRESENT_SRC},
-		{Image::Format::D32_SFLOAT, Image::SampleCountBit::SAMPLE_COUNT_1_BIT, RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::DONT_CARE,RenderPass::AttachmentLoadOp::DONT_CARE, RenderPass::AttachmentStoreOp::DONT_CARE, Image::Layout::UNKNOWN, Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL}
+		{m_Swapchain->m_SwapchainImages[0]->GetCreateInfo().format, Image::SampleCountBit::SAMPLE_COUNT_1_BIT, RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE,RenderPass::AttachmentLoadOp::DONT_CARE, RenderPass::AttachmentStoreOp::DONT_CARE, Image::Layout::UNKNOWN, Image::Layout::PRESENT_SRC},
+		{m_DepthImageCI.format, Image::SampleCountBit::SAMPLE_COUNT_1_BIT, RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::DONT_CARE,RenderPass::AttachmentLoadOp::DONT_CARE, RenderPass::AttachmentStoreOp::DONT_CARE, Image::Layout::UNKNOWN, Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL}
 	};
 	m_RenderPassCI.subpassDescriptions =
 	{
@@ -224,7 +246,7 @@ bool Window::Init()
 	m_RenderPassCI.subpassDependencies =
 	{
 		{MIRU_SUBPASS_EXTERNAL, 0, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT,
-		(Barrier::AccessBit)0, Barrier::AccessBit::COLOUR_ATTACHMENT_READ_BIT | Barrier::AccessBit::COLOUR_ATTACHMENT_WRITE_BIT}
+		(Barrier::AccessBit)0, Barrier::AccessBit::COLOUR_ATTACHMENT_READ_BIT | Barrier::AccessBit::COLOUR_ATTACHMENT_WRITE_BIT, DependencyBit::NONE_BIT}
 	};
 	m_RenderPass = RenderPass::Create(&m_RenderPassCI);
 
@@ -297,11 +319,13 @@ void Window::window_resize(GLFWwindow* window, int width, int height)
 	win->m_Height = height;
 
 	win->m_Swapchain->Resize(static_cast<uint32_t>(win->m_Width), static_cast<uint32_t>(win->m_Height));
-	if (width < 3840 && height < 2160)
+	if (width <= 3840 && height <= 2160)
 	{
 		win->m_DepthImageCI.width = win->m_Width;
 		win->m_DepthImageCI.height = win->m_Height;
 		win->m_DepthImage = Image::Create(&win->m_DepthImageCI);
+		win->m_DepthImageViewCI.pImage = win->m_DepthImage;
+		win->m_DepthImageView = ImageView::Create(&win->m_DepthImageViewCI);
 	}
 	win->CreateFramebuffer();
 }

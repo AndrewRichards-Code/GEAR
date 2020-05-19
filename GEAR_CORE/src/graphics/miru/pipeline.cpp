@@ -25,8 +25,10 @@ void GEAR::GRAPHICS::Pipeline::AddAdditionalShaderModule(Shader::StageBit stage,
 	shaderCI.debugName = shaderPath.substr(shaderPath.find_last_of('/')).c_str();
 	shaderCI.device = m_Device;
 	shaderCI.stage = stage;
-	shaderCI.filepath = shaderPath.c_str();
 	shaderCI.entryPoint = "main";
+	shaderCI.binaryFilepath = shaderPath.c_str();
+	shaderCI.binaryCode = {};
+	shaderCI.recompileArguments = {};
 	m_Shaders.emplace_back(Shader::Create(&shaderCI));
 	m_PipelineCI.shaders = m_Shaders;
 }
@@ -101,7 +103,7 @@ void GEAR::GRAPHICS::Pipeline::FinalisePipline()
 				typeSize = 8;
 
 			vibds.push_back({ i, (((uint32_t)vsiad.vertexType % 4) + 1) * typeSize, VertexInputRate::VERTEX });
-			viads.push_back({ vsiad.location, vsiad.binding + i, vsiad.vertexType, vsiad.offset, vsiad.semanticName.c_str() });
+			viads.push_back({ vsiad.location, vsiad.binding + i, vsiad.vertexType, 0, vsiad.semanticName.c_str() });
 			i++;
 		}
 

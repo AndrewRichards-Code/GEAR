@@ -49,9 +49,9 @@ public:
 
 	struct ObjData
 	{
-		std::vector<mars::Vec3> m_Vertices;
+		std::vector<mars::Vec4> m_Vertices;
 		std::vector<mars::Vec2> m_TexCoords;
-		std::vector<mars::Vec3> m_Normals;
+		std::vector<mars::Vec4> m_Normals;
 		std::vector<unsigned int> m_VertIndices;
 		std::vector<unsigned int> m_TextIndices;
 		std::vector<unsigned int> m_NormIndices;
@@ -97,7 +97,7 @@ public:
 				float x, y, z;
 
 				sstream >> x >> y >> z;
-				result.m_Vertices.emplace_back(mars::Vec3(x, y, z));
+				result.m_Vertices.emplace_back(mars::Vec4(x, y, z, 1.0f));
 			}
 
 			else if (flag == "vt")
@@ -113,7 +113,7 @@ public:
 				float x, y, z;
 
 				sstream >> x >> y >> z;
-				result.m_Normals.emplace_back(mars::Vec3(x, y, z));
+				result.m_Normals.emplace_back(mars::Vec4(x, y, z, 0.0f));
 			}
 
 			else if (flag == "f")

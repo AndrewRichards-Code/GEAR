@@ -547,13 +547,13 @@ using namespace mars;
 
 int main()
 {
-	Window window("GEAR_MIRU_TEST", 400, 300, 1, true, false);
+	Window window("GEAR_MIRU_TEST", 1920, 1080, 1, true, false);
 
 	std::shared_ptr<GRAPHICS::Pipeline> basic = std::make_shared<GRAPHICS::Pipeline>(window.GetDevice(), "res/shaders/bin/basic.vert.spv", "res/shaders/bin/basic.frag.spv");
 	basic->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
-	basic->SetRasterisationState(false, false, PolygonMode::FILL, CullModeBit::BACK_BIT, FrontFace::COUNTER_CLOCKWISE, false, 0, 0, 0, 0);
+	basic->SetRasterisationState(false, false, PolygonMode::FILL, CullModeBit::BACK_BIT, FrontFace::COUNTER_CLOCKWISE, false, 0, 0, 0, 1);
 	basic->SetMultisampleState(Image::SampleCountBit::SAMPLE_COUNT_1_BIT, false, 1.0f, false, false);
-	basic->SetDepthStencilState(true, true, CompareOp::GREATER, false, false, {}, {}, 0.0f, 1.0f);
+	basic->SetDepthStencilState(true, true, CompareOp::LESS, false, false, {}, {}, 0.0f, 1.0f);
 	float blendConsts[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 	basic->SetColourBlendState(false, LogicOp::COPY, { {true, BlendFactor::SRC_ALPHA, BlendFactor::ONE_MINUS_SRC_ALPHA, BlendOp::ADD,
 											BlendFactor::ONE, BlendFactor::ZERO, BlendOp::ADD, (ColourComponentBit)15 } }, blendConsts);
@@ -561,26 +561,29 @@ int main()
 	basic->FinalisePipline();
 
 	Texture::SetContext(window.GetContext());
-	std::shared_ptr<Texture> logo =  std::make_shared<Texture>(window.GetDevice(), "res/img/andrew_manga_3_square.png");
+	std::shared_ptr<Texture> logo =  std::make_shared<Texture>(window.GetDevice(), "C:/Users/Andrew/source/repos/MIRU/logo.png");
+	std::shared_ptr<Texture> stall_tex =  std::make_shared<Texture>(window.GetDevice(), "res/img/stallTexture.png");
 
 	Object::SetContext(window.GetContext());
-	Object quad(window.GetDevice(), "res/obj/quad.obj", basic, logo, mars::Mat4::Translation({ 0, 0, -2 }));
+	Object quad1(window.GetDevice(), "res/obj/quad.obj", basic, logo, mars::Mat4::Translation({ -2.0f, 0.0f, -1.0f }));
+	Object quad2(window.GetDevice(), "res/obj/stall.obj", basic, stall_tex, Mat4::Translation(Vec3(0.0f, -2.0f, -5.0f)) * Mat4::Rotation(pi, Vec3(0, 1, 0)));
 
 	Light::SetContext(window.GetContext());
-	Light light(window.GetDevice(), Light::LightType::GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), GEAR_MAX_LIGHTS * Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	Light light(window.GetDevice(), Light::LightType::GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -2.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f) * GEAR_MAX_LIGHTS);
 	light.Ambient(1.0f);
 	light.Attenuation(0.0f, 0.0f);
 
 	Camera::SetContext(window.GetContext());
-	Camera cam(window.GetDevice(), GEAR_CAMERA_PERSPECTIVE, Vec3(0, 0, 0), Vec3(0, 0, -1), Vec3(0, 1, 0));
-	cam.DefineProjection(DegToRad(90), window.GetRatio(), 0.01f, 5.0f, false, true);
+	Camera cam(window.GetDevice(), GEAR_CAMERA_PERSPECTIVE, Vec3(0, 0, 0), Vec3(0, 0, 1), Vec3(0, 1, 0));
+	cam.DefineProjection(90.0, window.GetRatio(), 0.01f, 100.0f, false, true);
 	cam.DefineView();
 
 	Renderer renderer(window.GetContext());
 	renderer.SubmitFramebuffer(window.GetFramebuffers());
 	renderer.SubmitCamera(&cam);
 	renderer.SubmitLights({&light});
-	renderer.Submit(&quad);
+	renderer.Submit(&quad1);
+	renderer.Submit(&quad2);
 	renderer.Flush();
 
 	Fence::CreateInfo fenceCI;
@@ -592,13 +595,77 @@ int main()
 	Semaphore::CreateInfo semaphoreCI = { "Seamphore", window.GetDevice() };
 	std::vector<Ref<Semaphore>>acquire = { Semaphore::Create(&semaphoreCI), Semaphore::Create(&semaphoreCI) };
 	std::vector<Ref<Semaphore>>submit = { Semaphore::Create(&semaphoreCI), Semaphore::Create(&semaphoreCI) };
-	bool windowResize;
+
+	double yaw = 0;
+	double pitch = 0;
+	double roll = 0;
+
+	double pos_x = 0, pos_y = 0;
+	double last_pos_x = window.GetWidth() / 2.0;
+	double last_pos_y = window.GetHeight() / 2.0;
+	bool initMouse = true;
+	float increment = 0.05f;
+
+	bool windowResize = false;
 	while (!window.Closed())
 	{
-		/*if (window.GetSwapchain()->m_Resized)
+		if (window.GetSwapchain()->m_Resized)
 		{
+			basic->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
+			basic->FinalisePipline();
+
+			renderer = Renderer(window.GetContext());
+			renderer.SubmitFramebuffer(window.GetFramebuffers());
+			renderer.SubmitCamera(&cam);
+			renderer.SubmitLights({ &light });
+			renderer.Submit(&quad1);
+			renderer.Submit(&quad2);
+			renderer.Flush();
 			window.GetSwapchain()->m_Resized = false;
-		}*/
+		}
+
+		//Keyboard and Mouse input
+		{
+			if (window.IsKeyPressed(GLFW_KEY_D))
+				cam.m_Position -= Vec3::Normalise(Vec3::Cross(cam.m_Up, cam.m_Forward)) * 2 * increment;
+			if (window.IsKeyPressed(GLFW_KEY_A))
+				cam.m_Position += Vec3::Normalise(Vec3::Cross(cam.m_Up, cam.m_Forward)) * 2 * increment;
+			if (window.IsKeyPressed(GLFW_KEY_S))
+				cam.m_Position -= cam.m_Forward * 2 * increment;
+			if (window.IsKeyPressed(GLFW_KEY_W))
+				cam.m_Position += cam.m_Forward * 2 * increment;
+
+
+			window.GetMousePosition(pos_x, pos_y);
+
+			if (initMouse || window.IsMouseButtonPressed(GLFW_MOUSE_BUTTON_MIDDLE))
+			{
+				last_pos_x = pos_x;
+				last_pos_y = pos_y;
+				initMouse = false;
+			}
+
+			double offset_pos_x = pos_x - last_pos_x;
+			double offset_pos_y = -pos_y + last_pos_y;
+			last_pos_x = pos_x;
+			last_pos_y = pos_y;
+			offset_pos_x *= static_cast<double>(increment) * static_cast<double>(increment);
+			offset_pos_y *= static_cast<double>(increment) * static_cast<double>(increment);
+			yaw += 2 * offset_pos_x;
+			pitch += offset_pos_y;
+			if (pitch > pi / 2)
+				pitch = pi / 2;
+			if (pitch < -pi / 2)
+				pitch = -pi / 2;
+		}
+
+		//Camera Update
+		cam.DefineProjection(DegToRad(90), window.GetRatio(), 0.01f, 1500.0f, false, true);
+		cam.UpdateCameraPosition();
+		cam.CalcuateLookAround(yaw, pitch, roll, true);
+		cam.m_Position.y = 1.0f;
+		cam.DefineView();
+		renderer.UpdateCamera();
 
 		renderer.GetCmdBuffer()->Present({ 0, 1 }, window.GetSwapchain(), draws, acquire, submit, windowResize);
 		window.Update();

@@ -20,7 +20,7 @@ struct PS_IN
 
 //From Application
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 1, float4, uTexture);
-//MIRU_COMBINED_IMAGE_SAMPLER_ARRAY(MIRU_IMAGE_2D, 2, 1, float4, u_Textures, 32);
+//MIRU_COMBINED_IMAGE_SAMPLER_ARRAY(MIRU_IMAGE_2D, 1, 2, float4, u_Textures, 32);
 
 struct Light
 {
@@ -42,7 +42,7 @@ struct Lights
 {
 	Light u_Lights[MAX_LIGHTS];
 }; 
-MIRU_UNIFORM_BUFFER(0, 2, Lights, lights);
+MIRU_UNIFORM_BUFFER(2, 0, Lights, lights);
 
 struct Lighting
 {
@@ -51,7 +51,7 @@ struct Lighting
 	float u_Ambient;
 	float u_Emit;
 };
-MIRU_UNIFORM_BUFFER(0, 3, Lighting, lighting);
+MIRU_UNIFORM_BUFFER(3, 0, Lighting, lighting);
 
 //Functions
 static float4 diffuse =  {0, 0, 0, 0};
@@ -139,10 +139,10 @@ void CalcLighting(int i, PS_IN IN)
 
 PS_OUT main(PS_IN IN)
 {
-	for(int i = 0; i < MAX_LIGHTS; i++)
+	/*r(int i = 0; i < MAX_LIGHTS; i++)
 	{
 		CalcLighting(i, IN);
-	}
+	}*/
 	
 	PS_OUT OUT;
 
@@ -155,10 +155,11 @@ PS_OUT main(PS_IN IN)
 			OUT.colour = ((diffuse + specular + ambient)/MAX_LIGHTS) * u_Textures_image_cis[tid].Sample(u_Textures_sampler_cis[tid], IN.v_TextCoord);
 		}	
 	}
-	else*/
-	{
-		OUT.colour = ((diffuse + specular + ambient)/MAX_LIGHTS) * uTexture_image_cis.Sample(uTexture_sampler_cis, IN.v_TextCoord);
-	}
+	else
+	{*/
+	OUT.colour = uTexture_image_cis.Sample(uTexture_sampler_cis, IN.v_TextCoord);
+	/*((diffuse + specular + ambient)/MAX_LIGHTS) **/ 
+	/*
 
 	if( IN.v_Colour.r != 0.0 &&
 		IN.v_Colour.g != 0.0 &&
@@ -166,7 +167,7 @@ PS_OUT main(PS_IN IN)
 		IN.v_Colour.a != 0.0 )
 	{
 		OUT.colour += IN.v_Colour;
-	}
+	}*/
 	
 	return OUT;
 }

@@ -56,7 +56,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\src;$(VULKAN_SDK)\Include;C:\Users\Andrew\source\repos\MARS\MARS\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\redist;C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\src;$(VULKAN_SDK)\Include;C:\Users\Andrew\source\repos\MARS\MARS\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
@@ -80,7 +80,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\src;$(VULKAN_SDK)\Include;C:\Users\Andrew\source\repos\MARS\MARS\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\redist;C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\src;$(VULKAN_SDK)\Include;C:\Users\Andrew\source\repos\MARS\MARS\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
@@ -112,6 +112,7 @@
     <ClCompile Include="src\graphics\miru\window.cpp" />
     <ClCompile Include="src\objects\camera.cpp" />
     <ClCompile Include="src\objects\light.cpp" />
+    <ClCompile Include="src\objects\mesh.cpp" />
     <ClCompile Include="src\objects\object.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -131,6 +132,7 @@
     <ClInclude Include="src\input\inputmanager.h" />
     <ClInclude Include="src\objects\camera.h" />
     <ClInclude Include="src\objects\light.h" />
+    <ClInclude Include="src\objects\mesh.h" />
     <ClInclude Include="src\objects\object.h" />
     <ClInclude Include="src\utils\fileutils.h" />
   </ItemGroup>

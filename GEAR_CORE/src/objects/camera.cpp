@@ -27,7 +27,7 @@ Camera::~Camera()
 void Camera::UpdateCameraPosition()
 {
 	m_CameraUBO.m_Position = Vec4(m_Position, 1.0f);
-	m_UBO->SubmitData((const float*)&m_CameraUBO.m_Position.x, sizeof(Vec4), offsetof(CameraUBO, m_Position));
+	m_UBO->SubmitData((const float*)&m_CameraUBO.m_ProjectionMatrix.a, sizeof(CameraUBO));
 }
 void Camera::CalcuateLookAround(double yaw, double pitch, double roll, bool invertYAxis)
 {
@@ -73,19 +73,20 @@ void Camera::DefineView()
 	Vec3 final = Quat::ToVec3((q * p) * qInv);
 	Vec3 final2 = p.RotQuat(q);*/
 
-	m_UBO->SubmitData(&m_CameraUBO.m_ViewMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ViewMatrix));
+	m_UBO->SubmitData((const float*)&m_CameraUBO.m_ProjectionMatrix.a, sizeof(CameraUBO));
 }
 void Camera::DefineView(const Mat4& viewMatrix)
 {
-	m_CameraUBO.m_ViewMatrix = viewMatrix * Mat4::Translation(Vec3(-m_Position.x, -m_Position.y, -m_Position.z));
-	m_UBO->SubmitData(&m_CameraUBO.m_ViewMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ViewMatrix));
+	Mat4 translation = Mat4::Translation(Vec3(-m_Position.x, -m_Position.y, -m_Position.z));
+	m_CameraUBO.m_ViewMatrix = viewMatrix * translation;
+	m_UBO->SubmitData((const float*)&m_CameraUBO.m_ProjectionMatrix.a, sizeof(CameraUBO));
 }
 void Camera::DefineProjection(float left, float right, float bottom, float top, float near, float far)
 {
 	if (m_ProjectionType == GEAR_CAMERA_ORTHOGRAPHIC)
 	{
 		m_CameraUBO.m_ProjectionMatrix = Mat4::Orthographic(left, right, bottom, top, near, far);
-		m_UBO->SubmitData(&m_CameraUBO.m_ProjectionMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ProjectionMatrix));
+		m_UBO->SubmitData((const float*)&m_CameraUBO.m_ProjectionMatrix.a, sizeof(CameraUBO));
 	}
 	else
 	{
@@ -103,7 +104,7 @@ void Camera::DefineProjection(double fov, float aspectRatio, float zNear, float 
 		if (flipY)
 			m_CameraUBO.m_ProjectionMatrix.f *= -1;
 
-		m_UBO->SubmitData(&m_CameraUBO.m_ProjectionMatrix.a, sizeof(Mat4), offsetof(CameraUBO, m_ProjectionMatrix));
+		m_UBO->SubmitData((const float*)&m_CameraUBO.m_ProjectionMatrix.a, sizeof(CameraUBO));
 	}
 	else
 	{
@@ -130,6 +131,6 @@ void Camera::InitialiseUBO()
 		s_InitialiseUBO = true;
 
 		const float zero[sizeof(CameraUBO)] = { 0 };
-		m_UBO->SubmitData(zero, sizeof(CameraUBO), 0);
+		m_UBO->SubmitData(zero, sizeof(CameraUBO));
 	}
 }

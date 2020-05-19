@@ -56,16 +56,20 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\src;$(VULKAN_SDK)\Include;C:\Users\Andrew\source\repos\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\redist;C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\src;$(VULKAN_SDK)\Include;C:\Users\Andrew\source\repos\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GEAR_OPENGL;GLEW_STATIC;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>$(SolutionDir)GEAR_CORE\lib\x64\$(Configuration);$(VULKAN_SDK)\Lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\lib\x64\$(Configuration);$(VULKAN_SDK)\Lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>GEAR_CORE.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4098 /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
+    <PostBuildEvent>
+      <Command>cd $(ProjectDir)
+BuildShaders.bat</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -75,7 +79,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\src;$(VULKAN_SDK)\Include;C:\Users\Andrew\source\repos\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\redist;C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\src;$(VULKAN_SDK)\Include;C:\Users\Andrew\source\repos\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GEAR_OPENGL;GLEW_STATIC;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -83,7 +87,7 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)GEAR_CORE\lib\x64\$(Configuration);$(VULKAN_SDK)\Lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\lib\x64\$(Configuration);$(VULKAN_SDK)\Lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>GEAR_CORE.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4098 /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>

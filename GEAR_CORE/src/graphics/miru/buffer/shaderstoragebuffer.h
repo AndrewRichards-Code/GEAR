@@ -25,10 +25,10 @@ namespace GRAPHICS {
 		inline static void SetContext(miru::Ref<miru::crossplatform::Context> context) { s_Context = context; };
 		void InitialiseMemory();
 
-		void SubmitData(const void* data, unsigned int size, unsigned int offset) const;
+		void SubmitData(const void* data, unsigned int size) const;
 		void Upload(miru::crossplatform::CommandBuffer& cmdBuffer, uint32_t cmdBufferIndex = 0);
 		void Download(miru::crossplatform::CommandBuffer& cmdBuffer, uint32_t cmdBufferIndex = 0);
-		void AccessData(void* data, unsigned int size, unsigned int offset) const;
+		void AccessData(void* data, unsigned int size) const;
 
 		inline unsigned int GetSize() { return m_Size; }
 		inline unsigned int GetBindingIndex() { return m_BindingIndex; }

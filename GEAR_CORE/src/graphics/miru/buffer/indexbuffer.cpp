@@ -26,7 +26,7 @@ IndexBuffer::IndexBuffer(void* device, const unsigned int* data, unsigned int co
 	m_IndexBufferCI.debugName = "GEAR_CORE_IndexBufferUsage";
 	m_IndexBufferCI.device = m_Device;
 	m_IndexBufferCI.usage = Buffer::UsageBit::TRANSFER_DST | Buffer::UsageBit::INDEX;
-	m_IndexBufferCI.size = 0;
+	m_IndexBufferCI.size = m_Count * sizeof(unsigned int);
 	m_IndexBufferCI.data = nullptr;
 	m_IndexBufferCI.pMemoryBlock = s_MB_GPU_Usage;
 	m_IndexBuffer = Buffer::Create(&m_IndexBufferCI);

@@ -26,7 +26,7 @@ UniformBuffer::UniformBuffer(void* device, unsigned int size, unsigned int bindi
 	m_UniformBufferCI.debugName = "GEAR_CORE_UniformBufferUsage";
 	m_UniformBufferCI.device = m_Device;
 	m_UniformBufferCI.usage = Buffer::UsageBit::TRANSFER_DST | Buffer::UsageBit::UNIFORM;
-	m_UniformBufferCI.size = 0;
+	m_UniformBufferCI.size = m_Size;
 	m_UniformBufferCI.data = nullptr;
 	m_UniformBufferCI.pMemoryBlock = s_MB_GPU_Usage;
 	m_UniformBuffer = Buffer::Create(&m_UniformBufferCI);
@@ -66,9 +66,9 @@ void UniformBuffer::InitialiseMemory()
 	}
 }
 
-void UniformBuffer::SubmitData(const void* data, unsigned int size, unsigned int offset) const
+void UniformBuffer::SubmitData(const void* data, unsigned int size) const
 {
-	s_MB_CPU_Upload->SubmitData(m_UniformBufferUpload->GetResource(), (size_t)size, (void*)((unsigned int*)data + offset));
+	s_MB_CPU_Upload->SubmitData(m_UniformBufferUpload->GetResource(), (size_t)size, (void*)data);
 }
 
 void UniformBuffer::Upload(miru::Ref<miru::crossplatform::CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex, bool force)

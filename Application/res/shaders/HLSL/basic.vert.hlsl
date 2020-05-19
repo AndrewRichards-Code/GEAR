@@ -22,7 +22,7 @@ struct Model
 {
 	float4x4 u_Modl;
 };
-MIRU_UNIFORM_BUFFER(0, 1, Model, model);
+MIRU_UNIFORM_BUFFER(1, 0, Model, model);
 
 //To Fragment Shader
 struct VS_OUT
@@ -40,8 +40,10 @@ VS_OUT main(VS_IN IN)
 {
 	VS_OUT OUT;
 	
-	OUT.v_Position = mul(IN.positions, mul(model.u_Modl, mul(camera.u_View, camera.u_Proj)));
-	OUT.v_TextCoord = IN.textCoords;
+	//OUT.v_Position = mul(IN.positions, mul(model.u_Modl, mul(camera.u_View, camera.u_Proj)));
+	OUT.v_Position = mul(mul(mul(transpose(camera.u_Proj), transpose(camera.u_View)), transpose(model.u_Modl)), IN.positions);
+	OUT.v_TextCoord.x = IN.textCoords.x;
+	OUT.v_TextCoord.y = 1.0 - IN.textCoords.y;
 	OUT.v_TextIds = IN.textIds;
 	OUT.v_Normal = mul(transpose(model.u_Modl), IN.normals);
 	OUT.v_WorldSpace = mul(IN.positions, model.u_Modl);

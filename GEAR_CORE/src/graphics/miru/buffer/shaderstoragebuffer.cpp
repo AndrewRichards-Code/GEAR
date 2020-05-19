@@ -13,20 +13,22 @@ miru::Ref<miru::crossplatform::MemoryBlock> ShaderStorageBuffer::s_MB_GPU_Usage 
 ShaderStorageBuffer::ShaderStorageBuffer(unsigned int size, unsigned int bindingIndex)
 	:m_Size(size), m_BindingIndex(bindingIndex)
 {
+	InitialiseMemory();
+
 	m_ShaderStorageBufferUploadCI.debugName = "GEAR_CORE_ShaderStorageBufferUpload";
 	m_ShaderStorageBufferUploadCI.device = m_Device;
 	m_ShaderStorageBufferUploadCI.usage = Buffer::UsageBit::TRANSFER_SRC | Buffer::UsageBit::TRANSFER_DST;
 	m_ShaderStorageBufferUploadCI.size = m_Size;
-	m_ShaderStorageBufferUploadCI.data;
-	m_ShaderStorageBufferUploadCI.pMemoryBlock;
+	m_ShaderStorageBufferUploadCI.data = nullptr;
+	m_ShaderStorageBufferUploadCI.pMemoryBlock = s_MB_CPU_Upload;
 	m_ShaderStorageBufferUpload = Buffer::Create(&m_ShaderStorageBufferUploadCI);
 
 	m_ShaderStorageBufferCI.debugName = "GEAR_CORE_ShaderStorageBufferUsage";
 	m_ShaderStorageBufferCI.device = m_Device;
 	m_ShaderStorageBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC | Buffer::UsageBit::TRANSFER_DST | Buffer::UsageBit::STORAGE;
-	m_ShaderStorageBufferCI.size = 0;
+	m_ShaderStorageBufferCI.size = m_Size;
 	m_ShaderStorageBufferCI.data = nullptr;
-	m_ShaderStorageBufferCI.pMemoryBlock;
+	m_ShaderStorageBufferCI.pMemoryBlock = s_MB_GPU_Usage;
 	m_ShaderStorageBuffer = Buffer::Create(&m_ShaderStorageBufferCI);
 }
 
@@ -55,9 +57,9 @@ void ShaderStorageBuffer::InitialiseMemory()
 	}
 }
 
-void ShaderStorageBuffer::SubmitData(const void* data, unsigned int size, unsigned int offset) const
+void ShaderStorageBuffer::SubmitData(const void* data, unsigned int size) const
 {
-	s_MB_CPU_Upload->SubmitData(m_ShaderStorageBufferUpload->GetResource(), (size_t)size, (void*)((unsigned int*)data + offset));
+	s_MB_CPU_Upload->SubmitData(m_ShaderStorageBufferUpload->GetResource(), (size_t)size, (void*)data);
 }
 
 void ShaderStorageBuffer::Upload(CommandBuffer& cmdBuffer, uint32_t cmdBufferIndex)
@@ -70,7 +72,7 @@ void ShaderStorageBuffer::Download(CommandBuffer& cmdBuffer, uint32_t cmdBufferI
 	cmdBuffer.CopyBuffer(cmdBufferIndex, m_ShaderStorageBuffer, m_ShaderStorageBufferUpload, { {0, 0, m_Size} });
 }
 
-void ShaderStorageBuffer::AccessData(void* data, unsigned int size, unsigned int offset) const
+void ShaderStorageBuffer::AccessData(void* data, unsigned int size) const
 {
-	s_MB_CPU_Upload->AccessData(m_ShaderStorageBufferUpload->GetResource(), (size_t)size, (void*)((unsigned int*)data + offset));
+	s_MB_CPU_Upload->AccessData(m_ShaderStorageBufferUpload->GetResource(), (size_t)size, (void*)data);
 }

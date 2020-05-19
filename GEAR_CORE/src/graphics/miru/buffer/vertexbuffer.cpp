@@ -26,7 +26,7 @@ VertexBuffer::VertexBuffer(void* device, const float* data, unsigned int count, 
 	m_VertexBufferCI.debugName = "GEAR_CORE_VertexBufferUsage";
 	m_VertexBufferCI.device = m_Device;
 	m_VertexBufferCI.usage = Buffer::UsageBit::TRANSFER_DST | Buffer::UsageBit::VERTEX;
-	m_VertexBufferCI.size = 0;
+	m_VertexBufferCI.size = m_Count * sizeof(float);
 	m_VertexBufferCI.data = nullptr;
 	m_VertexBufferCI.pMemoryBlock = s_MB_GPU_Usage;
 	m_VertexBuffer = Buffer::Create(&m_VertexBufferCI);

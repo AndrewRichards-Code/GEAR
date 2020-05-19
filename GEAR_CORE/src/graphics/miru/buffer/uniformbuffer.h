@@ -29,7 +29,7 @@ namespace GRAPHICS {
 		inline static void SetContext(miru::Ref<miru::crossplatform::Context> context) { s_Context = context; };
 		void InitialiseMemory();
 		
-		void SubmitData(const void* data, unsigned int size, unsigned int offset) const;
+		void SubmitData(const void* data, unsigned int size) const;
 		void Upload(miru::Ref<miru::crossplatform::CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
 
 		inline miru::Ref<miru::crossplatform::Buffer> GetBuffer() const { return m_UniformBuffer; };

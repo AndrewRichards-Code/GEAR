@@ -24,7 +24,7 @@ Renderer::Renderer(miru::Ref<miru::crossplatform::Context> context)
 	m_TransCmdPoolCI.debugName = "GEAR_CORE_CommandPool_Renderer_Transfer";
 	m_TransCmdPoolCI.pContext = context;
 	m_TransCmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
-	m_TransCmdPoolCI.queueFamilyIndex = 0;
+	m_TransCmdPoolCI.queueFamilyIndex = 2;
 	m_TransCmdPool = CommandPool::Create(&m_TransCmdPoolCI);
 
 	m_TransCmdBufferCI.debugName = "GEAR_CORE_CommandBuffer_Renderer_Transfer";;
@@ -51,7 +51,7 @@ void Renderer::Flush()
 	Fence::CreateInfo transFenceCI = { "GEAR_CORE_FenceRenderTransfer", m_TransCmdPoolCI.pContext->GetDevice(), false, UINT64_MAX };
 	Ref<Fence> transferFence = Fence::Create(&transFenceCI);
 	{
-		m_TransCmdBuffer->Begin(0, CommandBuffer::UsageBit::SIMULTANEOUS);
+		m_TransCmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
 		m_Camera->GetUBO()->Upload(m_TransCmdBuffer, 0);
 		m_Lights[0]->GetUBO0()->Upload(m_TransCmdBuffer, 0);
 		m_Lights[0]->GetUBO1()->Upload(m_TransCmdBuffer, 0);
@@ -67,7 +67,7 @@ void Renderer::Flush()
 			obj->GetTexture()->GetInitialTransition(initialBarrier);
 		}
 
-		m_TransCmdBuffer->PipelineBarrier(0, PipelineStageBit::TOP_OF_PIPE_BIT, PipelineStageBit::TRANSFER_BIT, initialBarrier);
+		m_TransCmdBuffer->PipelineBarrier(0, PipelineStageBit::TOP_OF_PIPE_BIT, PipelineStageBit::TRANSFER_BIT, DependencyBit::NONE_BIT, initialBarrier);
 
 		for (auto& obj : m_RenderQueue)
 		{
@@ -78,21 +78,19 @@ void Renderer::Flush()
 	}
 	m_TransCmdBuffer->Submit({ 0 }, {}, { transfer }, PipelineStageBit::TRANSFER_BIT, nullptr);
 	{
-		m_CmdBuffer->Begin(2, CommandBuffer::UsageBit::SIMULTANEOUS);
+		m_CmdBuffer->Begin(2, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
 		std::vector<Ref<Barrier>> finalBarrier;
 		for (auto& obj : m_RenderQueue)
 		{
 			obj->GetTexture()->GetFinalTransition(finalBarrier);
 		}
 
-		m_CmdBuffer->PipelineBarrier(2, PipelineStageBit::TRANSFER_BIT, PipelineStageBit::FRAGMENT_SHADER_BIT, finalBarrier);
+		m_CmdBuffer->PipelineBarrier(2, PipelineStageBit::TRANSFER_BIT, PipelineStageBit::FRAGMENT_SHADER_BIT, DependencyBit::NONE_BIT, finalBarrier);
 		m_CmdBuffer->End(2);
 	}
 	m_CmdBuffer->Submit({ 2 }, { transfer }, {}, PipelineStageBit::TRANSFER_BIT, transferFence);
 
-	while (transferFence->Wait())
-	{
-	}
+	while (transferFence->Wait()) {	}
 
 	//Build DescriptorPools and Sets
 	m_DescPoolCI.debugName = "GEAR_CORE_DescPoolRenderer";
@@ -126,33 +124,51 @@ void Renderer::Flush()
 	m_DescSetLight->AddBuffer(1, 0, { { m_Lights[0]->GetUBO1()->GetBufferView() } });
 	m_DescSetLight->Update();
 
+	for (auto& obj : m_RenderQueue)
+	{
+		m_DescSetCI.pDescriptorSetLayouts = { m_DescSetLayouts[1] };
+		m_DescSetObj[obj] = DescriptorSet::Create(&m_DescSetCI);
+		m_DescSetObj[obj]->AddImage(0, 1, { {obj->GetTexture()->GetTextureSampler(), obj->GetTexture()->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
+		m_DescSetObj[obj]->AddBuffer(0, 0, { { obj->GetUBO()->GetBufferView() } });
+		m_DescSetObj[obj]->Update();
+	}
+
 	//Record Present CmdBuffers
 	for (uint32_t i = 0; i < 2; i++)
 	{
 		m_CmdBuffer->Begin(i, CommandBuffer::UsageBit::SIMULTANEOUS);
-		m_CmdBuffer->BeginRenderPass(i, m_Framebuffers[i], { {0.5f, 0.5f, 0.5f, 1.0f}, {0.0f, 0} });
-		while (!m_RenderQueue.empty())
+		m_CmdBuffer->BeginRenderPass(i, m_Framebuffers[i], { {0.25f, 0.25f, 0.25f, 1.0f}, {1.0f, 0} });
+		
+		for(auto& obj : m_RenderQueue)
 		{
-			Object* obj = m_RenderQueue.front();
 			m_CmdBuffer->BindPipeline(i, obj->GetPipeline()->GetPipeline());
-			
-			m_DescSetCI.pDescriptorSetLayouts = { m_DescSetLayouts[1] };
-			m_DescSetObj.emplace_back(DescriptorSet::Create(&m_DescSetCI));
-			m_DescSetObj.back()->AddImage(0, 1, { {obj->GetTexture()->GetTextureSampler(), obj->GetTexture()->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
-			m_DescSetObj.back()->AddBuffer(0, 0, { { obj->GetUBO()->GetBufferView() } });
-			m_DescSetObj.back()->Update();
-			m_CmdBuffer->BindDescriptorSets(i, { m_DescSetCamera, m_DescSetObj.back(), m_DescSetLight }, obj->GetPipeline()->GetPipeline());
+
+			m_CmdBuffer->BindDescriptorSets(i, { m_DescSetCamera, m_DescSetObj[obj], m_DescSetLight }, obj->GetPipeline()->GetPipeline());
 			
 			std::vector<Ref<BufferView>> vbv;
 			for (auto& vb : obj->GetVBOs())
 				vbv.push_back(vb->GetVertexBufferView());
 			m_CmdBuffer->BindVertexBuffers(i, vbv);
 			m_CmdBuffer->BindIndexBuffer(i, obj->GetIBO()->GetIndexBufferView());
-			m_CmdBuffer->DrawIndexed(i, obj->GetIBO()->GetCount());
 
-			m_RenderQueue.pop_front();
+			m_CmdBuffer->DrawIndexed(i, obj->GetIBO()->GetCount());
 		}
 		m_CmdBuffer->EndRenderPass(i);
 		m_CmdBuffer->End(i);
 	}
+	m_RenderQueue.clear();
+}
+
+void Renderer::UpdateCamera()
+{
+	Fence::CreateInfo transFenceCI = { "GEAR_CORE_FenceRenderTransfer", m_TransCmdPoolCI.pContext->GetDevice(), false, UINT64_MAX };
+	Ref<Fence> transferFence = Fence::Create(&transFenceCI);
+	{
+		m_TransCmdBuffer->Reset(0, false);
+		m_TransCmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
+		m_Camera->GetUBO()->Upload(m_TransCmdBuffer, 0, true);
+		m_TransCmdBuffer->End(0);
+	}
+	m_TransCmdBuffer->Submit({ 0 }, {}, {}, PipelineStageBit::TRANSFER_BIT, transferFence);
+	while (transferFence->Wait()) {}
 }

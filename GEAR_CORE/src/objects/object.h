@@ -20,9 +20,10 @@ private:
 
 	std::vector<float> m_Vertices;
 	std::vector<float> m_TextCoords;
+	std::vector<float> m_TextID;
 	std::vector<float> m_Normals;
-	std::vector<unsigned int> m_Indices;
 	std::vector<float> m_Colours;
+	std::vector<unsigned int> m_Indices;
 
 	void* m_Device;
 
@@ -32,7 +33,6 @@ private:
 	std::shared_ptr<GRAPHICS::Texture> m_Texture;
 	mars::Vec4 m_Colour{ 0.0f, 0.0f, 0.0f, 0.0f };
 
-	static bool s_InitialiseUBO;
 	struct ModelUBO
 	{
 		mars::Mat4 m_ModlMatrix;
@@ -47,10 +47,10 @@ public:
 	bool b_ForBatchRenderer2D = false;
 	struct VertexData
 	{
-		mars::Vec3 m_Vertex;
+		mars::Vec4 m_Vertex;
 		mars::Vec2 m_TexCoord;
 		float m_TexId;
-		mars::Vec3 m_Normal;
+		mars::Vec4 m_Normal;
 		mars::Vec4 m_Colour;
 	};
 
