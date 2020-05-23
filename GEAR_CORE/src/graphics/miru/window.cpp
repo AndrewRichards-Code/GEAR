@@ -9,9 +9,10 @@ using namespace GRAPHICS;
 using namespace miru;
 using namespace miru::crossplatform;
 
-Window::Window(std::string title, int width, int height, int antiAliasingValue, bool vsync, bool fullscreen)
+Window::Window(std::string title, int width, int height, GraphicsAPI::API api, int antiAliasingValue, bool vsync, bool fullscreen)
 	:m_Title(title), m_Width(width), m_Height(height), m_AntiAliasingValue(antiAliasingValue), m_VSync(vsync), m_Fullscreen(fullscreen)
 {
+	m_API = api;
 	m_Title += ": GEAR_CORE(x64)";
 	
 	if (!Init())
@@ -136,14 +137,14 @@ bool Window::Init()
 		std::cout << "ERROR: GEAR::GRAPHICS::Window: Failed to initialise GLFW!" << std::endl;
 		return false;
 	}
-	miru::GraphicsAPI::SetAPI(miru::GraphicsAPI::API::VULKAN);
+	miru::GraphicsAPI::SetAPI(m_API);
 
 #ifdef _DEBUG
 	GraphicsAPI::LoadGraphicsDebugger();
 #endif 
 
 	m_ContextCI.applicationName = m_Title.c_str();
-	m_ContextCI.api_version_major = 1;
+	m_ContextCI.api_version_major = GraphicsAPI::IsD3D12() ? 11 : 1;
 	m_ContextCI.api_version_minor = 1;
 #ifdef _DEBUG
 	m_ContextCI.instanceLayers = { "VK_LAYER_LUNARG_standard_validation" };
@@ -220,7 +221,7 @@ bool Window::Init()
 	m_DepthImageCI.arrayLayers = 1;
 	m_DepthImageCI.sampleCount = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	m_DepthImageCI.usage = Image::UsageBit::DEPTH_STENCIL_ATTACHMENT_BIT;
-	m_DepthImageCI.layout = Image::Layout::UNKNOWN;
+	m_DepthImageCI.layout = GraphicsAPI::IsD3D12() ? Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL : Image::Layout::UNKNOWN;
 	m_DepthImageCI.size = 0;
 	m_DepthImageCI.data = nullptr;
 	m_DepthImageCI.pMemoryBlock = m_DepthMB;
@@ -236,7 +237,7 @@ bool Window::Init()
 	m_RenderPassCI.device = m_Context->GetDevice();
 	m_RenderPassCI.attachments =
 	{
-		{m_Swapchain->m_SwapchainImages[0]->GetCreateInfo().format, Image::SampleCountBit::SAMPLE_COUNT_1_BIT, RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE,RenderPass::AttachmentLoadOp::DONT_CARE, RenderPass::AttachmentStoreOp::DONT_CARE, Image::Layout::UNKNOWN, Image::Layout::PRESENT_SRC},
+		{m_Swapchain->m_SwapchainImages[0]->GetCreateInfo().format, Image::SampleCountBit::SAMPLE_COUNT_1_BIT, RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE,RenderPass::AttachmentLoadOp::DONT_CARE, RenderPass::AttachmentStoreOp::DONT_CARE, GraphicsAPI::IsD3D12() ? Image::Layout::PRESENT_SRC : Image::Layout::UNKNOWN, Image::Layout::PRESENT_SRC},
 		{m_DepthImageCI.format, Image::SampleCountBit::SAMPLE_COUNT_1_BIT, RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::DONT_CARE,RenderPass::AttachmentLoadOp::DONT_CARE, RenderPass::AttachmentStoreOp::DONT_CARE, Image::Layout::UNKNOWN, Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL}
 	};
 	m_RenderPassCI.subpassDescriptions =

@@ -547,7 +547,7 @@ using namespace mars;
 
 int main()
 {
-	Window window("GEAR_MIRU_TEST", 1920, 1080, 1, true, false);
+	Window window("GEAR_MIRU_TEST", 1920, 1080, GraphicsAPI::API::D3D12, 1, true, false);
 
 	std::shared_ptr<GRAPHICS::Pipeline> basic = std::make_shared<GRAPHICS::Pipeline>(window.GetDevice(), "res/shaders/bin/basic.vert.spv", "res/shaders/bin/basic.frag.spv");
 	basic->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
@@ -575,7 +575,7 @@ int main()
 
 	Camera::SetContext(window.GetContext());
 	Camera cam(window.GetDevice(), GEAR_CAMERA_PERSPECTIVE, Vec3(0, 0, 0), Vec3(0, 0, 1), Vec3(0, 1, 0));
-	cam.DefineProjection(90.0, window.GetRatio(), 0.01f, 100.0f, false, true);
+	cam.DefineProjection(90.0, window.GetRatio(), 0.01f, 100.0f, false, false);
 	cam.DefineView();
 
 	Renderer renderer(window.GetContext());
@@ -611,8 +611,11 @@ int main()
 	{
 		if (window.GetSwapchain()->m_Resized)
 		{
-			basic->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
-			basic->FinalisePipline();
+			if (GraphicsAPI::IsVulkan())
+			{
+				basic->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
+				basic->FinalisePipline();
+			}
 
 			renderer = Renderer(window.GetContext());
 			renderer.SubmitFramebuffer(window.GetFramebuffers());
@@ -660,7 +663,7 @@ int main()
 		}
 
 		//Camera Update
-		cam.DefineProjection(DegToRad(90), window.GetRatio(), 0.01f, 1500.0f, false, true);
+		cam.DefineProjection(DegToRad(90), window.GetRatio(), 0.01f, 1500.0f, false, false);
 		cam.UpdateCameraPosition();
 		cam.CalcuateLookAround(yaw, pitch, roll, true);
 		cam.m_Position.y = 1.0f;

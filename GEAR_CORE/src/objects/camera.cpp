@@ -104,6 +104,9 @@ void Camera::DefineProjection(double fov, float aspectRatio, float zNear, float 
 		if (flipY)
 			m_CameraUBO.m_ProjectionMatrix.f *= -1;
 
+		if (miru::GraphicsAPI::IsVulkan())
+			m_CameraUBO.m_ProjectionMatrix.f *= -1;
+
 		m_UBO->SubmitData((const float*)&m_CameraUBO.m_ProjectionMatrix.a, sizeof(CameraUBO));
 	}
 	else

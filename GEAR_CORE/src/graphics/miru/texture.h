@@ -33,7 +33,7 @@ private:
 	bool m_DepthTexture = false;
 	float m_TileFactor = 1.0f;
 	int m_Multisample = 1;
-	float m_AnisotrophicValue;
+	float m_AnisotrophicValue = 1.0f;
 	bool m_Upload = false;
 
 public:

@@ -40,7 +40,7 @@ const int MAX_LIGHTS = 8;
 
 struct Lights
 {
-	Light u_Lights[MAX_LIGHTS];
+	Light u_Lights[8];
 }; 
 MIRU_UNIFORM_BUFFER(2, 0, Lights, lights);
 
@@ -106,7 +106,7 @@ void CalcLighting(int i, PS_IN IN)
 	//Specular
 	if(lighting.u_Specular == 1.0)
 	{
-		float lightDirection;
+		float4 lightDirection;
 		if(lights.u_Lights[i].Type == 2 && umbra < lights.u_Lights[i].CutOff)
 		{
 			specular += float4(0, 0, 0, 0);

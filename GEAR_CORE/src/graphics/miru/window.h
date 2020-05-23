@@ -16,6 +16,8 @@ class Window
 private:
 	friend struct GLFWwindow;
 
+	miru::GraphicsAPI::API m_API;
+
 	//Context and Swapchain
 	miru::Ref<miru::crossplatform::Context> m_Context;
 	miru::crossplatform::Context::CreateInfo m_ContextCI;
@@ -56,7 +58,7 @@ private:
 	double m_xJoy1, m_yJoy1, m_xJoy2, m_yJoy2, m_xJoy3, m_yJoy3;
 
 public:
-	Window(std::string title, int width, int height, int antiAliasingValue, bool vsync, bool fullscreen);
+	Window(std::string title, int width, int height, miru::GraphicsAPI::API api, int antiAliasingValue, bool vsync, bool fullscreen);
 	virtual ~Window();
 
 	void Update();
@@ -72,6 +74,9 @@ public:
 	inline miru::Ref<miru::crossplatform::ImageView> GetSwapchainDepthImageView() { return m_DepthImageView; }
 	inline miru::Ref<miru::crossplatform::Framebuffer>* GetFramebuffers() { return m_Framebuffers; }
 
+	inline const miru::GraphicsAPI::API& GetGraphicsAPI() const { return m_API; }
+	inline bool IsD3D12() const { return miru::GraphicsAPI::IsD3D12(); }
+	inline bool IsVulkan() const { return miru::GraphicsAPI::IsVulkan(); }
 	inline int GetWidth() const { return m_Width; }
 	inline int GetHeight() const { return m_Height; }
 	inline float GetRatio() const { return ((float)m_Width / (float)m_Height); }

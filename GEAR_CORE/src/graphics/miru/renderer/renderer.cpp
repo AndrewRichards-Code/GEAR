@@ -19,6 +19,7 @@ Renderer::Renderer(miru::Ref<miru::crossplatform::Context> context)
 	m_CmdBufferCI.pCommandPool = m_CmdPool;
 	m_CmdBufferCI.level = CommandBuffer::Level::PRIMARY;
 	m_CmdBufferCI.commandBufferCount = 3;
+	m_CmdBufferCI.allocateNewCommandPoolPerBuffer = GraphicsAPI::IsD3D12();
 	m_CmdBuffer = CommandBuffer::Create(&m_CmdBufferCI);
 
 	m_TransCmdPoolCI.debugName = "GEAR_CORE_CommandPool_Renderer_Transfer";
@@ -31,6 +32,7 @@ Renderer::Renderer(miru::Ref<miru::crossplatform::Context> context)
 	m_TransCmdBufferCI.pCommandPool = m_TransCmdPool;
 	m_TransCmdBufferCI.level = CommandBuffer::Level::PRIMARY;
 	m_TransCmdBufferCI.commandBufferCount = 1;
+	m_TransCmdBufferCI.allocateNewCommandPoolPerBuffer = false;
 	m_TransCmdBuffer = CommandBuffer::Create(&m_TransCmdBufferCI);
 }
 
@@ -90,7 +92,7 @@ void Renderer::Flush()
 	}
 	m_CmdBuffer->Submit({ 2 }, { transfer }, {}, PipelineStageBit::TRANSFER_BIT, transferFence);
 
-	while (transferFence->Wait()) {	}
+	transferFence->Wait();
 
 	//Build DescriptorPools and Sets
 	m_DescPoolCI.debugName = "GEAR_CORE_DescPoolRenderer";
@@ -170,5 +172,5 @@ void Renderer::UpdateCamera()
 		m_TransCmdBuffer->End(0);
 	}
 	m_TransCmdBuffer->Submit({ 0 }, {}, {}, PipelineStageBit::TRANSFER_BIT, transferFence);
-	while (transferFence->Wait()) {}
+	transferFence->Wait();
 }
