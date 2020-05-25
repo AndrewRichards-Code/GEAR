@@ -561,12 +561,18 @@ int main()
 	basic->FinalisePipline();
 
 	Texture::SetContext(window.GetContext());
-	std::shared_ptr<Texture> logo =  std::make_shared<Texture>(window.GetDevice(), "C:/Users/Andrew/source/repos/MIRU/logo.png");
-	std::shared_ptr<Texture> stall_tex =  std::make_shared<Texture>(window.GetDevice(), "res/img/stallTexture.png");
+	std::shared_ptr<Texture> gear_logo = std::make_shared<Texture>(window.GetDevice(), "res/gear_core/GEAR_logo_square.png");
+	std::shared_ptr<Texture> miru_logo = std::make_shared<Texture>(window.GetDevice(), "C:/Users/Andrew/source/repos/MIRU/logo.png");
+	std::shared_ptr<Texture> stall_tex = std::make_shared<Texture>(window.GetDevice(), "res/img/stallTexture.png");
+	std::shared_ptr<Texture> woodFloor = std::make_shared<Texture>(window.GetDevice(), "res/img/tileable_wood_texture_01_by_goodtextures-d31qde8.jpg");
+	woodFloor->SetTileFactor(50.0f);
+	woodFloor->SetAnisotrophicValue(16.0f);
 
 	Object::SetContext(window.GetContext());
-	Object quad1(window.GetDevice(), "res/obj/quad.obj", basic, logo, mars::Mat4::Translation({ -2.0f, 0.0f, -1.0f }));
-	Object quad2(window.GetDevice(), "res/obj/stall.obj", basic, stall_tex, Mat4::Translation(Vec3(0.0f, -2.0f, -5.0f)) * Mat4::Rotation(pi, Vec3(0, 1, 0)));
+	Object quad1(window.GetDevice(), "res/obj/quad.obj", basic, gear_logo, Mat4::Translation({ -2.0f, 0.0f, -1.0f }));
+	Object quad2(window.GetDevice(), "res/obj/quad.obj", basic, miru_logo, Mat4::Translation({ +2.0f, 0.0f, -1.0f }));
+	Object stall(window.GetDevice(), "res/obj/stall.obj", basic, stall_tex, Mat4::Translation(Vec3(0.0f, -2.0f, -5.0f)) * Mat4::Rotation(pi, Vec3(0, 1, 0)));
+	Object floor(window.GetDevice(), "res/obj/quad.obj", basic, woodFloor, Mat4::Translation(Vec3(0.0f, -2.0f, -2.0f)) * Mat4::Rotation(-pi / 2, Vec3(1, 0, 0)) * Mat4::Scale(Vec3(500, 500, 1)));
 
 	Light::SetContext(window.GetContext());
 	Light light(window.GetDevice(), Light::LightType::GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -2.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f) * GEAR_MAX_LIGHTS);
@@ -584,6 +590,8 @@ int main()
 	renderer.SubmitLights({&light});
 	renderer.Submit(&quad1);
 	renderer.Submit(&quad2);
+	renderer.Submit(&stall);
+	renderer.Submit(&floor);
 	renderer.Flush();
 
 	Fence::CreateInfo fenceCI;
@@ -623,6 +631,8 @@ int main()
 			renderer.SubmitLights({ &light });
 			renderer.Submit(&quad1);
 			renderer.Submit(&quad2);
+			renderer.Submit(&stall);
+			renderer.Submit(&floor);
 			renderer.Flush();
 			window.GetSwapchain()->m_Resized = false;
 		}
@@ -673,4 +683,5 @@ int main()
 		renderer.GetCmdBuffer()->Present({ 0, 1 }, window.GetSwapchain(), draws, acquire, submit, windowResize);
 		window.Update();
 	}
+	window.GetContext()->DeviceWaitIdle();
 }

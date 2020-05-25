@@ -67,8 +67,8 @@ public:
 	inline void SetTileFactor(float factor) { m_TileFactor = factor; CreateSampler();}
 	inline float GetTileFactor() const { return m_TileFactor; }
 
-	inline void GetAnisotrophicValue(float anisostrphicVal) { m_AnisotrophicValue = anisostrphicVal; CreateSampler();};
-	inline float SetAnisotrophicValue() const { return m_AnisotrophicValue; };
+	inline void SetAnisotrophicValue(float anisostrphicVal) { m_AnisotrophicValue = anisostrphicVal; CreateSampler();};
+	inline float GetAnisotrophicValue() const { return m_AnisotrophicValue; };
 	inline std::string GetAnisotrophicValue() { return std::to_string(static_cast<int>(m_AnisotrophicValue)); }
 
 private:

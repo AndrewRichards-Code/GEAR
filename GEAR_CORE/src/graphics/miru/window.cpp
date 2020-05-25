@@ -201,7 +201,7 @@ bool Window::Init()
 	m_SwapchainCI.swapchainCount = 2;
 	m_SwapchainCI.vSync = m_VSync;
 	m_Swapchain = Swapchain::Create(&m_SwapchainCI);
-	m_Swapchain->m_Resized = true;
+	m_Swapchain->m_Resized = GraphicsAPI::IsVulkan();
 
 	MemoryBlock::CreateInfo dpethMBCI;
 	dpethMBCI.debugName = "GEAR_CORE_MB_GPU_SwapchainDepthImage";

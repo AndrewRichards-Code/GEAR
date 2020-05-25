@@ -20,7 +20,8 @@ Texture::Texture(void* device, const std::string& filepath)
 	m_TextureUploadBufferCI.debugName = (std::string("GEAR_CORE_TextureUploadBuffer:") + filepath).c_str();
 	m_TextureUploadBufferCI.device = m_Device;
 	m_TextureUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC;
-	m_TextureUploadBufferCI.size = m_Width * m_Height * m_BPP;
+	m_TextureUploadBufferCI.size = m_Width * m_Height * 4;
+	m_TextureUploadBufferCI.imageDimension = { (uint32_t)m_Width, (uint32_t)m_Height, 4 };
 	m_TextureUploadBufferCI.data = m_LocalBuffer;
 	m_TextureUploadBufferCI.pMemoryBlock = s_MB_CPU_Upload;
 	m_TextureUploadBuffer = Buffer::Create(&m_TextureUploadBufferCI);
@@ -28,7 +29,7 @@ Texture::Texture(void* device, const std::string& filepath)
 	m_TextureCI.debugName = (std::string("GEAR_CORE_Texture:") + filepath).c_str();
 	m_TextureCI.device = m_Device;;
 	m_TextureCI.type = Image::Type::TYPE_2D;
-	m_TextureCI.format = m_BPP == 3 ? Image::Format::R8G8B8_UNORM : Image::Format::R8G8B8A8_UNORM;
+	m_TextureCI.format = Image::Format::R8G8B8A8_UNORM;
 	m_TextureCI.width = m_Width;
 	m_TextureCI.height = m_Height;
 	m_TextureCI.depth = m_Depth = 1;
@@ -37,7 +38,7 @@ Texture::Texture(void* device, const std::string& filepath)
 	m_TextureCI.sampleCount = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	m_TextureCI.usage = Image::UsageBit::SAMPLED_BIT | Image::UsageBit::TRANSFER_DST_BIT;
 	m_TextureCI.layout = Image::Layout::UNKNOWN;
-	m_TextureCI.size = m_Width * m_Height * m_BPP;
+	m_TextureCI.size = m_Width * m_Height * 4;
 	m_TextureCI.data = nullptr;
 	m_TextureCI.pMemoryBlock = s_MB_GPU_Usage;
 	m_Texture = Image::Create(&m_TextureCI);
@@ -372,6 +373,6 @@ void Texture::CreateSampler()
 	m_SamplerCI.minLod = 0.0f;
 	m_SamplerCI.maxLod = 1.0f;
 	m_SamplerCI.borderColour = Sampler::BorderColour::FLOAT_OPAQUE_BLACK;
-	m_SamplerCI.unnormalisedCoordinates = m_TileFactor > 1.0f;
+	m_SamplerCI.unnormalisedCoordinates = false; //m_TileFactor > 1.0f;
 	m_Sampler = Sampler::Create(&m_SamplerCI);
 }
