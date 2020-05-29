@@ -145,7 +145,7 @@ void Renderer::Flush()
 		{
 			m_CmdBuffer->BindPipeline(i, obj->GetPipeline()->GetPipeline());
 
-			m_CmdBuffer->BindDescriptorSets(i, { m_DescSetCamera, m_DescSetObj[obj], m_DescSetLight }, obj->GetPipeline()->GetPipeline());
+			m_CmdBuffer->BindDescriptorSets(i, { m_DescSetCamera, m_DescSetObj[obj]/*, m_DescSetLight */}, obj->GetPipeline()->GetPipeline());
 			
 			std::vector<Ref<BufferView>> vbv;
 			for (auto& vb : obj->GetVBOs())

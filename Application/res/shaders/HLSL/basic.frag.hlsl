@@ -139,7 +139,7 @@ void CalcLighting(int i, PS_IN IN)
 
 PS_OUT main(PS_IN IN)
 {
-	/*r(int i = 0; i < MAX_LIGHTS; i++)
+	/*for(int i = 0; i < 8; i++)
 	{
 		CalcLighting(i, IN);
 	}*/

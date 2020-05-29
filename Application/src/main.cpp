@@ -547,7 +547,7 @@ using namespace mars;
 
 int main()
 {
-	Window window("GEAR_MIRU_TEST", 1920, 1080, GraphicsAPI::API::D3D12, 1, true, false);
+	Window window("GEAR_MIRU_TEST", 1920, 1080, GraphicsAPI::API::VULKAN, 1, true, false);
 
 	std::shared_ptr<GRAPHICS::Pipeline> basic = std::make_shared<GRAPHICS::Pipeline>(window.GetDevice(), "res/shaders/bin/basic.vert.spv", "res/shaders/bin/basic.frag.spv");
 	basic->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
@@ -560,6 +560,17 @@ int main()
 	basic->SetRenderPass(window.GetRenderPass(), 0);
 	basic->FinalisePipline();
 
+
+	std::shared_ptr<GRAPHICS::Pipeline> cube = std::make_shared<GRAPHICS::Pipeline>(window.GetDevice(), "res/shaders/bin/cube.vert.spv", "res/shaders/bin/cube.frag.spv");
+	cube->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
+	cube->SetRasterisationState(false, false, PolygonMode::FILL, CullModeBit::NONE_BIT, FrontFace::COUNTER_CLOCKWISE, false, 0, 0, 0, 1);
+	cube->SetMultisampleState(Image::SampleCountBit::SAMPLE_COUNT_1_BIT, false, 1.0f, false, false);
+	cube->SetDepthStencilState(true, true, CompareOp::LESS, false, false, {}, {}, 0.0f, 1.0f);
+	cube->SetColourBlendState(false, LogicOp::COPY, { {true, BlendFactor::SRC_ALPHA, BlendFactor::ONE_MINUS_SRC_ALPHA, BlendOp::ADD,
+											BlendFactor::ONE, BlendFactor::ZERO, BlendOp::ADD, (ColourComponentBit)15 } }, blendConsts);
+	cube->SetRenderPass(window.GetRenderPass(), 0);
+	cube->FinalisePipline();
+
 	Texture::SetContext(window.GetContext());
 	std::shared_ptr<Texture> gear_logo = std::make_shared<Texture>(window.GetDevice(), "res/gear_core/GEAR_logo_square.png");
 	std::shared_ptr<Texture> miru_logo = std::make_shared<Texture>(window.GetDevice(), "C:/Users/Andrew/source/repos/MIRU/logo.png");
@@ -567,12 +578,21 @@ int main()
 	std::shared_ptr<Texture> woodFloor = std::make_shared<Texture>(window.GetDevice(), "res/img/tileable_wood_texture_01_by_goodtextures-d31qde8.jpg");
 	woodFloor->SetTileFactor(50.0f);
 	woodFloor->SetAnisotrophicValue(16.0f);
+	std::vector<std::string> cubemapFilepaths = {
+			"res/img/mp_arctic/arctic-ice_ft.tga",
+			"res/img/mp_arctic/arctic-ice_bk.tga",
+			"res/img/mp_arctic/arctic-ice_up.tga",
+			"res/img/mp_arctic/arctic-ice_dn.tga",
+			"res/img/mp_arctic/arctic-ice_rt.tga",
+			"res/img/mp_arctic/arctic-ice_lf.tga" };
+	std::shared_ptr<Texture> skybox_cubemap = std::make_shared<Texture>(window.GetDevice(), cubemapFilepaths);
 
 	Object::SetContext(window.GetContext());
 	Object quad1(window.GetDevice(), "res/obj/quad.obj", basic, gear_logo, Mat4::Translation({ -2.0f, 0.0f, -1.0f }));
 	Object quad2(window.GetDevice(), "res/obj/quad.obj", basic, miru_logo, Mat4::Translation({ +2.0f, 0.0f, -1.0f }));
 	Object stall(window.GetDevice(), "res/obj/stall.obj", basic, stall_tex, Mat4::Translation(Vec3(0.0f, -2.0f, -5.0f)) * Mat4::Rotation(pi, Vec3(0, 1, 0)));
 	Object floor(window.GetDevice(), "res/obj/quad.obj", basic, woodFloor, Mat4::Translation(Vec3(0.0f, -2.0f, -2.0f)) * Mat4::Rotation(-pi / 2, Vec3(1, 0, 0)) * Mat4::Scale(Vec3(500, 500, 1)));
+	Object skybox(window.GetDevice(), "res/obj/cube.obj", cube, skybox_cubemap, Mat4::Scale(Vec3(500, 500, 500)));
 
 	Light::SetContext(window.GetContext());
 	Light light(window.GetDevice(), Light::LightType::GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -2.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f) * GEAR_MAX_LIGHTS);
@@ -581,7 +601,7 @@ int main()
 
 	Camera::SetContext(window.GetContext());
 	Camera cam(window.GetDevice(), GEAR_CAMERA_PERSPECTIVE, Vec3(0, 0, 0), Vec3(0, 0, 1), Vec3(0, 1, 0));
-	cam.DefineProjection(90.0, window.GetRatio(), 0.01f, 100.0f, false, false);
+	cam.DefineProjection(90.0, window.GetRatio(), 0.01f, 3000.0f, false, false);
 	cam.DefineView();
 
 	Renderer renderer(window.GetContext());
@@ -592,6 +612,7 @@ int main()
 	renderer.Submit(&quad2);
 	renderer.Submit(&stall);
 	renderer.Submit(&floor);
+	renderer.Submit(&skybox);
 	renderer.Flush();
 
 	Fence::CreateInfo fenceCI;
@@ -633,6 +654,7 @@ int main()
 			renderer.Submit(&quad2);
 			renderer.Submit(&stall);
 			renderer.Submit(&floor);
+			renderer.Submit(&skybox);
 			renderer.Flush();
 			window.GetSwapchain()->m_Resized = false;
 		}

@@ -91,9 +91,9 @@ Texture::Texture(void* device, const std::vector<std::string>& cubemapFilepaths)
 	{
 		m_LocalBuffer = stbi_load(m_CubemapFilepaths[i].c_str(), &m_Width, &m_Height, &m_BPP, 4);
 		if (i == 0)
-			cubemapImageData.resize(6 * m_Width * m_Height * m_BPP);
+			cubemapImageData.resize(6 * m_Width * m_Height * 4);
 		
-		memcpy(cubemapImageData.data() + (i * m_Width * m_Height * m_BPP), m_LocalBuffer, (m_Width * m_Height * m_BPP));
+		memcpy(cubemapImageData.data() + (i * m_Width * m_Height * 4), m_LocalBuffer, (m_Width * m_Height * 4));
 
 		if (m_LocalBuffer)
 			stbi_image_free(m_LocalBuffer);
@@ -112,7 +112,7 @@ Texture::Texture(void* device, const std::vector<std::string>& cubemapFilepaths)
 	m_TextureCI.debugName = (std::string("GEAR_CORE_Texture:") + m_CubemapFilepaths[0]).c_str();
 	m_TextureCI.device = m_Device;
 	m_TextureCI.type = Image::Type::TYPE_CUBE;
-	m_TextureCI.format = m_BPP == 3 ? Image::Format::R8G8B8_UNORM : Image::Format::R8G8B8A8_UNORM;
+	m_TextureCI.format = Image::Format::R8G8B8A8_UNORM;
 	m_TextureCI.width = m_Width;
 	m_TextureCI.height = m_Height;
 	m_TextureCI.depth = m_Depth = 1;
@@ -324,7 +324,7 @@ void Texture::Upload(Ref<CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex, bool
 			for (size_t i = 0; i < 6; i++)
 			{
 				Image::BufferImageCopy bic;
-				bic.bufferOffset = (i * m_Width * m_Height * m_BPP);
+				bic.bufferOffset = (i * m_Width * m_Height * 4);
 				bic.bufferRowLength = 0;
 				bic.bufferImageHeight = 0;
 				bic.imageSubresource = { Image::AspectBit::COLOUR_BIT, 0, (uint32_t)i, 1 };

@@ -41,6 +41,7 @@ Window::Window(std::string title, int width, int height, GraphicsAPI::API api, i
 
 Window::~Window()
 {
+	m_Context->DeviceWaitIdle();
 	glfwDestroyWindow(m_Window);
 	glfwTerminate();
 }
@@ -147,9 +148,9 @@ bool Window::Init()
 	m_ContextCI.api_version_major = GraphicsAPI::IsD3D12() ? 11 : 1;
 	m_ContextCI.api_version_minor = 1;
 #ifdef _DEBUG
-	m_ContextCI.instanceLayers = { "VK_LAYER_LUNARG_standard_validation" };
+	m_ContextCI.instanceLayers = { "VK_LAYER_KHRONOS_validation" };
 	m_ContextCI.instanceExtensions = { "VK_KHR_surface", "VK_KHR_win32_surface" };
-	m_ContextCI.deviceLayers = { "VK_LAYER_LUNARG_standard_validation" };
+	m_ContextCI.deviceLayers = { "VK_LAYER_KHRONOS_validation" };
 	m_ContextCI.deviceExtensions = { "VK_KHR_swapchain" };
 #else
 	m_ContextCI.instanceLayers = {};
@@ -193,6 +194,13 @@ bool Window::Init()
 	icon[0].pixels = stbi_load("res/gear_core/GEAR_logo_icon.png", &icon->width, &icon->height, 0, 4);
 	glfwSetWindowIcon(m_Window, 1, icon);
 
+	glfwSetWindowUserPointer(m_Window, this);
+	glfwSetWindowSizeCallback(m_Window, window_resize);
+	glfwSetKeyCallback(m_Window, key_callback);
+	glfwSetMouseButtonCallback(m_Window, mouse_button_callback);
+	glfwSetCursorPosCallback(m_Window, cursor_position_callback);
+	glfwSetJoystickCallback(joystick_callback);
+
 	m_SwapchainCI.debugName = "GEAR_CORE_Swapchain";
 	m_SwapchainCI.pContext = m_Context;
 	m_SwapchainCI.pWindow = glfwGetWin32Window(m_Window);
@@ -201,7 +209,7 @@ bool Window::Init()
 	m_SwapchainCI.swapchainCount = 2;
 	m_SwapchainCI.vSync = m_VSync;
 	m_Swapchain = Swapchain::Create(&m_SwapchainCI);
-	m_Swapchain->m_Resized = GraphicsAPI::IsVulkan();
+	//m_Swapchain->m_Resized = GraphicsAPI::IsVulkan();
 
 	MemoryBlock::CreateInfo dpethMBCI;
 	dpethMBCI.debugName = "GEAR_CORE_MB_GPU_SwapchainDepthImage";
@@ -252,14 +260,6 @@ bool Window::Init()
 	m_RenderPass = RenderPass::Create(&m_RenderPassCI);
 
 	CreateFramebuffer();
-
-	glfwSetWindowUserPointer(m_Window, this);
-	glfwSetWindowSizeCallback(m_Window, window_resize);
-	glfwSetKeyCallback(m_Window, key_callback);
-	glfwSetMouseButtonCallback(m_Window, mouse_button_callback);
-	glfwSetCursorPosCallback(m_Window, cursor_position_callback);
-	glfwSetJoystickCallback(joystick_callback);
-
 	return true;
 }
 

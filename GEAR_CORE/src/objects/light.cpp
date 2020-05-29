@@ -34,8 +34,8 @@ Light::Light(void* device, LightType type, const Vec3& position, const Vec3& dir
 	UpdateColour();
 	UpdateDirection();
 
-	m_LightingUBO.u_Diffuse = 0.0f;
-	m_LightingUBO.u_Specular = 0.0f;
+	m_LightingUBO.u_Diffuse = 1.0f;
+	m_LightingUBO.u_Specular = 1.0f;
 	m_LightingUBO.u_Ambient= 1.0f;
 	m_LightingUBO.u_Emit= 0.0f;
 	m_UBO1->SubmitData(&m_LightingUBO.u_Diffuse, sizeof(LightingUBO));
