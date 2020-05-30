@@ -271,6 +271,7 @@ void Window::CreateFramebuffer()
 	m_FramebufferCI.attachments = {m_Swapchain->m_SwapchainImageViews[0], m_DepthImageView};
 	m_FramebufferCI.width = m_Width;
 	m_FramebufferCI.height = m_Height;
+	m_FramebufferCI.layers = 1;
 	m_Framebuffers[0] = Framebuffer::Create(&m_FramebufferCI);
 	m_FramebufferCI.attachments = {m_Swapchain->m_SwapchainImageViews[1], m_DepthImageView};
 	m_Framebuffers[1] = Framebuffer::Create(&m_FramebufferCI);

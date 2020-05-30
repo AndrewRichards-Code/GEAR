@@ -43,7 +43,8 @@ public:
 
 	void FinalisePipline();
 
-	inline miru::Ref<miru::crossplatform::Pipeline> GetPipeline() { return m_Pipeline; };
+	inline const miru::Ref<miru::crossplatform::Pipeline>& GetPipeline() { return m_Pipeline; };
+	inline const std::vector<miru::Ref<miru::crossplatform::DescriptorSetLayout>>& GetDescriptorSetLayouts() { return m_DescSetLayouts; };
 };
 }
 }

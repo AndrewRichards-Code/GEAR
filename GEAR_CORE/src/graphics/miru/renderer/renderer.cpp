@@ -108,9 +108,7 @@ void Renderer::Flush()
 	m_DescSetLayouts.push_back(DescriptorSetLayout::Create(&descSetLayoutCI));
 	descSetLayoutCI.descriptorSetLayoutBinding = { {0, DescriptorType::UNIFORM_BUFFER, 1, Shader::StageBit::VERTEX_BIT}, {1, DescriptorType::COMBINED_IMAGE_SAMPLER, 1, Shader::StageBit::FRAGMENT_BIT} };
 	m_DescSetLayouts.push_back(DescriptorSetLayout::Create(&descSetLayoutCI));
-	descSetLayoutCI.descriptorSetLayoutBinding = { {0, DescriptorType::UNIFORM_BUFFER, 1, Shader::StageBit::FRAGMENT_BIT} };
-	m_DescSetLayouts.push_back(DescriptorSetLayout::Create(&descSetLayoutCI));
-	descSetLayoutCI.descriptorSetLayoutBinding = { {0, DescriptorType::UNIFORM_BUFFER, 1, Shader::StageBit::FRAGMENT_BIT} };
+	descSetLayoutCI.descriptorSetLayoutBinding = { {0, DescriptorType::UNIFORM_BUFFER, 1, Shader::StageBit::FRAGMENT_BIT}, {1, DescriptorType::UNIFORM_BUFFER, 1, Shader::StageBit::FRAGMENT_BIT} };
 	m_DescSetLayouts.push_back(DescriptorSetLayout::Create(&descSetLayoutCI));
 
 	m_DescSetCI.debugName = "GEAR_CORE_DescSetRenderer";
@@ -120,10 +118,10 @@ void Renderer::Flush()
 	m_DescSetCamera->AddBuffer(0, 0, { { m_Camera->GetUBO()->GetBufferView() } });
 	m_DescSetCamera->Update();
 
-	m_DescSetCI.pDescriptorSetLayouts = { m_DescSetLayouts[2], m_DescSetLayouts[3] };
+	m_DescSetCI.pDescriptorSetLayouts = { m_DescSetLayouts[2] };
 	m_DescSetLight = DescriptorSet::Create(&m_DescSetCI);
 	m_DescSetLight->AddBuffer(0, 0, { { m_Lights[0]->GetUBO0()->GetBufferView() } });
-	m_DescSetLight->AddBuffer(1, 0, { { m_Lights[0]->GetUBO1()->GetBufferView() } });
+	m_DescSetLight->AddBuffer(0, 1, { { m_Lights[0]->GetUBO1()->GetBufferView() } });
 	m_DescSetLight->Update();
 
 	for (auto& obj : m_RenderQueue)
@@ -145,7 +143,22 @@ void Renderer::Flush()
 		{
 			m_CmdBuffer->BindPipeline(i, obj->GetPipeline()->GetPipeline());
 
-			m_CmdBuffer->BindDescriptorSets(i, { m_DescSetCamera, m_DescSetObj[obj]/*, m_DescSetLight */}, obj->GetPipeline()->GetPipeline());
+			std::vector<Ref<DescriptorSet>> bindDescriptorSets;
+			for (size_t descCount = 0; descCount < obj->GetPipeline()->GetDescriptorSetLayouts().size(); descCount++)
+			{
+				switch (descCount)
+				{
+				case 0:
+					bindDescriptorSets.push_back(m_DescSetCamera); continue;
+				case 1:
+					bindDescriptorSets.push_back(m_DescSetObj[obj]); continue;
+				case 2:
+					bindDescriptorSets.push_back(m_DescSetLight); continue;
+				default:
+					continue;
+				}
+			}
+			m_CmdBuffer->BindDescriptorSets(i, bindDescriptorSets, obj->GetPipeline()->GetPipeline());
 			
 			std::vector<Ref<BufferView>> vbv;
 			for (auto& vb : obj->GetVBOs())

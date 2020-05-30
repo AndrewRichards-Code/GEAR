@@ -547,7 +547,9 @@ using namespace mars;
 
 int main()
 {
-	Window window("GEAR_MIRU_TEST", 1920, 1080, GraphicsAPI::API::VULKAN, 1, true, false);
+	system("BuildShaders.bat");
+	system("CLS");
+	Window window("GEAR_MIRU_TEST", 1920, 1080, GraphicsAPI::API::D3D12, 1, true, false);
 
 	std::shared_ptr<GRAPHICS::Pipeline> basic = std::make_shared<GRAPHICS::Pipeline>(window.GetDevice(), "res/shaders/bin/basic.vert.spv", "res/shaders/bin/basic.frag.spv");
 	basic->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
@@ -559,7 +561,6 @@ int main()
 											BlendFactor::ONE, BlendFactor::ZERO, BlendOp::ADD, (ColourComponentBit)15 } }, blendConsts);
 	basic->SetRenderPass(window.GetRenderPass(), 0);
 	basic->FinalisePipline();
-
 
 	std::shared_ptr<GRAPHICS::Pipeline> cube = std::make_shared<GRAPHICS::Pipeline>(window.GetDevice(), "res/shaders/bin/cube.vert.spv", "res/shaders/bin/cube.frag.spv");
 	cube->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
@@ -595,9 +596,11 @@ int main()
 	Object skybox(window.GetDevice(), "res/obj/cube.obj", cube, skybox_cubemap, Mat4::Scale(Vec3(500, 500, 500)));
 
 	Light::SetContext(window.GetContext());
-	Light light(window.GetDevice(), Light::LightType::GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -2.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f) * GEAR_MAX_LIGHTS);
-	light.Ambient(1.0f);
-	light.Attenuation(0.0f, 0.0f);
+	Light light(window.GetDevice(), Light::LightType::GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	light.Specular(64.0f, 10.0f);
+	light.Ambient(5.0f);
+	light.Attenuation(0.007f, 0.0002f);
+	light.SpotCone(DegToRad(45));
 
 	Camera::SetContext(window.GetContext());
 	Camera cam(window.GetDevice(), GEAR_CAMERA_PERSPECTIVE, Vec3(0, 0, 0), Vec3(0, 0, 1), Vec3(0, 1, 0));

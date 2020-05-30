@@ -51,7 +51,7 @@ struct Lighting
 	float u_Ambient;
 	float u_Emit;
 };
-MIRU_UNIFORM_BUFFER(3, 0, Lighting, lighting);
+MIRU_UNIFORM_BUFFER(2, 1, Lighting, lighting);
 
 //Functions
 static float4 diffuse =  {0, 0, 0, 0};
@@ -98,7 +98,7 @@ void CalcLighting(int i, PS_IN IN)
 		}
 		else
 		{
-			diffuseLightFactor = max(dot(unitNormal, unitVertexToLight), 0.0); 
+			diffuseLightFactor = max(dot(unitNormal, -unitVertexToLight), 0.0); 
 		}
 		diffuse += diffuseLightFactor * attenuation * lights.u_Lights[i].Colour;
 	}
@@ -139,10 +139,10 @@ void CalcLighting(int i, PS_IN IN)
 
 PS_OUT main(PS_IN IN)
 {
-	/*for(int i = 0; i < 8; i++)
+	for(int i = 0; i < 1; i++)
 	{
 		CalcLighting(i, IN);
-	}*/
+	}
 	
 	PS_OUT OUT;
 
@@ -157,7 +157,9 @@ PS_OUT main(PS_IN IN)
 	}
 	else
 	{*/
-	OUT.colour = uTexture_image_cis.Sample(uTexture_sampler_cis, IN.v_TextCoord);
+	float4 lightSum = ((diffuse + specular + ambient)/8);
+	lightSum.a = 1.0;
+	OUT.colour = lightSum * uTexture_image_cis.Sample(uTexture_sampler_cis, IN.v_TextCoord);
 	/*((diffuse + specular + ambient)/MAX_LIGHTS) **/ 
 	/*
 
