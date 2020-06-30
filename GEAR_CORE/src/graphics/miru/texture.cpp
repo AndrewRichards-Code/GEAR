@@ -15,9 +15,9 @@ Texture::Texture(void* device, const std::string& filepath)
 {
 	InitialiseMemory();
 
-	m_LocalBuffer = stbi_load(filepath.c_str(), &m_Width, &m_Height, &m_BPP, 4);
+	m_LocalBuffer = stbi_load(m_Filepath.c_str(), &m_Width, &m_Height, &m_BPP, 4);
 
-	m_TextureUploadBufferCI.debugName = (std::string("GEAR_CORE_TextureUploadBuffer:") + filepath).c_str();
+	m_TextureUploadBufferCI.debugName = (std::string("GEAR_CORE_TextureUploadBuffer:") + m_Filepath).c_str();
 	m_TextureUploadBufferCI.device = m_Device;
 	m_TextureUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC;
 	m_TextureUploadBufferCI.size = m_Width * m_Height * 4;
@@ -26,7 +26,7 @@ Texture::Texture(void* device, const std::string& filepath)
 	m_TextureUploadBufferCI.pMemoryBlock = s_MB_CPU_Upload;
 	m_TextureUploadBuffer = Buffer::Create(&m_TextureUploadBufferCI);
 
-	m_TextureCI.debugName = (std::string("GEAR_CORE_Texture:") + filepath).c_str();
+	m_TextureCI.debugName = (std::string("GEAR_CORE_Texture:") + m_Filepath).c_str();
 	m_TextureCI.device = m_Device;;
 	m_TextureCI.type = Image::Type::TYPE_2D;
 	m_TextureCI.format = Image::Format::R8G8B8A8_UNORM;
@@ -68,7 +68,7 @@ Texture::Texture(void* device, const std::string& filepath)
 	m_FinalBarrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
 	m_FinalBarrier = Barrier::Create(&m_FinalBarrierCI);
 
-	m_TextureImageViewCI.debugName = (std::string("GEAR_CORE_TextureImageView:") + filepath).c_str();
+	m_TextureImageViewCI.debugName = (std::string("GEAR_CORE_TextureImageView:") + m_Filepath).c_str();
 	m_TextureImageViewCI.device = m_Device;
 	m_TextureImageViewCI.pImage = m_Texture;
 	m_TextureImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
@@ -225,7 +225,7 @@ Texture::Texture(void* device, unsigned char* buffer, Image::Type type, Image::F
 	
 	if (buffer)
 	{
-		m_TextureUploadBufferCI.debugName = (std::string("GEAR_CORE_TextureUploadBuffer:")).c_str();;
+		m_TextureUploadBufferCI.debugName = "GEAR_CORE_TextureUploadBuffer";
 		m_TextureUploadBufferCI.device = m_Device;
 		m_TextureUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC;
 		m_TextureUploadBufferCI.size = m_Width * m_Height * m_Depth * m_BPP;
@@ -236,7 +236,7 @@ Texture::Texture(void* device, unsigned char* buffer, Image::Type type, Image::F
 
 	m_DepthTexture = format >= Image::Format::D16_UNORM;
 
-	m_TextureCI.debugName = (std::string("GEAR_CORE_Texture:")).c_str();
+	m_TextureCI.debugName = "GEAR_CORE_Texture";
 	m_TextureCI.device = m_Device;
 	m_TextureCI.type = type;
 	m_TextureCI.format = format;
@@ -275,7 +275,7 @@ Texture::Texture(void* device, unsigned char* buffer, Image::Type type, Image::F
 	m_FinalBarrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
 	m_FinalBarrier = Barrier::Create(&m_FinalBarrierCI);
 
-	m_TextureImageViewCI.debugName = (std::string("GEAR_CORE_TextureImageView:")).c_str();
+	m_TextureImageViewCI.debugName = "GEAR_CORE_TextureImageView";
 	m_TextureImageViewCI.device = m_Device;
 	m_TextureImageViewCI.pImage = m_Texture;
 	m_TextureImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
@@ -301,7 +301,7 @@ void Texture::InitialiseMemory()
 	}
 	if (!s_MB_GPU_Usage)
 	{
-		mbCI.debugName = "GEAR_CORE_MB_GPU_TextureUsage";
+		mbCI.debugName = "GEAR_CORE_MB_GPU_Texture";
 		mbCI.pContext = s_Context;
 		mbCI.blockSize = MemoryBlock::BlockSize::BLOCK_SIZE_128MB;
 		mbCI.properties = MemoryBlock::PropertiesBit::DEVICE_LOCAL_BIT;

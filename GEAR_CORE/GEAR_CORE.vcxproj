@@ -106,6 +106,7 @@
     <ClCompile Include="src\graphics\miru\buffer\shaderstoragebuffer.cpp" />
     <ClCompile Include="src\graphics\miru\buffer\uniformbuffer.cpp" />
     <ClCompile Include="src\graphics\miru\buffer\vertexbuffer.cpp" />
+    <ClCompile Include="src\graphics\miru\font.cpp" />
     <ClCompile Include="src\graphics\miru\renderer\renderer.cpp" />
     <ClCompile Include="src\graphics\miru\pipeline.cpp" />
     <ClCompile Include="src\graphics\miru\texture.cpp" />
@@ -125,6 +126,7 @@
     <ClInclude Include="src\graphics\miru\buffer\shaderstoragebuffer.h" />
     <ClInclude Include="src\graphics\miru\buffer\uniformbuffer.h" />
     <ClInclude Include="src\graphics\miru\buffer\vertexbuffer.h" />
+    <ClInclude Include="src\graphics\miru\font.h" />
     <ClInclude Include="src\graphics\miru\renderer\renderer.h" />
     <ClInclude Include="src\graphics\miru\pipeline.h" />
     <ClInclude Include="src\graphics\miru\texture.h" />

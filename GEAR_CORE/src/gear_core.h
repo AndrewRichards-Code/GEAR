@@ -31,7 +31,7 @@
 
 #include "graphics/miru/window.h"
 #include "graphics/miru/texture.h"
-//#include "graphics/miru/font.h"
+#include "graphics/miru/font.h"
 
 //Input
 #include "input/inputmanager.h"

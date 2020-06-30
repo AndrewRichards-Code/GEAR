@@ -4,7 +4,8 @@
 
 #include "pipeline.h"
 #include "texture.h"
-#include "renderer/batchrenderer2d.h"
+#include "objects/object.h"
+//#include "renderer/batchrenderer2d.h"
 
 #include "mars.h"
 
@@ -23,8 +24,8 @@ private:
 	float m_WindowHeight;
 	float m_WindowRatio;
 	miru::Ref<miru::crossplatform::RenderPass> m_FontRenderPass;
-	std::unique_ptr<Pipeline> m_FontPipeline;
-	BatchRenderer2D m_FontRenderer;
+	std::shared_ptr<Pipeline> m_FontPipeline;
+	//BatchRenderer2D m_FontRenderer;
 
 	FT_Library m_ftlib;
 	FT_Face m_Face;

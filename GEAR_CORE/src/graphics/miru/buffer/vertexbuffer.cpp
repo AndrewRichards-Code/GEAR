@@ -23,7 +23,7 @@ VertexBuffer::VertexBuffer(void* device, const float* data, unsigned int count, 
 	m_VertexBufferUploadCI.pMemoryBlock = s_MB_CPU_Upload;
 	m_VertexBufferUpload = Buffer::Create(&m_VertexBufferUploadCI);
 
-	m_VertexBufferCI.debugName = "GEAR_CORE_VertexBufferUsage";
+	m_VertexBufferCI.debugName = "GEAR_CORE_VertexBuffer";
 	m_VertexBufferCI.device = m_Device;
 	m_VertexBufferCI.usage = Buffer::UsageBit::TRANSFER_DST | Buffer::UsageBit::VERTEX;
 	m_VertexBufferCI.size = m_Count * sizeof(float);
@@ -31,7 +31,7 @@ VertexBuffer::VertexBuffer(void* device, const float* data, unsigned int count, 
 	m_VertexBufferCI.pMemoryBlock = s_MB_GPU_Usage;
 	m_VertexBuffer = Buffer::Create(&m_VertexBufferCI);
 
-	m_VertexBufferViewCI.debugName = "GEAR_CORE_VertexBufferViewUsage";;
+	m_VertexBufferViewCI.debugName = "GEAR_CORE_VertexBufferViewUsage";
 	m_VertexBufferViewCI.device = m_Device;
 	m_VertexBufferViewCI.type = BufferView::Type::VERTEX;
 	m_VertexBufferViewCI.pBuffer = m_VertexBuffer;
@@ -58,7 +58,7 @@ void VertexBuffer::InitialiseMemory()
 	}
 	if (!s_MB_GPU_Usage)
 	{
-		mbCI.debugName = "GEAR_CORE_MB_GPU_VertexBuffereUsage";
+		mbCI.debugName = "GEAR_CORE_MB_GPU_VertexBuffer";
 		mbCI.pContext = s_Context;
 		mbCI.blockSize = MemoryBlock::BlockSize::BLOCK_SIZE_128MB;
 		mbCI.properties = MemoryBlock::PropertiesBit::DEVICE_LOCAL_BIT;

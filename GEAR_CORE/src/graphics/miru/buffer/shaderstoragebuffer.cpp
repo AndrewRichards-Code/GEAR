@@ -23,7 +23,7 @@ ShaderStorageBuffer::ShaderStorageBuffer(unsigned int size, unsigned int binding
 	m_ShaderStorageBufferUploadCI.pMemoryBlock = s_MB_CPU_Upload;
 	m_ShaderStorageBufferUpload = Buffer::Create(&m_ShaderStorageBufferUploadCI);
 
-	m_ShaderStorageBufferCI.debugName = "GEAR_CORE_ShaderStorageBufferUsage";
+	m_ShaderStorageBufferCI.debugName = "GEAR_CORE_ShaderStorageBuffer";
 	m_ShaderStorageBufferCI.device = m_Device;
 	m_ShaderStorageBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC | Buffer::UsageBit::TRANSFER_DST | Buffer::UsageBit::STORAGE;
 	m_ShaderStorageBufferCI.size = m_Size;
@@ -49,7 +49,7 @@ void ShaderStorageBuffer::InitialiseMemory()
 	}
 	if (!s_MB_GPU_Usage)
 	{
-		mbCI.debugName = "GEAR_CORE_MB_GPU_ShaderStorageBuffereUsage";
+		mbCI.debugName = "GEAR_CORE_MB_GPU_ShaderStorageBuffer";
 		mbCI.pContext = s_Context;
 		mbCI.blockSize = MemoryBlock::BlockSize::BLOCK_SIZE_64MB;
 		mbCI.properties = MemoryBlock::PropertiesBit::DEVICE_LOCAL_BIT;

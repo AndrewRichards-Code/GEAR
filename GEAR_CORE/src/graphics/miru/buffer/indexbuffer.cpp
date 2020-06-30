@@ -23,7 +23,7 @@ IndexBuffer::IndexBuffer(void* device, const unsigned int* data, unsigned int co
 	m_IndexBufferUploadCI.pMemoryBlock = s_MB_CPU_Upload;
 	m_IndexBufferUpload = Buffer::Create(&m_IndexBufferUploadCI);
 
-	m_IndexBufferCI.debugName = "GEAR_CORE_IndexBufferUsage";
+	m_IndexBufferCI.debugName = "GEAR_CORE_IndexBuffer";
 	m_IndexBufferCI.device = m_Device;
 	m_IndexBufferCI.usage = Buffer::UsageBit::TRANSFER_DST | Buffer::UsageBit::INDEX;
 	m_IndexBufferCI.size = m_Count * sizeof(unsigned int);
@@ -31,7 +31,7 @@ IndexBuffer::IndexBuffer(void* device, const unsigned int* data, unsigned int co
 	m_IndexBufferCI.pMemoryBlock = s_MB_GPU_Usage;
 	m_IndexBuffer = Buffer::Create(&m_IndexBufferCI);
 
-	m_IndexBufferViewCI.debugName = "GEAR_CORE_VertexBufferViewUsage";;
+	m_IndexBufferViewCI.debugName = "GEAR_CORE_VertexBufferView";
 	m_IndexBufferViewCI.device = m_Device;
 	m_IndexBufferViewCI.type = BufferView::Type::INDEX;
 	m_IndexBufferViewCI.pBuffer = m_IndexBuffer;
@@ -58,7 +58,7 @@ void IndexBuffer::InitialiseMemory()
 	}
 	if (!s_MB_GPU_Usage)
 	{
-		mbCI.debugName = "GEAR_CORE_MB_GPU_IndexBuffereUsage";
+		mbCI.debugName = "GEAR_CORE_MB_GPU_IndexBuffer";
 		mbCI.pContext = s_Context;
 		mbCI.blockSize = MemoryBlock::BlockSize::BLOCK_SIZE_128MB;
 		mbCI.properties = MemoryBlock::PropertiesBit::DEVICE_LOCAL_BIT;

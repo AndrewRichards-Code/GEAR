@@ -10,9 +10,9 @@ using namespace miru::crossplatform;
 Font::Font(void* device, const char* filepath, int fontHeight, int width, int height, float ratio)
 	:m_Device(device), m_FilePath(filepath), m_FontHeight(fontHeight), m_WindowWidth(static_cast<float>(width)), m_WindowHeight(static_cast<float>(height)), m_WindowRatio(ratio)
 {
-	m_FontPipeline = std::make_unique<Pipeline>(m_Device, "res/shader/font.vert", "res/shader/font.frag");
+	m_FontPipeline = std::make_shared<Pipeline>(m_Device, "res/shaders/bin/font.vert.spv", "res/shaders/bin/font.frag.spv");
 	m_FontPipeline->SetViewport(0.0f, 0.0f, m_WindowWidth, m_WindowHeight, 0.0f, 1.0f);
-	m_FontPipeline->SetRasterisationState(false, false, PolygonMode::FILL, CullModeBit::NONE, FrontFace::COUNTER_CLOCKWISE, false, 0.0f, 0.0f, 0.0f, 0.0f);
+	m_FontPipeline->SetRasterisationState(false, false, PolygonMode::FILL, CullModeBit::NONE_BIT, FrontFace::COUNTER_CLOCKWISE, false, 0.0f, 0.0f, 0.0f, 0.0f);
 	m_FontPipeline->SetMultisampleState(Image::SampleCountBit::SAMPLE_COUNT_1_BIT, false, 0.0f, false, false);
 	m_FontPipeline->SetDepthStencilState(false, false, CompareOp::ALWAYS, false, false, {}, {}, 0.0f, 1.0f);
 	float blendConsts[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -28,8 +28,8 @@ Font::Font(void* device, const char* filepath, int fontHeight, int width, int he
 		}
 	};
 	fontRenderPassCI.subpassDescriptions = { {PipelineType::GRAPHICS,  {}, {{0, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL}}, {}, {}, {}} };
-	fontRenderPassCI.subpassDependencies = { {MIRU_SUBPASS_EXTERNAL, 0, PipelineStageBit::COLOR_ATTACHMENT_OUTPUT_BIT, PipelineStageBit::COLOR_ATTACHMENT_OUTPUT_BIT,
-		Barrier::AccessBit::COLOR_ATTACHMENT_READ_BIT,  Barrier::AccessBit::COLOR_ATTACHMENT_WRITE_BIT } };
+	fontRenderPassCI.subpassDependencies = { {MIRU_SUBPASS_EXTERNAL, 0, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT,
+		Barrier::AccessBit::COLOUR_ATTACHMENT_READ_BIT,  Barrier::AccessBit::COLOUR_ATTACHMENT_WRITE_BIT } };
 	m_FontRenderPass = RenderPass::Create(&fontRenderPassCI);
 	m_FontPipeline->SetRenderPass(m_FontRenderPass, 0);
 	m_FontPipeline->FinalisePipline();
@@ -58,7 +58,7 @@ void Font::AddLine(const std::string& text, const mars::Vec2& position, const ma
 
 void Font::Render()
 {
-	Mat4 proj = Mat4::Orthographic(0.0f, m_WindowWidth, 0.0f, m_WindowHeight, -1.0f, 1.0f);
+	/*Mat4 proj = Mat4::Orthographic(0.0f, m_WindowWidth, 0.0f, m_WindowHeight, -1.0f, 1.0f);
 	proj.Transpose();
 	BufferManager::UpdateUBO(0, &proj.a, sizeof(Mat4), 0);
 
@@ -69,7 +69,7 @@ void Font::Render()
 	for(auto& glyph : m_RenderGlyphBuffer)
 			m_FontRenderer.Submit(&glyph);
 	m_FontRenderer.CloseMapBuffer();
-	m_FontRenderer.Flush();
+	m_FontRenderer.Flush();*/
 	
 }
 
@@ -84,7 +84,7 @@ void Font::UpdateLine(const std::string& input, unsigned int lineIndex)
 		for (unsigned int i = 0; i < m_Lines.size(); i++)
 		{
 			GenerateLine(i);
-				m_Lines[i].m_Position = m_Lines[i].m_InitPosition;
+			m_Lines[i].m_Position = m_Lines[i].m_InitPosition;
 		}
 	}
 }
@@ -135,7 +135,7 @@ void Font::GenerateLine(unsigned int lineIndex)
 		float width = ch.m_Size.x * scale;
 		float height = ch.m_Size.y * scale;
 
-		m_Lines[lineIndex].m_GlyphBuffer.emplace_back(OBJECTS::Object("res/obj/quad.obj", m_FontPipeline, *ch.m_Texture, m_Lines[lineIndex].m_Colour, Vec3(pos_x, pos_y, 0.0f), Vec2(width, height)));
+		m_Lines[lineIndex].m_GlyphBuffer.emplace_back(OBJECTS::Object(m_Device, "res/obj/quad.obj", m_FontPipeline, ch.m_Texture, m_Lines[lineIndex].m_Colour, Vec3(pos_x, pos_y, 0.0f), Vec2(width, height)));
 		m_Lines[lineIndex].m_Position.x += (ch.m_Advance >> 6) * m_WindowRatio * scale;
 	}
 }

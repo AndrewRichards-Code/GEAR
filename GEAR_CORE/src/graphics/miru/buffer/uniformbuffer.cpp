@@ -23,7 +23,7 @@ UniformBuffer::UniformBuffer(void* device, unsigned int size, unsigned int bindi
 	m_UniformBufferUploadCI.pMemoryBlock = s_MB_CPU_Upload;
 	m_UniformBufferUpload = Buffer::Create(&m_UniformBufferUploadCI);
 
-	m_UniformBufferCI.debugName = "GEAR_CORE_UniformBufferUsage";
+	m_UniformBufferCI.debugName = "GEAR_CORE_UniformBuffer";
 	m_UniformBufferCI.device = m_Device;
 	m_UniformBufferCI.usage = Buffer::UsageBit::TRANSFER_DST | Buffer::UsageBit::UNIFORM;
 	m_UniformBufferCI.size = m_Size;
@@ -58,7 +58,7 @@ void UniformBuffer::InitialiseMemory()
 	}
 	if (!s_MB_GPU_Usage)
 	{
-		mbCI.debugName = "GEAR_CORE_MB_GPU_UniformBuffereUsage";
+		mbCI.debugName = "GEAR_CORE_MB_GPU_UniformBuffer";
 		mbCI.pContext = s_Context;
 		mbCI.blockSize = MemoryBlock::BlockSize::BLOCK_SIZE_32MB;
 		mbCI.properties = MemoryBlock::PropertiesBit::DEVICE_LOCAL_BIT;

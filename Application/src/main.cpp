@@ -549,7 +549,10 @@ int main()
 {
 	system("BuildShaders.bat");
 	system("CLS");
-	Window window("GEAR_MIRU_TEST", 1920, 1080, GraphicsAPI::API::D3D12, 1, true, false);
+
+	Window window("GEAR_MIRU_TEST", 1920, 1080, GraphicsAPI::API::VULKAN, 1, true, false);
+
+	Font font(window.GetDevice(), "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, window.GetWidth(), window.GetHeight(), window.GetRatio());
 
 	std::shared_ptr<GRAPHICS::Pipeline> basic = std::make_shared<GRAPHICS::Pipeline>(window.GetDevice(), "res/shaders/bin/basic.vert.spv", "res/shaders/bin/basic.frag.spv");
 	basic->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);

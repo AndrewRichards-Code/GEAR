@@ -139,6 +139,7 @@ bool Window::Init()
 		return false;
 	}
 	miru::GraphicsAPI::SetAPI(m_API);
+	miru::GraphicsAPI::AllowSetName();
 
 #ifdef _DEBUG
 	GraphicsAPI::LoadGraphicsDebugger();
@@ -265,7 +266,7 @@ bool Window::Init()
 
 void Window::CreateFramebuffer()
 {
-	m_FramebufferCI.debugName = "GEAR_CORE_DefaultRenderPass";;
+	m_FramebufferCI.debugName = "GEAR_CORE_Framebuffer";
 	m_FramebufferCI.device = m_Context->GetDevice();;
 	m_FramebufferCI.renderPass = m_RenderPass;
 	m_FramebufferCI.attachments = {m_Swapchain->m_SwapchainImageViews[0], m_DepthImageView};

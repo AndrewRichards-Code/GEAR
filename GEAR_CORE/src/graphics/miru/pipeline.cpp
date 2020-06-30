@@ -116,7 +116,7 @@ void GEAR::GRAPHICS::Pipeline::FinalisePipline()
 
 				for (auto& rbd : rbds.second)
 				{
-					m_DescSetLayoutCIs[set].debugName = (std::string("GEAR_CORE_DescSetLayout_Set:") + std::to_string(set)).c_str();
+					m_DescSetLayoutCIs[set].debugName = "GEAR_CORE_DescSetLayout_Set";
 					m_DescSetLayoutCIs[set].device = m_Device;
 					m_DescSetLayoutCIs[set].descriptorSetLayoutBinding.push_back({
 						rbd.binding,
@@ -159,7 +159,7 @@ void GEAR::GRAPHICS::Pipeline::FinalisePipline()
 
 			for (auto& rbd : rbds.second)
 			{
-				m_DescSetLayoutCIs[set].debugName = (std::string("GEAR_CORE_DescSetLayout_Set:") + std::to_string(set)).c_str();
+				m_DescSetLayoutCIs[set].debugName = "GEAR_CORE_DescSetLayout_Set";
 				m_DescSetLayoutCIs[set].device = m_Device;
 				m_DescSetLayoutCIs[set].descriptorSetLayoutBinding.push_back({
 					rbd.binding,
