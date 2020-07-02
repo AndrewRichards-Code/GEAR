@@ -1,7 +1,7 @@
 #include "framebuffer.h"
 
-using namespace GEAR;
-using namespace GRAPHICS;
+using namespace gear;
+using namespace graphics;
 
 using namespace miru;
 using namespace miru::crossplatform;
@@ -49,9 +49,20 @@ void FrameBuffer::AddColourTextureAttachment(int attachment)
 {
 	m_FramebufferCI.attachments.resize(std::max((size_t)attachment + 1, m_FramebufferCI.attachments.size()));
 	CheckColourTextureAttachments(attachment);
-	m_ColourTextures[attachment] = std::make_shared<Texture>(m_Device, nullptr, 
-		m_CubeMap ? Image::Type::TYPE_CUBE : Image::Type::TYPE_2D, Image::Format::R8G8B8A8_UNORM,
-		m_Multisample, m_Width, m_Height, 1);
+	
+	Texture::CreateInfo colourTextureCI;
+	colourTextureCI.device = m_Device;
+	colourTextureCI.filepaths = {};
+	colourTextureCI.data = nullptr;
+	colourTextureCI.size = 0;
+	colourTextureCI.width = m_Width;
+	colourTextureCI.height = m_Height;
+	colourTextureCI.depth = 1;
+	colourTextureCI.format = Image::Format::R8G8B8A8_UNORM;
+	colourTextureCI.type = m_CubeMap ? Image::Type::TYPE_CUBE : Image::Type::TYPE_2D;
+	colourTextureCI.samples = static_cast<Image::SampleCountBit>(m_Multisample);
+	m_ColourTextures[attachment] = std::make_shared<Texture>(&colourTextureCI);
+	
 	m_FramebufferCI.attachments[attachment] = m_ColourTextures[attachment]->GetTextureImageView();
 }
 
@@ -59,9 +70,20 @@ void FrameBuffer::AddDepthTextureAttachment(int attachment)
 {
 	m_FramebufferCI.attachments.resize(std::max((size_t)attachment + 1, m_FramebufferCI.attachments.size()));
 	CheckColourTextureAttachments(attachment);
-	m_ColourTextures[attachment] = m_DepthTexture = std::make_shared<Texture>(m_Device, nullptr,
-		m_CubeMap ? Image::Type::TYPE_CUBE : Image::Type::TYPE_2D, Image::Format::D32_SFLOAT,
-		m_Multisample, m_Width, m_Height, 1);
+	
+	Texture::CreateInfo depthTextureCI;
+	depthTextureCI.device = m_Device;
+	depthTextureCI.filepaths = {};
+	depthTextureCI.data = nullptr;
+	depthTextureCI.size = 0;
+	depthTextureCI.width = m_Width;
+	depthTextureCI.height = m_Height;
+	depthTextureCI.depth = 1;
+	depthTextureCI.format = Image::Format::D32_SFLOAT;
+	depthTextureCI.type = m_CubeMap ? Image::Type::TYPE_CUBE : Image::Type::TYPE_2D;
+	depthTextureCI.samples = static_cast<Image::SampleCountBit>(m_Multisample);
+	m_ColourTextures[attachment] = m_DepthTexture = std::make_shared<Texture>(&depthTextureCI);
+	
 	if (m_DepthTexture->IsDepthTexture())
 	{
 		m_FramebufferCI.attachments[attachment] = m_DepthTexture->GetTextureImageView();

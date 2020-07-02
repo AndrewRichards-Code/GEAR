@@ -1,8 +1,8 @@
 #include "camera.h"
 
-using namespace GEAR;
-using namespace GRAPHICS;
-using namespace OBJECTS;
+using namespace gear;
+using namespace graphics;
+using namespace objects;
 using namespace mars;
 
 bool Camera::s_InitialiseUBO = false;

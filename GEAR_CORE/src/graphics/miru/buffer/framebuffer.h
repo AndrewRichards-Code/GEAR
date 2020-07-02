@@ -3,8 +3,8 @@
 #include "gear_core_common.h"
 #include "graphics/miru/texture.h"
 
-namespace GEAR {
-namespace GRAPHICS {
+namespace gear {
+namespace graphics {
 	class FrameBuffer
 	{
 	private:

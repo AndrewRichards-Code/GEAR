@@ -5,8 +5,8 @@
 #define GEAR_INPUT_KEYBOARD_AND_MOUSE 0
 #define GEAR_INPUT_JOYSTICK_CONTROLLER 1
 
-namespace GEAR {
-namespace INPUT {
+namespace gear {
+namespace input {
 class InputManager
 {
 private:

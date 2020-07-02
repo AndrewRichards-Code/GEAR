@@ -536,9 +536,9 @@ int main()
 
 #include "gear_core.h"
 
-using namespace GEAR;
-using namespace GRAPHICS;
-using namespace OBJECTS;
+using namespace gear;
+using namespace graphics;
+using namespace objects;
 
 using namespace miru;
 using namespace miru::crossplatform;
@@ -550,11 +550,20 @@ int main()
 	system("BuildShaders.bat");
 	system("CLS");
 
-	Window window("GEAR_MIRU_TEST", 1920, 1080, GraphicsAPI::API::VULKAN, 1, true, false);
+	Window::CreateInfo windowCI;
+	windowCI.api = GraphicsAPI::API::VULKAN;
+	windowCI.title = "GEAR_MIRU_TEST";
+	windowCI.width = 400;
+	windowCI.height = 300;
+	windowCI.fullscreen = false;
+	windowCI.vSync = true;
+	windowCI.msaaLevel = Window::MSAALevel::MSAA_1X;
+	windowCI.iconFilepath;
+	Window window(&windowCI);
 
-	Font font(window.GetDevice(), "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, window.GetWidth(), window.GetHeight(), window.GetRatio());
+	//Font font(window.GetDevice(), "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, window.GetWidth(), window.GetHeight(), window.GetRatio());
 
-	std::shared_ptr<GRAPHICS::Pipeline> basic = std::make_shared<GRAPHICS::Pipeline>(window.GetDevice(), "res/shaders/bin/basic.vert.spv", "res/shaders/bin/basic.frag.spv");
+	std::shared_ptr<graphics::Pipeline> basic = std::make_shared<graphics::Pipeline>(window.GetDevice(), "res/shaders/bin/basic.vert.spv", "res/shaders/bin/basic.frag.spv");
 	basic->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
 	basic->SetRasterisationState(false, false, PolygonMode::FILL, CullModeBit::BACK_BIT, FrontFace::COUNTER_CLOCKWISE, false, 0, 0, 0, 1);
 	basic->SetMultisampleState(Image::SampleCountBit::SAMPLE_COUNT_1_BIT, false, 1.0f, false, false);
@@ -565,7 +574,7 @@ int main()
 	basic->SetRenderPass(window.GetRenderPass(), 0);
 	basic->FinalisePipline();
 
-	std::shared_ptr<GRAPHICS::Pipeline> cube = std::make_shared<GRAPHICS::Pipeline>(window.GetDevice(), "res/shaders/bin/cube.vert.spv", "res/shaders/bin/cube.frag.spv");
+	std::shared_ptr<graphics::Pipeline> cube = std::make_shared<graphics::Pipeline>(window.GetDevice(), "res/shaders/bin/cube.vert.spv", "res/shaders/bin/cube.frag.spv");
 	cube->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
 	cube->SetRasterisationState(false, false, PolygonMode::FILL, CullModeBit::NONE_BIT, FrontFace::COUNTER_CLOCKWISE, false, 0, 0, 0, 1);
 	cube->SetMultisampleState(Image::SampleCountBit::SAMPLE_COUNT_1_BIT, false, 1.0f, false, false);
@@ -576,34 +585,54 @@ int main()
 	cube->FinalisePipline();
 
 	Texture::SetContext(window.GetContext());
-	std::shared_ptr<Texture> gear_logo = std::make_shared<Texture>(window.GetDevice(), "res/gear_core/GEAR_logo_square.png");
-	std::shared_ptr<Texture> miru_logo = std::make_shared<Texture>(window.GetDevice(), "C:/Users/Andrew/source/repos/MIRU/logo.png");
-	std::shared_ptr<Texture> stall_tex = std::make_shared<Texture>(window.GetDevice(), "res/img/stallTexture.png");
-	std::shared_ptr<Texture> woodFloor = std::make_shared<Texture>(window.GetDevice(), "res/img/tileable_wood_texture_01_by_goodtextures-d31qde8.jpg");
+	Texture::CreateInfo textureCI;
+	textureCI.device =  window.GetDevice();
+	textureCI.data = nullptr;
+	textureCI.size = 0;
+	textureCI.width = 0;
+	textureCI.height = 0;
+	textureCI.depth = 0;
+	textureCI.format = Image::Format::R8G8B8A8_UNORM;
+	textureCI.type = Image::Type::TYPE_2D;
+	textureCI.samples  = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	
+	textureCI.filepaths = { "res/gear_core/GEAR_logo_square.png" };
+	std::shared_ptr<Texture> gear_logo = std::make_shared<Texture>(&textureCI);
+	
+	textureCI.filepaths = { "C:/Users/Andrew/source/repos/MIRU/logo.png" };
+	std::shared_ptr<Texture> miru_logo = std::make_shared<Texture>(&textureCI);
+	
+	textureCI.filepaths = { "res/img/stallTexture.png" };
+	std::shared_ptr<Texture> stall_tex = std::make_shared<Texture>(&textureCI);
+	
+	textureCI.filepaths = { "res/img/tileable_wood_texture_01_by_goodtextures-d31qde8.jpg" };
+	std::shared_ptr<Texture> woodFloor = std::make_shared<Texture>(&textureCI);
 	woodFloor->SetTileFactor(50.0f);
 	woodFloor->SetAnisotrophicValue(16.0f);
-	std::vector<std::string> cubemapFilepaths = {
+
+	textureCI.filepaths = {
 			"res/img/mp_arctic/arctic-ice_ft.tga",
 			"res/img/mp_arctic/arctic-ice_bk.tga",
 			"res/img/mp_arctic/arctic-ice_up.tga",
 			"res/img/mp_arctic/arctic-ice_dn.tga",
 			"res/img/mp_arctic/arctic-ice_rt.tga",
 			"res/img/mp_arctic/arctic-ice_lf.tga" };
-	std::shared_ptr<Texture> skybox_cubemap = std::make_shared<Texture>(window.GetDevice(), cubemapFilepaths);
+	textureCI.type = Image::Type::TYPE_CUBE;
+	std::shared_ptr<Texture> skybox_cubemap = std::make_shared<Texture>(&textureCI);
 
-	Object::SetContext(window.GetContext());
-	Object quad1(window.GetDevice(), "res/obj/quad.obj", basic, gear_logo, Mat4::Translation({ -2.0f, 0.0f, -1.0f }));
-	Object quad2(window.GetDevice(), "res/obj/quad.obj", basic, miru_logo, Mat4::Translation({ +2.0f, 0.0f, -1.0f }));
-	Object stall(window.GetDevice(), "res/obj/stall.obj", basic, stall_tex, Mat4::Translation(Vec3(0.0f, -2.0f, -5.0f)) * Mat4::Rotation(pi, Vec3(0, 1, 0)));
-	Object floor(window.GetDevice(), "res/obj/quad.obj", basic, woodFloor, Mat4::Translation(Vec3(0.0f, -2.0f, -2.0f)) * Mat4::Rotation(-pi / 2, Vec3(1, 0, 0)) * Mat4::Scale(Vec3(500, 500, 1)));
-	Object skybox(window.GetDevice(), "res/obj/cube.obj", cube, skybox_cubemap, Mat4::Scale(Vec3(500, 500, 500)));
+	Model::SetContext(window.GetContext());
+	Model quad1(window.GetDevice(), "res/obj/quad.obj", basic, gear_logo, Mat4::Translation({ -2.0f, 0.0f, -1.0f }));
+	Model quad2(window.GetDevice(), "res/obj/quad.obj", basic, miru_logo, Mat4::Translation({ +2.0f, 0.0f, -1.0f }));
+	Model stall(window.GetDevice(), "res/obj/stall.obj", basic, stall_tex, Mat4::Translation(Vec3(0.0f, -2.0f, -5.0f)) * Mat4::Rotation(pi, Vec3(0, 1, 0)));
+	Model floor(window.GetDevice(), "res/obj/quad.obj", basic, woodFloor, Mat4::Translation(Vec3(0.0f, -2.0f, -2.0f)) * Mat4::Rotation(-pi / 2, Vec3(1, 0, 0)) * Mat4::Scale(Vec3(500, 500, 1)));
+	Model skybox(window.GetDevice(), "res/obj/cube.obj", cube, skybox_cubemap, Mat4::Scale(Vec3(500, 500, 500)));
 
 	Light::SetContext(window.GetContext());
 	Light light(window.GetDevice(), Light::LightType::GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	light.Specular(64.0f, 10.0f);
 	light.Ambient(5.0f);
 	light.Attenuation(0.007f, 0.0002f);
-	light.SpotCone(DegToRad(45));
+	light.SpotCone(DegToRad(45.0));
 
 	Camera::SetContext(window.GetContext());
 	Camera cam(window.GetDevice(), GEAR_CAMERA_PERSPECTIVE, Vec3(0, 0, 0), Vec3(0, 0, 1), Vec3(0, 1, 0));
@@ -701,7 +730,7 @@ int main()
 		}
 
 		//Camera Update
-		cam.DefineProjection(DegToRad(90), window.GetRatio(), 0.01f, 1500.0f, false, false);
+		cam.DefineProjection(DegToRad(90.0), window.GetRatio(), 0.01f, 1500.0f, false, false);
 		cam.UpdateCameraPosition();
 		cam.CalcuateLookAround(yaw, pitch, roll, true);
 		cam.m_Position.y = 1.0f;

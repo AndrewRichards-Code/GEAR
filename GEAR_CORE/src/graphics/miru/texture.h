@@ -1,13 +1,27 @@
 #pragma once
 #include "gear_core_common.h"
 
-namespace GEAR {
-namespace GRAPHICS {
+namespace gear {
+namespace graphics {
 class Texture
 {
-private:
-	void* m_Device;
+public:
+	//Provide either filepaths or data, size and image dimension details.
+	struct CreateInfo
+	{
+		void*										device;
+		std::vector<std::string>					filepaths;	//Option 1
+		const uint8_t*								data;		//Option 2
+		size_t										size;		//Option 2
+		uint32_t									width;		//Option 2
+		uint32_t									height;		//Option 2
+		uint32_t									depth;		//Option 2
+		miru::crossplatform::Image::Format			format;
+		miru::crossplatform::Image::Type			type;
+		miru::crossplatform::Image::SampleCountBit	samples;
+	};
 
+private:
 	static miru::Ref<miru::crossplatform::Context> s_Context;
 	static miru::Ref<miru::crossplatform::MemoryBlock> s_MB_CPU_Upload, s_MB_GPU_Usage;
 
@@ -25,26 +39,23 @@ private:
 	miru::Ref<miru::crossplatform::Sampler> m_Sampler;
 	miru::crossplatform::Sampler::CreateInfo m_SamplerCI;
 
-	std::string m_Filepath;
-	std::vector<std::string> m_CubemapFilepaths;
-	unsigned char* m_LocalBuffer;
-	int m_Width = 0, m_Height = 0, m_Depth = 0, m_BPP = 0; //BPP = Bits per pixel
+	CreateInfo m_CI;
+	
+	uint8_t* m_LocalBuffer;
+	std::string m_TextureName;
+	static uint32_t s_UID;
+	
+	int m_BPP = 0; //BPP = Bits per pixel
 	bool m_Cubemap = false;
 	bool m_DepthTexture = false;
+	
 	float m_TileFactor = 1.0f;
-	int m_Multisample = 1;
 	float m_AnisotrophicValue = 1.0f;
+	
 	bool m_Upload = false;
 
 public:
-	//Simple Texture 2D.
-	Texture(void* device, const std::string& filepath); 
-	//For CubeMaps only! Submit in filepaths in order of: front, back, top, bottom, right and left.
-	Texture(void* device, const std::vector<std::string>& filepaths);
-	//For Fonts only!
-	Texture(void* device, unsigned char* buffer, int width, int height);
-	//General Texture constructor, suitable for compute shaders!
-	Texture(void* device, unsigned char* buffer, miru::crossplatform::Image::Type type, miru::crossplatform::Image::Format format, int multisample, int width, int height, int depth);
+	Texture(CreateInfo* pCreateInfo);
 	~Texture();
 
 	inline static void SetContext(miru::Ref<miru::crossplatform::Context> context) { s_Context = context; };
@@ -54,8 +65,8 @@ public:
 	void Upload(miru::Ref<miru::crossplatform::CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
 	void GetFinalTransition(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers);
 
-	inline int GetWidth() const { return m_Width; }
-	inline int GetHeight() const { return m_Height; }
+	inline int GetWidth() const { return m_CI.width; }
+	inline int GetHeight() const { return m_CI.height; }
 	inline int GetBPP() const { return m_BPP; }
 
 	inline miru::Ref<miru::crossplatform::Image>GetTexture() const { return m_Texture; }

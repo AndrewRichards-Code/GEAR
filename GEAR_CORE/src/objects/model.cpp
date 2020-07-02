@@ -1,11 +1,11 @@
-#include "object.h"
+#include "model.h"
 
-using namespace GEAR;
-using namespace GRAPHICS;
-using namespace OBJECTS;
+using namespace gear;
+using namespace graphics;
+using namespace objects;
 using namespace mars;
 
-Object::Object(void* device, const char* objFilePath, std::shared_ptr<GRAPHICS::Pipeline> pipeline, std::shared_ptr<GRAPHICS::Texture> texture, const mars::Mat4& modl)
+Model::Model(void* device, const char* objFilePath, std::shared_ptr<graphics::Pipeline> pipeline, std::shared_ptr<graphics::Texture> texture, const mars::Mat4& modl)
 	:m_Device(device), m_ObjFilePath(objFilePath), m_Pipeline(pipeline), m_Texture(texture), m_Colour({0.0f, 0.0f, 0.0f, 0.0f}), m_ModlMatrix(modl)
 {
 	InitialiseUBO();
@@ -14,7 +14,7 @@ Object::Object(void* device, const char* objFilePath, std::shared_ptr<GRAPHICS::
 	SetUniformModlMatrix();
 }
 
-Object::Object(void* device, const char* objFilePath, std::shared_ptr<GRAPHICS::Pipeline> pipeline, const mars::Vec4& colour, const mars::Mat4& modl)
+Model::Model(void* device, const char* objFilePath, std::shared_ptr<graphics::Pipeline> pipeline, const mars::Vec4& colour, const mars::Mat4& modl)
 	:m_Device(device), m_ObjFilePath(objFilePath), m_Pipeline(pipeline), m_Colour(colour), m_ModlMatrix(modl)
 {
 	InitialiseUBO();
@@ -32,7 +32,7 @@ Object::Object(void* device, const char* objFilePath, std::shared_ptr<GRAPHICS::
 	SetUniformModlMatrix();
 }
 
-Object::Object(void* device, const char* objFilePath, std::shared_ptr<GRAPHICS::Pipeline> pipeline, std::shared_ptr<GRAPHICS::Texture> texture, const mars::Vec4& colour, const mars::Vec3& position, const mars::Vec2& size)
+Model::Model(void* device, const char* objFilePath, std::shared_ptr<graphics::Pipeline> pipeline, std::shared_ptr<graphics::Texture> texture, const mars::Vec4& colour, const mars::Vec3& position, const mars::Vec2& size)
 	:m_Device(device), m_ObjFilePath(objFilePath), m_Pipeline(pipeline), m_Texture(texture), m_Colour(colour), m_Position(position), m_Size(size)
 {
 	InitialiseUBO();
@@ -95,24 +95,24 @@ Object::Object(void* device, const char* objFilePath, std::shared_ptr<GRAPHICS::
 	b_ForBatchRenderer2D = true;
 }
 
-Object::~Object()
+Model::~Model()
 {
 }
 
-void Object::SetUniformModlMatrix()
+void Model::SetUniformModlMatrix()
 {
 	m_ModelUBO.m_ModlMatrix = m_ModlMatrix;
 	m_UBO->SubmitData(&m_ModelUBO.m_ModlMatrix.a, sizeof(ModelUBO));
 }
 
-void Object::SetUniformModlMatrix(const Mat4& modl)
+void Model::SetUniformModlMatrix(const Mat4& modl)
 {
 	m_ModlMatrix = modl;
 	m_ModelUBO.m_ModlMatrix = modl;
 	m_UBO->SubmitData(&m_ModelUBO.m_ModlMatrix.a, sizeof(ModelUBO));
 }
 
-void Object::InitialiseUBO()
+void Model::InitialiseUBO()
 {
 	m_UBO = std::make_shared<UniformBuffer>(m_Device, sizeof(ModelUBO), 1);
 
@@ -120,7 +120,7 @@ void Object::InitialiseUBO()
 	m_UBO->SubmitData(zero, sizeof(ModelUBO));
 }
 
-void Object::LoadObjDataIntoObject()
+void Model::LoadObjDataIntoObject()
 {
 	m_ObjData = FileUtils::read_obj(m_ObjFilePath);
 
@@ -174,17 +174,17 @@ void Object::LoadObjDataIntoObject()
 	}
 }
 
-void Object::GenVBOandIBO()
+void Model::GenVBOandIBO()
 {
 	if (m_Vertices.size() && m_TextCoords.size() && m_Normals.size() && m_Indices.size() > 0)
 	{
-		m_VBOs.emplace_back(std::make_shared<GRAPHICS::VertexBuffer>(m_Device, m_Vertices.data(), static_cast<unsigned int>(m_Vertices.size()), 4));
-		m_VBOs.emplace_back(std::make_shared<GRAPHICS::VertexBuffer>(m_Device, m_TextCoords.data(), static_cast<unsigned int>(m_TextCoords.size()), 2));
-		m_VBOs.emplace_back(std::make_shared<GRAPHICS::VertexBuffer>(m_Device, m_TextID.data(), static_cast<unsigned int>(m_TextID.size()), 1));
-		m_VBOs.emplace_back(std::make_shared<GRAPHICS::VertexBuffer>(m_Device, m_Normals.data(), static_cast<unsigned int>(m_Normals.size()), 4));
-		m_VBOs.emplace_back(std::make_shared<GRAPHICS::VertexBuffer>(m_Device, m_Colours.data(), static_cast<unsigned int>(m_Colours.size()), 4));
+		m_VBOs.emplace_back(std::make_shared<graphics::VertexBuffer>(m_Device, m_Vertices.data(), static_cast<unsigned int>(m_Vertices.size()), 4));
+		m_VBOs.emplace_back(std::make_shared<graphics::VertexBuffer>(m_Device, m_TextCoords.data(), static_cast<unsigned int>(m_TextCoords.size()), 2));
+		m_VBOs.emplace_back(std::make_shared<graphics::VertexBuffer>(m_Device, m_TextID.data(), static_cast<unsigned int>(m_TextID.size()), 1));
+		m_VBOs.emplace_back(std::make_shared<graphics::VertexBuffer>(m_Device, m_Normals.data(), static_cast<unsigned int>(m_Normals.size()), 4));
+		m_VBOs.emplace_back(std::make_shared<graphics::VertexBuffer>(m_Device, m_Colours.data(), static_cast<unsigned int>(m_Colours.size()), 4));
 
-		m_IBO = std::make_shared<GRAPHICS::IndexBuffer>(m_Device, m_Indices.data(), static_cast<unsigned int>(m_Indices.size()));
+		m_IBO = std::make_shared<graphics::IndexBuffer>(m_Device, m_Indices.data(), static_cast<unsigned int>(m_Indices.size()));
 	}
 	else
 	{

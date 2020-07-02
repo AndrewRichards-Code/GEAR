@@ -3,23 +3,23 @@
 using namespace miru;
 using namespace miru::crossplatform;
 
-GEAR::GRAPHICS::Pipeline::Pipeline(void* device, const std::string& vertexPath, const std::string& fragmentPath)
+gear::graphics::Pipeline::Pipeline(void* device, const std::string& vertexPath, const std::string& fragmentPath)
 	:m_Device(device)
 {
 	AddAdditionalShaderModule(Shader::StageBit::VERTEX_BIT, vertexPath);
 	AddAdditionalShaderModule(Shader::StageBit::FRAGMENT_BIT, fragmentPath);
 }
 
-GEAR::GRAPHICS::Pipeline::Pipeline(void* device, const std::string& computePath)
+gear::graphics::Pipeline::Pipeline(void* device, const std::string& computePath)
 {
 	AddAdditionalShaderModule(Shader::StageBit::COMPUTE_BIT, computePath);
 }
 
-GEAR::GRAPHICS::Pipeline::~Pipeline()
+gear::graphics::Pipeline::~Pipeline()
 {
 }
 
-void GEAR::GRAPHICS::Pipeline::AddAdditionalShaderModule(Shader::StageBit stage, const std::string& shaderPath)
+void gear::graphics::Pipeline::AddAdditionalShaderModule(Shader::StageBit stage, const std::string& shaderPath)
 {
 	Shader::CreateInfo shaderCI;
 	shaderCI.debugName = shaderPath.substr(shaderPath.find_last_of('/')).c_str();
@@ -33,13 +33,13 @@ void GEAR::GRAPHICS::Pipeline::AddAdditionalShaderModule(Shader::StageBit stage,
 	m_PipelineCI.shaders = m_Shaders;
 }
 
-void GEAR::GRAPHICS::Pipeline::SetViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
+void gear::graphics::Pipeline::SetViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
 {
 	m_ViewportState.viewports.push_back({ x, y, width, height, minDepth, maxDepth });
 	m_ViewportState.scissors.push_back({{(int32_t)x, (int32_t)y}, {(uint32_t)width, (uint32_t)height}});
 }
 
-void GEAR::GRAPHICS::Pipeline::SetRasterisationState(bool depthClampEnable, bool rasteriserDiscardEnable, PolygonMode polygonMode, CullModeBit cullMode,
+void gear::graphics::Pipeline::SetRasterisationState(bool depthClampEnable, bool rasteriserDiscardEnable, PolygonMode polygonMode, CullModeBit cullMode,
 	FrontFace frontFace, bool depthBiasEnable, float depthBiasConstantFactor, float depthBiasClamp,  float depthBiasSlopeFactor, float lineWidth)
 {
 	m_RasterisationState.depthClampEnable = depthClampEnable;
@@ -54,7 +54,7 @@ void GEAR::GRAPHICS::Pipeline::SetRasterisationState(bool depthClampEnable, bool
 	m_RasterisationState.lineWidth = lineWidth;
 }
 
-void GEAR::GRAPHICS::Pipeline::SetMultisampleState(Image::SampleCountBit rasterisationSamples, bool sampleShadingEnable, float minSampleShading,
+void gear::graphics::Pipeline::SetMultisampleState(Image::SampleCountBit rasterisationSamples, bool sampleShadingEnable, float minSampleShading,
 	bool alphaToCoverageEnable, bool alphaToOneEnable)
 {
 	m_MultisampleState.rasterisationSamples = rasterisationSamples;
@@ -64,7 +64,7 @@ void GEAR::GRAPHICS::Pipeline::SetMultisampleState(Image::SampleCountBit rasteri
 	m_MultisampleState.alphaToOneEnable = alphaToOneEnable;
 }
 
-void GEAR::GRAPHICS::Pipeline::SetDepthStencilState(bool depthTestEnable, bool depthWriteEnable, CompareOp depthCompareOp, bool depthBoundsTestEnable,
+void gear::graphics::Pipeline::SetDepthStencilState(bool depthTestEnable, bool depthWriteEnable, CompareOp depthCompareOp, bool depthBoundsTestEnable,
 	bool stencilTestEnable, const StencilOpState& front, const StencilOpState& back, float minDepthBounds, float maxDepthBounds)
 {
 	m_DepthStencilState.depthTestEnable = depthTestEnable;
@@ -78,7 +78,7 @@ void GEAR::GRAPHICS::Pipeline::SetDepthStencilState(bool depthTestEnable, bool d
 	m_DepthStencilState.maxDepthBounds = maxDepthBounds;
 }
 
-void GEAR::GRAPHICS::Pipeline::SetColourBlendState(bool logicOpEnable, LogicOp logicOp, const std::vector<ColourBlendAttachmentState> attachments, float blendConstant[4])
+void gear::graphics::Pipeline::SetColourBlendState(bool logicOpEnable, LogicOp logicOp, const std::vector<ColourBlendAttachmentState> attachments, float blendConstant[4])
 {
 	m_ColourBlendState.logicOpEnable = logicOpEnable;
 	m_ColourBlendState.logicOp = logicOp;
@@ -89,7 +89,7 @@ void GEAR::GRAPHICS::Pipeline::SetColourBlendState(bool logicOpEnable, LogicOp l
 	m_ColourBlendState.blendConstants[3] = blendConstant[3];
 }
 
-void GEAR::GRAPHICS::Pipeline::FinalisePipline()
+void gear::graphics::Pipeline::FinalisePipline()
 {
 	if (m_Shaders.size() > 1)
 	{

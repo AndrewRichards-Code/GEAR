@@ -7,8 +7,8 @@
 
 #define GEAR_MAX_LIGHTS 8
 
-namespace GEAR {
-namespace OBJECTS {
+namespace gear {
+namespace objects {
 
 class Light
 {
@@ -50,8 +50,8 @@ private:
 		float u_Ambient;
 		float u_Emit;
 	}m_LightingUBO;
-	std::shared_ptr<GRAPHICS::UniformBuffer> m_UBO0;
-	std::shared_ptr<GRAPHICS::UniformBuffer> m_UBO1;
+	std::shared_ptr<graphics::UniformBuffer> m_UBO0;
+	std::shared_ptr<graphics::UniformBuffer> m_UBO1;
 	
 	//Depth Shader for Shadows
 	/*const OPENGL::Shader m_DepthShader = OPENGL::Shader("res/shaders/GLSL/depth.vert", "res/shaders/GLSL/depth.frag");
@@ -96,10 +96,10 @@ public:
 
 	inline static void SetContext(miru::Ref<miru::crossplatform::Context> context)
 	{
-		GRAPHICS::UniformBuffer::SetContext(context);
+		graphics::UniformBuffer::SetContext(context);
 	};
-	std::shared_ptr<GRAPHICS::UniformBuffer> GetUBO0() { return m_UBO0; };
-	std::shared_ptr<GRAPHICS::UniformBuffer> GetUBO1() { return m_UBO1; };
+	std::shared_ptr<graphics::UniformBuffer> GetUBO0() { return m_UBO0; };
+	std::shared_ptr<graphics::UniformBuffer> GetUBO1() { return m_UBO1; };
 
 private:
 	void InitialiseUBO();

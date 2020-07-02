@@ -3,8 +3,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "gear_core_common.h"
 
-namespace GEAR {
-namespace GRAPHICS {
+namespace gear {
+namespace graphics {
 
 #define MAX_KEYS 1024 
 #define MAX_BUTTONS 32 
@@ -13,10 +13,29 @@ namespace GRAPHICS {
 
 class Window
 {
+public:
+	enum class MSAALevel : uint32_t
+	{
+		MSAA_1X = 0x00000001,
+		MSAA_2X = 0x00000002,
+		MSAA_4X = 0x00000004,
+		MSAA_8X = 0x00000008
+	};
+
+	struct CreateInfo
+	{
+		miru::GraphicsAPI::API	api;
+		std::string				title;
+		uint32_t				width;
+		uint32_t				height;
+		bool					fullscreen;
+		bool					vSync;
+		MSAALevel				msaaLevel;
+		std::string				iconFilepath;
+	};
+
 private:
 	friend struct GLFWwindow;
-
-	miru::GraphicsAPI::API m_API;
 
 	//Context and Swapchain
 	miru::Ref<miru::crossplatform::Context> m_Context;
@@ -38,15 +57,11 @@ private:
 	miru::crossplatform::Framebuffer::CreateInfo m_FramebufferCI;
 
 	//Window
-	std::string m_Title;
-	int m_Width, m_Height;
-	int m_InitWidth, m_InitHeight;
+	CreateInfo m_CI;
 	GLFWwindow* m_Window;
 	const GLFWvidmode* m_Mode;
-	bool m_Fullscreen = false;
-	bool m_VSync = true;
-	int m_AntiAliasingValue = 0;
-
+	int m_CurrentWidth, m_CurrentHeight;
+	bool m_Fullscreen;
 	double m_CurrentTime, m_PreviousTime = 0.0, m_DeltaTime, m_FPS;
 
 	//Inputs
@@ -58,14 +73,15 @@ private:
 	double m_xJoy1, m_yJoy1, m_xJoy2, m_yJoy2, m_xJoy3, m_yJoy3;
 
 public:
-	Window(std::string title, int width, int height, miru::GraphicsAPI::API api, int antiAliasingValue, bool vsync, bool fullscreen);
+	Window(CreateInfo* pCreateInfo);
 	virtual ~Window();
 
 	void Update();
 	bool Closed() const;
 	void Fullscreen();
-	void UpdateVSync(bool vSync);
 	void CalculateFPS();
+
+	inline const CreateInfo& GetCreateInfo() const { return m_CI; }
 	inline miru::Ref<miru::crossplatform::Context> GetContext() { return m_Context; };
 	inline miru::Ref<miru::crossplatform::Swapchain> GetSwapchain() { return m_Swapchain; };
 	inline void* GetDevice() { return m_Context->GetDevice(); }
@@ -74,18 +90,18 @@ public:
 	inline miru::Ref<miru::crossplatform::ImageView> GetSwapchainDepthImageView() { return m_DepthImageView; }
 	inline miru::Ref<miru::crossplatform::Framebuffer>* GetFramebuffers() { return m_Framebuffers; }
 
-	inline const miru::GraphicsAPI::API& GetGraphicsAPI() const { return m_API; }
+	inline const miru::GraphicsAPI::API& GetGraphicsAPI() const { return m_CI.api; }
 	inline bool IsD3D12() const { return miru::GraphicsAPI::IsD3D12(); }
 	inline bool IsVulkan() const { return miru::GraphicsAPI::IsVulkan(); }
-	inline int GetWidth() const { return m_Width; }
-	inline int GetHeight() const { return m_Height; }
-	inline float GetRatio() const { return ((float)m_Width / (float)m_Height); }
-	inline std::string GetTitle() const { return m_Title; }
+	inline int GetWidth() const { return m_CurrentWidth; }
+	inline int GetHeight() const { return m_CurrentHeight; }
+	inline float GetRatio() const { return ((float)m_CurrentWidth / (float)m_CurrentHeight); }
+	inline std::string GetTitle() const { return m_CI.title; }
 	std::string GetGraphicsAPIVersion() const;
 	std::string GetDeviceName() const;
 	template<typename T>
 	inline std::string GetFPSString() const { return std::to_string(static_cast<T>(m_FPS)); }
-	inline std::string GetAntiAliasingValue() const { return std::to_string(m_AntiAliasingValue); }
+	inline std::string GetAntiAliasingValue() const { return std::to_string(static_cast<unsigned int>(m_CI.msaaLevel)); }
 
 	bool IsKeyPressed(unsigned int keycode) const;
 	bool IsMouseButtonPressed(unsigned int button) const;

@@ -4,8 +4,8 @@
 #include "mars.h"
 #include "utils/fileutils.h"
 
-namespace GEAR {
-namespace AUDIO {
+namespace gear {
+namespace audio {
 class AudioSource
 {
 private:

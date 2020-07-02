@@ -10,8 +10,8 @@
 #undef far
 #undef near
 
-namespace GEAR {
-namespace OBJECTS {
+namespace gear {
+namespace objects {
 
 class Camera
 {
@@ -43,7 +43,7 @@ private:
 		mars::Vec4 m_Position;
 		
 	} m_CameraUBO;
-	std::shared_ptr<GRAPHICS::UniformBuffer> m_UBO;
+	std::shared_ptr<graphics::UniformBuffer> m_UBO;
 	
 
 public:
@@ -60,9 +60,9 @@ public:
 
 	inline static void SetContext(miru::Ref<miru::crossplatform::Context> context)
 	{
-		GRAPHICS::UniformBuffer::SetContext(context);
+		graphics::UniformBuffer::SetContext(context);
 	};
-	std::shared_ptr<GRAPHICS::UniformBuffer> GetUBO() { return m_UBO; };
+	std::shared_ptr<graphics::UniformBuffer> GetUBO() { return m_UBO; };
 
 private:
 	void CalculateRight();

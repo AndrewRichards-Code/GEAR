@@ -2,8 +2,8 @@
 
 #include "gear_core_common.h"
 
-namespace GEAR {
-namespace GRAPHICS {
+namespace gear {
+namespace graphics {
 	class VertexBuffer
 	{
 	private:

@@ -4,15 +4,15 @@
 
 #include "pipeline.h"
 #include "texture.h"
-#include "objects/object.h"
+#include "objects/model.h"
 //#include "renderer/batchrenderer2d.h"
 
 #include "mars.h"
 
 #define GEAR_NUM_OF_CHARACTERS 128
 
-namespace GEAR {
-namespace GRAPHICS {
+namespace gear {
+namespace graphics {
 class Font
 {
 private:
@@ -37,7 +37,7 @@ private:
 		mars::Vec2 m_InitPosition;
 		mars::Vec2 m_Position;
 		mars::Vec4 m_Colour;
-		std::vector<OBJECTS::Object> m_GlyphBuffer;
+		std::vector<objects::Model> m_GlyphBuffer;
 	};
 	std::vector<Line> m_Lines;
 
@@ -51,7 +51,7 @@ private:
 	std::map<char, Character> m_Charmap;
 
 	bool b_GenerateRenderGlyphBuffer = true;
-	std::vector<OBJECTS::Object> m_RenderGlyphBuffer;
+	std::vector<objects::Model> m_RenderGlyphBuffer;
 
 public:
 	Font(void* device, const char* filepath, int fontHeight, int width, int height, float ratio);

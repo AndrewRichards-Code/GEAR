@@ -3,25 +3,24 @@
 #include "directx12/D3D12Context.h"
 #include "vulkan/VKContext.h"
 
-using namespace GEAR;
-using namespace GRAPHICS;
+using namespace gear;
+using namespace graphics;
 
 using namespace miru;
 using namespace miru::crossplatform;
 
-Window::Window(std::string title, int width, int height, GraphicsAPI::API api, int antiAliasingValue, bool vsync, bool fullscreen)
-	:m_Title(title), m_Width(width), m_Height(height), m_AntiAliasingValue(antiAliasingValue), m_VSync(vsync), m_Fullscreen(fullscreen)
+Window::Window(CreateInfo* pCreateInfo)
 {
-	m_API = api;
-	m_Title += ": GEAR_CORE(x64)";
+	m_CI = *pCreateInfo;
+	m_CI.title += ": GEAR_CORE(x64)";
 	
+	m_CurrentWidth = m_CI.width;
+	m_CurrentHeight = m_CI.height;
 	if (!Init())
 	{
 		glfwDestroyWindow(m_Window);
 		glfwTerminate();
 	}
-	m_InitWidth = m_Width;
-	m_InitHeight = m_Height;
 
 	for (int i = 0; i < MAX_KEYS; i++)
 	{
@@ -49,7 +48,6 @@ Window::~Window()
 void Window::Update()
 {
 	glfwPollEvents();
-	//glfwGetFramebufferSize(m_Window, &m_Width, &m_Height);
 }
 
 bool Window::Closed() const
@@ -61,12 +59,6 @@ void Window::Fullscreen()
 {
 	m_Mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 	glfwSetWindowMonitor(m_Window, glfwGetPrimaryMonitor(), 0, 0, m_Mode->width, m_Mode->height, m_Mode->refreshRate);
-	m_Fullscreen = true;
-}
-
-void Window::UpdateVSync(bool vSync)
-{
-	m_VSync = vSync;
 }
 
 void Window::CalculateFPS()
@@ -74,7 +66,7 @@ void Window::CalculateFPS()
 	double m_CurrentTime = glfwGetTime();
 	double m_DeltaTime = m_CurrentTime - m_PreviousTime;
 	m_PreviousTime = m_CurrentTime;
-	m_FPS = 1 / m_DeltaTime;
+	m_FPS = 1.0 / m_DeltaTime;
 }
 
 std::string Window::GetGraphicsAPIVersion() const
@@ -138,14 +130,14 @@ bool Window::Init()
 		std::cout << "ERROR: GEAR::GRAPHICS::Window: Failed to initialise GLFW!" << std::endl;
 		return false;
 	}
-	miru::GraphicsAPI::SetAPI(m_API);
+	miru::GraphicsAPI::SetAPI(m_CI.api);
 	miru::GraphicsAPI::AllowSetName();
 
 #ifdef _DEBUG
 	GraphicsAPI::LoadGraphicsDebugger();
 #endif 
 
-	m_ContextCI.applicationName = m_Title.c_str();
+	m_ContextCI.applicationName = m_CI.title.c_str();
 	m_ContextCI.api_version_major = GraphicsAPI::IsD3D12() ? 11 : 1;
 	m_ContextCI.api_version_minor = 1;
 #ifdef _DEBUG
@@ -181,7 +173,7 @@ bool Window::Init()
 	
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-	m_Window = glfwCreateWindow(m_Width, m_Height, m_Title.c_str(), NULL, NULL);
+	m_Window = glfwCreateWindow(m_CurrentWidth, m_CurrentHeight, m_CI.title.c_str(), NULL, NULL);
 
 	if (!m_Window)
 	{
@@ -192,7 +184,8 @@ bool Window::Init()
 	}
 	
 	GLFWimage icon[1];
-	icon[0].pixels = stbi_load("res/gear_core/GEAR_logo_icon.png", &icon->width, &icon->height, 0, 4);
+	std::string iconFilepath = !m_CI.iconFilepath.empty() ? m_CI.iconFilepath : "res/gear_core/GEAR_logo_icon.png";
+	icon[0].pixels = stbi_load(iconFilepath.c_str(), &icon->width, &icon->height, 0, 4);
 	glfwSetWindowIcon(m_Window, 1, icon);
 
 	glfwSetWindowUserPointer(m_Window, this);
@@ -205,12 +198,11 @@ bool Window::Init()
 	m_SwapchainCI.debugName = "GEAR_CORE_Swapchain";
 	m_SwapchainCI.pContext = m_Context;
 	m_SwapchainCI.pWindow = glfwGetWin32Window(m_Window);
-	m_SwapchainCI.width = m_Width;
-	m_SwapchainCI.height = m_Height;
+	m_SwapchainCI.width = m_CurrentWidth;
+	m_SwapchainCI.height = m_CurrentHeight;
 	m_SwapchainCI.swapchainCount = 2;
-	m_SwapchainCI.vSync = m_VSync;
+	m_SwapchainCI.vSync = m_CI.vSync;
 	m_Swapchain = Swapchain::Create(&m_SwapchainCI);
-	//m_Swapchain->m_Resized = GraphicsAPI::IsVulkan();
 
 	MemoryBlock::CreateInfo dpethMBCI;
 	dpethMBCI.debugName = "GEAR_CORE_MB_GPU_SwapchainDepthImage";
@@ -223,8 +215,8 @@ bool Window::Init()
 	m_DepthImageCI.device = m_Context->GetDevice();
 	m_DepthImageCI.type = Image::Type::TYPE_2D;
 	m_DepthImageCI.format = Image::Format::D32_SFLOAT;
-	m_DepthImageCI.width = m_Width;
-	m_DepthImageCI.height = m_Height;
+	m_DepthImageCI.width = m_CurrentWidth;
+	m_DepthImageCI.height = m_CurrentHeight;
 	m_DepthImageCI.depth = 1;
 	m_DepthImageCI.mipLevels = 1;
 	m_DepthImageCI.arrayLayers = 1;
@@ -270,8 +262,8 @@ void Window::CreateFramebuffer()
 	m_FramebufferCI.device = m_Context->GetDevice();;
 	m_FramebufferCI.renderPass = m_RenderPass;
 	m_FramebufferCI.attachments = {m_Swapchain->m_SwapchainImageViews[0], m_DepthImageView};
-	m_FramebufferCI.width = m_Width;
-	m_FramebufferCI.height = m_Height;
+	m_FramebufferCI.width = m_CurrentWidth;
+	m_FramebufferCI.height = m_CurrentHeight;
 	m_FramebufferCI.layers = 1;
 	m_Framebuffers[0] = Framebuffer::Create(&m_FramebufferCI);
 	m_FramebufferCI.attachments = {m_Swapchain->m_SwapchainImageViews[1], m_DepthImageView};
@@ -318,14 +310,14 @@ void Window::GetJoyAxes(double& x1, double& y1, double& x2, double& y2, double& 
 void Window::window_resize(GLFWwindow* window, int width, int height)
 {
 	Window* win = (Window*)glfwGetWindowUserPointer(window);
-	win->m_Width = width;
-	win->m_Height = height;
+	win->m_CurrentWidth = width;
+	win->m_CurrentHeight = height;
 
-	win->m_Swapchain->Resize(static_cast<uint32_t>(win->m_Width), static_cast<uint32_t>(win->m_Height));
+	win->m_Swapchain->Resize(static_cast<uint32_t>(win->m_CurrentWidth), static_cast<uint32_t>(win->m_CurrentHeight));
 	if (width <= 3840 && height <= 2160)
 	{
-		win->m_DepthImageCI.width = win->m_Width;
-		win->m_DepthImageCI.height = win->m_Height;
+		win->m_DepthImageCI.width = win->m_CurrentWidth;
+		win->m_DepthImageCI.height = win->m_CurrentHeight;
 		win->m_DepthImage = Image::Create(&win->m_DepthImageCI);
 		win->m_DepthImageViewCI.pImage = win->m_DepthImage;
 		win->m_DepthImageView = ImageView::Create(&win->m_DepthImageViewCI);
@@ -346,12 +338,16 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		{
 			win->m_Mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 			glfwSetWindowMonitor(win->m_Window, glfwGetPrimaryMonitor(), 0, 0, win->m_Mode->width, win->m_Mode->height, win->m_Mode->refreshRate);
+			win->m_CurrentWidth = win->m_Mode->width;
+			win->m_CurrentWidth = win->m_Mode->height;
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 
 		if (!win->m_Fullscreen)
 		{
-			glfwSetWindowMonitor(win->m_Window, NULL, 100, 100, win->m_InitWidth, win->m_InitHeight, GL_DONT_CARE);
+			glfwSetWindowMonitor(win->m_Window, NULL, 100, 100, win->m_CI.width, win->m_CI.height, GLFW_DONT_CARE);
+			win->m_CurrentWidth = win->m_CI.width;
+			win->m_CurrentWidth = win->m_CI.height;
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 	}

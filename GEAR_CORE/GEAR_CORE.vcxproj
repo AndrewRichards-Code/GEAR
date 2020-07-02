@@ -114,7 +114,7 @@
     <ClCompile Include="src\objects\camera.cpp" />
     <ClCompile Include="src\objects\light.cpp" />
     <ClCompile Include="src\objects\mesh.cpp" />
-    <ClCompile Include="src\objects\object.cpp" />
+    <ClCompile Include="src\objects\model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\gear_core.h" />
@@ -135,7 +135,7 @@
     <ClInclude Include="src\objects\camera.h" />
     <ClInclude Include="src\objects\light.h" />
     <ClInclude Include="src\objects\mesh.h" />
-    <ClInclude Include="src\objects\object.h" />
+    <ClInclude Include="src\objects\model.h" />
     <ClInclude Include="src\utils\fileutils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

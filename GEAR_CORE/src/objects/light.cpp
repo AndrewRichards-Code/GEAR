@@ -1,8 +1,8 @@
 #include "light.h"
 
-using namespace GEAR;
-using namespace GRAPHICS;
-using namespace OBJECTS;
+using namespace gear;
+using namespace graphics;
+using namespace objects;
 using namespace mars;
 
 int Light::s_NumOfLights = 0;

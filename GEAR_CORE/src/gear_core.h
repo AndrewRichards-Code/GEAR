@@ -11,7 +11,7 @@
 //OBJECTS
 #include "objects/light.h"
 #include "objects/camera.h"
-#include "objects/object.h"
+#include "objects/model.h"
 //#include "objects/material.h"
 //#include "objects/probe.h"
 

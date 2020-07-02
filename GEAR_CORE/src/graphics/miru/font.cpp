@@ -1,7 +1,7 @@
 #include "font.h"
 
-using namespace GEAR;
-using namespace GRAPHICS;
+using namespace gear;
+using namespace graphics;
 using namespace mars;
 
 using namespace miru;
@@ -110,9 +110,21 @@ void Font::GenerateCharacterMap()
 			continue;
 		}
 
+		Texture::CreateInfo characterTextureCI;
+		characterTextureCI.device = m_Device;
+		characterTextureCI.filepaths = {};
+		characterTextureCI.data = m_Face->glyph->bitmap.buffer;
+		characterTextureCI.size = m_Face->glyph->bitmap.width * m_Face->glyph->bitmap.rows * 4;
+		characterTextureCI.width = m_Face->glyph->bitmap.width;
+		characterTextureCI.height = m_Face->glyph->bitmap.rows;
+		characterTextureCI.depth = 1;
+		characterTextureCI.format = Image::Format::R8G8B8A8_UNORM;
+		characterTextureCI.type = Image::Type::TYPE_2D;
+		characterTextureCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+
 		Character character
 		{
-			std::make_shared<Texture>(m_Device, m_Face->glyph->bitmap.buffer, m_Face->glyph->bitmap.width, m_Face->glyph->bitmap.rows),
+			std::make_shared<Texture>(&characterTextureCI),
 			Vec2((float)m_Face->glyph->bitmap.width, (float)m_Face->glyph->bitmap.rows),
 			Vec2((float)m_Face->glyph->bitmap_left, (float)m_Face->glyph->bitmap_top),
 			(unsigned int)m_Face->glyph->advance.x
@@ -135,7 +147,7 @@ void Font::GenerateLine(unsigned int lineIndex)
 		float width = ch.m_Size.x * scale;
 		float height = ch.m_Size.y * scale;
 
-		m_Lines[lineIndex].m_GlyphBuffer.emplace_back(OBJECTS::Object(m_Device, "res/obj/quad.obj", m_FontPipeline, ch.m_Texture, m_Lines[lineIndex].m_Colour, Vec3(pos_x, pos_y, 0.0f), Vec2(width, height)));
+		m_Lines[lineIndex].m_GlyphBuffer.emplace_back(objects::Model(m_Device, "res/obj/quad.obj", m_FontPipeline, ch.m_Texture, m_Lines[lineIndex].m_Colour, Vec3(pos_x, pos_y, 0.0f), Vec2(width, height)));
 		m_Lines[lineIndex].m_Position.x += (ch.m_Advance >> 6) * m_WindowRatio * scale;
 	}
 }

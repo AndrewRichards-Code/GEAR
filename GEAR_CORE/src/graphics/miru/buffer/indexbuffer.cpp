@@ -1,7 +1,7 @@
 #include "indexbuffer.h"
 
-using namespace GEAR;
-using namespace GRAPHICS;
+using namespace gear;
+using namespace graphics;
 
 using namespace miru;
 using namespace miru::crossplatform;

@@ -5,8 +5,8 @@
 #include "graphics/miru/buffer/indexbuffer.h"
 #include "utils/fileutils.h"
 
-namespace GEAR {
-namespace OBJECTS {
+namespace gear {
+namespace objects {
 
 	class Mesh
 	{
@@ -27,17 +27,17 @@ namespace OBJECTS {
 		const char* m_Filepath;
 		FileUtils::ObjData m_Data;
 
-		std::map<VertexBufferContents, std::shared_ptr<GRAPHICS::VertexBuffer>> m_VBs;
-		std::shared_ptr<GRAPHICS::IndexBuffer> m_IB;
+		std::map<VertexBufferContents, std::shared_ptr<graphics::VertexBuffer>> m_VBs;
+		std::shared_ptr<graphics::IndexBuffer> m_IB;
 
 	public:
 		Mesh(void* device, const char* filepath);
 		~Mesh();
 
-		inline const std::map<VertexBufferContents, std::shared_ptr<GRAPHICS::VertexBuffer>>&
+		inline const std::map<VertexBufferContents, std::shared_ptr<graphics::VertexBuffer>>&
 			GetVertexBuffers() const { return m_VBs; }
 
-		inline const std::shared_ptr<GRAPHICS::IndexBuffer>
+		inline const std::shared_ptr<graphics::IndexBuffer>
 			GetIndexBuffer() const { return m_IB; }
 
 		inline const FileUtils::ObjData& GetObjData() const { return m_Data; }

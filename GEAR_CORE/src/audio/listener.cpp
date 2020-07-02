@@ -1,9 +1,9 @@
 #include "listener.h"
 
-using namespace GEAR;
-using namespace AUDIO;
+using namespace gear;
+using namespace audio;
 
-Listener::Listener(const GEAR::OBJECTS::Camera& camera)
+Listener::Listener(const gear::objects::Camera& camera)
 	: m_Camera(camera)
 {
 	m_Device = alcOpenDevice(NULL);

@@ -1,8 +1,8 @@
 #include "renderer.h"
 
-using namespace GEAR;
-using namespace GRAPHICS;
-using namespace OBJECTS;
+using namespace gear;
+using namespace graphics;
+using namespace objects;
 
 using namespace miru;
 using namespace miru::crossplatform;
@@ -40,9 +40,9 @@ Renderer::~Renderer()
 {
 }
 
-void Renderer::Submit(Object* obj)
+void Renderer::Submit(Model* obj)
 {
-	m_RenderQueue.push_back((Object*) obj);
+	m_RenderQueue.push_back((Model*) obj);
 }
 
 void Renderer::Flush()

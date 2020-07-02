@@ -1,7 +1,7 @@
 #include "audiosource.h"
 
-using namespace GEAR;
-using namespace AUDIO;
+using namespace gear;
+using namespace audio;
 
 AudioSource::AudioSource(const char* filepath, const mars::Vec3& position, const mars::Vec3& direction)
 	:m_FilePath(filepath), m_Position(position), m_Direction(direction)
