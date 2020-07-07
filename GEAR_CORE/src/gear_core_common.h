@@ -22,6 +22,9 @@
 //MIRU
 #include "miru_core.h"
 
+//MARS
+#include "mars.h"
+
 //GLFW
 #include "GLFW/x64/include/GLFW/glfw3.h"
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -44,7 +47,7 @@
 #include "ASSIMP/include/assimp/postprocess.h"
 
 //GEAR Helpers
-/*namespace gear
+namespace gear
 {
 	template<class T>
 	using Scope = std::unique_ptr<T>;
@@ -66,4 +69,19 @@
 
 	template<class _Ty1, class _Ty2>
 	inline constexpr Ref<_Ty1> ref_cast(const Ref<_Ty2>& x) noexcept { return std::dynamic_pointer_cast<_Ty1>(x); }
-}*/
+}
+
+//GEAR printf
+#if defined(_DEBUG)
+#if !defined(__ANDROID__)
+#define GEAR_PRINTF(s, ...) printf((s), __VA_ARGS__)
+#else
+#define GEAR_PRINTF(s, ...) __android_log_print(ANDROID_LOG_DEBUG, "GEAR_CORE", s, __VA_ARGS__)
+#endif
+#else
+#define GEAR_PRINTF(s, ...) printf("")
+#endif
+
+//Triggered if x != 0
+#define GEAR_ASSERT(x, y) if(x != 0) { GEAR_PRINTF("GEAR_ASSERT: %s(%d): ERROR_CODE: %d(0x%x) - %s\n", __FILE__, __LINE__, static_cast<int>(x), static_cast<int>(x), y); DEBUG_BREAK; }
+#define GEAR_WARN(x, y) if(x != 0) { GEAR_PRINTF("GEAR_WARN: %s(%d): ERROR_CODE: %d(0x%x) - %s\n", __FILE__, __LINE__, static_cast<int>(x), static_cast<int>(x), y); }

@@ -40,9 +40,9 @@ Renderer::~Renderer()
 {
 }
 
-void Renderer::Submit(Model* obj)
+void Renderer::Submit(gear::Ref<Model> obj)
 {
-	m_RenderQueue.push_back((Model*) obj);
+	m_RenderQueue.push_back(obj);
 }
 
 void Renderer::Flush()
@@ -61,10 +61,10 @@ void Renderer::Flush()
 		std::vector<Ref<Barrier>> initialBarrier;
 		for (auto& obj : m_RenderQueue)
 		{
-			for (auto& vb : obj->GetVBOs())
-				vb->Upload(m_TransCmdBuffer, 0);
-			obj->GetIBO()->Upload(m_TransCmdBuffer, 0);
-			obj->GetUBO()->Upload(m_TransCmdBuffer, 0);
+			for (auto& vb : obj->GetVBs())
+				vb.second->Upload(m_TransCmdBuffer, 0);
+			obj->GetIB()->Upload(m_TransCmdBuffer, 0);
+			obj->GetUB()->Upload(m_TransCmdBuffer, 0);
 
 			obj->GetTexture()->GetInitialTransition(initialBarrier);
 		}
@@ -129,7 +129,7 @@ void Renderer::Flush()
 		m_DescSetCI.pDescriptorSetLayouts = { m_DescSetLayouts[1] };
 		m_DescSetObj[obj] = DescriptorSet::Create(&m_DescSetCI);
 		m_DescSetObj[obj]->AddImage(0, 1, { {obj->GetTexture()->GetTextureSampler(), obj->GetTexture()->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
-		m_DescSetObj[obj]->AddBuffer(0, 0, { { obj->GetUBO()->GetBufferView() } });
+		m_DescSetObj[obj]->AddBuffer(0, 0, { { obj->GetUB()->GetBufferView() } });
 		m_DescSetObj[obj]->Update();
 	}
 
@@ -161,12 +161,12 @@ void Renderer::Flush()
 			m_CmdBuffer->BindDescriptorSets(i, bindDescriptorSets, obj->GetPipeline()->GetPipeline());
 			
 			std::vector<Ref<BufferView>> vbv;
-			for (auto& vb : obj->GetVBOs())
-				vbv.push_back(vb->GetVertexBufferView());
+			for (auto& vb : obj->GetVBs())
+				vbv.push_back(vb.second->GetVertexBufferView());
 			m_CmdBuffer->BindVertexBuffers(i, vbv);
-			m_CmdBuffer->BindIndexBuffer(i, obj->GetIBO()->GetIndexBufferView());
+			m_CmdBuffer->BindIndexBuffer(i, obj->GetIB()->GetIndexBufferView());
 
-			m_CmdBuffer->DrawIndexed(i, obj->GetIBO()->GetCount());
+			m_CmdBuffer->DrawIndexed(i, obj->GetIB()->GetCount());
 		}
 		m_CmdBuffer->EndRenderPass(i);
 		m_CmdBuffer->End(i);

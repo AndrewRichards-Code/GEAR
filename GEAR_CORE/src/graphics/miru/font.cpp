@@ -7,6 +7,8 @@ using namespace mars;
 using namespace miru;
 using namespace miru::crossplatform;
 
+gear::Ref<objects::Mesh> Font::s_FontQuad = nullptr;
+
 Font::Font(void* device, const char* filepath, int fontHeight, int width, int height, float ratio)
 	:m_Device(device), m_FilePath(filepath), m_FontHeight(fontHeight), m_WindowWidth(static_cast<float>(width)), m_WindowHeight(static_cast<float>(height)), m_WindowRatio(ratio)
 {
@@ -124,13 +126,20 @@ void Font::GenerateCharacterMap()
 
 		Character character
 		{
-			std::make_shared<Texture>(&characterTextureCI),
+			gear::CreateRef<Texture>(&characterTextureCI),
 			Vec2((float)m_Face->glyph->bitmap.width, (float)m_Face->glyph->bitmap.rows),
 			Vec2((float)m_Face->glyph->bitmap_left, (float)m_Face->glyph->bitmap_top),
 			(unsigned int)m_Face->glyph->advance.x
 		};
 
 		m_Charmap[i] = character;
+	}
+	if (!s_FontQuad)
+	{
+		objects::Mesh::CreateInfo fontQuadCI;
+		fontQuadCI.device = m_Device;
+		fontQuadCI.filepath = "res/obj/quad.obj";
+		s_FontQuad = gear::CreateRef<objects::Mesh>(&fontQuadCI);
 	}
 }
 
@@ -147,7 +156,17 @@ void Font::GenerateLine(unsigned int lineIndex)
 		float width = ch.m_Size.x * scale;
 		float height = ch.m_Size.y * scale;
 
-		m_Lines[lineIndex].m_GlyphBuffer.emplace_back(objects::Model(m_Device, "res/obj/quad.obj", m_FontPipeline, ch.m_Texture, m_Lines[lineIndex].m_Colour, Vec3(pos_x, pos_y, 0.0f), Vec2(width, height)));
+		objects::Model::CreateInfo glyphModelCI;
+		glyphModelCI.device = m_Device;
+		glyphModelCI.pMesh = s_FontQuad;
+		glyphModelCI.transform.translation = Vec3(pos_x, pos_y, 0.0f);
+		glyphModelCI.transform.orientation = Quat(1.0, 0.0, 0.0, 0.0);
+		glyphModelCI.transform.translation = Vec3(width, height, 0.0f);
+		glyphModelCI.pTexture = ch.m_Texture;
+		glyphModelCI.colour = m_Lines[lineIndex].m_Colour;
+		glyphModelCI.pPipeline = m_FontPipeline;
+
+		m_Lines[lineIndex].m_GlyphBuffer.emplace_back(gear::CreateRef<objects::Model>(&glyphModelCI));
 		m_Lines[lineIndex].m_Position.x += (ch.m_Advance >> 6) * m_WindowRatio * scale;
 	}
 }

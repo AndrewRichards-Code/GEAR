@@ -12,8 +12,11 @@ using namespace miru::crossplatform;
 Window::Window(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
+
+#ifdef _DEBUG
 	m_CI.title += ": GEAR_CORE(x64)";
-	
+#endif
+
 	m_CurrentWidth = m_CI.width;
 	m_CurrentHeight = m_CI.height;
 	if (!Init())

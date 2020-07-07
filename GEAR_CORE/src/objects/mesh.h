@@ -10,37 +10,47 @@ namespace objects {
 
 	class Mesh
 	{
-		enum class VertexBufferContents : uint32_t
+	public:
+		struct CreateInfo
+		{
+			void*		device;
+			std::string filepath;
+		};
+
+		enum class VertexBufferContents : size_t
 		{
 			POSITION,
 			TEXTURE_COORD,
 			TEXTURE_ID,
 			NORMAL,
+			COLOUR,
 			BI_NORMAL,
 			TANGENT,
-			COLOUR
 		};
 
 	private:
-		void* m_Device;
-
-		const char* m_Filepath;
+		CreateInfo m_CI;
 		FileUtils::ObjData m_Data;
 
-		std::map<VertexBufferContents, std::shared_ptr<graphics::VertexBuffer>> m_VBs;
-		std::shared_ptr<graphics::IndexBuffer> m_IB;
+		std::map<VertexBufferContents, gear::Ref<graphics::VertexBuffer>> m_VBs;
+		gear::Ref<graphics::IndexBuffer> m_IB;
 
 	public:
-		Mesh(void* device, const char* filepath);
+		Mesh(CreateInfo* pCreateInfo);
 		~Mesh();
 
-		inline const std::map<VertexBufferContents, std::shared_ptr<graphics::VertexBuffer>>&
-			GetVertexBuffers() const { return m_VBs; }
+		void AddVertexBuffer(VertexBufferContents type, gear::Ref<graphics::VertexBuffer> vertexBuffer);
+		void RemoveVertexBuffer(VertexBufferContents type);
 
-		inline const std::shared_ptr<graphics::IndexBuffer>
-			GetIndexBuffer() const { return m_IB; }
-
+		inline const std::map<VertexBufferContents, gear::Ref<graphics::VertexBuffer>>& GetVertexBuffers() const { return m_VBs; }
+		inline const gear::Ref<graphics::IndexBuffer> GetIndexBuffer() const { return m_IB; }
 		inline const FileUtils::ObjData& GetObjData() const { return m_Data; }
+
+		inline static void SetContext(miru::Ref<miru::crossplatform::Context> context)
+		{
+			graphics::VertexBuffer::SetContext(context);
+			graphics::IndexBuffer::SetContext(context);
+		};
 	};
 }
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gear_core_common.h"
-#include "mars.h"
+#include "assimp.h"
 
 namespace gear {
 
@@ -47,30 +47,22 @@ public:
 		return output;
 	}
 
-	struct ObjData
+	/*struct ObjData
 	{
 		std::vector<mars::Vec4> m_Vertices;
 		std::vector<mars::Vec2> m_TexCoords;
 		std::vector<mars::Vec4> m_Normals;
-		std::vector<unsigned int> m_VertIndices;
-		std::vector<unsigned int> m_TextIndices;
-		std::vector<unsigned int> m_NormIndices;
+		std::vector<uint32_t> m_VertIndices;
+		std::vector<uint32_t> m_TextIndices;
+		std::vector<uint32_t> m_NormIndices;
 		std::vector<mars::Vec3> m_UniqueVertices;
-
-		int GetSizeVertices() { return static_cast<int>(m_Vertices.size()); }
-		int GetSizeTexCoords() { return static_cast<int>(m_TexCoords.size()); }
-		int GetSizeNormals() { return static_cast<int>(m_Normals.size()); }
-		int GetSizeVertIndices() { return static_cast<int>(m_VertIndices.size()); }
-		int GetSizeTextIndices() { return static_cast<int>(m_TextIndices.size()); }
-		int GetSizeNormIndices() { return static_cast<int>(m_NormIndices.size()); }
-		int GetSizeUniqueVertices() { return static_cast<int>(m_UniqueVertices.size()); }
-	};
+	};*/
 /*#if defined(_MSC_VER)
 	__declspec(deprecated("Function Depracated: Please use AssimpLoader instead."))
 #elif
 	[[deprecated("Function Depracated: Please use AssimpLoader instead.")]]
 #endif*/
-	static ObjData read_obj(const char* filepath)
+	/*static ObjData read_obj(const char* filepath)
 	{
 		ObjData result;
 		std::ifstream stream(filepath, std::fstream::in);
@@ -81,6 +73,9 @@ public:
 			return result;
 		}
 		
+		std::vector<mars::Vec4> unorderedVertices;
+		std::vector<mars::Vec2> unorderedTexCoords;
+		std::vector<mars::Vec4> unorderedNormals;
 		
 		while (!stream.eof())
 		{
@@ -97,7 +92,7 @@ public:
 				float x, y, z;
 
 				sstream >> x >> y >> z;
-				result.m_Vertices.emplace_back(mars::Vec4(x, y, z, 1.0f));
+				unorderedVertices.emplace_back(mars::Vec4(x, y, z, 1.0f));
 			}
 
 			else if (flag == "vt")
@@ -105,7 +100,7 @@ public:
 				float u, v;
 
 				sstream >> u >> v;
-				result.m_TexCoords.emplace_back(mars::Vec2(u, v));
+				unorderedTexCoords.emplace_back(mars::Vec2(u, v));
 			}
 			
 			else if (flag == "vn")
@@ -113,7 +108,7 @@ public:
 				float x, y, z;
 
 				sstream >> x >> y >> z;
-				result.m_Normals.emplace_back(mars::Vec4(x, y, z, 0.0f));
+				unorderedNormals.emplace_back(mars::Vec4(x, y, z, 0.0f));
 			}
 
 			else if (flag == "f")
@@ -140,10 +135,10 @@ public:
 				std::stringstream z_ss;
 				z_ss << z;
 
-				int vert_index;
-				int text_index;
-				int norm_index;
-				unsigned int eoVertices = result.GetSizeVertices();
+				uint32_t vert_index;
+				uint32_t text_index;
+				uint32_t norm_index;
+				uint32_t eoVertices = static_cast<uint32_t>(unorderedVertices.size());
 
 				x_ss >> vert_index >> text_index >> norm_index;
 				if (vert_index > 0)
@@ -190,8 +185,8 @@ public:
 
 		}
 		
-		result.m_UniqueVertices.reserve(result.GetSizeVertIndices());
-		for (int i = 0; i < result.GetSizeVertIndices(); i++)
+		result.m_UniqueVertices.reserve(result.m_VertIndices.size());
+		for (size_t i = 0; i < result.m_VertIndices.size(); i++)
 		{
 			result.m_UniqueVertices.emplace_back(mars::Vec3((float)result.m_VertIndices[i], (float)result.m_TextIndices[i], (float)result.m_NormIndices[i]));
 		}
@@ -199,14 +194,14 @@ public:
 		std::sort(result.m_UniqueVertices.begin(), result.m_UniqueVertices.end(),
 			[&](mars::Vec3 a, mars::Vec3 b) {return a.x < b.x;});
 		
-		for (int i = 0; i < (int)result.GetSizeUniqueVertices();)
+		for (size_t i = 0; i < result.m_UniqueVertices.size();)
 		{
-			if (i == result.GetSizeUniqueVertices() - 1) 
+			if (i == result.m_UniqueVertices.size() - 1)
 				break;
 			if (result.m_UniqueVertices[i].x == result.m_UniqueVertices[i + 1].x)
 			{
 				result.m_UniqueVertices.erase(result.m_UniqueVertices.begin() + i + 1);
-				if (i == result.GetSizeUniqueVertices() - 1) 
+				if (i == result.m_UniqueVertices.size() - 1)
 					break;
 			}
 			if (result.m_UniqueVertices[i].x != result.m_UniqueVertices[i + 1].x)
@@ -214,8 +209,21 @@ public:
 				i++;
 			}
 		}
+
+		result.m_Vertices.reserve(unorderedVertices.size());
+		for (size_t i = 0; i < unorderedVertices.size(); i++)
+			result.m_Vertices.push_back(unorderedVertices[(size_t)result.m_UniqueVertices[i].x]);
+
+		result.m_TexCoords.reserve(unorderedTexCoords.size());
+		for (size_t i = 0; i < unorderedTexCoords.size(); i++)
+			result.m_TexCoords.push_back(unorderedTexCoords[(size_t)result.m_UniqueVertices[i].y]);
+
+		result.m_Normals.reserve(unorderedNormals.size());
+		for (size_t i = 0; i < unorderedNormals.size(); i++)
+			result.m_Normals.push_back(unorderedNormals[(size_t)result.m_UniqueVertices[i].z]);
+
 		return result;
-	}
+	}*/
 
 	private:
 	static bool IsBigEndian()

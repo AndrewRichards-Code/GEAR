@@ -553,8 +553,8 @@ int main()
 	Window::CreateInfo windowCI;
 	windowCI.api = GraphicsAPI::API::VULKAN;
 	windowCI.title = "GEAR_MIRU_TEST";
-	windowCI.width = 400;
-	windowCI.height = 300;
+	windowCI.width = 1920;
+	windowCI.height = 1080;
 	windowCI.fullscreen = false;
 	windowCI.vSync = true;
 	windowCI.msaaLevel = Window::MSAALevel::MSAA_1X;
@@ -563,26 +563,26 @@ int main()
 
 	//Font font(window.GetDevice(), "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, window.GetWidth(), window.GetHeight(), window.GetRatio());
 
-	std::shared_ptr<graphics::Pipeline> basic = std::make_shared<graphics::Pipeline>(window.GetDevice(), "res/shaders/bin/basic.vert.spv", "res/shaders/bin/basic.frag.spv");
-	basic->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
-	basic->SetRasterisationState(false, false, PolygonMode::FILL, CullModeBit::BACK_BIT, FrontFace::COUNTER_CLOCKWISE, false, 0, 0, 0, 1);
-	basic->SetMultisampleState(Image::SampleCountBit::SAMPLE_COUNT_1_BIT, false, 1.0f, false, false);
-	basic->SetDepthStencilState(true, true, CompareOp::LESS, false, false, {}, {}, 0.0f, 1.0f);
+	gear::Ref<graphics::Pipeline> basicPipeline = gear::CreateRef<graphics::Pipeline>(window.GetDevice(), "res/shaders/bin/basic.vert.spv", "res/shaders/bin/basic.frag.spv");
+	basicPipeline->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
+	basicPipeline->SetRasterisationState(false, false, PolygonMode::FILL, CullModeBit::BACK_BIT, FrontFace::COUNTER_CLOCKWISE, false, 0, 0, 0, 1);
+	basicPipeline->SetMultisampleState(Image::SampleCountBit::SAMPLE_COUNT_1_BIT, false, 1.0f, false, false);
+	basicPipeline->SetDepthStencilState(true, true, CompareOp::LESS, false, false, {}, {}, 0.0f, 1.0f);
 	float blendConsts[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-	basic->SetColourBlendState(false, LogicOp::COPY, { {true, BlendFactor::SRC_ALPHA, BlendFactor::ONE_MINUS_SRC_ALPHA, BlendOp::ADD,
+	basicPipeline->SetColourBlendState(false, LogicOp::COPY, { {true, BlendFactor::SRC_ALPHA, BlendFactor::ONE_MINUS_SRC_ALPHA, BlendOp::ADD,
 											BlendFactor::ONE, BlendFactor::ZERO, BlendOp::ADD, (ColourComponentBit)15 } }, blendConsts);
-	basic->SetRenderPass(window.GetRenderPass(), 0);
-	basic->FinalisePipline();
+	basicPipeline->SetRenderPass(window.GetRenderPass(), 0);
+	basicPipeline->FinalisePipline();
 
-	std::shared_ptr<graphics::Pipeline> cube = std::make_shared<graphics::Pipeline>(window.GetDevice(), "res/shaders/bin/cube.vert.spv", "res/shaders/bin/cube.frag.spv");
-	cube->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
-	cube->SetRasterisationState(false, false, PolygonMode::FILL, CullModeBit::NONE_BIT, FrontFace::COUNTER_CLOCKWISE, false, 0, 0, 0, 1);
-	cube->SetMultisampleState(Image::SampleCountBit::SAMPLE_COUNT_1_BIT, false, 1.0f, false, false);
-	cube->SetDepthStencilState(true, true, CompareOp::LESS, false, false, {}, {}, 0.0f, 1.0f);
-	cube->SetColourBlendState(false, LogicOp::COPY, { {true, BlendFactor::SRC_ALPHA, BlendFactor::ONE_MINUS_SRC_ALPHA, BlendOp::ADD,
+	gear::Ref<graphics::Pipeline> cubePipeline = gear::CreateRef<graphics::Pipeline>(window.GetDevice(), "res/shaders/bin/cube.vert.spv", "res/shaders/bin/cube.frag.spv");
+	cubePipeline->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
+	cubePipeline->SetRasterisationState(false, false, PolygonMode::FILL, CullModeBit::NONE_BIT, FrontFace::COUNTER_CLOCKWISE, false, 0, 0, 0, 1);
+	cubePipeline->SetMultisampleState(Image::SampleCountBit::SAMPLE_COUNT_1_BIT, false, 1.0f, false, false);
+	cubePipeline->SetDepthStencilState(true, true, CompareOp::LESS, false, false, {}, {}, 0.0f, 1.0f);
+	cubePipeline->SetColourBlendState(false, LogicOp::COPY, { {true, BlendFactor::SRC_ALPHA, BlendFactor::ONE_MINUS_SRC_ALPHA, BlendOp::ADD,
 											BlendFactor::ONE, BlendFactor::ZERO, BlendOp::ADD, (ColourComponentBit)15 } }, blendConsts);
-	cube->SetRenderPass(window.GetRenderPass(), 0);
-	cube->FinalisePipline();
+	cubePipeline->SetRenderPass(window.GetRenderPass(), 0);
+	cubePipeline->FinalisePipline();
 
 	Texture::SetContext(window.GetContext());
 	Texture::CreateInfo textureCI;
@@ -597,16 +597,16 @@ int main()
 	textureCI.samples  = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	
 	textureCI.filepaths = { "res/gear_core/GEAR_logo_square.png" };
-	std::shared_ptr<Texture> gear_logo = std::make_shared<Texture>(&textureCI);
+	gear::Ref<Texture> gear_logo = gear::CreateRef<Texture>(&textureCI);
 	
 	textureCI.filepaths = { "C:/Users/Andrew/source/repos/MIRU/logo.png" };
-	std::shared_ptr<Texture> miru_logo = std::make_shared<Texture>(&textureCI);
+	gear::Ref<Texture> miru_logo = gear::CreateRef<Texture>(&textureCI);
 	
 	textureCI.filepaths = { "res/img/stallTexture.png" };
-	std::shared_ptr<Texture> stall_tex = std::make_shared<Texture>(&textureCI);
+	gear::Ref<Texture> stall_tex = gear::CreateRef<Texture>(&textureCI);
 	
 	textureCI.filepaths = { "res/img/tileable_wood_texture_01_by_goodtextures-d31qde8.jpg" };
-	std::shared_ptr<Texture> woodFloor = std::make_shared<Texture>(&textureCI);
+	gear::Ref<Texture> woodFloor = gear::CreateRef<Texture>(&textureCI);
 	woodFloor->SetTileFactor(50.0f);
 	woodFloor->SetAnisotrophicValue(16.0f);
 
@@ -618,14 +618,54 @@ int main()
 			"res/img/mp_arctic/arctic-ice_rt.tga",
 			"res/img/mp_arctic/arctic-ice_lf.tga" };
 	textureCI.type = Image::Type::TYPE_CUBE;
-	std::shared_ptr<Texture> skybox_cubemap = std::make_shared<Texture>(&textureCI);
+	gear::Ref<Texture> skybox_cubemap = gear::CreateRef<Texture>(&textureCI);
+
+	Mesh::SetContext(window.GetContext());
+	Mesh::CreateInfo meshCI;
+	meshCI.device = window.GetDevice();
+	meshCI.filepath = "res/obj/quad.obj";
+	gear::Ref<Mesh> quadMesh = gear::CreateRef<Mesh>(&meshCI);
+	meshCI.filepath = "res/obj/cube.obj";
+	gear::Ref<Mesh> cubeMesh = gear::CreateRef<Mesh>(&meshCI);
+	meshCI.filepath = "res/obj/stall.obj";
+	gear::Ref<Mesh> stallMesh = gear::CreateRef<Mesh>(&meshCI);
 
 	Model::SetContext(window.GetContext());
-	Model quad1(window.GetDevice(), "res/obj/quad.obj", basic, gear_logo, Mat4::Translation({ -2.0f, 0.0f, -1.0f }));
-	Model quad2(window.GetDevice(), "res/obj/quad.obj", basic, miru_logo, Mat4::Translation({ +2.0f, 0.0f, -1.0f }));
-	Model stall(window.GetDevice(), "res/obj/stall.obj", basic, stall_tex, Mat4::Translation(Vec3(0.0f, -2.0f, -5.0f)) * Mat4::Rotation(pi, Vec3(0, 1, 0)));
-	Model floor(window.GetDevice(), "res/obj/quad.obj", basic, woodFloor, Mat4::Translation(Vec3(0.0f, -2.0f, -2.0f)) * Mat4::Rotation(-pi / 2, Vec3(1, 0, 0)) * Mat4::Scale(Vec3(500, 500, 1)));
-	Model skybox(window.GetDevice(), "res/obj/cube.obj", cube, skybox_cubemap, Mat4::Scale(Vec3(500, 500, 500)));
+	Model::CreateInfo modelCI;
+	modelCI.device = window.GetDevice();
+	modelCI.pMesh = quadMesh;
+	modelCI.transform.translation = Vec3(-2.0f, 0.0f, -1.0f);
+	modelCI.transform.orientation = Quat(1.0f, 0.0f, 0.0f, 0.0f);
+	modelCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
+	modelCI.pTexture = gear_logo;
+	modelCI.colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	modelCI.pPipeline = basicPipeline;
+	gear::Ref<Model> quad1 = gear::CreateRef<Model>(&modelCI);
+	
+	modelCI.transform.translation = Vec3(+2.0f, 0.0f, -1.0f);
+	modelCI.pTexture = miru_logo;
+	gear::Ref<Model> quad2 = gear::CreateRef<Model>(&modelCI);
+
+	modelCI.transform.translation = Vec3(0.0f, -2.0f, -2.0f);
+	modelCI.transform.orientation = Quat((float)-pi/2, Vec3(1, 0, 0));
+	modelCI.transform.scale = Vec3(500.0f, 500.0f, 1.0f);
+	modelCI.pTexture = woodFloor;
+	gear::Ref<Model> floor = gear::CreateRef<Model>(&modelCI);
+
+	modelCI.pMesh = stallMesh;
+	modelCI.transform.translation = Vec3(0.0f, -2.0f, -5.0f);
+	modelCI.transform.orientation = Quat((float)pi, Vec3(0, 1, 0));
+	modelCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
+	modelCI.pTexture = stall_tex;
+	gear::Ref<Model> stall = gear::CreateRef<Model>(&modelCI);
+	
+	modelCI.pMesh = cubeMesh;
+	modelCI.transform.translation = Vec3(0.0f, 0.0f, 0.0f);
+	modelCI.transform.orientation = Quat(1.0f, 0.0f, 0.0f, 0.0f);
+	modelCI.transform.scale = Vec3(500.0f, 500.0f, 500.0f);
+	modelCI.pTexture = skybox_cubemap;
+	modelCI.pPipeline = cubePipeline;
+	gear::Ref<Model> skybox = gear::CreateRef<Model>(&modelCI);
 
 	Light::SetContext(window.GetContext());
 	Light light(window.GetDevice(), Light::LightType::GEAR_LIGHT_POINT, Vec3(0.0f, 0.0f, 0.0f), Vec3(0.0f, 0.0f, -1.0f), Vec4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -643,11 +683,11 @@ int main()
 	renderer.SubmitFramebuffer(window.GetFramebuffers());
 	renderer.SubmitCamera(&cam);
 	renderer.SubmitLights({&light});
-	renderer.Submit(&quad1);
-	renderer.Submit(&quad2);
-	renderer.Submit(&stall);
-	renderer.Submit(&floor);
-	renderer.Submit(&skybox);
+	renderer.Submit(quad1);
+	renderer.Submit(quad2);
+	renderer.Submit(stall);
+	renderer.Submit(floor);
+	renderer.Submit(skybox);
 	renderer.Flush();
 
 	Fence::CreateInfo fenceCI;
@@ -655,10 +695,10 @@ int main()
 	fenceCI.device = window.GetDevice();
 	fenceCI.signaled = true;
 	fenceCI.timeout = UINT64_MAX;
-	std::vector<Ref<Fence>>draws = { Fence::Create(&fenceCI), Fence::Create(&fenceCI) };
+	std::vector<miru::Ref<Fence>>draws = { Fence::Create(&fenceCI), Fence::Create(&fenceCI) };
 	Semaphore::CreateInfo semaphoreCI = { "Seamphore", window.GetDevice() };
-	std::vector<Ref<Semaphore>>acquire = { Semaphore::Create(&semaphoreCI), Semaphore::Create(&semaphoreCI) };
-	std::vector<Ref<Semaphore>>submit = { Semaphore::Create(&semaphoreCI), Semaphore::Create(&semaphoreCI) };
+	std::vector<miru::Ref<Semaphore>>acquire = { Semaphore::Create(&semaphoreCI), Semaphore::Create(&semaphoreCI) };
+	std::vector<miru::Ref<Semaphore>>submit = { Semaphore::Create(&semaphoreCI), Semaphore::Create(&semaphoreCI) };
 
 	double yaw = 0;
 	double pitch = 0;
@@ -677,19 +717,19 @@ int main()
 		{
 			if (GraphicsAPI::IsVulkan())
 			{
-				basic->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
-				basic->FinalisePipline();
+				basicPipeline->SetViewport(0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f);
+				basicPipeline->FinalisePipline();
 			}
 
 			renderer = Renderer(window.GetContext());
 			renderer.SubmitFramebuffer(window.GetFramebuffers());
 			renderer.SubmitCamera(&cam);
 			renderer.SubmitLights({ &light });
-			renderer.Submit(&quad1);
-			renderer.Submit(&quad2);
-			renderer.Submit(&stall);
-			renderer.Submit(&floor);
-			renderer.Submit(&skybox);
+			renderer.Submit(quad1);
+			renderer.Submit(quad2);
+			renderer.Submit(stall);
+			renderer.Submit(floor);
+			renderer.Submit(skybox);
 			renderer.Flush();
 			window.GetSwapchain()->m_Resized = false;
 		}

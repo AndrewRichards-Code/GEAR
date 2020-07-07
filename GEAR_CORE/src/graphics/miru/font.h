@@ -24,7 +24,9 @@ private:
 	float m_WindowHeight;
 	float m_WindowRatio;
 	miru::Ref<miru::crossplatform::RenderPass> m_FontRenderPass;
-	std::shared_ptr<Pipeline> m_FontPipeline;
+	gear::Ref<Pipeline> m_FontPipeline;
+	
+	static gear::Ref<objects::Mesh> s_FontQuad;
 	//BatchRenderer2D m_FontRenderer;
 
 	FT_Library m_ftlib;
@@ -37,13 +39,13 @@ private:
 		mars::Vec2 m_InitPosition;
 		mars::Vec2 m_Position;
 		mars::Vec4 m_Colour;
-		std::vector<objects::Model> m_GlyphBuffer;
+		std::vector<gear::Ref<objects::Model>> m_GlyphBuffer;
 	};
 	std::vector<Line> m_Lines;
 
 	struct Character
 	{
-		std::shared_ptr<Texture> m_Texture;
+		gear::Ref<Texture> m_Texture;
 		mars::Vec2 m_Size;
 		mars::Vec2 m_Bearing;
 		unsigned int m_Advance;
@@ -51,7 +53,7 @@ private:
 	std::map<char, Character> m_Charmap;
 
 	bool b_GenerateRenderGlyphBuffer = true;
-	std::vector<objects::Model> m_RenderGlyphBuffer;
+	std::vector<gear::Ref<objects::Model>> m_RenderGlyphBuffer;
 
 public:
 	Font(void* device, const char* filepath, int fontHeight, int width, int height, float ratio);

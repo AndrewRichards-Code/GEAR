@@ -136,6 +136,7 @@
     <ClInclude Include="src\objects\light.h" />
     <ClInclude Include="src\objects\mesh.h" />
     <ClInclude Include="src\objects\model.h" />
+    <ClInclude Include="src\utils\assimp.h" />
     <ClInclude Include="src\utils\fileutils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

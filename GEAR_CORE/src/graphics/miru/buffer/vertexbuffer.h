@@ -6,9 +6,16 @@ namespace gear {
 namespace graphics {
 	class VertexBuffer
 	{
+	public: 
+		struct CreateInfo
+		{
+			void*							device;
+			void*							data;
+			size_t							size;
+			miru::crossplatform::VertexType type;
+		};
+	
 	private:
-		void* m_Device;
-
 		static miru::Ref<miru::crossplatform::Context> s_Context;
 		static miru::Ref<miru::crossplatform::MemoryBlock> s_MB_CPU_Upload, s_MB_GPU_Usage;
 
@@ -18,23 +25,20 @@ namespace graphics {
 		miru::Ref<miru::crossplatform::BufferView> m_VertexBufferView;
 		miru::crossplatform::BufferView::CreateInfo m_VertexBufferViewCI;
 
-		unsigned int m_Count;
-		unsigned int m_ComponentCount;
+		CreateInfo m_CI;
 		bool m_Upload = false;
 
 	public:
-		VertexBuffer(void* device, const float* data, unsigned int count, unsigned int componentCount);
+		VertexBuffer(CreateInfo* pCreateInfo);
 		~VertexBuffer();
 
 		inline static void SetContext(miru::Ref<miru::crossplatform::Context> context) { s_Context = context; };
 		void InitialiseMemory();
 
 		void Upload(miru::Ref<miru::crossplatform::CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
-
-		inline unsigned int GetCount() { return m_Count; }
-		inline unsigned int GetComponentCount() { return m_ComponentCount; }
-
 		inline miru::Ref<miru::crossplatform::BufferView> GetVertexBufferView() { return m_VertexBufferView; };
+
+		static size_t GetVertexTypeSize(miru::crossplatform::VertexType type);
 	};
 }
 }
