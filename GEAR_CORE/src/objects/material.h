@@ -1,17 +1,23 @@
 #pragma once
 
-#include "gear_common.h"
-#include "mars.h"
-#include "graphics/opengl/shader/shader.h"
-#include "graphics/opengl/texture.h"
+#include "gear_core_common.h"
+#include "graphics/miru/pipeline.h"
+#include "graphics/miru/texture.h"
+#include "graphics/miru/buffer/uniformbuffer.h"
 
-namespace GEAR {
-namespace OBJECTS {
+namespace gear {
+namespace objects {
 
 class Material
 {
 public:
-	enum class TextureType : int
+	struct CreateInfo
+	{
+		void*							device;
+		gear::Ref<graphics::Pipeline>	pipeline;
+	};
+
+	enum class TextureType : uint32_t
 	{
 		GEAR_TEXTURE_UNKNOWN = 0,		//Pre-Initialised value
 		GEAR_TEXTURE_DIFFUSE,			//For diffuse
@@ -32,57 +38,54 @@ public:
 	};
 
 private:
-	static bool s_InitialiseUBO;
 	struct PBRInfoUBO
 	{
-		mars::Vec4 m_Fersnel;
-		mars::Vec4 m_Albedo;
-		float m_Metallic;
-		float m_Roughness;
-		float m_AmbientOcclusion;
-		float m_Pad;
+		mars::Vec4	fersnel;
+		mars::Vec4	albedo;
+		float		metallic;
+		float		roughness;
+		float		ambientOcclusion;
+		float		pad;
 	}m_PBRInfoUBO;
 
 	struct Properties
 	{
-		std::string m_Name;
-		int m_TwoSided;
-		int m_ShadingModel;
-		int m_Wireframe;
-		int m_BlendFunc;
-		float m_Opacity;
-		float m_Shininess;
-		float m_Reflectivity;
-		float m_ShininessStrength;
-		float m_RefractiveIndex;
-		mars::Vec4 m_ColourDiffuse;
-		mars::Vec4 m_ColourAmbient;
-		mars::Vec4 m_ColourSpecular;
-		mars::Vec4 m_ColourEmissive;
-		mars::Vec4 m_ColourTransparent;
-		mars::Vec4 m_ColourReflective;
+		std::string name;
+		int			twoSided;
+		int			shadingModel;
+		int			wireframe;
+		int			blendFunc;
+		float		opacity;
+		float		shininess;
+		float		reflectivity;
+		float		shininessStrength;
+		float		refractiveIndex;
+		mars::Vec4	colourDiffuse;
+		mars::Vec4	colourAmbient;
+		mars::Vec4	colourSpecular;
+		mars::Vec4	colourEmissive;
+		mars::Vec4	colourTransparent;
+		mars::Vec4	colourReflective;
 	}m_Properties;
 
-	const OPENGL::Shader& m_Shader;
-	std::map<const OPENGL::Texture*, TextureType> m_Textures;
+	CreateInfo m_CI;
+	std::map<gear::Ref<graphics::Texture>, TextureType> m_Textures;
+	gear::Ref<graphics::UniformBuffer> m_UB;
 
 public:
-	Material(const OPENGL::Shader& shader);
+	Material(CreateInfo* pCreateInfo);
 	~Material();
 
-	void AddTexture(const OPENGL::Texture& texture, TextureType type = TextureType::GEAR_TEXTURE_UNKNOWN);
-	void ChangeTextureType(const OPENGL::Texture& texture, TextureType type);
-	void AddProperties(std::string name, int twoSided, int shadingModel, int wireframe, int blendFunc, float opacity, float shininess, float reflectivity, float shininessStrength, float refractiveIndex, const mars::Vec4& colourDiffuse, const mars::Vec4& colourAmbient, const mars::Vec4& colourSpecular, const mars::Vec4& colourEmissive, const mars::Vec4& colourTransparent, const mars::Vec4& colourReflective);
+	void AddTexture(gear::Ref<graphics::Texture> texture, TextureType type = TextureType::GEAR_TEXTURE_UNKNOWN);
+	void ChangeTextureType(gear::Ref<graphics::Texture> texture, TextureType type);
+	void AddProperties(const Properties& properties);
 	void SetPBRParameters(const mars::Vec4& fersnel = mars::Vec4(0, 0, 0, 0), const mars::Vec4& albedo = mars::Vec4(0, 0, 0, 0), float metallic = 0.0f, float roughness = 0.0f, float ambientOcclusion = 0.0f);
-	void BindPBRTextures();
-	void UnbindPBRTextures();
 
-	inline const OPENGL::Shader& GetShader() const { return m_Shader; }
-	inline const std::map<const OPENGL::Texture*, TextureType>& GetTextures() const { return m_Textures; }
+	inline const gear::Ref<graphics::Pipeline>& GetPipeline() const { return m_CI.pipeline; }
+	inline const std::map<gear::Ref<graphics::Texture>, TextureType>& GetTextures() const { return m_Textures; }
 
 private:
-	void InitialiseUBO();
-	void SetAllToZero();
+	void InitialiseUB();
 };
 }
 }

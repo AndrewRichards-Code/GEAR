@@ -5,12 +5,10 @@ using namespace graphics;
 using namespace objects;
 using namespace mars;
 
-bool Camera::s_InitialiseUBO = false;
-
 Camera::Camera(void* device, int projType, const mars::Vec3& position, const mars::Vec3& forward, const mars::Vec3 up)
 	:m_Device(device), m_ProjectionType(projType), m_Position(position), m_Forward(forward), m_Up(up)
 {
-	InitialiseUBO();
+	InitialiseUB();
 
 	m_Forward.Normalise();
 	m_Up.Normalise();
@@ -26,8 +24,8 @@ Camera::~Camera()
 
 void Camera::UpdateCameraPosition()
 {
-	m_CameraUBO.m_Position = Vec4(m_Position, 1.0f);
-	m_UBO->SubmitData((const float*)&m_CameraUBO.m_ProjectionMatrix.a, sizeof(CameraUBO));
+	m_CameraUB.m_Position = Vec4(m_Position, 1.0f);
+	m_UB->SubmitData((const float*)&m_CameraUB.m_ProjectionMatrix.a, sizeof(CameraUB));
 }
 void Camera::CalcuateLookAround(double yaw, double pitch, double roll, bool invertYAxis)
 {
@@ -49,7 +47,7 @@ void Camera::CalcuateLookAround(double yaw, double pitch, double roll, bool inve
 
 void Camera::DefineView()
 {
-	m_CameraUBO.m_ViewMatrix =
+	m_CameraUB.m_ViewMatrix =
 		Mat4::Rotation(m_Pitch, m_xAxis) *
 		Mat4::Rotation(m_Yaw, m_yAxis) *
 		Mat4::Rotation(m_Roll, m_zAxis) *
@@ -73,20 +71,20 @@ void Camera::DefineView()
 	Vec3 final = Quat::ToVec3((q * p) * qInv);
 	Vec3 final2 = p.RotQuat(q);*/
 
-	m_UBO->SubmitData((const float*)&m_CameraUBO.m_ProjectionMatrix.a, sizeof(CameraUBO));
+	m_UB->SubmitData((const float*)&m_CameraUB.m_ProjectionMatrix.a, sizeof(CameraUB));
 }
 void Camera::DefineView(const Mat4& viewMatrix)
 {
 	Mat4 translation = Mat4::Translation(Vec3(-m_Position.x, -m_Position.y, -m_Position.z));
-	m_CameraUBO.m_ViewMatrix = viewMatrix * translation;
-	m_UBO->SubmitData((const float*)&m_CameraUBO.m_ProjectionMatrix.a, sizeof(CameraUBO));
+	m_CameraUB.m_ViewMatrix = viewMatrix * translation;
+	m_UB->SubmitData((const float*)&m_CameraUB.m_ProjectionMatrix.a, sizeof(CameraUB));
 }
 void Camera::DefineProjection(float left, float right, float bottom, float top, float near, float far)
 {
 	if (m_ProjectionType == GEAR_CAMERA_ORTHOGRAPHIC)
 	{
-		m_CameraUBO.m_ProjectionMatrix = Mat4::Orthographic(left, right, bottom, top, near, far);
-		m_UBO->SubmitData((const float*)&m_CameraUBO.m_ProjectionMatrix.a, sizeof(CameraUBO));
+		m_CameraUB.m_ProjectionMatrix = Mat4::Orthographic(left, right, bottom, top, near, far);
+		m_UB->SubmitData((const float*)&m_CameraUB.m_ProjectionMatrix.a, sizeof(CameraUB));
 	}
 	else
 	{
@@ -98,16 +96,16 @@ void Camera::DefineProjection(double fov, float aspectRatio, float zNear, float 
 {
 	if (m_ProjectionType == GEAR_CAMERA_PERSPECTIVE)
 	{
-		m_CameraUBO.m_ProjectionMatrix = Mat4::Perspective(fov, aspectRatio, zNear, zFar);
+		m_CameraUB.m_ProjectionMatrix = Mat4::Perspective(fov, aspectRatio, zNear, zFar);
 		if (flipX)
-			m_CameraUBO.m_ProjectionMatrix.a *= -1;
+			m_CameraUB.m_ProjectionMatrix.a *= -1;
 		if (flipY)
-			m_CameraUBO.m_ProjectionMatrix.f *= -1;
+			m_CameraUB.m_ProjectionMatrix.f *= -1;
 
 		if (miru::GraphicsAPI::IsVulkan())
-			m_CameraUBO.m_ProjectionMatrix.f *= -1;
+			m_CameraUB.m_ProjectionMatrix.f *= -1;
 
-		m_UBO->SubmitData((const float*)&m_CameraUBO.m_ProjectionMatrix.a, sizeof(CameraUBO));
+		m_UB->SubmitData((const float*)&m_CameraUB.m_ProjectionMatrix.a, sizeof(CameraUB));
 	}
 	else
 	{
@@ -126,14 +124,13 @@ void Camera::CalculateUp()
 	m_Up = Vec3::Normalise(Vec3::Cross(m_Forward, m_Right));
 }
 
-void Camera::InitialiseUBO()
+void Camera::InitialiseUB()
 {
-	if (s_InitialiseUBO == false)
-	{
-		m_UBO = std::make_shared<UniformBuffer>(m_Device, sizeof(CameraUBO), 0);
-		s_InitialiseUBO = true;
-
-		const float zero[sizeof(CameraUBO)] = { 0 };
-		m_UBO->SubmitData(zero, sizeof(CameraUBO));
-	}
+	float zero[sizeof(CameraUB)] = { 0 };
+	
+	UniformBuffer::CreateInfo ubCI;
+	ubCI.device = m_Device;
+	ubCI.data = zero;
+	ubCI.size = sizeof(CameraUB);
+	m_UB = gear::CreateRef<UniformBuffer>(&ubCI);
 }

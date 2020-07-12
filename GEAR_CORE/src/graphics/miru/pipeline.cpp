@@ -3,90 +3,22 @@
 using namespace miru;
 using namespace miru::crossplatform;
 
-gear::graphics::Pipeline::Pipeline(void* device, const std::string& vertexPath, const std::string& fragmentPath)
-	:m_Device(device)
+gear::graphics::Pipeline::Pipeline(CreateInfo* pCreateInfo)
 {
-	AddAdditionalShaderModule(Shader::StageBit::VERTEX_BIT, vertexPath);
-	AddAdditionalShaderModule(Shader::StageBit::FRAGMENT_BIT, fragmentPath);
-}
+	m_CI = *pCreateInfo;
 
-gear::graphics::Pipeline::Pipeline(void* device, const std::string& computePath)
-{
-	AddAdditionalShaderModule(Shader::StageBit::COMPUTE_BIT, computePath);
+	for (auto& shaderCI : m_CI.shaderCreateInfo)
+	{
+		m_Shaders.emplace_back(Shader::Create(&shaderCI));
+	}
+	m_PipelineCI.shaders = m_Shaders;
+	m_Device = m_CI.shaderCreateInfo[0].device;
+	
+	FinalisePipline();
 }
 
 gear::graphics::Pipeline::~Pipeline()
 {
-}
-
-void gear::graphics::Pipeline::AddAdditionalShaderModule(Shader::StageBit stage, const std::string& shaderPath)
-{
-	Shader::CreateInfo shaderCI;
-	shaderCI.debugName = shaderPath.substr(shaderPath.find_last_of('/')).c_str();
-	shaderCI.device = m_Device;
-	shaderCI.stage = stage;
-	shaderCI.entryPoint = "main";
-	shaderCI.binaryFilepath = shaderPath.c_str();
-	shaderCI.binaryCode = {};
-	shaderCI.recompileArguments = {};
-	m_Shaders.emplace_back(Shader::Create(&shaderCI));
-	m_PipelineCI.shaders = m_Shaders;
-}
-
-void gear::graphics::Pipeline::SetViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
-{
-	m_ViewportState.viewports.push_back({ x, y, width, height, minDepth, maxDepth });
-	m_ViewportState.scissors.push_back({{(int32_t)x, (int32_t)y}, {(uint32_t)width, (uint32_t)height}});
-}
-
-void gear::graphics::Pipeline::SetRasterisationState(bool depthClampEnable, bool rasteriserDiscardEnable, PolygonMode polygonMode, CullModeBit cullMode,
-	FrontFace frontFace, bool depthBiasEnable, float depthBiasConstantFactor, float depthBiasClamp,  float depthBiasSlopeFactor, float lineWidth)
-{
-	m_RasterisationState.depthClampEnable = depthClampEnable;
-	m_RasterisationState.rasteriserDiscardEnable = rasteriserDiscardEnable;
-	m_RasterisationState.polygonMode = polygonMode;
-	m_RasterisationState.cullMode = cullMode;
-	m_RasterisationState.frontFace = frontFace;
-	m_RasterisationState.depthBiasEnable = depthBiasEnable;
-	m_RasterisationState.depthBiasConstantFactor = depthBiasConstantFactor;
-	m_RasterisationState.depthBiasClamp = depthBiasClamp;
-	m_RasterisationState.depthBiasSlopeFactor = depthBiasSlopeFactor;
-	m_RasterisationState.lineWidth = lineWidth;
-}
-
-void gear::graphics::Pipeline::SetMultisampleState(Image::SampleCountBit rasterisationSamples, bool sampleShadingEnable, float minSampleShading,
-	bool alphaToCoverageEnable, bool alphaToOneEnable)
-{
-	m_MultisampleState.rasterisationSamples = rasterisationSamples;
-	m_MultisampleState.sampleShadingEnable = sampleShadingEnable;
-	m_MultisampleState.minSampleShading = minSampleShading;
-	m_MultisampleState.alphaToCoverageEnable = alphaToCoverageEnable;
-	m_MultisampleState.alphaToOneEnable = alphaToOneEnable;
-}
-
-void gear::graphics::Pipeline::SetDepthStencilState(bool depthTestEnable, bool depthWriteEnable, CompareOp depthCompareOp, bool depthBoundsTestEnable,
-	bool stencilTestEnable, const StencilOpState& front, const StencilOpState& back, float minDepthBounds, float maxDepthBounds)
-{
-	m_DepthStencilState.depthTestEnable = depthTestEnable;
-	m_DepthStencilState.depthWriteEnable = depthWriteEnable;
-	m_DepthStencilState.depthCompareOp = depthCompareOp;
-	m_DepthStencilState.depthBoundsTestEnable = depthBoundsTestEnable;
-	m_DepthStencilState.stencilTestEnable = stencilTestEnable;
-	m_DepthStencilState.front = front;
-	m_DepthStencilState.back = back;
-	m_DepthStencilState.minDepthBounds = minDepthBounds;
-	m_DepthStencilState.maxDepthBounds = maxDepthBounds;
-}
-
-void gear::graphics::Pipeline::SetColourBlendState(bool logicOpEnable, LogicOp logicOp, const std::vector<ColourBlendAttachmentState> attachments, float blendConstant[4])
-{
-	m_ColourBlendState.logicOpEnable = logicOpEnable;
-	m_ColourBlendState.logicOp = logicOp;
-	m_ColourBlendState.attachments = attachments;
-	m_ColourBlendState.blendConstants[0] = blendConstant[0];
-	m_ColourBlendState.blendConstants[1] = blendConstant[1];
-	m_ColourBlendState.blendConstants[2] = blendConstant[2];
-	m_ColourBlendState.blendConstants[3] = blendConstant[3];
 }
 
 void gear::graphics::Pipeline::FinalisePipline()
@@ -138,16 +70,16 @@ void gear::graphics::Pipeline::FinalisePipline()
 		m_PipelineCI.vertexInputState.vertexInputAttributeDescriptions = viads;
 		m_PipelineCI.inputAssemblyState = { PrimitiveTopology::TRIANGLE_LIST, false };
 		m_PipelineCI.tessellationState = {};
-		m_PipelineCI.viewportState = m_ViewportState;
-		m_PipelineCI.rasterisationState = m_RasterisationState;
-		m_PipelineCI.multisampleState = m_MultisampleState;
-		m_PipelineCI.depthStencilState = m_DepthStencilState;
-		m_PipelineCI.colourBlendState = m_ColourBlendState;
+		m_PipelineCI.viewportState = m_CI.viewportState;
+		m_PipelineCI.rasterisationState = m_CI.rasterisationState;
+		m_PipelineCI.multisampleState = m_CI.multisampleState;
+		m_PipelineCI.depthStencilState = m_CI.depthStencilState;
+		m_PipelineCI.colourBlendState = m_CI.colourBlendState;
 		m_PipelineCI.dynamicStates = {};
 		m_PipelineCI.layout.descriptorSetLayouts = m_DescSetLayouts;
 		m_PipelineCI.layout.pushConstantRanges = {};
-		m_PipelineCI.renderPass = m_RenderPass;
-		m_PipelineCI.subpassIndex = m_SubpassIndex;
+		m_PipelineCI.renderPass = m_CI.renderPass;
+		m_PipelineCI.subpassIndex = m_CI.subpassIndex;
 		m_Pipeline = crossplatform::Pipeline::Create(&m_PipelineCI);
 	}
 	else
@@ -181,4 +113,25 @@ void gear::graphics::Pipeline::FinalisePipline()
 		m_PipelineCI.layout.pushConstantRanges = {};
 		m_Pipeline = crossplatform::Pipeline::Create(&m_PipelineCI);
 	}
+}
+
+void gear::graphics::Pipeline::RecompileShaders()
+{
+	for (auto& shader : m_Shaders)
+		shader->Recompile();
+
+	m_PipelineCI.shaders = m_Shaders;
+	Rebuild();
+}
+
+void gear::graphics::Pipeline::Rebuild()
+{
+	m_PipelineCI.viewportState = m_CI.viewportState;
+	m_PipelineCI.rasterisationState = m_CI.rasterisationState;
+	m_PipelineCI.multisampleState = m_CI.multisampleState;
+	m_PipelineCI.depthStencilState = m_CI.depthStencilState;
+	m_PipelineCI.colourBlendState = m_CI.colourBlendState;
+	m_PipelineCI.renderPass = m_CI.renderPass;
+	m_PipelineCI.subpassIndex = m_CI.subpassIndex;
+	m_Pipeline = crossplatform::Pipeline::Create(&m_PipelineCI);
 }

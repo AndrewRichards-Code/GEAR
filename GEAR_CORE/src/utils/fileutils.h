@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gear_core_common.h"
-#include "assimp.h"
+//#include "assimp.h"
 
 namespace gear {
 
@@ -47,7 +47,7 @@ public:
 		return output;
 	}
 
-	/*struct ObjData
+	struct ObjData
 	{
 		std::vector<mars::Vec4> m_Vertices;
 		std::vector<mars::Vec2> m_TexCoords;
@@ -56,13 +56,13 @@ public:
 		std::vector<uint32_t> m_TextIndices;
 		std::vector<uint32_t> m_NormIndices;
 		std::vector<mars::Vec3> m_UniqueVertices;
-	};*/
+	};
 /*#if defined(_MSC_VER)
 	__declspec(deprecated("Function Depracated: Please use AssimpLoader instead."))
 #elif
 	[[deprecated("Function Depracated: Please use AssimpLoader instead.")]]
 #endif*/
-	/*static ObjData read_obj(const char* filepath)
+	static ObjData read_obj(const char* filepath)
 	{
 		ObjData result;
 		std::ifstream stream(filepath, std::fstream::in);
@@ -223,7 +223,7 @@ public:
 			result.m_Normals.push_back(unorderedNormals[(size_t)result.m_UniqueVertices[i].z]);
 
 		return result;
-	}*/
+	}
 
 	private:
 	static bool IsBigEndian()

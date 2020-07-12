@@ -101,6 +101,7 @@
   <ItemGroup>
     <ClCompile Include="src\audio\audiosource.cpp" />
     <ClCompile Include="src\audio\listener.cpp" />
+    <ClCompile Include="src\core\timer.cpp" />
     <ClCompile Include="src\graphics\miru\buffer\framebuffer.cpp" />
     <ClCompile Include="src\graphics\miru\buffer\indexbuffer.cpp" />
     <ClCompile Include="src\graphics\miru\buffer\shaderstoragebuffer.cpp" />
@@ -117,6 +118,8 @@
     <ClCompile Include="src\objects\model.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\VkTemp\VkTemp\src\Crossplatform\Object\Timer.h" />
+    <ClInclude Include="src\core\timer.h" />
     <ClInclude Include="src\gear_core.h" />
     <ClInclude Include="src\gear_core_common.h" />
     <ClInclude Include="src\audio\audiosource.h" />
@@ -136,7 +139,6 @@
     <ClInclude Include="src\objects\light.h" />
     <ClInclude Include="src\objects\mesh.h" />
     <ClInclude Include="src\objects\model.h" />
-    <ClInclude Include="src\utils\assimp.h" />
     <ClInclude Include="src\utils\fileutils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -113,7 +113,21 @@ std::string Window::GetDeviceName() const
 	{
 		std::wstring wresult;
 		wresult = &ref_cast<d3d12::Context>(m_Context)->m_PhysicalDevices.m_AdapterDescs[0].Description[0];
-		result = std::string(wresult.begin(), wresult.end());
+		
+		//https://social.msdn.microsoft.com/Forums/en-US/0f749fd8-8a43-4580-b54b-fbf964d68375/convert-stdstring-to-lpcwstr-best-way-in-c?forum=Vsexpressvc
+		auto ws2s = [](const std::wstring& s) -> std::string
+		{
+			int len;
+			int slength = (int)s.length() + 1;
+			len = WideCharToMultiByte(CP_ACP, 0, s.c_str(), slength, 0, 0, 0, 0);
+			char* buf = new char[len];
+			WideCharToMultiByte(CP_ACP, 0, s.c_str(), slength, buf, len, 0, 0);
+			std::string r(buf);
+			delete[] buf;
+			return r;
+		};
+
+		result = ws2s(wresult);
 		break;
 	}
 	case GraphicsAPI::API::VULKAN:
@@ -197,6 +211,7 @@ bool Window::Init()
 	glfwSetMouseButtonCallback(m_Window, mouse_button_callback);
 	glfwSetCursorPosCallback(m_Window, cursor_position_callback);
 	glfwSetJoystickCallback(joystick_callback);
+	glfwSetScrollCallback(m_Window, scroll_callback);
 
 	m_SwapchainCI.debugName = "GEAR_CORE_Swapchain";
 	m_SwapchainCI.pContext = m_Context;
@@ -256,13 +271,17 @@ bool Window::Init()
 	m_RenderPass = RenderPass::Create(&m_RenderPassCI);
 
 	CreateFramebuffer();
+
+	if (m_CI.fullscreen)
+		Fullscreen();
+	
 	return true;
 }
 
 void Window::CreateFramebuffer()
 {
 	m_FramebufferCI.debugName = "GEAR_CORE_Framebuffer";
-	m_FramebufferCI.device = m_Context->GetDevice();;
+	m_FramebufferCI.device = m_Context->GetDevice();
 	m_FramebufferCI.renderPass = m_RenderPass;
 	m_FramebufferCI.attachments = {m_Swapchain->m_SwapchainImageViews[0], m_DepthImageView};
 	m_FramebufferCI.width = m_CurrentWidth;
@@ -309,6 +328,11 @@ void Window::GetJoyAxes(double& x1, double& y1, double& x2, double& y2, double& 
 	x3 = m_xJoy3;
 	y3 = m_yJoy3;
 }
+
+void Window::GetScrollPosition(double& position) const
+{
+	position = m_ScrollPosition;
+}
 	
 void Window::window_resize(GLFWwindow* window, int width, int height)
 {
@@ -342,7 +366,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 			win->m_Mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 			glfwSetWindowMonitor(win->m_Window, glfwGetPrimaryMonitor(), 0, 0, win->m_Mode->width, win->m_Mode->height, win->m_Mode->refreshRate);
 			win->m_CurrentWidth = win->m_Mode->width;
-			win->m_CurrentWidth = win->m_Mode->height;
+			win->m_CurrentHeight= win->m_Mode->height;
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 
@@ -350,7 +374,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		{
 			glfwSetWindowMonitor(win->m_Window, NULL, 100, 100, win->m_CI.width, win->m_CI.height, GLFW_DONT_CARE);
 			win->m_CurrentWidth = win->m_CI.width;
-			win->m_CurrentWidth = win->m_CI.height;
+			win->m_CurrentHeight = win->m_CI.height;
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 	}
@@ -387,4 +411,10 @@ void Window::joystick_callback(int joy, int event)
 	{
 		std::cout << "The joystick was disconnected" << std::endl;
 	}
+}
+
+void Window::scroll_callback(GLFWwindow * window, double xoffset, double yoffset)
+{
+	Window* win = (Window*)glfwGetWindowUserPointer(window);
+	win->m_ScrollPosition += yoffset;
 }

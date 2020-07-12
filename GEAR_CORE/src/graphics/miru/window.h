@@ -24,14 +24,14 @@ public:
 
 	struct CreateInfo
 	{
-		miru::GraphicsAPI::API	api;
-		std::string				title;
-		uint32_t				width;
-		uint32_t				height;
-		bool					fullscreen;
-		bool					vSync;
-		MSAALevel				msaaLevel;
-		std::string				iconFilepath;
+		miru::GraphicsAPI::API						api;
+		std::string									title;
+		uint32_t									width;
+		uint32_t									height;
+		bool										fullscreen;
+		bool										vSync;
+		miru::crossplatform::Image::SampleCountBit	samples;
+		std::string									iconFilepath;
 	};
 
 private:
@@ -68,6 +68,7 @@ private:
 	bool m_Keys[MAX_KEYS];
 	bool m_MouseButtons[MAX_BUTTONS];
 	double mx, my;
+	double m_ScrollPosition = 0.0;
 
 	bool m_JoyButtons[MAX_JOY_BUTTONS];
 	double m_xJoy1, m_yJoy1, m_xJoy2, m_yJoy2, m_xJoy3, m_yJoy3;
@@ -82,12 +83,12 @@ public:
 	void CalculateFPS();
 
 	inline const CreateInfo& GetCreateInfo() const { return m_CI; }
-	inline miru::Ref<miru::crossplatform::Context> GetContext() { return m_Context; };
-	inline miru::Ref<miru::crossplatform::Swapchain> GetSwapchain() { return m_Swapchain; };
-	inline void* GetDevice() { return m_Context->GetDevice(); }
-	inline miru::Ref<miru::crossplatform::RenderPass> GetRenderPass() { return m_RenderPass; }
-	inline miru::Ref<miru::crossplatform::ImageView> GetSwapchainImageView(size_t index) { return m_Swapchain->m_SwapchainImageViews[index]; }
-	inline miru::Ref<miru::crossplatform::ImageView> GetSwapchainDepthImageView() { return m_DepthImageView; }
+	inline miru::Ref<miru::crossplatform::Context> GetContext() const { return m_Context; };
+	inline miru::Ref<miru::crossplatform::Swapchain> GetSwapchain() const { return m_Swapchain; };
+	inline void* GetDevice() const { return m_Context->GetDevice(); }
+	inline miru::Ref<miru::crossplatform::RenderPass> GetRenderPass() const { return m_RenderPass; }
+	inline miru::Ref<miru::crossplatform::ImageView> GetSwapchainImageView(size_t index) const { return m_Swapchain->m_SwapchainImageViews[index]; }
+	inline miru::Ref<miru::crossplatform::ImageView> GetSwapchainDepthImageView() const { return m_DepthImageView; }
 	inline miru::Ref<miru::crossplatform::Framebuffer>* GetFramebuffers() { return m_Framebuffers; }
 
 	inline const miru::GraphicsAPI::API& GetGraphicsAPI() const { return m_CI.api; }
@@ -101,13 +102,14 @@ public:
 	std::string GetDeviceName() const;
 	template<typename T>
 	inline std::string GetFPSString() const { return std::to_string(static_cast<T>(m_FPS)); }
-	inline std::string GetAntiAliasingValue() const { return std::to_string(static_cast<unsigned int>(m_CI.msaaLevel)); }
+	inline std::string GetAntiAliasingValue() const { return std::to_string(static_cast<uint32_t>(m_CI.samples)); }
 
 	bool IsKeyPressed(unsigned int keycode) const;
 	bool IsMouseButtonPressed(unsigned int button) const;
 	void GetMousePosition(double& x, double& y) const;
 	bool IsJoyButtonPressed(unsigned int button) const;
 	void GetJoyAxes(double& x1, double& y1, double& x2, double& y2, double& x3, double& y3) const;
+	void GetScrollPosition(double& position) const;
 
 private:
 	bool Init();
@@ -117,6 +119,7 @@ private:
 	static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 	static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 	static void joystick_callback(int joy, int event);
+	static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 };
 }
 }

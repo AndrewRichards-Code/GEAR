@@ -63,6 +63,9 @@
     <ClCompile Include="src\objects\model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\timer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\utils\fileutils.h">
@@ -125,7 +128,10 @@
     <ClInclude Include="src\objects\model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\utils\assimp.h">
+    <ClInclude Include="..\..\VkTemp\VkTemp\src\Crossplatform\Object\Timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

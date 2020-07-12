@@ -6,9 +6,15 @@ namespace gear {
 namespace graphics {
 	class UniformBuffer
 	{
-	private:
-		void* m_Device;
+	public:
+		struct CreateInfo
+		{
+			void*	device;
+			void*	data;
+			size_t	size;
+		};
 
+	private:
 		static miru::Ref<miru::crossplatform::Context> s_Context;
 		static miru::Ref<miru::crossplatform::MemoryBlock> s_MB_CPU_Upload, s_MB_GPU_Usage;
 
@@ -18,12 +24,11 @@ namespace graphics {
 		miru::Ref<miru::crossplatform::BufferView> m_UniformBufferView;
 		miru::crossplatform::BufferView::CreateInfo m_UniformBufferViewCI;
 
-		unsigned int m_Size;
-		unsigned int m_BindingIndex;
+		CreateInfo m_CI;
 		bool m_Upload = false;
 
 	public:
-		UniformBuffer(void* device, unsigned int size, unsigned int bindingIndex);
+		UniformBuffer(CreateInfo* pCreateInfo);
 		~UniformBuffer();
 
 		inline static void SetContext(miru::Ref<miru::crossplatform::Context> context) { s_Context = context; };
@@ -35,8 +40,7 @@ namespace graphics {
 		inline miru::Ref<miru::crossplatform::Buffer> GetBuffer() const { return m_UniformBuffer; };
 		inline miru::Ref<miru::crossplatform::BufferView> GetBufferView() const { return m_UniformBufferView; };
 
-		inline unsigned int GetSize() { return m_Size; }
-		inline unsigned int GetBindingIndex() { return m_BindingIndex; }
+		inline size_t GetSize() { return m_CI.size; }
 	};
 }
 }

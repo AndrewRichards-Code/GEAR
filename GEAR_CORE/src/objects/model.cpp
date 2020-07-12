@@ -17,6 +17,7 @@ Model::Model(CreateInfo* pCreateInfo)
 
 Model::~Model()
 {
+	m_CI.pPipeline = nullptr;
 }
 
 void Model::SetUniformModlMatrix()
@@ -36,10 +37,13 @@ void Model::SetUniformModlMatrix(const Mat4& modl)
 
 void Model::InitialiseUB()
 {
-	m_UB = gear::CreateRef<UniformBuffer>(m_CI.device, sizeof(ModelUB), 1);
+	float zero[sizeof(ModelUB)] = { 0 };
 
-	const float zero[sizeof(ModelUB)] = { 0 };
-	m_UB->SubmitData(zero, sizeof(ModelUB));
+	UniformBuffer::CreateInfo ubCI;
+	ubCI.device = m_CI.device;
+	ubCI.data = zero;
+	ubCI.size = sizeof(ModelUB);
+	m_UB = gear::CreateRef<UniformBuffer>(&ubCI);
 }
 
 void Model::AddTextureIDsVB()

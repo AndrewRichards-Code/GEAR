@@ -35,15 +35,14 @@ public:
 	mars::Vec3 m_Right;
 
 private:
-	static bool s_InitialiseUBO;
-	struct CameraUBO
+	struct CameraUB
 	{
 		mars::Mat4 m_ProjectionMatrix;
 		mars::Mat4 m_ViewMatrix;
 		mars::Vec4 m_Position;
 		
-	} m_CameraUBO;
-	std::shared_ptr<graphics::UniformBuffer> m_UBO;
+	} m_CameraUB;
+	gear::Ref<graphics::UniformBuffer> m_UB;
 	
 
 public:
@@ -62,12 +61,12 @@ public:
 	{
 		graphics::UniformBuffer::SetContext(context);
 	};
-	std::shared_ptr<graphics::UniformBuffer> GetUBO() { return m_UBO; };
+	gear::Ref<graphics::UniformBuffer> GetUB() { return m_UB; };
 
 private:
 	void CalculateRight();
 	void CalculateUp();
-	void InitialiseUBO();
+	void InitialiseUB();
 };
 }
 }

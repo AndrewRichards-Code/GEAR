@@ -32,4 +32,4 @@ MIRU_SHADER_COMPILER.exe ^
 -o:C:\Users\Andrew\source\repos\GEAR\Application/res/shaders/bin ^
 -i:C:\Users\Andrew\source\repos\MIRU\MIRU_SHADER_COMPILER/shaders/includes ^
 -spv -cso -t:6_4
-pause
+rem pause

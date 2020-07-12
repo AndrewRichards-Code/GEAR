@@ -6,12 +6,11 @@ using namespace objects;
 using namespace mars;
 
 int Light::s_NumOfLights = 0;
-bool Light::s_InitialiseUBO = false;
 
 Light::Light(void* device, LightType type, const Vec3& position, const Vec3& direction, const Vec4& colour)
 	:m_Device(device), m_Type(type), m_Position(position), m_Direction(direction), m_Colour(colour)
 {
-	InitialiseUBO();
+	InitialiseUB();
 	s_NumOfLights++;
 	if (s_NumOfLights < GEAR_MAX_LIGHTS + 1)
 	{
@@ -34,80 +33,79 @@ Light::Light(void* device, LightType type, const Vec3& position, const Vec3& dir
 	UpdateColour();
 	UpdateDirection();
 
-	m_LightingUBO.u_Diffuse = 1.0f;
-	m_LightingUBO.u_Specular = 1.0f;
-	m_LightingUBO.u_Ambient= 1.0f;
-	m_LightingUBO.u_Emit= 0.0f;
-	m_UBO1->SubmitData(&m_LightingUBO.u_Diffuse, sizeof(LightingUBO));
+	m_LightingUB.u_Diffuse = 1.0f;
+	m_LightingUB.u_Specular = 1.0f;
+	m_LightingUB.u_Ambient= 1.0f;
+	m_LightingUB.u_Emit= 0.0f;
+	m_UB1->SubmitData(&m_LightingUB.u_Diffuse, sizeof(LightingUB));
 }
 
 Light::~Light()
 {
-	SetAllToZero();
 	s_NumOfLights--;
 }
 
 void Light::Specular(float shineFactor, float reflectivity)
 {
-	m_LightUBO.m_ShineFactor = shineFactor;
-	m_LightUBO.m_Reflectivity = reflectivity;
-	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
+	m_LightUB.m_ShineFactor = shineFactor;
+	m_LightUB.m_Reflectivity = reflectivity;
+	m_UB0->SubmitData(&m_LightUB.m_Colour.r, sizeof(LightUB));
 }
 void Light::Ambient(float ambientFactor)
 {
-	m_LightUBO.m_AmbientFactor = ambientFactor;
-	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
+	m_LightUB.m_AmbientFactor = ambientFactor;
+	m_UB0->SubmitData(&m_LightUB.m_Colour.r, sizeof(LightUB));
 }
 void Light::Attenuation(float linear, float quadratic)
 {
-	m_LightUBO.m_AttenuationConstant = 1.0f;
-	m_LightUBO.m_AttenuationLinear = linear;
-	m_LightUBO.m_AttenuationQuadratic = quadratic;
-	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
+	m_LightUB.m_AttenuationConstant = 1.0f;
+	m_LightUB.m_AttenuationLinear = linear;
+	m_LightUB.m_AttenuationQuadratic = quadratic;
+	m_UB0->SubmitData(&m_LightUB.m_Colour.r, sizeof(LightUB));
 }
 void Light::SpotCone(double theta)
 {
-	m_LightUBO.m_CutOff = static_cast<float>(cos(theta));
-	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
+	m_LightUB.m_CutOff = static_cast<float>(cos(theta));
+	m_UB0->SubmitData(&m_LightUB.m_Colour.r, sizeof(LightUB));
 }
 
 void Light::Point()
 {
-	m_LightUBO.m_Type = (float)LightType::GEAR_LIGHT_POINT;
-	m_LightUBO.m_Colour = m_Colour;
-	m_LightUBO.m_Position = Vec4(m_Position, 1.0f);
+	m_LightUB.m_Type = (float)LightType::GEAR_LIGHT_POINT;
+	m_LightUB.m_Colour = m_Colour;
+	m_LightUB.m_Position = Vec4(m_Position, 1.0f);
 	/*m_DepthRenderTargetOmniProbe = std::make_unique<OmniProbe>(m_Position, m_DepthRenderSize);
 	m_DepthRenderTargetUniProbe = nullptr;*/
 
-	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
+	m_UB0->SubmitData(&m_LightUB.m_Colour.r, sizeof(LightUB));
 }
 void Light::Directional()
 {
-	m_LightUBO.m_Type = (float)LightType::GEAR_LIGHT_DIRECTIONAL;
-	m_LightUBO.m_Colour = m_Colour;
-	m_LightUBO.m_Direction = Vec4(m_Direction, 0.0f);
+	m_LightUB.m_Type = (float)LightType::GEAR_LIGHT_DIRECTIONAL;
+	m_LightUB.m_Colour = m_Colour;
+	m_LightUB.m_Direction = Vec4(m_Direction, 0.0f);
 	/*m_DepthRenderTargetOmniProbe = nullptr;
 	m_DepthRenderTargetUniProbe = std::make_unique<UniProbe>(m_Position, m_Direction, m_DepthRenderSize, GEAR_CAMERA_ORTHOGRAPHIC);*/
 
-	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
+	m_UB0->SubmitData(&m_LightUB.m_Colour.r, sizeof(LightUB));
 }
 void Light::Spot()
 {
-	m_LightUBO.m_Type = (float)LightType::GEAR_LIGHT_SPOT;
-	m_LightUBO.m_Colour = m_Colour;
-	m_LightUBO.m_Position = Vec4(m_Position, 1.0f);
-	m_LightUBO.m_Direction = Vec4(m_Direction, 0.0f);
+	m_LightUB.m_Type = (float)LightType::GEAR_LIGHT_SPOT;
+	m_LightUB.m_Colour = m_Colour;
+	m_LightUB.m_Position = Vec4(m_Position, 1.0f);
+	m_LightUB.m_Direction = Vec4(m_Direction, 0.0f);
 	/*m_DepthRenderTargetOmniProbe = nullptr;
 	m_DepthRenderTargetUniProbe = std::make_unique<UniProbe>(m_Position, m_Direction, m_DepthRenderSize, GEAR_CAMERA_PERSPECTIVE);*/
 
-	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
+	m_UB0->SubmitData(&m_LightUB.m_Colour.r, sizeof(LightUB));
 }
 void Light::Area()
 {
-	m_LightUBO.m_Type = (float)LightType::GEAR_LIGHT_AREA;
-	m_LightUBO.m_Colour = m_Colour;
+	m_LightUB.m_Type = (float)LightType::GEAR_LIGHT_AREA;
+	m_LightUB.m_Colour = m_Colour;
 
-	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
+	m_UB0->SubmitData(&m_LightUB.m_Colour.r, sizeof(LightUB));
 }
 
 /*void Light::SetDepthParameters(float near, float far, bool linear, bool reverse)
@@ -146,18 +144,18 @@ std::shared_ptr<OPENGL::Texture> Light::GetDepthTexture()
 
 void Light::UpdateColour()
 {
-	m_LightUBO.m_Colour = m_Colour;
-	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
+	m_LightUB.m_Colour = m_Colour;
+	m_UB0->SubmitData(&m_LightUB.m_Colour.r, sizeof(LightUB));
 }
 void Light::UpdatePosition()
 {
-	m_LightUBO.m_Position = Vec4(m_Position, 1.0f);
-	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
+	m_LightUB.m_Position = Vec4(m_Position, 1.0f);
+	m_UB0->SubmitData(&m_LightUB.m_Colour.r, sizeof(LightUB));
 }
 void Light::UpdateDirection()
 {
-	m_LightUBO.m_Direction = Vec4(m_Direction, 0.0f);
-	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
+	m_LightUB.m_Direction = Vec4(m_Direction, 0.0f);
+	m_UB0->SubmitData(&m_LightUB.m_Colour.r, sizeof(LightUB));
 }
 void Light::UpdateDirection(double yaw, double pitch, double roll, bool invertYAxis)
 {
@@ -174,29 +172,22 @@ void Light::UpdateDirection(double yaw, double pitch, double roll, bool invertYA
 
 	m_Direction = Vec3::Normalise(direction);
 
-	m_LightUBO.m_Direction = Vec4(m_Direction, 0.0f);
-	m_UBO0->SubmitData(&m_LightUBO.m_Colour.r, sizeof(LightUBO));
+	m_LightUB.m_Direction = Vec4(m_Direction, 0.0f);
+	m_UB0->SubmitData(&m_LightUB.m_Colour.r, sizeof(LightUB));
 }
 
-void Light::InitialiseUBO()
+void Light::InitialiseUB()
 {
-	if (s_InitialiseUBO == false)
-	{
-		m_UBO0 = std::make_shared<UniformBuffer>(m_Device, sizeof(LightUBO) * GEAR_MAX_LIGHTS, 2);
-		m_UBO1 = std::make_shared<UniformBuffer>(m_Device, sizeof(LightingUBO), 3);
-		s_InitialiseUBO = true;
-		{
-			const float zero[sizeof(LightUBO) * GEAR_MAX_LIGHTS] = { 0 };
-			m_UBO0->SubmitData(zero, sizeof(LightUBO) * GEAR_MAX_LIGHTS);
-		}
-		{
-			const float zero[sizeof(LightingUBO)] = { 0 };
-			m_UBO1->SubmitData(zero, sizeof(LightingUBO));
-		}
-	}
-}
-void Light::SetAllToZero()
-{
-	const float zero[sizeof(LightUBO)] = { 0 };
-	m_UBO0->SubmitData(zero, sizeof(LightUBO));
+	float zero0[sizeof(LightUB) * GEAR_MAX_LIGHTS] = { 0 };
+	float zero1[sizeof(LightingUB)] = { 0 };
+	
+	UniformBuffer::CreateInfo ubCI;
+	ubCI.device = m_Device;
+	ubCI.data = zero0;
+	ubCI.size = sizeof(LightUB)* GEAR_MAX_LIGHTS;
+	m_UB0 = gear::CreateRef<UniformBuffer>(&ubCI);
+	
+	ubCI.data = zero1;
+	ubCI.size = sizeof(LightingUB);
+	m_UB1 = gear::CreateRef<UniformBuffer>(&ubCI);
 }

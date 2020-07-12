@@ -12,7 +12,7 @@ gear::Ref<objects::Mesh> Font::s_FontQuad = nullptr;
 Font::Font(void* device, const char* filepath, int fontHeight, int width, int height, float ratio)
 	:m_Device(device), m_FilePath(filepath), m_FontHeight(fontHeight), m_WindowWidth(static_cast<float>(width)), m_WindowHeight(static_cast<float>(height)), m_WindowRatio(ratio)
 {
-	m_FontPipeline = std::make_shared<Pipeline>(m_Device, "res/shaders/bin/font.vert.spv", "res/shaders/bin/font.frag.spv");
+	/*m_FontPipeline = std::make_shared<Pipeline>(m_Device, "res/shaders/bin/font.vert.spv", "res/shaders/bin/font.frag.spv");
 	m_FontPipeline->SetViewport(0.0f, 0.0f, m_WindowWidth, m_WindowHeight, 0.0f, 1.0f);
 	m_FontPipeline->SetRasterisationState(false, false, PolygonMode::FILL, CullModeBit::NONE_BIT, FrontFace::COUNTER_CLOCKWISE, false, 0.0f, 0.0f, 0.0f, 0.0f);
 	m_FontPipeline->SetMultisampleState(Image::SampleCountBit::SAMPLE_COUNT_1_BIT, false, 0.0f, false, false);
@@ -34,7 +34,7 @@ Font::Font(void* device, const char* filepath, int fontHeight, int width, int he
 		Barrier::AccessBit::COLOUR_ATTACHMENT_READ_BIT,  Barrier::AccessBit::COLOUR_ATTACHMENT_WRITE_BIT } };
 	m_FontRenderPass = RenderPass::Create(&fontRenderPassCI);
 	m_FontPipeline->SetRenderPass(m_FontRenderPass, 0);
-	m_FontPipeline->FinalisePipline();
+	m_FontPipeline->FinalisePipline();*/
 	GenerateCharacterMap();
 }
 

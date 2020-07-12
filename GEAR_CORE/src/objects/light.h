@@ -28,8 +28,7 @@ private:
 	int m_LightID;
 	LightType m_Type;
 
-	static bool s_InitialiseUBO;
-	struct LightUBO
+	struct LightUB
 	{
 		mars::Vec4 m_Colour;				//00
 		mars::Vec4 m_Position;				//16
@@ -42,16 +41,16 @@ private:
 		float m_AttenuationLinear;			//68
 		float m_AttenuationQuadratic;		//72
 		float m_CutOff;						//76
-	}m_LightUBO;							//80 Total Size
-	struct LightingUBO
+	}m_LightUB;							//80 Total Size
+	struct LightingUB
 	{
 		float u_Diffuse;
 		float u_Specular;
 		float u_Ambient;
 		float u_Emit;
-	}m_LightingUBO;
-	std::shared_ptr<graphics::UniformBuffer> m_UBO0;
-	std::shared_ptr<graphics::UniformBuffer> m_UBO1;
+	}m_LightingUB;
+	gear::Ref<graphics::UniformBuffer> m_UB0;
+	gear::Ref<graphics::UniformBuffer> m_UB1;
 	
 	//Depth Shader for Shadows
 	/*const OPENGL::Shader m_DepthShader = OPENGL::Shader("res/shaders/GLSL/depth.vert", "res/shaders/GLSL/depth.frag");
@@ -98,12 +97,11 @@ public:
 	{
 		graphics::UniformBuffer::SetContext(context);
 	};
-	std::shared_ptr<graphics::UniformBuffer> GetUBO0() { return m_UBO0; };
-	std::shared_ptr<graphics::UniformBuffer> GetUBO1() { return m_UBO1; };
+	gear::Ref<graphics::UniformBuffer> GetUB0() { return m_UB0; };
+	gear::Ref<graphics::UniformBuffer> GetUB1() { return m_UB1; };
 
 private:
-	void InitialiseUBO();
-	void SetAllToZero();
+	void InitialiseUB();
 	//void SetDepthUBOToZero();
 };
 }

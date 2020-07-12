@@ -132,7 +132,7 @@ void Texture::InitialiseMemory()
 	{
 		mbCI.debugName = "GEAR_CORE_MB_CPU_TextureUpload";
 		mbCI.pContext = s_Context;
-		mbCI.blockSize = MemoryBlock::BlockSize::BLOCK_SIZE_128MB;
+		mbCI.blockSize = MemoryBlock::BlockSize(1048576 * 1024);
 		mbCI.properties = MemoryBlock::PropertiesBit::HOST_VISIBLE_BIT | MemoryBlock::PropertiesBit::HOST_COHERENT_BIT;
 		s_MB_CPU_Upload = MemoryBlock::Create(&mbCI);
 	}
@@ -140,7 +140,7 @@ void Texture::InitialiseMemory()
 	{
 		mbCI.debugName = "GEAR_CORE_MB_GPU_Texture";
 		mbCI.pContext = s_Context;
-		mbCI.blockSize = MemoryBlock::BlockSize::BLOCK_SIZE_128MB;
+		mbCI.blockSize = MemoryBlock::BlockSize(1048576 * 1024);
 		mbCI.properties = MemoryBlock::PropertiesBit::DEVICE_LOCAL_BIT;
 		s_MB_GPU_Usage = MemoryBlock::Create(&mbCI);
 	}

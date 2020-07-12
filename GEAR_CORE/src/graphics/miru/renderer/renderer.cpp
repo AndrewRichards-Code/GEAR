@@ -9,6 +9,7 @@ using namespace miru::crossplatform;
 
 Renderer::Renderer(miru::Ref<miru::crossplatform::Context> context)
 {
+	//Renderer and Transfer CmdPools and CmdBuffers
 	m_CmdPoolCI.debugName = "GEAR_CORE_CommandPool_Renderer";
 	m_CmdPoolCI.pContext = context;
 	m_CmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
@@ -34,6 +35,21 @@ Renderer::Renderer(miru::Ref<miru::crossplatform::Context> context)
 	m_TransCmdBufferCI.commandBufferCount = 1;
 	m_TransCmdBufferCI.allocateNewCommandPoolPerBuffer = false;
 	m_TransCmdBuffer = CommandBuffer::Create(&m_TransCmdBufferCI);
+
+	//Present Synchronisation
+	m_DrawFenceCI.debugName = "GEAR_CORE_Sync_DrawFence";
+	m_DrawFenceCI.device = context->GetDevice();
+	m_DrawFenceCI.signaled = true;
+	m_DrawFenceCI.timeout = UINT64_MAX;
+	m_DrawFences = { Fence::Create(&m_DrawFenceCI), Fence::Create(&m_DrawFenceCI) };
+
+	m_AcquireSemaphoreCI.debugName = "GEAR_CORE_Sync_AcquireSeamphore";
+	m_AcquireSemaphoreCI.device = context->GetDevice();
+	m_AcquireSemaphores = { Semaphore::Create(&m_AcquireSemaphoreCI), Semaphore::Create(&m_AcquireSemaphoreCI) };
+
+	m_SubmitSemaphoreCI.debugName = "GEAR_CORE_Sync_AcquireSeamphore";
+	m_SubmitSemaphoreCI.device = context->GetDevice();
+	m_SubmitSemaphores = { Semaphore::Create(&m_SubmitSemaphoreCI), Semaphore::Create(&m_SubmitSemaphoreCI) };
 }
 
 Renderer::~Renderer()
@@ -54,9 +70,9 @@ void Renderer::Flush()
 	Ref<Fence> transferFence = Fence::Create(&transFenceCI);
 	{
 		m_TransCmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
-		m_Camera->GetUBO()->Upload(m_TransCmdBuffer, 0);
-		m_Lights[0]->GetUBO0()->Upload(m_TransCmdBuffer, 0);
-		m_Lights[0]->GetUBO1()->Upload(m_TransCmdBuffer, 0);
+		m_Camera->GetUB()->Upload(m_TransCmdBuffer, 0);
+		m_Lights[0]->GetUB0()->Upload(m_TransCmdBuffer, 0);
+		m_Lights[0]->GetUB1()->Upload(m_TransCmdBuffer, 0);
 
 		std::vector<Ref<Barrier>> initialBarrier;
 		for (auto& obj : m_RenderQueue)
@@ -115,13 +131,13 @@ void Renderer::Flush()
 	m_DescSetCI.pDescriptorPool = m_DescPool;
 	m_DescSetCI.pDescriptorSetLayouts = { m_DescSetLayouts[0] };
 	m_DescSetCamera = DescriptorSet::Create(&m_DescSetCI);
-	m_DescSetCamera->AddBuffer(0, 0, { { m_Camera->GetUBO()->GetBufferView() } });
+	m_DescSetCamera->AddBuffer(0, 0, { { m_Camera->GetUB()->GetBufferView() } });
 	m_DescSetCamera->Update();
 
 	m_DescSetCI.pDescriptorSetLayouts = { m_DescSetLayouts[2] };
 	m_DescSetLight = DescriptorSet::Create(&m_DescSetCI);
-	m_DescSetLight->AddBuffer(0, 0, { { m_Lights[0]->GetUBO0()->GetBufferView() } });
-	m_DescSetLight->AddBuffer(0, 1, { { m_Lights[0]->GetUBO1()->GetBufferView() } });
+	m_DescSetLight->AddBuffer(0, 0, { { m_Lights[0]->GetUB0()->GetBufferView() } });
+	m_DescSetLight->AddBuffer(0, 1, { { m_Lights[0]->GetUB1()->GetBufferView() } });
 	m_DescSetLight->Update();
 
 	for (auto& obj : m_RenderQueue)
@@ -134,14 +150,14 @@ void Renderer::Flush()
 	}
 
 	//Record Present CmdBuffers
-	for (uint32_t i = 0; i < 2; i++)
 	{
-		m_CmdBuffer->Begin(i, CommandBuffer::UsageBit::SIMULTANEOUS);
-		m_CmdBuffer->BeginRenderPass(i, m_Framebuffers[i], { {0.25f, 0.25f, 0.25f, 1.0f}, {1.0f, 0} });
-		
-		for(auto& obj : m_RenderQueue)
+		m_CmdBuffer->Reset(m_FrameIndex, false);
+		m_CmdBuffer->Begin(m_FrameIndex, CommandBuffer::UsageBit::SIMULTANEOUS);
+		m_CmdBuffer->BeginRenderPass(m_FrameIndex, m_Framebuffers[m_FrameIndex], { {0.25f, 0.25f, 0.25f, 1.0f}, {1.0f, 0} });
+
+		for (auto& obj : m_RenderQueue)
 		{
-			m_CmdBuffer->BindPipeline(i, obj->GetPipeline()->GetPipeline());
+			m_CmdBuffer->BindPipeline(m_FrameIndex, obj->GetPipeline()->GetPipeline());
 
 			std::vector<Ref<DescriptorSet>> bindDescriptorSets;
 			for (size_t descCount = 0; descCount < obj->GetPipeline()->GetDescriptorSetLayouts().size(); descCount++)
@@ -158,20 +174,28 @@ void Renderer::Flush()
 					continue;
 				}
 			}
-			m_CmdBuffer->BindDescriptorSets(i, bindDescriptorSets, obj->GetPipeline()->GetPipeline());
-			
+			m_CmdBuffer->BindDescriptorSets(m_FrameIndex, bindDescriptorSets, obj->GetPipeline()->GetPipeline());
+
 			std::vector<Ref<BufferView>> vbv;
 			for (auto& vb : obj->GetVBs())
 				vbv.push_back(vb.second->GetVertexBufferView());
-			m_CmdBuffer->BindVertexBuffers(i, vbv);
-			m_CmdBuffer->BindIndexBuffer(i, obj->GetIB()->GetIndexBufferView());
+			m_CmdBuffer->BindVertexBuffers(m_FrameIndex, vbv);
+			m_CmdBuffer->BindIndexBuffer(m_FrameIndex, obj->GetIB()->GetIndexBufferView());
 
-			m_CmdBuffer->DrawIndexed(i, obj->GetIB()->GetCount());
+			m_CmdBuffer->DrawIndexed(m_FrameIndex, obj->GetIB()->GetCount());
 		}
-		m_CmdBuffer->EndRenderPass(i);
-		m_CmdBuffer->End(i);
+		m_CmdBuffer->EndRenderPass(m_FrameIndex);
+		m_CmdBuffer->End(m_FrameIndex);
 	}
+
 	m_RenderQueue.clear();
+}
+
+void Renderer::Present(const miru::Ref<miru::crossplatform::Swapchain>& swapchain, bool& windowResize)
+{
+	m_CmdBuffer->Present({ 0, 1 }, swapchain, m_DrawFences, m_AcquireSemaphores, m_SubmitSemaphores, windowResize);
+	m_FrameIndex = (m_FrameIndex + 1) % swapchain->GetCreateInfo().swapchainCount;
+	m_FrameCount++;
 }
 
 void Renderer::UpdateCamera()
@@ -181,7 +205,7 @@ void Renderer::UpdateCamera()
 	{
 		m_TransCmdBuffer->Reset(0, false);
 		m_TransCmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
-		m_Camera->GetUBO()->Upload(m_TransCmdBuffer, 0, true);
+		m_Camera->GetUB()->Upload(m_TransCmdBuffer, 0, true);
 		m_TransCmdBuffer->End(0);
 	}
 	m_TransCmdBuffer->Submit({ 0 }, {}, {}, PipelineStageBit::TRANSFER_BIT, transferFence);

@@ -1,26 +1,25 @@
 #pragma once
 #include "gear_core_common.h"
-#include "mars.h"
 #include "objects/material.h"
 
-namespace GEAR {
-
+namespace gear 
+{
 class AssimpLoader
 {
 public:
 	struct Vertex
 	{
-		mars::Vec3 m_Vertex;
+		mars::Vec4 m_Vertex;
 		mars::Vec2 m_TexCoord;
 		float m_TexId;
-		mars::Vec3 m_Normal;
+		mars::Vec4 m_Normal;
 		mars::Vec4 m_Colour;
 	};
 	struct Mesh
 	{
 		std::vector<Vertex>	m_Vertices;
-		std::vector<unsigned int> m_Indices;
-		GRAPHICS::OBJECTS::Material m_Material = GRAPHICS::OBJECTS::Material(GRAPHICS::OPENGL::Shader("res/shaders/GLSL/pbr.vert", "res/shaders/GLSL/pbr.frag"));
+		std::vector<uint32_t> m_Indices;
+		Ref<objects::Material> m_Material = CreateRef<objects::Material>();
 	};
 
 	static std::vector<Mesh> result;
@@ -60,11 +59,11 @@ private:
 		{
 			Vertex vertex = {};
 			if(mesh->HasPositions())
-				vertex.m_Vertex = mars::Vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
+				vertex.m_Vertex = mars::Vec4(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, 1.0f);
 			if(mesh->HasTextureCoords(0))
 				vertex.m_TexCoord = mars::Vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
 			if(mesh->HasNormals())
-				vertex.m_Normal = mars::Vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
+				vertex.m_Normal = mars::Vec4(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z, 0.0f);
 			if(mesh->HasVertexColors(0))
 				vertex.m_Colour = mars::Vec4(mesh->mColors[0][i].r, mesh->mColors[0][i].g, mesh->mColors[0][i].b, mesh->mColors[0][i].a);
 			
@@ -87,39 +86,53 @@ private:
 			std::vector<std::string> filepaths = GetMaterialFilePath(material, (aiTextureType)i);
 			if (!filepaths.empty())
 			{
-				GRAPHICS::OBJECTS::Material::TextureType type;
+				objects::Material::TextureType type;
 				for (auto& filepath : filepaths)
 				{
 					switch(i)
 					{
 					case aiTextureType::aiTextureType_NONE:
-						type = GRAPHICS::OBJECTS::Material::TextureType::GEAR_TEXTURE_UNKNOWN; break;
+						type = objects::Material::TextureType::GEAR_TEXTURE_UNKNOWN; break;
 					case aiTextureType::aiTextureType_DIFFUSE:
-						type = GRAPHICS::OBJECTS::Material::TextureType::GEAR_TEXTURE_DIFFUSE; break;
+						type = objects::Material::TextureType::GEAR_TEXTURE_DIFFUSE; break;
 					case aiTextureType::aiTextureType_SPECULAR:
-						type = GRAPHICS::OBJECTS::Material::TextureType::GEAR_TEXTURE_SPECULAR; break;
+						type = objects::Material::TextureType::GEAR_TEXTURE_SPECULAR; break;
 					case aiTextureType::aiTextureType_AMBIENT:
-						type = GRAPHICS::OBJECTS::Material::TextureType::GEAR_TEXTURE_AMBIENT; break;
+						type = objects::Material::TextureType::GEAR_TEXTURE_AMBIENT; break;
 					case aiTextureType::aiTextureType_EMISSIVE:
-						type = GRAPHICS::OBJECTS::Material::TextureType::GEAR_TEXTURE_EMISSIVE; break;
+						type = objects::Material::TextureType::GEAR_TEXTURE_EMISSIVE; break;
 					case aiTextureType::aiTextureType_HEIGHT:
-						type = GRAPHICS::OBJECTS::Material::TextureType::GEAR_TEXTURE_HEIGHT; break;
+						type = objects::Material::TextureType::GEAR_TEXTURE_HEIGHT; break;
 					case aiTextureType::aiTextureType_NORMALS:
-						type = GRAPHICS::OBJECTS::Material::TextureType::GEAR_TEXTURE_NORMAL; break;
+						type = objects::Material::TextureType::GEAR_TEXTURE_NORMAL; break;
 					case aiTextureType::aiTextureType_SHININESS:
-						type = GRAPHICS::OBJECTS::Material::TextureType::GEAR_TEXTURE_SMOOTHNESS; break;
+						type = objects::Material::TextureType::GEAR_TEXTURE_SMOOTHNESS; break;
 					case aiTextureType::aiTextureType_OPACITY:
-						type = GRAPHICS::OBJECTS::Material::TextureType::GEAR_TEXTURE_OPACITY; break;
+						type = objects::Material::TextureType::GEAR_TEXTURE_OPACITY; break;
 					case aiTextureType::aiTextureType_LIGHTMAP:
-						type = GRAPHICS::OBJECTS::Material::TextureType::GEAR_TEXTURE_AMBIENT_OCCLUSION; break;
+						type = objects::Material::TextureType::GEAR_TEXTURE_AMBIENT_OCCLUSION; break;
 					case aiTextureType::aiTextureType_REFLECTION:
-						type = GRAPHICS::OBJECTS::Material::TextureType::GEAR_TEXTURE_REFLECTION; break;
+						type = objects::Material::TextureType::GEAR_TEXTURE_REFLECTION; break;
 					case aiTextureType::aiTextureType_UNKNOWN:
-						type = GRAPHICS::OBJECTS::Material::TextureType::GEAR_TEXTURE_UNKNOWN; break;
+						type = objects::Material::TextureType::GEAR_TEXTURE_UNKNOWN; break;
 					default:
-						type = GRAPHICS::OBJECTS::Material::TextureType::GEAR_TEXTURE_UNKNOWN; break;
+						type = objects::Material::TextureType::GEAR_TEXTURE_UNKNOWN; break;
 					}
-					result.m_Material.AddTexture(GRAPHICS::OPENGL::Texture(filepath), type);
+
+					graphics::Texture::CreateInfo texCI;
+					texCI.device;
+					texCI.filepaths = { filepath };
+					texCI.data = nullptr;
+					texCI.size = 0;
+					texCI.width = 0;
+					texCI.height = 0 ;
+					texCI.depth = 0;
+					texCI.format = miru::crossplatform::Image::Format::B8G8R8A8_UNORM;
+					texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
+					texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+					Ref<graphics::Texture> tex = CreateRef<graphics::Texture>(&texCI);
+
+					result.m_Material->AddTexture(tex, type);
 				}
 			}
 		}
@@ -153,7 +166,7 @@ private:
 		return result;
 	}
 
-	static void AddMaterialProperties(aiMaterial* aiMaterial, GRAPHICS::OBJECTS::Material& material)
+	static void AddMaterialProperties(aiMaterial* aiMaterial, Ref<objects::Material> material)
 	{
 		aiString name;
 		int twoSided;
@@ -191,23 +204,23 @@ private:
 		aiMaterial->Get(AI_MATKEY_COLOR_REFLECTIVE, colourReflective);
 		//aiMaterial->Get(AI_MATKEY_GLOBAL_BACKGROUND_IMAGE, colour_diffuse);
 
-		material.AddProperties(
-			name.C_Str(), 
-			twoSided, 
-			shadingModel, 
-			wireframe, 
-			blendFunc, 
-			opacity, 
-			shininess, 
-			reflectivity, 
-			shininessStrength, 
+		material->AddProperties(
+			{name.C_Str(),
+			twoSided,
+			shadingModel,
+			wireframe,
+			blendFunc,
+			opacity,
+			shininess,
+			reflectivity,
+			shininessStrength,
 			refractiveIndex,
 			mars::Vec4(colourDiffuse.r, colourDiffuse.g, colourDiffuse.b, 1),
 			mars::Vec4(colourAmbient.r, colourAmbient.g, colourAmbient.b, 1),
 			mars::Vec4(colourSpecular.r, colourSpecular.g, colourSpecular.b, 1),
 			mars::Vec4(colourEmissive.r, colourEmissive.g, colourEmissive.b, 1),
 			mars::Vec4(colourTransparent.r, colourTransparent.g, colourTransparent.b, 1),
-			mars::Vec4(colourReflective.r, colourReflective.g, colourReflective.b, 1)
+			mars::Vec4(colourReflective.r, colourReflective.g, colourReflective.b, 1)}
 		);
 	}
 };

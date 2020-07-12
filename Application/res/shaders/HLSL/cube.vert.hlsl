@@ -33,7 +33,6 @@ VS_OUT main(VS_IN IN)
 	
 	OUT.v_Position = mul(mul(mul(transpose(camera.u_Proj), transpose(camera.u_View)), transpose(model.u_Modl)), IN.positions);
 	OUT.v_TextCoord = IN.positions.xyz;
-	//OUT.v_TextCoord.y = 1.0 - OUT.v_TextCoord.y;
 	
 	return OUT;
 }
