@@ -1,4 +1,5 @@
 #pragma once
+
 #include "gear_core_common.h"
 
 namespace gear {
@@ -53,6 +54,8 @@ private:
 	float m_AnisotrophicValue = 1.0f;
 	
 	bool m_Upload = false;
+	bool m_InitialTransition = false;
+	bool m_FinalTransition = false;
 
 public:
 	Texture(CreateInfo* pCreateInfo);
@@ -61,9 +64,9 @@ public:
 	inline static void SetContext(miru::Ref<miru::crossplatform::Context> context) { s_Context = context; };
 	void InitialiseMemory();
 
-	void GetInitialTransition(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers);
+	void GetInitialTransition(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers, bool force = false);
 	void Upload(miru::Ref<miru::crossplatform::CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
-	void GetFinalTransition(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers);
+	void GetFinalTransition(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers, bool force = false);
 
 	inline int GetWidth() const { return m_CI.width; }
 	inline int GetHeight() const { return m_CI.height; }

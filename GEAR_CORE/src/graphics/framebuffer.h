@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gear_core_common.h"
-#include "graphics/miru/texture.h"
+#include "graphics/texture.h"
 
 namespace gear {
 namespace graphics {

@@ -69,6 +69,28 @@ namespace gear
 
 	template<class _Ty1, class _Ty2>
 	inline constexpr Ref<_Ty1> ref_cast(const Ref<_Ty2>& x) noexcept { return std::dynamic_pointer_cast<_Ty1>(x); }
+
+	enum class GEAR_ERROR_CODE : uint32_t
+	{
+		GEAR_OK				= 0x00000000,
+		GEAR_AUDIO			= 0x00000001,
+		GEAR_CORE			= 0x00000002,
+		GEAR_GRAPHICS		= 0x00000004,
+		GEAR_INPUT			= 0x00000008,
+		GEAR_OBJECTS		= 0x00000010,
+		GEAR_UTILS			= 0x00000020,
+		GEAR_REVERSED0		= 0x00000040,
+		GEAR_REVERSED1		= 0x00000080,
+
+		GEAR_NO_DEVICE		= 0x00000100,
+		GEAR_NO_CONTEXT		= 0x00000200,
+		GEAR_INIT_FAILED	= 0x00000400,
+		GEAR_FUNC_FAILED	= 0x00000800,
+		GEAR_NOT_SUPPORTED	= 0x00001000,
+		GEAR_INVALID_VALUE	= 0x00002000,
+		GEAR_NO_FILE		= 0x00004000,
+		GEAR_LOAD_FAILED	= 0x00008000,
+	};
 }
 
 //GEAR printf
@@ -83,5 +105,5 @@ namespace gear
 #endif
 
 //Triggered if x != 0
-#define GEAR_ASSERT(x, y) if(x != 0) { GEAR_PRINTF("GEAR_ASSERT: %s(%d): ERROR_CODE: %d(0x%x) - %s\n", __FILE__, __LINE__, static_cast<int>(x), static_cast<int>(x), y); DEBUG_BREAK; }
-#define GEAR_WARN(x, y) if(x != 0) { GEAR_PRINTF("GEAR_WARN: %s(%d): ERROR_CODE: %d(0x%x) - %s\n", __FILE__, __LINE__, static_cast<int>(x), static_cast<int>(x), y); }
+#define GEAR_ASSERT(x, y) if(static_cast<int>(x) != 0) { GEAR_PRINTF("GEAR_ASSERT: %s(%d): ERROR_CODE: %d(0x%x) - %s\n", __FILE__, __LINE__, static_cast<int>(x), static_cast<int>(x), y); DEBUG_BREAK; }
+#define GEAR_WARN(x, y) if(static_cast<int>(x) != 0) { GEAR_PRINTF("GEAR_WARN: %s(%d): ERROR_CODE: %d(0x%x) - %s\n", __FILE__, __LINE__, static_cast<int>(x), static_cast<int>(x), y); }

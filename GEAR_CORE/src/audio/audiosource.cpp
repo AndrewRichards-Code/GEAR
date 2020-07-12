@@ -68,7 +68,9 @@ void AudioSource::DefineConeParameters(float outerGain, double innerAngle, doubl
 void AudioSource::SetPitch(float value) //By semitones (-6.0f < value < 6.0f).
 {
 	if (value > 6.0f || value < -6.0f)
-		std::cout << "ERROR: GEAR::AUDIO::AudioSource::SetPitch: Input value out of range! Pitch has not been changed!" << std::endl;
+	{
+		GEAR_WARN(GEAR_ERROR_CODE::GEAR_AUDIO | GEAR_ERROR_CODE::GEAR_INVALID_VALUE, "ERROR: GEAR::AUDIO::AudioSource: Input value out of range. Pitch has not been changed.");
+	}
 	else
 		alSourcef(m_SourceID, AL_PITCH, pow(2.0f, (value / 12.0f)));
 }
@@ -77,7 +79,9 @@ void AudioSource::SetVolume(float value) //By decibels.
 {
 	float dB = pow(10.0f, (value / 20.0f));
 	if (dB < 0.0f)
-		std::cout << "ERROR: GEAR::AUDIO::AudioSource::SetVolume: Calcualted value out of range! Volume has not been changed!" << std::endl;
+	{
+		GEAR_WARN(GEAR_ERROR_CODE::GEAR_AUDIO | GEAR_ERROR_CODE::GEAR_INVALID_VALUE, "ERROR: GEAR::AUDIO::AudioSource: Calcualted value out of range. Volume has not been changed.");
+	}
 	else
 		alSourcef(m_SourceID, AL_GAIN, dB);
 }
@@ -91,8 +95,6 @@ void AudioSource::Stream()
 
 	int processed;
 	alGetSourcei(m_SourceID, AL_BUFFERS_PROCESSED, &processed);
-	/*std::cout << "Buffers: " << processed << std::endl;
-	std::cout << "Next Buffer: " << m_WavData->m_NextBuffer << std::endl;*/
 	
 	while (processed--)
 	{
@@ -123,14 +125,6 @@ void AudioSource::Play()
 	
 	if (playing != AL_PLAYING)
 		alSourcePlay(m_SourceID);
-
-	/*switch (playing)
-	{
-	case 0x1011: std::cout << "AL_INITIAL" << std::endl; break;
-	case 0x1012: std::cout << "AL_PLAYING" << std::endl; break;
-	case 0x1013: std::cout << "AL_PAUSED"  << std::endl; break;
-	case 0x1014: std::cout << "AL_STOPPED" << std::endl; break;
-	}*/
 }
 
 void AudioSource::Stop()

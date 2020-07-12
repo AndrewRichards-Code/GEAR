@@ -1,9 +1,12 @@
-#include "pipeline.h"
+#include "renderpipeline.h"
+
+using namespace gear;
+using namespace graphics;
 
 using namespace miru;
 using namespace miru::crossplatform;
 
-gear::graphics::Pipeline::Pipeline(CreateInfo* pCreateInfo)
+RenderPipeline::RenderPipeline(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
@@ -17,11 +20,11 @@ gear::graphics::Pipeline::Pipeline(CreateInfo* pCreateInfo)
 	FinalisePipline();
 }
 
-gear::graphics::Pipeline::~Pipeline()
+RenderPipeline::~RenderPipeline()
 {
 }
 
-void gear::graphics::Pipeline::FinalisePipline()
+void RenderPipeline::FinalisePipline()
 {
 	if (m_Shaders.size() > 1)
 	{
@@ -115,7 +118,7 @@ void gear::graphics::Pipeline::FinalisePipline()
 	}
 }
 
-void gear::graphics::Pipeline::RecompileShaders()
+void RenderPipeline::RecompileShaders()
 {
 	for (auto& shader : m_Shaders)
 		shader->Recompile();
@@ -124,7 +127,7 @@ void gear::graphics::Pipeline::RecompileShaders()
 	Rebuild();
 }
 
-void gear::graphics::Pipeline::Rebuild()
+void RenderPipeline::Rebuild()
 {
 	m_PipelineCI.viewportState = m_CI.viewportState;
 	m_PipelineCI.rasterisationState = m_CI.rasterisationState;

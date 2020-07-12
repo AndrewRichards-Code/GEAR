@@ -5,7 +5,7 @@
 namespace gear {
 namespace graphics {
 
-class Pipeline
+class RenderPipeline
 {
 public:
 	struct CreateInfo
@@ -34,8 +34,8 @@ public:
 	CreateInfo m_CI;
 
 public:
-	Pipeline(CreateInfo* pCreateInfo);
-	~Pipeline();
+	RenderPipeline(CreateInfo* pCreateInfo);
+	~RenderPipeline();
 
 	void FinalisePipline();
 	void RecompileShaders();
@@ -44,7 +44,7 @@ public:
 	//inline const CreateInfo& GetCreateInfo() const { return m_CI; }
 	//inline CreateInfo& GetCreateInfo() { return m_CI; }
 
-	inline const miru::Ref<miru::crossplatform::Pipeline>& GetPipeline() { return m_Pipeline; };
+	inline const miru::Ref<miru::crossplatform::Pipeline>& GetPipeline() const { return m_Pipeline; };
 	inline const std::vector<miru::Ref<miru::crossplatform::DescriptorSetLayout>>& GetDescriptorSetLayouts() { return m_DescSetLayouts; };
 };
 }

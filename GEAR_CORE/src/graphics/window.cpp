@@ -144,7 +144,7 @@ bool Window::Init()
 {
 	if (!glfwInit())
 	{
-		std::cout << "ERROR: GEAR::GRAPHICS::Window: Failed to initialise GLFW!" << std::endl;
+		GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_INIT_FAILED, "ERROR: GEAR::GRAPHICS::Window: Failed to initialise GLFW.");
 		return false;
 	}
 	miru::GraphicsAPI::SetAPI(m_CI.api);
@@ -175,7 +175,7 @@ bool Window::Init()
 	{
 		if (glfwVulkanSupported() == GLFW_FALSE)
 		{
-			std::cout << "ERROR: GEAR::GRAPHICS::Window: GLFW does not support Vulkan" << std::endl;
+			GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_NOT_SUPPORTED, "ERROR: GEAR::GRAPHICS::Window: GLFW does not support Vulkan.");
 			return false;
 		}
 
@@ -183,7 +183,7 @@ bool Window::Init()
 		glfwPresentationSupport = glfwGetPhysicalDevicePresentationSupport(ref_cast<vulkan::Context>(m_Context)->m_Instance, ref_cast<vulkan::Context>(m_Context)->m_PhysicalDevices.m_PhysicalDevices[0], 0);
 		if (!glfwPresentationSupport)
 		{
-			std::cout << "ERROR: GEAR::GRAPHICS::Window: The Vulkan queue family doesn't support presentation to GLFW!" << std::endl;
+			GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_NOT_SUPPORTED, "ERROR: GEAR::GRAPHICS::Window: The Vulkan queue family doesn't support presentation to GLFW.");
 			return false;
 		}
 	}
@@ -196,7 +196,7 @@ bool Window::Init()
 	{
 		glfwDestroyWindow(m_Window);
 		glfwTerminate();
-		std::cout << "ERROR: GEAR::GRAPHICS::OPENGL::Window: Failed to create GLFW window!" << std::endl;
+		GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_FUNC_FAILED, "ERROR: GEAR::GRAPHICS::Window: Failed to create GLFW window.");
 		return false;
 	}
 	
@@ -405,11 +405,11 @@ void Window::joystick_callback(int joy, int event)
 {
 	if (event == GLFW_CONNECTED)
 	{
-		std::cout << "The joystick was connected" << std::endl;
+		GEAR_PRINTF("INFO: GEAR::GRAPHICS::Window: The joystick was connected.");
 	}
 	else if (event == GLFW_DISCONNECTED)
 	{
-		std::cout << "The joystick was disconnected" << std::endl;
+		GEAR_PRINTF("INFO: GEAR::GRAPHICS::Window: The joystick was disconnected.");
 	}
 }
 

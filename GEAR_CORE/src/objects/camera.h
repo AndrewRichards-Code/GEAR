@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gear_core_common.h"
-#include "graphics/miru/buffer/uniformbuffer.h"
+#include "graphics/uniformbuffer.h"
 #include "mars.h"
 
 #define GEAR_CAMERA_PERSPECTIVE 0

@@ -9,13 +9,13 @@ Listener::Listener(const gear::objects::Camera& camera)
 	m_Device = alcOpenDevice(NULL);
 	if (!m_Device)
 	{
-		std::cout << "ERROR: GEAR::AUDIO::Listener: Failed to initialise OpenAL!" << std::endl;
+		GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_AUDIO | GEAR_ERROR_CODE::GEAR_NO_DEVICE, "ERROR: GEAR::AUDIO::Listener: Failed to initialise OpenAL.");
 	}
 	
 	m_Context = alcCreateContext(m_Device, NULL);
 	if (!m_Context)
 	{
-		std::cout << "ERROR: GEAR::AUDIO::Listener: Failed to create context!" << std::endl;
+		GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_AUDIO | GEAR_ERROR_CODE::GEAR_NO_CONTEXT, "ERROR: GEAR::AUDIO::Listener : Failed to create context.");
 	}
 	alcMakeContextCurrent(m_Context);
 	UpdateListenerPosVelOri();

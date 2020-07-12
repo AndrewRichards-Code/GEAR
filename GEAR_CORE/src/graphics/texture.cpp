@@ -146,9 +146,13 @@ void Texture::InitialiseMemory()
 	}
 }
 
-void Texture::GetInitialTransition(std::vector<Ref<Barrier>>& barriers)
-{ 
-	barriers.push_back(m_InitialBarrier); 
+void Texture::GetInitialTransition(std::vector<Ref<Barrier>>& barriers, bool force)
+{
+	if (!m_InitialTransition|| force)
+	{
+		barriers.push_back(m_InitialBarrier);
+		m_InitialTransition = true;
+	}
 }
 
 void Texture::Upload(Ref<CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex, bool force)
@@ -187,9 +191,13 @@ void Texture::Upload(Ref<CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex, bool
 	}
 }
 
-void Texture::GetFinalTransition(std::vector<Ref<Barrier>>& barriers) 
+void Texture::GetFinalTransition(std::vector<Ref<Barrier>>& barriers, bool force)
 {
-	barriers.push_back(m_FinalBarrier); 
+	if (!m_FinalTransition || force)
+	{
+		barriers.push_back(m_FinalBarrier);
+		m_FinalTransition = true;
+	}
 }
 
 void Texture::CreateSampler()

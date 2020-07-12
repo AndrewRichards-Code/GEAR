@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/miru/window.h"
+#include "graphics/window.h"
 
 #define GEAR_INPUT_KEYBOARD_AND_MOUSE 0
 #define GEAR_INPUT_JOYSTICK_CONTROLLER 1
@@ -46,13 +46,15 @@ public:
 
 	void PrintJoystickDetails()
 	{
-		std::cout << glfwGetJoystickName(GLFW_JOYSTICK_1) << std::endl;
+		std::string joystickName = (glfwGetJoystickName(GLFW_JOYSTICK_1));
+		GEAR_PRINTF(("INFO: GEAR::INPUT::InputManager: " + joystickName + ".").c_str());
 
 		for (int i = 0; i < m_AxesCount; i++)
-			std::cout << "Axis " << i << ": " << m_Axis[i] << std::endl;
+			GEAR_PRINTF("INFO: GEAR::INPUT::InputManager: Axis %d: %f1.3.", i, m_Axis[i]);
 
 		for (int i = 0; i < m_ButtonsCount; i++)
-			std::cout << "Button " << i << ": " << m_Button[i] << std::endl;
+			GEAR_PRINTF("INFO: GEAR::INPUT::InputManager: Button %d: %c.", i, m_Button[i]);
+		
 		system("CLS");
 	}
 

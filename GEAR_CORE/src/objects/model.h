@@ -2,9 +2,8 @@
 
 #include "gear_core_common.h"
 #include "mesh.h"
-#include "graphics/miru/buffer/uniformbuffer.h"
-#include "graphics/miru/pipeline.h"
-#include "graphics/miru/texture.h"
+#include "graphics/uniformbuffer.h"
+#include "graphics/texture.h"
 #include "utils/fileutils.h"
 #include "mars.h"
 
@@ -28,7 +27,7 @@ public:
 		Transform						transform;
 		gear::Ref<graphics::Texture>	pTexture;
 		mars::Vec4						colour;
-		gear::Ref<graphics::Pipeline>	pPipeline;
+		std::string						renderPipelineName;
 	};
 
 private:
@@ -63,7 +62,7 @@ public:
 
 	inline const std::map<Mesh::VertexBufferContents, gear::Ref<graphics::VertexBuffer>> GetVBs() const { return m_CI.pMesh->GetVertexBuffers(); }
 	inline const gear::Ref<graphics::IndexBuffer> GetIB() const { return m_CI.pMesh->GetIndexBuffer(); }
-	inline const gear::Ref<graphics::Pipeline> GetPipeline() const { return m_CI.pPipeline; }
+	inline const std::string& GetPipelineName() const { return m_CI.renderPipelineName; }
 	inline const gear::Ref<graphics::Texture> GetTexture() const { return m_CI.pTexture; }
 	inline const gear::Ref<graphics::UniformBuffer> GetUB() const { return m_UB; }
 	inline const mars::Mat4 GetModlMatrix() const { return m_ModelUB.m_ModlMatrix; }

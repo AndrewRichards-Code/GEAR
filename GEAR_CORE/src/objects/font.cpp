@@ -1,7 +1,7 @@
 #include "font.h"
 
 using namespace gear;
-using namespace graphics;
+using namespace objects;
 using namespace mars;
 
 using namespace miru;
@@ -12,7 +12,7 @@ gear::Ref<objects::Mesh> Font::s_FontQuad = nullptr;
 Font::Font(void* device, const char* filepath, int fontHeight, int width, int height, float ratio)
 	:m_Device(device), m_FilePath(filepath), m_FontHeight(fontHeight), m_WindowWidth(static_cast<float>(width)), m_WindowHeight(static_cast<float>(height)), m_WindowRatio(ratio)
 {
-	/*m_FontPipeline = std::make_shared<Pipeline>(m_Device, "res/shaders/bin/font.vert.spv", "res/shaders/bin/font.frag.spv");
+	/*m_FontPipeline = std::make_shared<RenderPipeline>(m_Device, "res/shaders/bin/font.vert.spv", "res/shaders/bin/font.frag.spv");
 	m_FontPipeline->SetViewport(0.0f, 0.0f, m_WindowWidth, m_WindowHeight, 0.0f, 1.0f);
 	m_FontPipeline->SetRasterisationState(false, false, PolygonMode::FILL, CullModeBit::NONE_BIT, FrontFace::COUNTER_CLOCKWISE, false, 0.0f, 0.0f, 0.0f, 0.0f);
 	m_FontPipeline->SetMultisampleState(Image::SampleCountBit::SAMPLE_COUNT_1_BIT, false, 0.0f, false, false);
@@ -95,11 +95,15 @@ void Font::GenerateCharacterMap()
 {
 	FT_Library m_ftlib;
 	if (FT_Init_FreeType(&m_ftlib))
-		std::cout << "ERROR: GEAR::GRAPHICS::Font: Failed to initialise freetype.lib!" << std::endl;
+	{
+		GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_OBJECTS | GEAR_ERROR_CODE::GEAR_INIT_FAILED, "ERROR: GEAR::OBJECTS::Font: Failed to initialise freetype.lib.");
+	}
 
 	FT_Face m_Face;
 	if (FT_New_Face(m_ftlib, m_FilePath, 0, &m_Face))
-		std::cout << "ERROR: GEAR::GRAPHICS::Font: Failed to load font!" << std::endl;
+	{
+		GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_OBJECTS | GEAR_ERROR_CODE::GEAR_LOAD_FAILED, "ERROR: GEAR::OBJECTS::Font: Failed to load font.");
+	}
 	FT_Set_Pixel_Sizes(m_Face, 0, m_FontHeight);
 	FT_Set_Char_Size(m_Face, 0, m_FontHeight * 16, 300, 300);
 
@@ -108,11 +112,11 @@ void Font::GenerateCharacterMap()
 	{
 		if (FT_Error error = FT_Load_Char(m_Face, i, FT_LOAD_RENDER))
 		{
-			std::cout << "ERROR: GEAR::GRAPHICS::Font: Failed to load character: " << i << "! Error Code: 0x" << std::hex << error << std::dec << std::endl;;
+			GEAR_WARN(GEAR_ERROR_CODE::GEAR_OBJECTS | GEAR_ERROR_CODE::GEAR_LOAD_FAILED, ("ERROR: GEAR::OBJECTS::Font: Failed to load character: " + std::to_string(i) + ". Error Code: "  + std::to_string(error) + ".").c_str());
 			continue;
 		}
 
-		Texture::CreateInfo characterTextureCI;
+		graphics::Texture::CreateInfo characterTextureCI;
 		characterTextureCI.device = m_Device;
 		characterTextureCI.filepaths = {};
 		characterTextureCI.data = m_Face->glyph->bitmap.buffer;
@@ -126,7 +130,7 @@ void Font::GenerateCharacterMap()
 
 		Character character
 		{
-			gear::CreateRef<Texture>(&characterTextureCI),
+			gear::CreateRef<graphics::Texture>(&characterTextureCI),
 			Vec2((float)m_Face->glyph->bitmap.width, (float)m_Face->glyph->bitmap.rows),
 			Vec2((float)m_Face->glyph->bitmap_left, (float)m_Face->glyph->bitmap_top),
 			(unsigned int)m_Face->glyph->advance.x
@@ -156,7 +160,7 @@ void Font::GenerateLine(unsigned int lineIndex)
 		float width = ch.m_Size.x * scale;
 		float height = ch.m_Size.y * scale;
 
-		objects::Model::CreateInfo glyphModelCI;
+		Model::CreateInfo glyphModelCI;
 		glyphModelCI.device = m_Device;
 		glyphModelCI.pMesh = s_FontQuad;
 		glyphModelCI.transform.translation = Vec3(pos_x, pos_y, 0.0f);
@@ -164,7 +168,7 @@ void Font::GenerateLine(unsigned int lineIndex)
 		glyphModelCI.transform.translation = Vec3(width, height, 0.0f);
 		glyphModelCI.pTexture = ch.m_Texture;
 		glyphModelCI.colour = m_Lines[lineIndex].m_Colour;
-		glyphModelCI.pPipeline = m_FontPipeline;
+		glyphModelCI.renderPipelineName = "";
 
 		m_Lines[lineIndex].m_GlyphBuffer.emplace_back(gear::CreateRef<objects::Model>(&glyphModelCI));
 		m_Lines[lineIndex].m_Position.x += (ch.m_Advance >> 6) * m_WindowRatio * scale;

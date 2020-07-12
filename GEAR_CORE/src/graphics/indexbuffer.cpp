@@ -16,8 +16,8 @@ IndexBuffer::IndexBuffer(CreateInfo* pCreateInfo)
 
 	InitialiseMemory();
 
-	GEAR_ASSERT((m_CI.stride != 2 && m_CI.stride != 4), "ERROR: IndexBuffer: Stride is not 2 or 4.");
-	GEAR_ASSERT((m_CI.size % m_CI.stride), "ERROR: IndexBuffer: Size is not a multiple of the stride.");
+	GEAR_ASSERT((m_CI.stride != 2 && m_CI.stride != 4), "ERROR: GEAR::GRAPHICS::IndexBuffer: Stride is not 2 or 4.");
+	GEAR_ASSERT((m_CI.size % m_CI.stride), "ERROR: GEAR::GRAPHICS::IndexBuffer: Size is not a multiple of the stride.");
 	m_Count = static_cast<uint32_t>(m_CI.size) / m_CI.stride;
 
 	m_IndexBufferUploadCI.debugName = "GEAR_CORE_IndexBufferUpload";

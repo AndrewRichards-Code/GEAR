@@ -1,8 +1,8 @@
 #pragma once
 
 #include "gear_core_common.h"
-#include "graphics/miru/buffer/vertexbuffer.h"
-#include "graphics/miru/buffer/indexbuffer.h"
+#include "graphics/vertexbuffer.h"
+#include "graphics/indexbuffer.h"
 #include "utils/fileutils.h"
 
 namespace gear {

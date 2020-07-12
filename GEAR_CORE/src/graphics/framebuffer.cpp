@@ -92,13 +92,13 @@ void FrameBuffer::CheckColourTextureAttachments(size_t attachment)
 {
 	if (attachment > m_ColourTextures.size())
 	{
-		std::cout << "ERROR: GEAR::GRAPHICS::FrameBuffer: Attachment slot unavailable! Only 8 available slots." << std::endl;
+		GEAR_WARN(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_INVALID_VALUE, "ERROR: GEAR::GRAPHICS::FrameBuffer: Attachment slot unavailable! Only 8 available slots.");
 		return;
 	}
 
 	if (m_ColourTextures[attachment] != nullptr)
 	{
-		std::cout << "ERROR: GEAR::GRAPHICS::FrameBuffer: Attachment slot is already taken!" << std::endl;
+		GEAR_WARN(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_INVALID_VALUE, "ERROR: GEAR::GRAPHICS::FrameBuffer: Attachment slot is already taken.");
 		return;
 	}
 }

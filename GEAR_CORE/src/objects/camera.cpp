@@ -54,8 +54,6 @@ void Camera::DefineView()
 		Mat4::Translation(Vec3(-m_Position.x, -m_Position.y, -m_Position.z));
 
 	/*CalculateRight();
-	//std::cout <<"Forward: "<< m_Forward << ", Right: " << m_Right << ", Up: " << m_Up << std::endl;
-	//system("CLS");
 	Quat x((float)m_Pitch, m_Right);
 	Quat y((float)m_Yaw, m_yAxis);
 	Quat orientation = y * x;
@@ -88,7 +86,7 @@ void Camera::DefineProjection(float left, float right, float bottom, float top, 
 	}
 	else
 	{
-		std::cout << "ERROR: GEAR::GRAPHICS::OBJECTS::Camera: The parameters for DefinieProjection() don't match the projection type." << std::endl;
+		GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_INVALID_VALUE, "ERROR: GEAR::OBJECTS::Camera: The parameters for DefinieProjection() don't match the projection type.");
 		throw;
 	}
 }
@@ -109,7 +107,7 @@ void Camera::DefineProjection(double fov, float aspectRatio, float zNear, float 
 	}
 	else
 	{
-		std::cout << "ERROR: GEAR::GRAPHICS::OBJECTS::Camera: The parameters for DefinieProjection() don't match the projection type." << std::endl;
+		GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_INVALID_VALUE, "ERROR: GEAR::OBJECTS::Camera: The parameters for DefinieProjection() don't match the projection type.");
 		throw;
 	}
 }

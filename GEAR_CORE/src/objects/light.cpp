@@ -27,7 +27,7 @@ Light::Light(void* device, LightType type, const Vec3& position, const Vec3& dir
 	}
 	else
 	{
-		std::cout << "ERROR: GEAR::GRAPHICS::OBJECTS::Light: Too many lights declared!" << std::endl;
+		GEAR_WARN(GEAR_ERROR_CODE::GEAR_OBJECTS | GEAR_ERROR_CODE::GEAR_INIT_FAILED, "ERROR: GEAR::OBJECTS::Light: Too many lights declared.");
 	}
 	UpdatePosition();
 	UpdateColour();

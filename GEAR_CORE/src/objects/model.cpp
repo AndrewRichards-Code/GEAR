@@ -17,7 +17,6 @@ Model::Model(CreateInfo* pCreateInfo)
 
 Model::~Model()
 {
-	m_CI.pPipeline = nullptr;
 }
 
 void Model::SetUniformModlMatrix()

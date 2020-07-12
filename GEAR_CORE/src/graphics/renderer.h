@@ -2,8 +2,8 @@
 
 #include "gear_core_common.h"
 #include "mars.h"
-#include "graphics/miru/buffer/framebuffer.h"
-#include "graphics/miru/pipeline.h"
+#include "graphics/framebuffer.h"
+#include "graphics/renderpipeline.h"
 #include "objects/model.h"
 #include "objects/camera.h"
 #include "objects/light.h"
@@ -35,6 +35,7 @@ private:
 	miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetLight;
 	miru::crossplatform::DescriptorSet::CreateInfo m_DescSetCI;
 
+	std::map<std::string, gear::Ref<graphics::RenderPipeline>> m_Pipelines;
 	miru::Ref<miru::crossplatform::Framebuffer>* m_Framebuffers;
 	std::deque<gear::Ref<objects::Model>> m_RenderQueue;
 	objects::Camera* m_Camera;
@@ -42,6 +43,7 @@ private:
 
 	uint32_t m_FrameIndex = 0;
 	uint32_t m_FrameCount = 0;
+	bool builtDescPoolsAndSets = false;
 
 	std::vector<miru::Ref<miru::crossplatform::Fence>> m_DrawFences;
 	miru::crossplatform::Fence::CreateInfo m_DrawFenceCI;
@@ -54,6 +56,7 @@ public:
 	Renderer(miru::Ref<miru::crossplatform::Context> context);
 	virtual ~Renderer();
 
+	void InitialisePipelines(float viewportWidth, float viewportHeight, miru::Ref<miru::crossplatform::RenderPass> renderPass);
 	virtual void SubmitFramebuffer(miru::Ref<miru::crossplatform::Framebuffer>* framebuffers) { m_Framebuffers = framebuffers; };
 	virtual void SubmitCamera(objects::Camera* camera) { m_Camera = camera; };
 	virtual void SubmitLights(std::vector<objects::Light*> lights) { m_Lights = lights; };

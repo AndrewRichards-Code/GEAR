@@ -15,7 +15,7 @@ public:
 
 		if (!stream.is_open())
 		{
-			std::cout << "ERROR: GEAR::FileUtils::read_file: Could not read file " << filepath << ". File does not exist." << std::endl;
+			GEAR_WARN(GEAR_ERROR_CODE::GEAR_UTILS | GEAR_ERROR_CODE::GEAR_NO_FILE, ("ERROR: GEAR::FileUtils: Could not read file " + filepath + ". File does not exist.").c_str());
 			return "";
 		}
 
@@ -34,7 +34,7 @@ public:
 		std::ifstream stream(filepath, std::fstream::in | std::fstream::binary | std::fstream::ate);
 		if (!stream.is_open())
 		{
-			std::cout << "ERROR: GEAR::FileUtils::read_binary: Could not read file " << filepath << ". File does not exist." << std::endl;
+			GEAR_WARN(GEAR_ERROR_CODE::GEAR_UTILS | GEAR_ERROR_CODE::GEAR_NO_FILE, ("ERROR: GEAR::FileUtils: Could not read file " + filepath + ". File does not exist.").c_str());
 			return {};
 		}
 
@@ -62,14 +62,14 @@ public:
 #elif
 	[[deprecated("Function Depracated: Please use AssimpLoader instead.")]]
 #endif*/
-	static ObjData read_obj(const char* filepath)
+	static ObjData read_obj(const std::string& filepath)
 	{
 		ObjData result;
 		std::ifstream stream(filepath, std::fstream::in);
 
 		if (!stream.is_open())
 		{
-			std::cout << "ERROR: GEAR::FileUtils::read_obj: Could not read file " << filepath << ". File does not exist." << std::endl;
+			GEAR_WARN(GEAR_ERROR_CODE::GEAR_UTILS | GEAR_ERROR_CODE::GEAR_NO_FILE, ("ERROR: GEAR::FileUtils: Could not read file " + filepath + ". File does not exist.").c_str());
 			return result;
 		}
 		
@@ -262,10 +262,10 @@ public:
 		WavData() : m_FilePath(nullptr), m_Stream(nullptr), m_Buffer1({ 0 }), m_Buffer2({ 0 }), m_NextBuffer(0), m_Channels(0), m_SampleRate(0), m_BitsPerSample(0), m_Size(0), m_BufferQueue({ 0 }), m_LoopBufferQueue(false) {};
 	};
 
-	static std::shared_ptr<WavData> stream_wav(const char* filepath)
+	static std::shared_ptr<WavData> stream_wav(const std::string& filepath)
 	{
 		std::shared_ptr<WavData> result = std::make_shared<WavData>();
-		result->m_FilePath = filepath;
+		result->m_FilePath = filepath.c_str();
 		result->m_NextBuffer = 1;
 		result->m_LoopBufferQueue = false;
 
@@ -275,7 +275,7 @@ public:
 		result->m_Stream->read(buffer, 4);     //RIFF
 		if (strncmp(buffer, "RIFF", 4) != 0)
 		{
-			std::cout << "ERROR: GEAR::FileUtils::stream_wav: Could not read file " << filepath << ". File does not exist." << std::endl;
+			GEAR_WARN(GEAR_ERROR_CODE::GEAR_UTILS | GEAR_ERROR_CODE::GEAR_NO_FILE, ("ERROR: GEAR::FileUtils: Could not read file " + filepath + ". File does not exist.").c_str());
 			return result;
 		}
 		result->m_Stream->read(buffer, 4);

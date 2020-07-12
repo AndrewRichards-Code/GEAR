@@ -2,8 +2,8 @@
 
 #include "gear_core_common.h"
 
-#include "pipeline.h"
-#include "texture.h"
+#include "graphics/renderpipeline.h"
+#include "graphics/texture.h"
 #include "objects/model.h"
 //#include "renderer/batchrenderer2d.h"
 
@@ -12,7 +12,7 @@
 #define GEAR_NUM_OF_CHARACTERS 128
 
 namespace gear {
-namespace graphics {
+namespace objects {
 class Font
 {
 private:
@@ -24,7 +24,7 @@ private:
 	float m_WindowHeight;
 	float m_WindowRatio;
 	miru::Ref<miru::crossplatform::RenderPass> m_FontRenderPass;
-	gear::Ref<Pipeline> m_FontPipeline;
+	gear::Ref<graphics::RenderPipeline> m_FontPipeline;
 	
 	static gear::Ref<objects::Mesh> s_FontQuad;
 	//BatchRenderer2D m_FontRenderer;
@@ -45,7 +45,7 @@ private:
 
 	struct Character
 	{
-		gear::Ref<Texture> m_Texture;
+		gear::Ref<graphics::Texture> m_Texture;
 		mars::Vec2 m_Size;
 		mars::Vec2 m_Bearing;
 		unsigned int m_Advance;
