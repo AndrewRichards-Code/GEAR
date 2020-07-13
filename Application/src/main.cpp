@@ -9,110 +9,13 @@ using namespace miru::crossplatform;
 
 using namespace mars;
 
-void InitialisePipelines(const Window& window, std::map<std::string, gear::Ref<graphics::Pipeline>>& pipelines)
-{
-	std::string mscDirectory = "../../MIRU/MIRU_SHADER_COMPILER/exe/x64/";
-	#if _DEBUG
-	mscDirectory += "Debug";
-	#else
-	mscDirectory += "Release";
-	#endif
-
-	std::string binaryFilepath, hlslFilePath, debugName, binaryDir;
-	auto get_shader_filepath_strings = [&](const std::string& _binaryFilepath) -> void
-	{
-		binaryFilepath = _binaryFilepath;
-		hlslFilePath = binaryFilepath;
-		hlslFilePath.replace(hlslFilePath.find("bin"), 3, "HLSL");
-		hlslFilePath.replace(hlslFilePath.find("spv"), 3, "hlsl");
-		debugName = binaryFilepath.substr(binaryFilepath.find_last_of('/') + 1);
-		binaryDir = binaryFilepath.substr(0, binaryFilepath.find_last_of('/'));
-	};
-
-	//TODO: Fix memory leak from _strdup()
-
-	//Basic
-	graphics::Pipeline::CreateInfo basicPipelineCI;
-	basicPipelineCI.shaderCreateInfo.resize(2);
-
-	get_shader_filepath_strings("res/shaders/bin/basic.vert.spv");
-	basicPipelineCI.shaderCreateInfo[0].debugName = _strdup(debugName.c_str());	
-	basicPipelineCI.shaderCreateInfo[0].device = window.GetDevice();
-	basicPipelineCI.shaderCreateInfo[0].stage = Shader::StageBit::VERTEX_BIT;
-	basicPipelineCI.shaderCreateInfo[0].entryPoint = "main";
-	basicPipelineCI.shaderCreateInfo[0].binaryFilepath = _strdup(binaryFilepath.c_str());
-	basicPipelineCI.shaderCreateInfo[0].binaryCode = {};
-	basicPipelineCI.shaderCreateInfo[0].recompileArguments = {
-		_strdup(mscDirectory.c_str()), _strdup(hlslFilePath.c_str()), _strdup(binaryDir.c_str()), { "../../MIRU/MIRU_SHADER_COMPILER/shaders/includes" },
-		nullptr, "6_4", {}, true, true, nullptr, nullptr, nullptr, false, false };
-
-	get_shader_filepath_strings("res/shaders/bin/basic.frag.spv");
-	basicPipelineCI.shaderCreateInfo[1].debugName = _strdup(debugName.c_str());
-	basicPipelineCI.shaderCreateInfo[1].device = window.GetDevice();
-	basicPipelineCI.shaderCreateInfo[1].stage = Shader::StageBit::FRAGMENT_BIT;
-	basicPipelineCI.shaderCreateInfo[1].entryPoint = "main";
-	basicPipelineCI.shaderCreateInfo[1].binaryFilepath = _strdup(binaryFilepath.c_str());
-	basicPipelineCI.shaderCreateInfo[1].binaryCode = {};
-	basicPipelineCI.shaderCreateInfo[1].recompileArguments = {
-		_strdup(mscDirectory.c_str()), _strdup(hlslFilePath.c_str()), _strdup(binaryDir.c_str()), { "../../MIRU/MIRU_SHADER_COMPILER/shaders/includes" },
-		nullptr, "6_4", {}, true, true, nullptr, nullptr, nullptr, false, false };
-
-	basicPipelineCI.viewportState.viewports = { { 0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f } };
-	basicPipelineCI.viewportState.scissors = { { { 0, 0 },{ (uint32_t)window.GetWidth(), (uint32_t)window.GetHeight() } } };
-	basicPipelineCI.rasterisationState = { false, false, PolygonMode::FILL, CullModeBit::BACK_BIT, FrontFace::COUNTER_CLOCKWISE, false, 0.0f, 0.0, 0.0f, 1.0f };
-	basicPipelineCI.multisampleState = { Image::SampleCountBit::SAMPLE_COUNT_1_BIT, false, 1.0f, false, false };
-	basicPipelineCI.depthStencilState = { true, true, CompareOp::LESS, false, false, {}, {}, 0.0f, 1.0f };
-	basicPipelineCI.colourBlendState = { false, LogicOp::COPY, { {true, BlendFactor::SRC_ALPHA, BlendFactor::ONE_MINUS_SRC_ALPHA, BlendOp::ADD,
-		BlendFactor::ONE, BlendFactor::ZERO, BlendOp::ADD, (ColourComponentBit)15 } }, { 0.0f, 0.0f, 0.0f, 0.0f } };
-	basicPipelineCI.renderPass = window.GetRenderPass();
-	basicPipelineCI.subpassIndex = 0;
-	pipelines["basic"] = gear::CreateRef<graphics::Pipeline>(&basicPipelineCI);
-
-	//Cube
-	graphics::Pipeline::CreateInfo cubePipelineCI;
-	cubePipelineCI.shaderCreateInfo.resize(2);
-	
-	get_shader_filepath_strings("res/shaders/bin/cube.vert.spv");
-	cubePipelineCI.shaderCreateInfo[0].debugName = _strdup(debugName.c_str());
-	cubePipelineCI.shaderCreateInfo[0].device = window.GetDevice();
-	cubePipelineCI.shaderCreateInfo[0].stage = Shader::StageBit::VERTEX_BIT;
-	cubePipelineCI.shaderCreateInfo[0].entryPoint = "main";
-	cubePipelineCI.shaderCreateInfo[0].binaryFilepath = _strdup(binaryFilepath.c_str());
-	cubePipelineCI.shaderCreateInfo[0].binaryCode = {};
-	cubePipelineCI.shaderCreateInfo[0].recompileArguments = {
-		_strdup(mscDirectory.c_str()), _strdup(hlslFilePath.c_str()), _strdup(binaryDir.c_str()), { "../../MIRU/MIRU_SHADER_COMPILER/shaders/includes" },
-		nullptr, "6_4", {}, true, true, nullptr, nullptr, nullptr, false, false };
-
-	get_shader_filepath_strings("res/shaders/bin/cube.frag.spv");
-	cubePipelineCI.shaderCreateInfo[1].debugName = _strdup(debugName.c_str());
-	cubePipelineCI.shaderCreateInfo[1].device = window.GetDevice();
-	cubePipelineCI.shaderCreateInfo[1].stage = Shader::StageBit::FRAGMENT_BIT;
-	cubePipelineCI.shaderCreateInfo[1].entryPoint = "main";
-	cubePipelineCI.shaderCreateInfo[1].binaryFilepath = _strdup(binaryFilepath.c_str());
-	cubePipelineCI.shaderCreateInfo[1].binaryCode = {};
-	cubePipelineCI.shaderCreateInfo[1].recompileArguments = {
-		_strdup(mscDirectory.c_str()), _strdup(hlslFilePath.c_str()), _strdup(binaryDir.c_str()), { "../../MIRU/MIRU_SHADER_COMPILER/shaders/includes" },
-		nullptr, "6_4", {}, true, true, nullptr, nullptr, nullptr, false, false };
-
-	cubePipelineCI.viewportState.viewports = { { 0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f } };
-	cubePipelineCI.viewportState.scissors = { { { 0, 0 },{ (uint32_t)window.GetWidth(), (uint32_t)window.GetHeight() } } };
-	cubePipelineCI.rasterisationState = { false, false, PolygonMode::FILL, CullModeBit::NONE_BIT, FrontFace::COUNTER_CLOCKWISE, false, 0.0f, 0.0, 0.0f, 1.0f };
-	cubePipelineCI.multisampleState = { Image::SampleCountBit::SAMPLE_COUNT_1_BIT, false, 1.0f, false, false };
-	cubePipelineCI.depthStencilState = { true, true, CompareOp::LESS, false, false, {}, {}, 0.0f, 1.0f };
-	cubePipelineCI.colourBlendState = { false, LogicOp::COPY, { {true, BlendFactor::SRC_ALPHA, BlendFactor::ONE_MINUS_SRC_ALPHA, BlendOp::ADD,
-		BlendFactor::ONE, BlendFactor::ZERO, BlendOp::ADD, (ColourComponentBit)15 } }, { 0.0f, 0.0f, 0.0f, 0.0f } };
-	cubePipelineCI.renderPass = window.GetRenderPass();
-	cubePipelineCI.subpassIndex = 0;
-	pipelines["cube"] = gear::CreateRef<graphics::Pipeline>(&cubePipelineCI);
-}
-
 int main()
 {
 	system("BuildShaders.bat");
 	system("CLS");
 
 	Window::CreateInfo windowCI;
-	windowCI.api = GraphicsAPI::API::VULKAN;
+	windowCI.api = GraphicsAPI::API::D3D12;
 	windowCI.title = "GEAR_MIRU_TEST";
 	windowCI.width = 1920;
 	windowCI.height = 1080;
@@ -123,9 +26,6 @@ int main()
 	Window window(&windowCI);
 
 	//Font font(window.GetDevice(), "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf", 75, window.GetWidth(), window.GetHeight(), window.GetRatio());
-
-	std::map<std::string, gear::Ref<graphics::Pipeline>> pipelines;
-	InitialisePipelines(window, pipelines);
 
 	Texture::SetContext(window.GetContext());
 	Texture::CreateInfo textureCI;
@@ -162,12 +62,12 @@ int main()
 			"res/img/mp_arctic/arctic-ice_lf.tga",
 	};*/
 	textureCI.filepaths = {
-			"res/img/galaxy/GalaxyTex_NegativeX.tga", 
-			"res/img/galaxy/GalaxyTex_PositiveX.tga",
-			"res/img/galaxy/GalaxyTex_NegativeY.tga",
-			"res/img/galaxy/GalaxyTex_PositiveY.tga",
-			"res/img/galaxy/GalaxyTex_NegativeZ.tga",
-			"res/img/galaxy/GalaxyTex_PositiveZ.tga",
+			"res/img/galaxy/GalaxyTex_NegativeX_2048.tga", 
+			"res/img/galaxy/GalaxyTex_PositiveX_2048.tga",
+			"res/img/galaxy/GalaxyTex_NegativeY_2048.tga",
+			"res/img/galaxy/GalaxyTex_PositiveY_2048.tga",
+			"res/img/galaxy/GalaxyTex_NegativeZ_2048.tga",
+			"res/img/galaxy/GalaxyTex_PositiveZ_2048.tga",
 	};
 	textureCI.type = Image::Type::TYPE_CUBE;
 	gear::Ref<Texture> skybox_cubemap = gear::CreateRef<Texture>(&textureCI);
@@ -191,7 +91,7 @@ int main()
 	modelCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
 	modelCI.pTexture = gear_logo;
 	modelCI.colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	modelCI.pPipeline.reset(pipelines["basic"].get());
+	modelCI.renderPipelineName = "basic";
 	gear::Ref<Model> quad1 = gear::CreateRef<Model>(&modelCI);
 	
 	modelCI.transform.translation = Vec3(+2.0f, 0.0f, -1.0f);
@@ -216,7 +116,7 @@ int main()
 	modelCI.transform.orientation = Quat(1.0f, 0.0f, 0.0f, 0.0f);
 	modelCI.transform.scale = Vec3(500.0f, 500.0f, 500.0f);
 	modelCI.pTexture = skybox_cubemap;
-	modelCI.pPipeline.reset(pipelines["cube"].get());
+	modelCI.renderPipelineName = "cube";
 	gear::Ref<Model> skybox = gear::CreateRef<Model>(&modelCI);
 
 	Light::SetContext(window.GetContext());
@@ -232,6 +132,7 @@ int main()
 	cam.DefineView();
 
 	Renderer renderer(window.GetContext());
+	renderer.InitialiseRenderPipelines((float)window.GetWidth(), (float)window.GetHeight(), window.GetRenderPass());
 
 	double yaw = 0;
 	double pitch = 0;
@@ -241,7 +142,7 @@ int main()
 	double last_pos_x = window.GetWidth() / 2.0;
 	double last_pos_y = window.GetHeight() / 2.0;
 	bool initMouse = true;
-	float increment = 0.5f;
+	float increment = 0.05f;
 	gear::core::Timer timer;
 
 	bool windowResize = false;
@@ -249,11 +150,11 @@ int main()
 	{
 		if (window.GetSwapchain()->m_Resized)
 		{
-			for (auto& pipeline : pipelines)
+			for (auto& renderPipeline : renderer.GetRenderPipelines())
 			{
-				pipeline.second->m_CI.viewportState.viewports = { { 0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f } };
-				pipeline.second->m_CI.viewportState.scissors = { { { 0, 0 },{ (uint32_t)window.GetWidth(), (uint32_t)window.GetHeight() } } };
-				pipeline.second->Rebuild();
+				renderPipeline.second->m_CI.viewportState.viewports = { { 0.0f, 0.0f, (float)window.GetWidth(), (float)window.GetHeight(), 0.0f, 1.0f } };
+				renderPipeline.second->m_CI.viewportState.scissors = { { { 0, 0 },{ (uint32_t)window.GetWidth(), (uint32_t)window.GetHeight() } } };
+				renderPipeline.second->Rebuild();
 			}
 			window.GetSwapchain()->m_Resized = false;
 		}
@@ -261,8 +162,8 @@ int main()
 		if (window.IsKeyPressed(GLFW_KEY_R))
 		{
 			window.GetContext()->DeviceWaitIdle();
-			for (auto& pipeline : pipelines)
-				pipeline.second->RecompileShaders();
+			for (auto& renderPipeline : renderer.GetRenderPipelines())
+				renderPipeline.second->RecompileShaders();
 		}
 		renderer.SubmitFramebuffer(window.GetFramebuffers());
 		renderer.SubmitCamera(&cam);
@@ -298,11 +199,11 @@ int main()
 			}
 
 			double offset_pos_x = pos_x - last_pos_x;
-			double offset_pos_y = pos_y - last_pos_y;
+			double offset_pos_y = -pos_y + last_pos_y;
 			last_pos_x = pos_x;
 			last_pos_y = pos_y;
-			offset_pos_x *= static_cast<double>(increment) * static_cast<double>(increment) * (1.0 / (abs(fov) + 1.0)) * (double)timer;
-			offset_pos_y *= static_cast<double>(increment) * static_cast<double>(increment) * (1.0 / (abs(fov) + 1.0)) * (double)timer;
+			offset_pos_x *= (pow(static_cast<double>(increment), 2) * (1.0 / (abs(fov) + 1.0)));// * (double)timer;
+			offset_pos_y *= (pow(static_cast<double>(increment), 2) * (1.0 / (abs(fov) + 1.0)));// * (double)timer;
 			yaw += 2 * offset_pos_x;
 			pitch += offset_pos_y;
 			if (pitch > pi / 2)

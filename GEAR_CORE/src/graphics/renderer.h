@@ -35,7 +35,7 @@ private:
 	miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetLight;
 	miru::crossplatform::DescriptorSet::CreateInfo m_DescSetCI;
 
-	std::map<std::string, gear::Ref<graphics::RenderPipeline>> m_Pipelines;
+	std::map<std::string, gear::Ref<graphics::RenderPipeline>> m_RenderPipelines;
 	miru::Ref<miru::crossplatform::Framebuffer>* m_Framebuffers;
 	std::deque<gear::Ref<objects::Model>> m_RenderQueue;
 	objects::Camera* m_Camera;
@@ -56,7 +56,7 @@ public:
 	Renderer(miru::Ref<miru::crossplatform::Context> context);
 	virtual ~Renderer();
 
-	void InitialisePipelines(float viewportWidth, float viewportHeight, miru::Ref<miru::crossplatform::RenderPass> renderPass);
+	void InitialiseRenderPipelines(float viewportWidth, float viewportHeight, miru::Ref<miru::crossplatform::RenderPass> renderPass);
 	virtual void SubmitFramebuffer(miru::Ref<miru::crossplatform::Framebuffer>* framebuffers) { m_Framebuffers = framebuffers; };
 	virtual void SubmitCamera(objects::Camera* camera) { m_Camera = camera; };
 	virtual void SubmitLights(std::vector<objects::Light*> lights) { m_Lights = lights; };
@@ -68,6 +68,7 @@ public:
 
 	inline std::deque<gear::Ref<objects::Model>>& GetRenderQueue() { return m_RenderQueue; };
 	inline miru::Ref<miru::crossplatform::CommandBuffer> GetCmdBuffer() { return m_CmdBuffer; };
+	inline const std::map<std::string, gear::Ref<graphics::RenderPipeline>>& GetRenderPipelines() const { return m_RenderPipelines;  }
 };
 }
 }

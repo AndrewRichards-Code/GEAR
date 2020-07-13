@@ -58,9 +58,9 @@
       <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\redist;C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\src;$(VULKAN_SDK)\Include;C:\Users\Andrew\source\repos\MARS\MARS\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>gear_core_common.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <AdditionalDependencies>assimp-vc140-mt.lib;freetype.lib;OpenAL32.lib;glew32s.lib;glfw3.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -82,9 +82,9 @@
       <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\redist;C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\src;$(VULKAN_SDK)\Include;C:\Users\Andrew\source\repos\MARS\MARS\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
+      <PrecompiledHeaderFile>gear_core_common.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -102,6 +102,10 @@
     <ClCompile Include="src\audio\audiosource.cpp" />
     <ClCompile Include="src\audio\listener.cpp" />
     <ClCompile Include="src\core\timer.cpp" />
+    <ClCompile Include="src\gear_core_common.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="src\graphics\framebuffer.cpp" />
     <ClCompile Include="src\graphics\indexbuffer.cpp" />
     <ClCompile Include="src\graphics\renderer.cpp" />

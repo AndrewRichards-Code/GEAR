@@ -1,3 +1,4 @@
+#include "gear_core_common.h"
 #include "framebuffer.h"
 
 using namespace gear;

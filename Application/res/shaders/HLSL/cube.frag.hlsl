@@ -19,21 +19,21 @@ MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 1, 1, float4, uTexture);
 PS_OUT main(PS_IN IN)
 {
 	PS_OUT OUT;
-	float dpRange = 0.999;
+	float dpRange = 0.9999;
 	float4 axisColour = uTexture_image_cis.Sample(uTexture_sampler_cis, IN.v_TextCoord);
 	
-	if(dot(normalize(IN.v_TextCoord), float3(1.0, 0.0, 0.0)) > dpRange) 
+	/*if(dot(normalize(IN.v_TextCoord), float3(-1.0, 0.0, 0.0)) > dpRange) 
 		axisColour = float4(1.0, 0.0, 0.0, 1.0);
 	else if(dot(normalize(IN.v_TextCoord), float3(0.0, 1.0, 0.0)) > dpRange)
 		axisColour = float4(0.0, 1.0, 0.0, 1.0);
 	else if(dot(normalize(IN.v_TextCoord), float3(0.0, 0.0, 1.0)) > dpRange)
 		axisColour = float4(0.0, 0.0, 1.0, 1.0);
-	else if(dot(normalize(IN.v_TextCoord), float3(-1.0, 0.0, 0.0)) > dpRange) 
+	else if(dot(normalize(IN.v_TextCoord), float3(1.0, 0.0, 0.0)) > dpRange) 
 		axisColour = float4(0.0, 1.0, 1.0, 1.0);
 	else if(dot(normalize(IN.v_TextCoord), float3(0.0, -1.0, 0.0)) > dpRange) 
 		axisColour = float4(1.0, 0.0, 1.0, 1.0);
 	else if(dot(normalize(IN.v_TextCoord), float3(0.0, 0.0, -1.0)) > dpRange) 
-		axisColour = float4(1.0, 1.0, 0.0, 1.0);
+		axisColour = float4(1.0, 1.0, 0.0, 1.0);*/
 	
 	OUT.colour = axisColour;
 	

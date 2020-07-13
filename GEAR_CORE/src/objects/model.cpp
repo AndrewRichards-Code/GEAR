@@ -1,3 +1,4 @@
+#include "gear_core_common.h"
 #include "model.h"
 
 using namespace gear;

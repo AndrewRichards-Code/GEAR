@@ -1,3 +1,4 @@
+#include "gear_core_common.h"
 #include "listener.h"
 
 using namespace gear;

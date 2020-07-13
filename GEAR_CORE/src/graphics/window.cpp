@@ -1,3 +1,4 @@
+#include "gear_core_common.h"
 #include "window.h"
 
 #include "directx12/D3D12Context.h"

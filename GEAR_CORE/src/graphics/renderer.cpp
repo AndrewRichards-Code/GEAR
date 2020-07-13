@@ -1,3 +1,4 @@
+#include "gear_core_common.h"
 #include "renderer.h"
 
 using namespace gear;
@@ -33,7 +34,7 @@ Renderer::Renderer(miru::Ref<miru::crossplatform::Context> context)
 	m_TransCmdBufferCI.pCommandPool = m_TransCmdPool;
 	m_TransCmdBufferCI.level = CommandBuffer::Level::PRIMARY;
 	m_TransCmdBufferCI.commandBufferCount = 1;
-	m_TransCmdBufferCI.allocateNewCommandPoolPerBuffer = false;
+	m_TransCmdBufferCI.allocateNewCommandPoolPerBuffer = GraphicsAPI::IsD3D12();
 	m_TransCmdBuffer = CommandBuffer::Create(&m_TransCmdBufferCI);
 
 	m_Device = context->GetDevice();
@@ -59,7 +60,7 @@ Renderer::~Renderer()
 {
 }
 
-void Renderer::InitialisePipelines(float viewportWidth, float viewportHeight, miru::Ref<miru::crossplatform::RenderPass> renderPass)
+void Renderer::InitialiseRenderPipelines(float viewportWidth, float viewportHeight, miru::Ref<miru::crossplatform::RenderPass> renderPass)
 {
 	std::string mscDirectory = "../../MIRU/MIRU_SHADER_COMPILER/exe/x64/";
 #if _DEBUG
@@ -116,7 +117,7 @@ void Renderer::InitialisePipelines(float viewportWidth, float viewportHeight, mi
 		BlendFactor::ONE, BlendFactor::ZERO, BlendOp::ADD, (ColourComponentBit)15 } }, { 0.0f, 0.0f, 0.0f, 0.0f } };
 	basicPipelineCI.renderPass = renderPass;
 	basicPipelineCI.subpassIndex = 0;
-	m_Pipelines["basic"] = gear::CreateRef<graphics::RenderPipeline>(&basicPipelineCI);
+	m_RenderPipelines["basic"] = gear::CreateRef<graphics::RenderPipeline>(&basicPipelineCI);
 
 	//Cube
 	graphics::RenderPipeline::CreateInfo cubePipelineCI;
@@ -153,7 +154,7 @@ void Renderer::InitialisePipelines(float viewportWidth, float viewportHeight, mi
 		BlendFactor::ONE, BlendFactor::ZERO, BlendOp::ADD, (ColourComponentBit)15 } }, { 0.0f, 0.0f, 0.0f, 0.0f } };
 	cubePipelineCI.renderPass = renderPass;
 	cubePipelineCI.subpassIndex = 0;
-	m_Pipelines["cube"] = gear::CreateRef<graphics::RenderPipeline>(&cubePipelineCI);
+	m_RenderPipelines["cube"] = gear::CreateRef<graphics::RenderPipeline>(&cubePipelineCI);
 }
 
 void Renderer::Submit(gear::Ref<Model> obj)
@@ -169,6 +170,7 @@ void Renderer::Flush()
 	Fence::CreateInfo transFenceCI = { "GEAR_CORE_FenceRenderTransfer", m_TransCmdPoolCI.pContext->GetDevice(), false, UINT64_MAX };
 	Ref<Fence> transferFence = Fence::Create(&transFenceCI);
 	{
+		m_TransCmdBuffer->Reset(0, false);
 		m_TransCmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
 		m_Camera->GetUB()->Upload(m_TransCmdBuffer, 0);
 		m_Lights[0]->GetUB0()->Upload(m_TransCmdBuffer, 0);
@@ -196,6 +198,7 @@ void Renderer::Flush()
 	}
 	m_TransCmdBuffer->Submit({ 0 }, {}, { transfer }, PipelineStageBit::TRANSFER_BIT, nullptr);
 	{
+		m_CmdBuffer->Reset(2, false);
 		m_CmdBuffer->Begin(2, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
 		std::vector<Ref<Barrier>> finalBarrier;
 		for (auto& obj : m_RenderQueue)
@@ -261,8 +264,8 @@ void Renderer::Flush()
 
 		for (auto& obj : m_RenderQueue)
 		{
-			const miru::Ref<miru::crossplatform::Pipeline>& pipeline = m_Pipelines[obj->GetPipelineName()]->GetPipeline();
-			const std::vector<miru::Ref<miru::crossplatform::DescriptorSetLayout>>& descriptorSetLayouts = m_Pipelines[obj->GetPipelineName()]->GetDescriptorSetLayouts();
+			const miru::Ref<miru::crossplatform::Pipeline>& pipeline = m_RenderPipelines[obj->GetPipelineName()]->GetPipeline();
+			const std::vector<miru::Ref<miru::crossplatform::DescriptorSetLayout>>& descriptorSetLayouts = m_RenderPipelines[obj->GetPipelineName()]->GetDescriptorSetLayouts();
 
 			m_CmdBuffer->BindPipeline(m_FrameIndex, pipeline);
 
