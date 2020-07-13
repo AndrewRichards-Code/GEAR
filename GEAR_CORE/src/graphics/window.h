@@ -1,6 +1,5 @@
 #pragma once
 
-#define STB_IMAGE_IMPLEMENTATION
 #include "gear_core_common.h"
 
 namespace gear {

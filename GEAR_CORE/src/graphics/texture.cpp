@@ -1,4 +1,5 @@
 #include "gear_core_common.h"
+#include "STBI/stb_image.h"
 #include "texture.h"
 
 using namespace gear;

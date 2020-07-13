@@ -69,6 +69,9 @@
     <ClCompile Include="src\gear_core_common.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="dep\STBI\stb_image.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\utils\fileutils.h">
@@ -132,6 +135,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\graphics\renderpipeline.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dep\STBI\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

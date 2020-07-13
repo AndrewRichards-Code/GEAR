@@ -1,5 +1,7 @@
 #include "gear_core_common.h"
+#include "STBI/stb_image.h"
 #include "window.h"
+#include "core/string_conversion.h"
 
 #include "directx12/D3D12Context.h"
 #include "vulkan/VKContext.h"
@@ -114,21 +116,7 @@ std::string Window::GetDeviceName() const
 	{
 		std::wstring wresult;
 		wresult = &ref_cast<d3d12::Context>(m_Context)->m_PhysicalDevices.m_AdapterDescs[0].Description[0];
-		
-		//https://social.msdn.microsoft.com/Forums/en-US/0f749fd8-8a43-4580-b54b-fbf964d68375/convert-stdstring-to-lpcwstr-best-way-in-c?forum=Vsexpressvc
-		auto ws2s = [](const std::wstring& s) -> std::string
-		{
-			int len;
-			int slength = (int)s.length() + 1;
-			len = WideCharToMultiByte(CP_ACP, 0, s.c_str(), slength, 0, 0, 0, 0);
-			char* buf = new char[len];
-			WideCharToMultiByte(CP_ACP, 0, s.c_str(), slength, buf, len, 0, 0);
-			std::string r(buf);
-			delete[] buf;
-			return r;
-		};
-
-		result = ws2s(wresult);
+		result = core::to_string(wresult);
 		break;
 	}
 	case GraphicsAPI::API::VULKAN:

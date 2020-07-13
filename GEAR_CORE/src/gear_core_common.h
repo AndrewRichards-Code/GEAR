@@ -38,9 +38,6 @@
 #include "FREETYPE/include/ft2build.h"
 #include FT_FREETYPE_H
 
-//STB Image
-#include "STBI/stb_image.h"
-
 //Assimp
 #include "ASSIMP/include/assimp/Importer.hpp"
 #include "ASSIMP/include/assimp/scene.h"

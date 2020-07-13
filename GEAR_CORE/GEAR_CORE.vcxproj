@@ -99,6 +99,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="dep\STBI\stb_image.cpp" />
     <ClCompile Include="src\audio\audiosource.cpp" />
     <ClCompile Include="src\audio\listener.cpp" />
     <ClCompile Include="src\core\timer.cpp" />
@@ -122,6 +123,7 @@
     <ClCompile Include="src\objects\model.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="dep\STBI\stb_image.h" />
     <ClInclude Include="src\audio\audiosource.h" />
     <ClInclude Include="src\audio\listener.h" />
     <ClInclude Include="src\core\timer.h" />

@@ -5,6 +5,7 @@
 #include "audio/listener.h"
 
 //Core
+#include "core/string_conversion.h"
 #include "core/timer.h"
 
 //Graphics - MIRU
