@@ -56,7 +56,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\redist;C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\src;$(VULKAN_SDK)\Include;C:\Users\Andrew\source\repos\MARS\MARS\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)dep\MIRU\MIRU_CORE\redist;$(ProjectDir)dep\MIRU\MIRU_CORE\src;$(VULKAN_SDK)\Include;$(ProjectDir)dep\MARS\MARS\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>gear_core_common.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -67,7 +67,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\ASSIMP\lib\x64;$(SolutionDir)Dependencies\FREETYPE\win64;$(SolutionDir)Dependencies\OPENAL\libs\Win64;$(SolutionDir)Dependencies\GLEW\lib\Release\x64;$(SolutionDir)Dependencies\GLFW\x64\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\lib\x64\$(Configuration);C:\Users\Andrew\source\repos\MARS\MARS\lib\x64\$(Configuration);$(ProjectDir)dep\ASSIMP\lib\x64;$(ProjectDir)dep\FREETYPE\win64;$(ProjectDir)dep\OPENAL\libs\Win64;$(ProjectDir)dep\GLFW\x64\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)dep\MIRU\MIRU_CORE\lib\x64\$(Configuration);$(ProjectDir)dep\MARS\MARS\lib\x64\$(Configuration);$(VULKAN_SDK)\Lib;$(ProjectDir)dep\ASSIMP\lib\x64;$(ProjectDir)dep\FREETYPE\win64;$(ProjectDir)dep\OPENAL\libs\Win64;$(ProjectDir)dep\GLFW\x64\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>MIRU_CORE.lib;MARS.lib;assimp-vc140-mt.lib;freetype.lib;OpenAL32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
@@ -80,7 +80,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\redist;C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\src;$(VULKAN_SDK)\Include;C:\Users\Andrew\source\repos\MARS\MARS\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)dep\MIRU\MIRU_CORE\redist;$(ProjectDir)dep\MIRU\MIRU_CORE\src;$(VULKAN_SDK)\Include;$(ProjectDir)dep\MARS\MARS\src;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>gear_core_common.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -93,7 +93,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Dependencies\ASSIMP\lib\x64;$(SolutionDir)Dependencies\FREETYPE\win64;$(SolutionDir)Dependencies\OPENAL\libs\Win64;$(SolutionDir)Dependencies\GLEW\lib\Release\x64;$(SolutionDir)Dependencies\GLFW\x64\lib-vc2015;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;C:\Users\Andrew\source\repos\MIRU\MIRU_CORE\lib\x64\$(Configuration);C:\Users\Andrew\source\repos\MARS\MARS\lib\x64\$(Configuration);$(ProjectDir)dep\ASSIMP\lib\x64;$(ProjectDir)dep\FREETYPE\win64;$(ProjectDir)dep\OPENAL\libs\Win64;$(ProjectDir)dep\GLFW\x64\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)dep\MIRU\MIRU_CORE\lib\x64\$(Configuration);$(ProjectDir)dep\MARS\MARS\lib\x64\$(Configuration);$(VULKAN_SDK)\Lib;$(ProjectDir)dep\ASSIMP\lib\x64;$(ProjectDir)dep\FREETYPE\win64;$(ProjectDir)dep\OPENAL\libs\Win64;$(ProjectDir)dep\GLFW\x64\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>MIRU_CORE.lib;MARS.lib;assimp-vc140-mt.lib;freetype.lib;OpenAL32.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalOptions>/ignore:4006 /ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>

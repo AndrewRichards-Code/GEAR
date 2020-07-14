@@ -1,0 +1,6 @@
+[submodule "GEAR_CORE/dep/MARS"]
+	path = GEAR_CORE/dep/MARS
+	url = https://github.com/AndrewRichards-Code/MARS.git
+[submodule "GEAR_CORE/dep/MIRU"]
+	path = GEAR_CORE/dep/MIRU
+	url = https://github.com/AndrewRichards-Code/MIRU.git

@@ -62,7 +62,7 @@ Renderer::~Renderer()
 
 void Renderer::InitialiseRenderPipelines(float viewportWidth, float viewportHeight, miru::Ref<miru::crossplatform::RenderPass> renderPass)
 {
-	std::string mscDirectory = "../../MIRU/MIRU_SHADER_COMPILER/exe/x64/";
+	std::string mscDirectory = "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/";
 #if _DEBUG
 	mscDirectory += "Debug";
 #else
@@ -94,7 +94,7 @@ void Renderer::InitialiseRenderPipelines(float viewportWidth, float viewportHeig
 	basicPipelineCI.shaderCreateInfo[0].binaryFilepath = _strdup(binaryFilepath.c_str());
 	basicPipelineCI.shaderCreateInfo[0].binaryCode = {};
 	basicPipelineCI.shaderCreateInfo[0].recompileArguments = {
-		_strdup(mscDirectory.c_str()), _strdup(hlslFilePath.c_str()), _strdup(binaryDir.c_str()), { "../../MIRU/MIRU_SHADER_COMPILER/shaders/includes" },
+		_strdup(mscDirectory.c_str()), _strdup(hlslFilePath.c_str()), _strdup(binaryDir.c_str()), { "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" },
 		nullptr, "6_4", {}, true, true, nullptr, nullptr, nullptr, false, false };
 
 	get_shader_filepath_strings("res/shaders/bin/basic.frag.spv");
@@ -105,7 +105,7 @@ void Renderer::InitialiseRenderPipelines(float viewportWidth, float viewportHeig
 	basicPipelineCI.shaderCreateInfo[1].binaryFilepath = _strdup(binaryFilepath.c_str());
 	basicPipelineCI.shaderCreateInfo[1].binaryCode = {};
 	basicPipelineCI.shaderCreateInfo[1].recompileArguments = {
-		_strdup(mscDirectory.c_str()), _strdup(hlslFilePath.c_str()), _strdup(binaryDir.c_str()), { "../../MIRU/MIRU_SHADER_COMPILER/shaders/includes" },
+		_strdup(mscDirectory.c_str()), _strdup(hlslFilePath.c_str()), _strdup(binaryDir.c_str()), { "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" },
 		nullptr, "6_4", {}, true, true, nullptr, nullptr, nullptr, false, false };
 
 	basicPipelineCI.viewportState.viewports = { { 0.0f, 0.0f, viewportWidth, viewportHeight, 0.0f, 1.0f } };
@@ -131,7 +131,7 @@ void Renderer::InitialiseRenderPipelines(float viewportWidth, float viewportHeig
 	cubePipelineCI.shaderCreateInfo[0].binaryFilepath = _strdup(binaryFilepath.c_str());
 	cubePipelineCI.shaderCreateInfo[0].binaryCode = {};
 	cubePipelineCI.shaderCreateInfo[0].recompileArguments = {
-		_strdup(mscDirectory.c_str()), _strdup(hlslFilePath.c_str()), _strdup(binaryDir.c_str()), { "../../MIRU/MIRU_SHADER_COMPILER/shaders/includes" },
+		_strdup(mscDirectory.c_str()), _strdup(hlslFilePath.c_str()), _strdup(binaryDir.c_str()), { "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" },
 		nullptr, "6_4", {}, true, true, nullptr, nullptr, nullptr, false, false };
 
 	get_shader_filepath_strings("res/shaders/bin/cube.frag.spv");
@@ -142,7 +142,7 @@ void Renderer::InitialiseRenderPipelines(float viewportWidth, float viewportHeig
 	cubePipelineCI.shaderCreateInfo[1].binaryFilepath = _strdup(binaryFilepath.c_str());
 	cubePipelineCI.shaderCreateInfo[1].binaryCode = {};
 	cubePipelineCI.shaderCreateInfo[1].recompileArguments = {
-		_strdup(mscDirectory.c_str()), _strdup(hlslFilePath.c_str()), _strdup(binaryDir.c_str()), { "../../MIRU/MIRU_SHADER_COMPILER/shaders/includes" },
+		_strdup(mscDirectory.c_str()), _strdup(hlslFilePath.c_str()), _strdup(binaryDir.c_str()), { "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" },
 		nullptr, "6_4", {}, true, true, nullptr, nullptr, nullptr, false, false };
 
 	cubePipelineCI.viewportState.viewports = { { 0.0f, 0.0f, viewportWidth, viewportHeight, 0.0f, 1.0f } };
