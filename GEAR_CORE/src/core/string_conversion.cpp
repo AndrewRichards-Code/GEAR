@@ -1,15 +1,20 @@
 #include "gear_core_common.h"
 #include "string_conversion.h"
 
-using namespace gear;
-using namespace core;
-
-std::string to_string(const std::wstring& wstring)
+std::string gear::core::to_string(const std::wstring& wstring)
 {
-	return std::string(wstring.begin(), wstring.end());
+	char* str = new char[wstring.size() + 1];
+	wcstombs_s(nullptr, str, wstring.size() + 1, wstring.c_str(), wstring.size() + 1);
+	std::string result(str);
+	delete[] str;
+	return result;
 }
 
-std::wstring to_wstring(const std::string& string)
+std::wstring gear::core::to_wstring(const std::string& string)
 {
-	return std::wstring(string.begin(), string.end());
+	wchar_t* wstr = new wchar_t[string.size() + 1];
+	mbstowcs_s(nullptr, wstr, string.size() + 1, string.c_str(), string.size() + 1);
+	std::wstring result(wstr);
+	delete[] wstr;
+	return result;
 }

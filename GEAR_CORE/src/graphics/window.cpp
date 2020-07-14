@@ -114,9 +114,7 @@ std::string Window::GetDeviceName() const
 	}
 	case GraphicsAPI::API::D3D12:
 	{
-		std::wstring wresult;
-		wresult = &ref_cast<d3d12::Context>(m_Context)->m_PhysicalDevices.m_AdapterDescs[0].Description[0];
-		result = core::to_string(wresult);
+		result = core::to_string(&ref_cast<d3d12::Context>(m_Context)->m_PhysicalDevices.m_AdapterDescs[0].Description[0]);
 		break;
 	}
 	case GraphicsAPI::API::VULKAN:

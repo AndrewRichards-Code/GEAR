@@ -102,6 +102,7 @@
     <ClCompile Include="dep\STBI\stb_image.cpp" />
     <ClCompile Include="src\audio\audiosource.cpp" />
     <ClCompile Include="src\audio\listener.cpp" />
+    <ClCompile Include="src\core\string_conversion.cpp" />
     <ClCompile Include="src\core\timer.cpp" />
     <ClCompile Include="src\gear_core_common.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -126,6 +127,7 @@
     <ClInclude Include="dep\STBI\stb_image.h" />
     <ClInclude Include="src\audio\audiosource.h" />
     <ClInclude Include="src\audio\listener.h" />
+    <ClInclude Include="src\core\string_conversion.h" />
     <ClInclude Include="src\core\timer.h" />
     <ClInclude Include="src\graphics\framebuffer.h" />
     <ClInclude Include="src\graphics\indexbuffer.h" />
