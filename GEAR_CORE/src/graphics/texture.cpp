@@ -157,7 +157,7 @@ void Texture::GetInitialTransition(std::vector<Ref<Barrier>>& barriers, bool for
 	}
 }
 
-void Texture::Upload(Ref<CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex, bool force)
+void Texture::Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
 {
 	if (!m_Upload || force)
 	{

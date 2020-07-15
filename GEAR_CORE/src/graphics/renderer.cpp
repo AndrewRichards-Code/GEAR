@@ -8,7 +8,7 @@ using namespace objects;
 using namespace miru;
 using namespace miru::crossplatform;
 
-Renderer::Renderer(miru::Ref<miru::crossplatform::Context> context)
+Renderer::Renderer(const miru::Ref<miru::crossplatform::Context>& context)
 {
 	//Renderer and Transfer CmdPools and CmdBuffers
 	m_CmdPoolCI.debugName = "GEAR_CORE_CommandPool_Renderer";
@@ -37,6 +37,7 @@ Renderer::Renderer(miru::Ref<miru::crossplatform::Context> context)
 	m_TransCmdBufferCI.allocateNewCommandPoolPerBuffer = GraphicsAPI::IsD3D12();
 	m_TransCmdBuffer = CommandBuffer::Create(&m_TransCmdBufferCI);
 
+	m_Context = context;
 	m_Device = context->GetDevice();
 	
 	//Present Synchronisation
@@ -58,9 +59,10 @@ Renderer::Renderer(miru::Ref<miru::crossplatform::Context> context)
 
 Renderer::~Renderer()
 {
+	m_Context->DeviceWaitIdle();
 }
 
-void Renderer::InitialiseRenderPipelines(float viewportWidth, float viewportHeight, miru::Ref<miru::crossplatform::RenderPass> renderPass)
+void Renderer::InitialiseRenderPipelines(float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass)
 {
 	std::string mscDirectory = "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/";
 #if _DEBUG
@@ -157,7 +159,7 @@ void Renderer::InitialiseRenderPipelines(float viewportWidth, float viewportHeig
 	m_RenderPipelines["cube"] = gear::CreateRef<graphics::RenderPipeline>(&cubePipelineCI);
 }
 
-void Renderer::Submit(gear::Ref<Model> obj)
+void Renderer::Submit(const gear::Ref<Model>& obj)
 {
 	m_RenderQueue.push_back(obj);
 }

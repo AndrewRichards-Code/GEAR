@@ -72,7 +72,7 @@ void UniformBuffer::SubmitData(const void* data, unsigned int size) const
 	s_MB_CPU_Upload->SubmitData(m_UniformBufferUpload->GetResource(), (size_t)size, (void*)data);
 }
 
-void UniformBuffer::Upload(miru::Ref<miru::crossplatform::CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex, bool force)
+void UniformBuffer::Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
 {
 	if (!m_Upload || force)
 	{

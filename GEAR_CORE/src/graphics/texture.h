@@ -61,20 +61,20 @@ public:
 	Texture(CreateInfo* pCreateInfo);
 	~Texture();
 
-	inline static void SetContext(miru::Ref<miru::crossplatform::Context> context) { s_Context = context; };
+	inline static void SetContext(const miru::Ref<miru::crossplatform::Context>& context) { s_Context = context; };
 	void InitialiseMemory();
 
 	void GetInitialTransition(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers, bool force = false);
-	void Upload(miru::Ref<miru::crossplatform::CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
+	void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
 	void GetFinalTransition(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers, bool force = false);
 
 	inline int GetWidth() const { return m_CI.width; }
 	inline int GetHeight() const { return m_CI.height; }
 	inline int GetBPP() const { return m_BPP; }
 
-	inline miru::Ref<miru::crossplatform::Image>GetTexture() const { return m_Texture; }
-	inline miru::Ref<miru::crossplatform::ImageView>GetTextureImageView() const { return m_TextureImageView; }
-	inline miru::Ref<miru::crossplatform::Sampler>GetTextureSampler() const { return m_Sampler; }
+	inline const miru::Ref<miru::crossplatform::Image>& GetTexture() const { return m_Texture; }
+	inline const miru::Ref<miru::crossplatform::ImageView>& GetTextureImageView() const { return m_TextureImageView; }
+	inline const miru::Ref<miru::crossplatform::Sampler>& GetTextureSampler() const { return m_Sampler; }
 	inline bool IsCubeMap() const { return m_Cubemap; }
 	inline bool IsDepthTexture() const { return m_DepthTexture; }
 

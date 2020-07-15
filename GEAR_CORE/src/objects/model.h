@@ -52,7 +52,7 @@ public:
 	void SetUniformModlMatrix();
 	void SetUniformModlMatrix(const mars::Mat4& modl);
 
-	inline static void SetContext(miru::Ref<miru::crossplatform::Context> context)
+	inline static void SetContext(const miru::Ref<miru::crossplatform::Context>& context)
 	{
 		graphics::VertexBuffer::SetContext(context);
 		graphics::IndexBuffer::SetContext(context);

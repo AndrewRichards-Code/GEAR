@@ -31,14 +31,14 @@ namespace graphics {
 		UniformBuffer(CreateInfo* pCreateInfo);
 		~UniformBuffer();
 
-		inline static void SetContext(miru::Ref<miru::crossplatform::Context> context) { s_Context = context; };
+		inline static void SetContext(const miru::Ref<miru::crossplatform::Context>& context) { s_Context = context; };
 		void InitialiseMemory();
 		
 		void SubmitData(const void* data, unsigned int size) const;
-		void Upload(miru::Ref<miru::crossplatform::CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
+		void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
 
-		inline miru::Ref<miru::crossplatform::Buffer> GetBuffer() const { return m_UniformBuffer; };
-		inline miru::Ref<miru::crossplatform::BufferView> GetBufferView() const { return m_UniformBufferView; };
+		inline const miru::Ref<miru::crossplatform::Buffer>& GetBuffer() const { return m_UniformBuffer; };
+		inline const miru::Ref<miru::crossplatform::BufferView>& GetBufferView() const { return m_UniformBufferView; };
 
 		inline size_t GetSize() { return m_CI.size; }
 	};

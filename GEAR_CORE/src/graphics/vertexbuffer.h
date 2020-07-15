@@ -32,11 +32,11 @@ namespace graphics {
 		VertexBuffer(CreateInfo* pCreateInfo);
 		~VertexBuffer();
 
-		inline static void SetContext(miru::Ref<miru::crossplatform::Context> context) { s_Context = context; };
+		inline static void SetContext(const miru::Ref<miru::crossplatform::Context>& context) { s_Context = context; };
 		void InitialiseMemory();
 
-		void Upload(miru::Ref<miru::crossplatform::CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
-		inline miru::Ref<miru::crossplatform::BufferView> GetVertexBufferView() { return m_VertexBufferView; };
+		void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
+		inline const miru::Ref<miru::crossplatform::BufferView>& GetVertexBufferView() { return m_VertexBufferView; };
 
 		static size_t GetVertexTypeSize(miru::crossplatform::VertexType type);
 	};

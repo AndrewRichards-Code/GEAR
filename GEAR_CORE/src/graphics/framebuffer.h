@@ -47,7 +47,7 @@ namespace graphics {
 			return m_DepthTexture; 
 		}
 		inline miru::crossplatform::Image::SampleCountBit GetMultisampleValue() const { return m_CI.samples; }
-		inline miru::Ref<miru::crossplatform::Framebuffer> GetFramebuffer() { return m_Framebuffer; }
+		inline const miru::Ref<miru::crossplatform::Framebuffer>& GetFramebuffer() { return m_Framebuffer; }
 
 	private:
 		void CheckColourTextureAttachments(size_t attachment);

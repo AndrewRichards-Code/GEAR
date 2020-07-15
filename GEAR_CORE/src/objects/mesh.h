@@ -46,7 +46,7 @@ namespace objects {
 		inline const gear::Ref<graphics::IndexBuffer> GetIndexBuffer() const { return m_IB; }
 		inline const FileUtils::ObjData& GetObjData() const { return m_Data; }
 
-		inline static void SetContext(miru::Ref<miru::crossplatform::Context> context)
+		inline static void SetContext(const miru::Ref<miru::crossplatform::Context>& context)
 		{
 			graphics::VertexBuffer::SetContext(context);
 			graphics::IndexBuffer::SetContext(context);

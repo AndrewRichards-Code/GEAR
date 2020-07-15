@@ -32,10 +32,10 @@ public:
 	IndexBuffer(CreateInfo* pCreateInfo);
 	~IndexBuffer();
 
-	inline static void SetContext(miru::Ref<miru::crossplatform::Context> context) { s_Context = context; };
+	inline static void SetContext(const miru::Ref<miru::crossplatform::Context>& context) { s_Context = context; };
 	void InitialiseMemory();
 
-	void Upload(miru::Ref<miru::crossplatform::CommandBuffer> cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
+	void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
 	inline miru::Ref<miru::crossplatform::BufferView> GetIndexBufferView() { return m_IndexBufferView; };
 
 	inline uint32_t GetCount() const { return m_Count; }

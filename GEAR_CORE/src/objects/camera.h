@@ -57,7 +57,7 @@ public:
 	void DefineProjection(double fov, float aspectRatio, float zNear, float zFar, bool flipX = false, bool flipY = false);
 	void DefineProjection(float left, float right, float bottom, float top, float near, float far);
 
-	inline static void SetContext(miru::Ref<miru::crossplatform::Context> context)
+	inline static void SetContext(const miru::Ref<miru::crossplatform::Context>& context)
 	{
 		graphics::UniformBuffer::SetContext(context);
 	};

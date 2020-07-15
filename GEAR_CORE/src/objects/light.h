@@ -93,7 +93,7 @@ public:
 	void UpdateDirection();
 	void UpdateDirection(double yaw, double pitch, double roll, bool invertYAxis);
 
-	inline static void SetContext(miru::Ref<miru::crossplatform::Context> context)
+	inline static void SetContext(const miru::Ref<miru::crossplatform::Context>& context)
 	{
 		graphics::UniformBuffer::SetContext(context);
 	};

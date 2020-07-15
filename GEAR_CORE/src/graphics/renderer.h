@@ -15,6 +15,8 @@ class Renderer
 private:
 	void* m_Device;
 
+	miru::Ref<miru::crossplatform::Context> m_Context;
+
 	miru::Ref<miru::crossplatform::CommandPool> m_CmdPool;
 	miru::crossplatform::CommandPool::CreateInfo m_CmdPoolCI;
 	miru::Ref<miru::crossplatform::CommandBuffer> m_CmdBuffer;
@@ -36,7 +38,7 @@ private:
 	miru::crossplatform::DescriptorSet::CreateInfo m_DescSetCI;
 
 	std::map<std::string, gear::Ref<graphics::RenderPipeline>> m_RenderPipelines;
-	miru::Ref<miru::crossplatform::Framebuffer>* m_Framebuffers;
+	const miru::Ref<miru::crossplatform::Framebuffer>* m_Framebuffers;
 	std::deque<gear::Ref<objects::Model>> m_RenderQueue;
 	objects::Camera* m_Camera;
 	std::vector<objects::Light*> m_Lights;
@@ -53,21 +55,21 @@ private:
 	miru::crossplatform::Semaphore::CreateInfo m_SubmitSemaphoreCI;
 
 public:
-	Renderer(miru::Ref<miru::crossplatform::Context> context);
+	Renderer(const miru::Ref<miru::crossplatform::Context>& context);
 	virtual ~Renderer();
 
-	void InitialiseRenderPipelines(float viewportWidth, float viewportHeight, miru::Ref<miru::crossplatform::RenderPass> renderPass);
-	virtual void SubmitFramebuffer(miru::Ref<miru::crossplatform::Framebuffer>* framebuffers) { m_Framebuffers = framebuffers; };
+	void InitialiseRenderPipelines(float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass);
+	virtual void SubmitFramebuffer(const miru::Ref<miru::crossplatform::Framebuffer>* framebuffers) { m_Framebuffers = framebuffers; };
 	virtual void SubmitCamera(objects::Camera* camera) { m_Camera = camera; };
 	virtual void SubmitLights(std::vector<objects::Light*> lights) { m_Lights = lights; };
-	virtual void Submit(gear::Ref<objects::Model> obj);
+	virtual void Submit(const gear::Ref<objects::Model>& obj);
 	virtual void Flush();
 	virtual void Present(const miru::Ref<miru::crossplatform::Swapchain>& swapchain, bool& windowResize);
 
 	virtual void UpdateCamera();
 
 	inline std::deque<gear::Ref<objects::Model>>& GetRenderQueue() { return m_RenderQueue; };
-	inline miru::Ref<miru::crossplatform::CommandBuffer> GetCmdBuffer() { return m_CmdBuffer; };
+	inline const miru::Ref<miru::crossplatform::CommandBuffer>& GetCmdBuffer() { return m_CmdBuffer; };
 	inline const std::map<std::string, gear::Ref<graphics::RenderPipeline>>& GetRenderPipelines() const { return m_RenderPipelines;  }
 };
 }

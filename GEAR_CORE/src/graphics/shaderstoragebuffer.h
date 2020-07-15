@@ -30,16 +30,16 @@ namespace graphics {
 		ShaderStorageBuffer(CreateInfo* pCreateInfo);
 		~ShaderStorageBuffer();
 
-		inline static void SetContext(miru::Ref<miru::crossplatform::Context> context) { s_Context = context; };
+		inline static void SetContext(const miru::Ref<miru::crossplatform::Context>& context) { s_Context = context; };
 		void InitialiseMemory();
 
 		void SubmitData(const void* data, size_t  size) const;
 		void AccessData(void* data, size_t size) const;
-		void Upload(miru::crossplatform::CommandBuffer& cmdBuffer, uint32_t cmdBufferIndex = 0);
-		void Download(miru::crossplatform::CommandBuffer& cmdBuffer, uint32_t cmdBufferIndex = 0);
+		void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0);
+		void Download(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0);
 
-		inline miru::Ref<miru::crossplatform::Buffer> GetBuffer() const { return m_ShaderStorageBuffer; };
-		inline miru::Ref<miru::crossplatform::BufferView> GetBufferView() const { return m_ShaderStorageBufferView; };
+		inline const miru::Ref<miru::crossplatform::Buffer>& GetBuffer() const { return m_ShaderStorageBuffer; };
+		inline const miru::Ref<miru::crossplatform::BufferView>& GetBufferView() const { return m_ShaderStorageBufferView; };
 
 		inline size_t GetSize() { return m_CI.size; }
 	};
