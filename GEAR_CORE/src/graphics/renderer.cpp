@@ -60,6 +60,7 @@ Renderer::Renderer(const miru::Ref<miru::crossplatform::Context>& context)
 Renderer::~Renderer()
 {
 	m_Context->DeviceWaitIdle();
+	ClearupRenderPipelines();
 }
 
 void Renderer::InitialiseRenderPipelines(float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass)
@@ -81,8 +82,6 @@ void Renderer::InitialiseRenderPipelines(float viewportWidth, float viewportHeig
 		debugName = binaryFilepath.substr(binaryFilepath.find_last_of('/') + 1);
 		binaryDir = binaryFilepath.substr(0, binaryFilepath.find_last_of('/'));
 	};
-
-	//TODO: Fix memory leak from _strdup()
 
 	//Basic
 	graphics::RenderPipeline::CreateInfo basicPipelineCI;
@@ -157,6 +156,21 @@ void Renderer::InitialiseRenderPipelines(float viewportWidth, float viewportHeig
 	cubePipelineCI.renderPass = renderPass;
 	cubePipelineCI.subpassIndex = 0;
 	m_RenderPipelines["cube"] = gear::CreateRef<graphics::RenderPipeline>(&cubePipelineCI);
+}
+
+void Renderer::ClearupRenderPipelines()
+{
+	for (auto& renderPipeline : m_RenderPipelines)
+	{
+		for (auto& shaderCI : renderPipeline.second->m_CI.shaderCreateInfo)
+		{
+			free((void*)shaderCI.debugName);
+			free((void*)shaderCI.binaryFilepath);
+			free((void*)shaderCI.recompileArguments.mscDirectory);
+			free((void*)shaderCI.recompileArguments.hlslFilepath);
+			free((void*)shaderCI.recompileArguments.outputDirectory);
+		}
+	}
 }
 
 void Renderer::Submit(const gear::Ref<Model>& obj)
@@ -259,6 +273,7 @@ void Renderer::Flush()
 	}
 
 	//Record Present CmdBuffers
+	m_DrawFences[m_FrameIndex]->Wait();
 	{
 		m_CmdBuffer->Reset(m_FrameIndex, false);
 		m_CmdBuffer->Begin(m_FrameIndex, CommandBuffer::UsageBit::SIMULTANEOUS);

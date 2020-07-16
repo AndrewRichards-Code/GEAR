@@ -59,6 +59,7 @@ public:
 	virtual ~Renderer();
 
 	void InitialiseRenderPipelines(float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass);
+	void ClearupRenderPipelines();
 	virtual void SubmitFramebuffer(const miru::Ref<miru::crossplatform::Framebuffer>* framebuffers) { m_Framebuffers = framebuffers; };
 	virtual void SubmitCamera(objects::Camera* camera) { m_Camera = camera; };
 	virtual void SubmitLights(std::vector<objects::Light*> lights) { m_Lights = lights; };

@@ -15,7 +15,7 @@ int main()
 	system("CLS");
 
 	Window::CreateInfo windowCI;
-	windowCI.api = GraphicsAPI::API::VULKAN;
+	windowCI.api = GraphicsAPI::API::D3D12;
 	windowCI.title = "GEAR_MIRU_TEST";
 	windowCI.width = 1920;
 	windowCI.height = 1080;
