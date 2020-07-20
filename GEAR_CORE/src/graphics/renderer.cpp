@@ -188,7 +188,7 @@ void Renderer::Flush()
 	{
 		m_TransCmdBuffer->Reset(0, false);
 		m_TransCmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
-		m_Camera->GetUB()->Upload(m_TransCmdBuffer, 0);
+		m_Camera->GetUB()->Upload(m_TransCmdBuffer, 0, true);
 		m_Lights[0]->GetUB0()->Upload(m_TransCmdBuffer, 0);
 		m_Lights[0]->GetUB1()->Upload(m_TransCmdBuffer, 0);
 
@@ -323,18 +323,4 @@ void Renderer::Present(const miru::Ref<miru::crossplatform::Swapchain>& swapchai
 	m_CmdBuffer->Present({ 0, 1 }, swapchain, m_DrawFences, m_AcquireSemaphores, m_SubmitSemaphores, windowResize);
 	m_FrameIndex = (m_FrameIndex + 1) % swapchain->GetCreateInfo().swapchainCount;
 	m_FrameCount++;
-}
-
-void Renderer::UpdateCamera()
-{
-	Fence::CreateInfo transFenceCI = { "GEAR_CORE_FenceRenderTransfer", m_TransCmdPoolCI.pContext->GetDevice(), false, UINT64_MAX };
-	Ref<Fence> transferFence = Fence::Create(&transFenceCI);
-	{
-		m_TransCmdBuffer->Reset(0, false);
-		m_TransCmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
-		m_Camera->GetUB()->Upload(m_TransCmdBuffer, 0, true);
-		m_TransCmdBuffer->End(0);
-	}
-	m_TransCmdBuffer->Submit({ 0 }, {}, {}, PipelineStageBit::TRANSFER_BIT, transferFence);
-	transferFence->Wait();
 }

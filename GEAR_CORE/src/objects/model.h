@@ -22,6 +22,7 @@ class Model
 public:
 	struct CreateInfo
 	{
+		const char*						debugName;
 		void*							device;
 		gear::Ref<Mesh>					pMesh;
 		Transform						transform;
@@ -35,10 +36,11 @@ private:
 
 	struct ModelUB
 	{
-		mars::Mat4 m_ModlMatrix;
-	} m_ModelUB;
-	gear::Ref<graphics::UniformBuffer> m_UB;
+		mars::Mat4 modlMatrix;
+	};
+	gear::Ref<graphics::UniformBuffer<ModelUB>> m_UB;
 
+	std::string m_DebugName;
 
 private:
 	void InitialiseUB();
@@ -52,20 +54,12 @@ public:
 	void SetUniformModlMatrix();
 	void SetUniformModlMatrix(const mars::Mat4& modl);
 
-	inline static void SetContext(const miru::Ref<miru::crossplatform::Context>& context)
-	{
-		graphics::VertexBuffer::SetContext(context);
-		graphics::IndexBuffer::SetContext(context);
-		graphics::UniformBuffer::SetContext(context);
-		graphics::Texture::SetContext(context);
-	};
-
 	inline const std::map<Mesh::VertexBufferContents, gear::Ref<graphics::VertexBuffer>> GetVBs() const { return m_CI.pMesh->GetVertexBuffers(); }
 	inline const gear::Ref<graphics::IndexBuffer> GetIB() const { return m_CI.pMesh->GetIndexBuffer(); }
 	inline const std::string& GetPipelineName() const { return m_CI.renderPipelineName; }
 	inline const gear::Ref<graphics::Texture> GetTexture() const { return m_CI.pTexture; }
-	inline const gear::Ref<graphics::UniformBuffer> GetUB() const { return m_UB; }
-	inline const mars::Mat4 GetModlMatrix() const { return m_ModelUB.m_ModlMatrix; }
+	inline const gear::Ref<graphics::UniformBuffer<ModelUB>> GetUB() const { return m_UB; }
+	inline const mars::Mat4 GetModlMatrix() const { return m_UB->modlMatrix; }
 };
 }
 }

@@ -4,8 +4,6 @@
 #include "graphics/uniformbuffer.h"
 #include "mars.h"
 
-#define GEAR_CAMERA_PERSPECTIVE 0
-#define GEAR_CAMERA_ORTHOGRAPHIC 1
 
 #undef far
 #undef near
@@ -15,57 +13,77 @@ namespace objects {
 
 class Camera
 {
-private:
-	void* m_Device;
-
-	int m_ProjectionType;
-	double m_Yaw = 0;
-	double m_Pitch = 0;
-	double m_Roll = 0;
-
-	const mars::Vec3 m_xAxis = mars::Vec3(1, 0, 0);
-	const mars::Vec3 m_yAxis = mars::Vec3(0, 1, 0);
-	const mars::Vec3 m_zAxis = mars::Vec3(0, 0, 1);
-
 public:
-	mars::Vec3 m_Position;
+	enum class ProjectionType : uint32_t
+	{
+		PERSPECTIVE,
+		ORTHOGRAPHIC 
+	};
 
-	mars::Vec3 m_Forward;
-	mars::Vec3 m_Up;
-	mars::Vec3 m_Right;
+	struct OrthographicParameters
+	{
+		float	left;
+		float	right;
+		float	bottom;
+		float	top;
+		float	near;
+		float	far;
+	};
+	struct PerspectiveParameters
+	{
+		double	horizonalFOV;
+		float	aspectRatio;
+		float	zNear;
+		float	zFar;
+	};
+
+	struct CreateInfo
+	{
+		const char*		debugName;
+		void*			device;
+		mars::Vec3		position;
+		mars::Quat		orientation;
+		ProjectionType	projectionType;
+		union
+		{
+			OrthographicParameters	orthographicsParams;
+			PerspectiveParameters	perspectiveParams;
+		};
+		bool			flipX;
+		bool			flipY;
+	};
 
 private:
 	struct CameraUB
 	{
-		mars::Mat4 m_ProjectionMatrix;
-		mars::Mat4 m_ViewMatrix;
-		mars::Vec4 m_Position;
+		mars::Mat4 projectionMatrix;
+		mars::Mat4 viewMatrix;
+		mars::Vec4 position;
 		
-	} m_CameraUB;
-	gear::Ref<graphics::UniformBuffer> m_UB;
-	
+	};
+	gear::Ref<graphics::UniformBuffer<CameraUB>> m_UB;
+
+	std::string m_DebugName;
 
 public:
-	Camera(void* device, int projType, const mars::Vec3& position, const mars::Vec3& forward, const mars::Vec3 up);
+	CreateInfo m_CI;
+
+	mars::Vec3 m_Direction;
+	mars::Vec3 m_Up;
+	mars::Vec3 m_Right;
+
+public:
+	Camera(CreateInfo* pCreateInfo);
 	~Camera();
 
-	void UpdateCameraPosition();
-	void CalcuateLookAround(double yaw, double pitch, double roll, bool invertYAxis = false);
-
-	void DefineView();
-	void DefineView(const mars::Mat4& viewMatrix);
-	void DefineProjection(double fov, float aspectRatio, float zNear, float zFar, bool flipX = false, bool flipY = false);
-	void DefineProjection(float left, float right, float bottom, float top, float near, float far);
-
-	inline static void SetContext(const miru::Ref<miru::crossplatform::Context>& context)
-	{
-		graphics::UniformBuffer::SetContext(context);
-	};
-	gear::Ref<graphics::UniformBuffer> GetUB() { return m_UB; };
+	//Update the camera the current static of Camera::CreateInfo m_CI.
+	void Update();
+	gear::Ref<graphics::UniformBuffer<CameraUB>> GetUB() { return m_UB; };
 
 private:
-	void CalculateRight();
-	void CalculateUp();
+	void DefineProjection();
+	void DefineView();
+	void SetPosition();
 	void InitialiseUB();
 };
 }

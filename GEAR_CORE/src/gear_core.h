@@ -11,6 +11,7 @@
 //Graphics - MIRU
 #include "graphics/framebuffer.h"
 #include "graphics/indexbuffer.h"
+#include "graphics/memoryblockmanager.h"
 #include "graphics/renderer.h"
 #include "graphics/renderpipeline.h"
 #include "graphics/shaderstoragebuffer.h"

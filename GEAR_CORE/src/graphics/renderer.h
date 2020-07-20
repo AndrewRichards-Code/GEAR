@@ -67,8 +67,6 @@ public:
 	virtual void Flush();
 	virtual void Present(const miru::Ref<miru::crossplatform::Swapchain>& swapchain, bool& windowResize);
 
-	virtual void UpdateCamera();
-
 	inline std::deque<gear::Ref<objects::Model>>& GetRenderQueue() { return m_RenderQueue; };
 	inline const miru::Ref<miru::crossplatform::CommandBuffer>& GetCmdBuffer() { return m_CmdBuffer; };
 	inline const std::map<std::string, gear::Ref<graphics::RenderPipeline>>& GetRenderPipelines() const { return m_RenderPipelines;  }

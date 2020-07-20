@@ -13,6 +13,7 @@ namespace objects {
 	public:
 		struct CreateInfo
 		{
+			const char* debugName;
 			void*		device;
 			std::string filepath;
 		};
@@ -29,6 +30,8 @@ namespace objects {
 		};
 
 	private:
+		std::string m_DebugName;
+
 		CreateInfo m_CI;
 		FileUtils::ObjData m_Data;
 
@@ -45,12 +48,6 @@ namespace objects {
 		inline const std::map<VertexBufferContents, gear::Ref<graphics::VertexBuffer>>& GetVertexBuffers() const { return m_VBs; }
 		inline const gear::Ref<graphics::IndexBuffer> GetIndexBuffer() const { return m_IB; }
 		inline const FileUtils::ObjData& GetObjData() const { return m_Data; }
-
-		inline static void SetContext(const miru::Ref<miru::crossplatform::Context>& context)
-		{
-			graphics::VertexBuffer::SetContext(context);
-			graphics::IndexBuffer::SetContext(context);
-		};
 	};
 }
 }

@@ -1,6 +1,7 @@
 #include "gear_core_common.h"
 #include "STBI/stb_image.h"
 #include "texture.h"
+#include "graphics/memoryblockmanager.h"
 
 using namespace gear;
 using namespace graphics;
@@ -8,16 +9,9 @@ using namespace graphics;
 using namespace miru;
 using namespace miru::crossplatform;
 
-miru::Ref<miru::crossplatform::Context> Texture::s_Context = nullptr;
-miru::Ref<miru::crossplatform::MemoryBlock> Texture::s_MB_CPU_Upload = nullptr;
-miru::Ref<miru::crossplatform::MemoryBlock> Texture::s_MB_GPU_Usage = nullptr;
-uint32_t Texture::s_UID = 0;
-
 Texture::Texture(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
-
-	InitialiseMemory();
 
 	bool loadFromFile = !m_CI.filepaths.empty() && !m_CI.data;
 	m_Cubemap = m_CI.type == Image::Type::TYPE_CUBE;
@@ -25,11 +19,8 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	
 	std::vector<uint8_t> imageData;
 	
-	m_TextureName = "UID: " + std::to_string(s_UID);
 	if (loadFromFile)
 	{
-		m_TextureName = " File: " + m_CI.filepaths[0];
-		
 		if (!m_Cubemap)
 		{
 			m_LocalBuffer = stbi_load(m_CI.filepaths[0].c_str(), (int*)&m_CI.width, (int*)&m_CI.height, &m_BPP, 4);
@@ -65,16 +56,18 @@ Texture::Texture(CreateInfo* pCreateInfo)
 		memcpy(imageData.data(), m_CI.data, m_CI.size);
 	}
 
-	m_TextureUploadBufferCI.debugName = (std::string("GEAR_CORE_TextureUploadBuffer: ") + m_TextureName).c_str();
+	m_DebugName_TexUpload = std::string("GEAR_CORE_TextureUploadBuffer: ") + m_CI.debugName;
+	m_TextureUploadBufferCI.debugName = m_DebugName_TexUpload.c_str();
 	m_TextureUploadBufferCI.device = m_CI.device;
 	m_TextureUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC;
 	m_TextureUploadBufferCI.size = imageData.size();
 	m_TextureUploadBufferCI.imageDimension = { m_CI.width, m_CI.height, 4 };
 	m_TextureUploadBufferCI.data = imageData.data();
-	m_TextureUploadBufferCI.pMemoryBlock = s_MB_CPU_Upload;
+	m_TextureUploadBufferCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::CPU);// , MemoryBlock::BlockSize::BLOCK_SIZE_128MB);
 	m_TextureUploadBuffer = Buffer::Create(&m_TextureUploadBufferCI);
 
-	m_TextureCI.debugName = (std::string("GEAR_CORE_Texture: ") + m_TextureName).c_str();
+	m_DebugName_Tex = std::string("GEAR_CORE_Texture: ") + m_CI.debugName;
+	m_TextureCI.debugName = m_DebugName_Tex.c_str();
 	m_TextureCI.device = m_CI.device;
 	m_TextureCI.type = m_CI.type;
 	m_TextureCI.format = m_CI.format;
@@ -88,7 +81,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_TextureCI.layout = Image::Layout::UNKNOWN;
 	m_TextureCI.size = 0;
 	m_TextureCI.data = nullptr;
-	m_TextureCI.pMemoryBlock = s_MB_GPU_Usage;
+	m_TextureCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::GPU);// , MemoryBlock::BlockSize::BLOCK_SIZE_128MB);
 	m_Texture = Image::Create(&m_TextureCI);
 
 	m_InitialBarrierCI.type = Barrier::Type::IMAGE;
@@ -113,39 +106,18 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_FinalBarrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
 	m_FinalBarrier = Barrier::Create(&m_FinalBarrierCI);
 
-	m_TextureImageViewCI.debugName = (std::string("GEAR_CORE_TextureImageView: ") + m_TextureName).c_str();
+	m_DebugName_TexIV = std::string("GEAR_CORE_TextureImageView: ") + m_CI.debugName;
+	m_TextureImageViewCI.debugName = m_DebugName_TexIV.c_str();
 	m_TextureImageViewCI.device = m_CI.device;
 	m_TextureImageViewCI.pImage = m_Texture;
 	m_TextureImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
 	m_TextureImageView = ImageView::Create(&m_TextureImageViewCI);
 
 	CreateSampler();
-	s_UID++;
 }
 
 Texture::~Texture()
 {
-}
-
-void Texture::InitialiseMemory()
-{
-	MemoryBlock::CreateInfo mbCI;
-	if (!s_MB_CPU_Upload)
-	{
-		mbCI.debugName = "GEAR_CORE_MB_CPU_TextureUpload";
-		mbCI.pContext = s_Context;
-		mbCI.blockSize = MemoryBlock::BlockSize(1048576 * 1024);
-		mbCI.properties = MemoryBlock::PropertiesBit::HOST_VISIBLE_BIT | MemoryBlock::PropertiesBit::HOST_COHERENT_BIT;
-		s_MB_CPU_Upload = MemoryBlock::Create(&mbCI);
-	}
-	if (!s_MB_GPU_Usage)
-	{
-		mbCI.debugName = "GEAR_CORE_MB_GPU_Texture";
-		mbCI.pContext = s_Context;
-		mbCI.blockSize = MemoryBlock::BlockSize(1048576 * 1024);
-		mbCI.properties = MemoryBlock::PropertiesBit::DEVICE_LOCAL_BIT;
-		s_MB_GPU_Usage = MemoryBlock::Create(&mbCI);
-	}
 }
 
 void Texture::GetInitialTransition(std::vector<Ref<Barrier>>& barriers, bool force)
@@ -204,7 +176,8 @@ void Texture::GetFinalTransition(std::vector<Ref<Barrier>>& barriers, bool force
 
 void Texture::CreateSampler()
 {
-	m_SamplerCI.debugName = (std::string("GEAR_CORE_Sampler: ") + m_TextureName).c_str();
+	m_DebugName_Sampler = std::string("GEAR_CORE_Sampler: ") + m_CI.debugName;
+	m_SamplerCI.debugName = m_DebugName_Sampler.c_str();
 	m_SamplerCI.device = m_CI.device;
 	m_SamplerCI.magFilter = Sampler::Filter::LINEAR;
 	m_SamplerCI.minFilter = Sampler::Filter::LINEAR;

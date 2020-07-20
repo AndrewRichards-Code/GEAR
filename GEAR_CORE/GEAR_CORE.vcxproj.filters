@@ -60,9 +60,6 @@
     <ClCompile Include="src\graphics\window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\objects\font.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\graphics\renderpipeline.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -73,6 +70,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\core\string_conversion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\graphics\memoryblockmanager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -134,9 +134,6 @@
     <ClInclude Include="src\graphics\window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\objects\font.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\graphics\renderpipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -144,6 +141,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\core\string_conversion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\memoryblockmanager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

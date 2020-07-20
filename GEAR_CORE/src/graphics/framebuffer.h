@@ -10,6 +10,7 @@ namespace graphics {
 	public:
 		struct CreateInfo
 		{
+			const char*									debugName;
 			void*										device;
 			uint32_t									width;
 			uint32_t									height;
@@ -24,6 +25,8 @@ namespace graphics {
 
 		std::array<gear::Ref<Texture>, 8> m_ColourTextures;
 		gear::Ref<Texture> m_DepthTexture;
+
+		std::string m_DebugName_FB;
 
 		CreateInfo m_CI;
 

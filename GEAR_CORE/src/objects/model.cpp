@@ -9,6 +9,7 @@ using namespace mars;
 Model::Model(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
+	m_DebugName = std::string("GEAR_CORE_Model: ") +  m_CI.debugName;
 
 	InitialiseUB();
 	SetUniformModlMatrix();
@@ -22,28 +23,28 @@ Model::~Model()
 
 void Model::SetUniformModlMatrix()
 {
-	m_ModelUB.m_ModlMatrix = Mat4::
+	m_UB->modlMatrix = Mat4::
 		Translation(m_CI.transform.translation)
 		* Quat::ToMat4(m_CI.transform.orientation)
 		* Mat4::Scale(m_CI.transform.scale);
-	m_UB->SubmitData(m_ModelUB.m_ModlMatrix.GetData(), sizeof(ModelUB));
+	m_UB->SubmitData();
 }
 
 void Model::SetUniformModlMatrix(const Mat4& modl)
 {
-	m_ModelUB.m_ModlMatrix = modl;
-	m_UB->SubmitData(m_ModelUB.m_ModlMatrix.GetData(), sizeof(ModelUB));
+	m_UB->modlMatrix = modl;
+	m_UB->SubmitData();
 }
 
 void Model::InitialiseUB()
 {
 	float zero[sizeof(ModelUB)] = { 0 };
 
-	UniformBuffer::CreateInfo ubCI;
+	UniformBuffer<ModelUB>::CreateInfo ubCI;
+	ubCI.debugName = m_DebugName.c_str();
 	ubCI.device = m_CI.device;
 	ubCI.data = zero;
-	ubCI.size = sizeof(ModelUB);
-	m_UB = gear::CreateRef<UniformBuffer>(&ubCI);
+	m_UB = gear::CreateRef<UniformBuffer<ModelUB>>(&ubCI);
 }
 
 void Model::AddTextureIDsVB()
@@ -55,6 +56,7 @@ void Model::AddTextureIDsVB()
 		texIdData.push_back(0.0f);
 
 	VertexBuffer::CreateInfo vbCI;
+	vbCI.debugName = m_DebugName.c_str();
 	vbCI.device = m_CI.device;
 	vbCI.data = texIdData.data();
 	vbCI.size = texIdData.size() * graphics::VertexBuffer::GetVertexTypeSize(miru::crossplatform::VertexType::FLOAT);
@@ -73,6 +75,7 @@ void Model::AddColourVB()
 		colourData.push_back(m_CI.colour);
 
 	VertexBuffer::CreateInfo vbCI;
+	vbCI.debugName = m_DebugName.c_str();
 	vbCI.device = m_CI.device;
 	vbCI.data = colourData.data();
 	vbCI.size = colourData.size() * graphics::VertexBuffer::GetVertexTypeSize(miru::crossplatform::VertexType::VEC4);

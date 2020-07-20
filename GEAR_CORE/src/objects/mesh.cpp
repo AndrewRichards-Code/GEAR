@@ -7,10 +7,12 @@ using namespace objects;
 Mesh::Mesh(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
+	m_DebugName = m_DebugName = std::string("GEAR_CORE_Mesh: ") + m_CI.debugName;
 
 	m_Data = FileUtils::read_obj(m_CI.filepath.c_str());
 
 	graphics::VertexBuffer::CreateInfo vbCI;
+	vbCI.debugName = m_DebugName.c_str();
 	vbCI.device = m_CI.device;
 
 	vbCI.data = m_Data.m_Vertices.data();
@@ -29,6 +31,7 @@ Mesh::Mesh(CreateInfo* pCreateInfo)
 	m_VBs[VertexBufferContents::NORMAL] = gear::CreateRef<graphics::VertexBuffer>(&vbCI);
 	
 	graphics::IndexBuffer::CreateInfo ibCI;
+	ibCI.debugName = m_DebugName.c_str();
 	ibCI.device = m_CI.device;
 	ibCI.data = m_Data.m_VertIndices.data();
 	ibCI.size = m_Data.m_VertIndices.size() * sizeof(uint32_t);

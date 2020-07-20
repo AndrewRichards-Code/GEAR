@@ -10,6 +10,7 @@
 namespace gear {
 namespace objects {
 
+//TODO: Add Shadow mapping.
 class Light
 {
 public:
@@ -20,14 +21,18 @@ public:
 		GEAR_LIGHT_SPOT = 2,		//cone, umbra, penumbra
 		GEAR_LIGHT_AREA = 3			//err...
 	};
+	
+	struct CreateInfo
+	{
+		const char* debugName;
+		void*		device;
+		LightType	type;
+		mars::Vec4	colour;
+		mars::Vec3	position;
+		mars::Vec3	direction;
+	};
 
 private:
-	void* m_Device;
-
-	static int s_NumOfLights;
-	int m_LightID;
-	LightType m_Type;
-
 	struct LightUB
 	{
 		mars::Vec4 m_Colour;				//00
@@ -41,37 +46,30 @@ private:
 		float m_AttenuationLinear;			//68
 		float m_AttenuationQuadratic;		//72
 		float m_CutOff;						//76
-	}m_LightUB;							//80 Total Size
+	};										//80 Total Size
+	typedef std::array<LightUB, GEAR_MAX_LIGHTS> LightUBType;
+	gear::Ref<graphics::UniformBuffer<LightUBType>> m_UB0;
+	
 	struct LightingUB
 	{
 		float u_Diffuse;
 		float u_Specular;
 		float u_Ambient;
 		float u_Emit;
-	}m_LightingUB;
-	gear::Ref<graphics::UniformBuffer> m_UB0;
-	gear::Ref<graphics::UniformBuffer> m_UB1;
+	};
+	gear::Ref<graphics::UniformBuffer<LightingUB>> m_UB1;
 	
-	//Depth Shader for Shadows
-	/*const OPENGL::Shader m_DepthShader = OPENGL::Shader("res/shaders/GLSL/depth.vert", "res/shaders/GLSL/depth.frag");
-	const int m_DepthRenderSize = 128;
-	std::unique_ptr<OmniProbe> m_DepthRenderTargetOmniProbe; 
-	std::unique_ptr<UniProbe> m_DepthRenderTargetUniProbe; 
-	struct DepthUBO
-	{
-		float u_Near;
-		float u_Far;
-		float u_Linear;
-		float u_Reverse;
-	}m_DepthUBO;*/
+	static int s_NumOfLights;
+	size_t m_LightID;
+	LightType m_Type;
+
+	std::string m_DebugName;
 
 public:
-	mars::Vec4 m_Colour;
-	mars::Vec3 m_Position;
-	mars::Vec3 m_Direction;
+	CreateInfo m_CI;
 
 public:
-	Light(void* device, LightType type, const mars::Vec3& position, const mars::Vec3& direction, const mars::Vec4& colour);
+	Light(CreateInfo* pCreateInfo);
 	~Light();
 
 	void Specular(float shineFactor, float reflectivity);
@@ -79,30 +77,13 @@ public:
 	void Attenuation(float linear, float quadratic);
 	void SpotCone(double theta);
 
-	void Point();
-	void Directional();
-	void Spot();
-	void Area();
-
-	//void SetDepthParameters(float near, float far, bool linear = true, bool reverse = true);
-	//void RenderDepthTexture(const std::deque<Object*>& renderQueue, int windowWidth, int windowHeight);
-	//std::shared_ptr<OPENGL::Texture> GetDepthTexture();
-
-	void UpdateColour();
-	void UpdatePosition();
-	void UpdateDirection();
-	void UpdateDirection(double yaw, double pitch, double roll, bool invertYAxis);
-
-	inline static void SetContext(const miru::Ref<miru::crossplatform::Context>& context)
-	{
-		graphics::UniformBuffer::SetContext(context);
-	};
-	gear::Ref<graphics::UniformBuffer> GetUB0() { return m_UB0; };
-	gear::Ref<graphics::UniformBuffer> GetUB1() { return m_UB1; };
+	//Update the camera the current static of Camera::CreateInfo m_CI.
+	void Update();
+	gear::Ref<graphics::UniformBuffer<LightUBType>> GetUB0() { return m_UB0; };
+	gear::Ref<graphics::UniformBuffer<LightingUB>> GetUB1() { return m_UB1; };
 
 private:
 	void InitialiseUB();
-	//void SetDepthUBOToZero();
 };
 }
 }

@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
 #include "vertexbuffer.h"
+#include "graphics//memoryblockmanager.h"
 
 using namespace gear;
 using namespace graphics;
@@ -7,33 +8,30 @@ using namespace graphics;
 using namespace miru;
 using namespace miru::crossplatform;
 
-miru::Ref<miru::crossplatform::Context> VertexBuffer::s_Context = nullptr;
-miru::Ref<miru::crossplatform::MemoryBlock> VertexBuffer::s_MB_CPU_Upload = nullptr;
-miru::Ref<miru::crossplatform::MemoryBlock> VertexBuffer::s_MB_GPU_Usage = nullptr;
-
 VertexBuffer::VertexBuffer(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
-	InitialiseMemory();
-
-	m_VertexBufferUploadCI.debugName = "GEAR_CORE_VertexBufferUpload";
+	m_DebugName_VBUpload = std::string("GEAR_CORE_VertexBufferUpload: ") + m_CI.debugName;
+	m_VertexBufferUploadCI.debugName = m_DebugName_VBUpload.c_str();
 	m_VertexBufferUploadCI.device = m_CI.device;
 	m_VertexBufferUploadCI.usage = Buffer::UsageBit::TRANSFER_SRC;
 	m_VertexBufferUploadCI.size = m_CI.size;
 	m_VertexBufferUploadCI.data = m_CI.data;
-	m_VertexBufferUploadCI.pMemoryBlock = s_MB_CPU_Upload;
+	m_VertexBufferUploadCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::CPU);
 	m_VertexBufferUpload = Buffer::Create(&m_VertexBufferUploadCI);
 
-	m_VertexBufferCI.debugName = "GEAR_CORE_VertexBuffer";
+	m_DebugName_VB = std::string("GEAR_CORE_VertexBuffer: ") + m_CI.debugName;
+	m_VertexBufferCI.debugName = m_DebugName_VB.c_str();
 	m_VertexBufferCI.device = m_CI.device;
 	m_VertexBufferCI.usage = Buffer::UsageBit::TRANSFER_DST | Buffer::UsageBit::VERTEX;
 	m_VertexBufferCI.size = m_CI.size;
 	m_VertexBufferCI.data = nullptr;
-	m_VertexBufferCI.pMemoryBlock = s_MB_GPU_Usage;
+	m_VertexBufferCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::GPU);
 	m_VertexBuffer = Buffer::Create(&m_VertexBufferCI);
 
-	m_VertexBufferViewCI.debugName = "GEAR_CORE_VertexBufferViewUsage";
+	m_DebugName_VBV = std::string("GEAR_CORE_VertexBufferViewUsage: ") + m_CI.debugName;
+	m_VertexBufferViewCI.debugName = m_DebugName_VBV.c_str();
 	m_VertexBufferViewCI.device = m_CI.device;
 	m_VertexBufferViewCI.type = BufferView::Type::VERTEX;
 	m_VertexBufferViewCI.pBuffer = m_VertexBuffer;
@@ -45,27 +43,6 @@ VertexBuffer::VertexBuffer(CreateInfo* pCreateInfo)
 
 VertexBuffer::~VertexBuffer()
 {
-}
-
-void VertexBuffer::InitialiseMemory()
-{
-	MemoryBlock::CreateInfo mbCI;
-	if (!s_MB_CPU_Upload)
-	{
-		mbCI.debugName = "GEAR_CORE_MB_CPU_VertexBufferUpload";
-		mbCI.pContext = s_Context;
-		mbCI.blockSize = MemoryBlock::BlockSize::BLOCK_SIZE_128MB;
-		mbCI.properties = MemoryBlock::PropertiesBit::HOST_VISIBLE_BIT | MemoryBlock::PropertiesBit::HOST_COHERENT_BIT;
-		s_MB_CPU_Upload = MemoryBlock::Create(&mbCI);
-	}
-	if (!s_MB_GPU_Usage)
-	{
-		mbCI.debugName = "GEAR_CORE_MB_GPU_VertexBuffer";
-		mbCI.pContext = s_Context;
-		mbCI.blockSize = MemoryBlock::BlockSize::BLOCK_SIZE_128MB;
-		mbCI.properties = MemoryBlock::PropertiesBit::DEVICE_LOCAL_BIT;
-		s_MB_GPU_Usage = MemoryBlock::Create(&mbCI);
-	}
 }
 
 void VertexBuffer::Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)

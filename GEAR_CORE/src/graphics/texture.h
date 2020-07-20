@@ -10,6 +10,7 @@ public:
 	//Provide either filepaths or data, size and image dimension details.
 	struct CreateInfo
 	{
+		const char*									debugName;
 		void*										device;
 		std::vector<std::string>					filepaths;	//Option 1
 		const uint8_t*								data;		//Option 2
@@ -23,9 +24,6 @@ public:
 	};
 
 private:
-	static miru::Ref<miru::crossplatform::Context> s_Context;
-	static miru::Ref<miru::crossplatform::MemoryBlock> s_MB_CPU_Upload, s_MB_GPU_Usage;
-
 	miru::Ref<miru::crossplatform::Image> m_Texture;
 	miru::crossplatform::Image::CreateInfo m_TextureCI;
 	miru::Ref<miru::crossplatform::Buffer> m_TextureUploadBuffer;
@@ -40,12 +38,14 @@ private:
 	miru::Ref<miru::crossplatform::Sampler> m_Sampler;
 	miru::crossplatform::Sampler::CreateInfo m_SamplerCI;
 
+	std::string m_DebugName_TexUpload;
+	std::string m_DebugName_Tex;
+	std::string m_DebugName_TexIV;
+	std::string m_DebugName_Sampler;
+
 	CreateInfo m_CI;
 	
 	uint8_t* m_LocalBuffer;
-	std::string m_TextureName;
-	static uint32_t s_UID;
-	
 	int m_BPP = 0; //BPP = Bits per pixel
 	bool m_Cubemap = false;
 	bool m_DepthTexture = false;
@@ -60,9 +60,6 @@ private:
 public:
 	Texture(CreateInfo* pCreateInfo);
 	~Texture();
-
-	inline static void SetContext(const miru::Ref<miru::crossplatform::Context>& context) { s_Context = context; };
-	void InitialiseMemory();
 
 	void GetInitialTransition(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers, bool force = false);
 	void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
