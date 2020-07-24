@@ -23,9 +23,11 @@ public:
 
 private:
 	static CreateInfo s_CI;
+	static std::map<miru::Ref<miru::crossplatform::MemoryBlock>, std::string> s_MB_DebugNames;
 	static uint32_t s_MB_CPU_ID;
 	static uint32_t s_MB_GPU_ID;
 	static bool s_Initialised;
+
 
 public:
 	static void Initialise(CreateInfo* pCreateInfo);

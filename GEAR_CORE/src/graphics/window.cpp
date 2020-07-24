@@ -210,13 +210,13 @@ bool Window::Init()
 	m_Swapchain = Swapchain::Create(&m_SwapchainCI);
 
 	MemoryBlock::CreateInfo dpethMBCI;
-	dpethMBCI.debugName = "GEAR_CORE_MB_GPU_SwapchainDepthImage";
+	dpethMBCI.debugName = "GEAR_CORE_MB_0s_GPU_SwapchainDepthImage";
 	dpethMBCI.pContext = m_Context;
 	dpethMBCI.blockSize = MemoryBlock::BlockSize::BLOCK_SIZE_32MB;
 	dpethMBCI.properties = MemoryBlock::PropertiesBit::DEVICE_LOCAL_BIT;
 	m_DepthMB = MemoryBlock::Create(&dpethMBCI);
 
-	m_DepthImageCI.debugName = "GEAR_CORE_SwapchainDepthImage";
+	m_DepthImageCI.debugName = "GEAR_CORE_Swapchain: DepthImage";
 	m_DepthImageCI.device = m_Context->GetDevice();
 	m_DepthImageCI.type = Image::Type::TYPE_2D;
 	m_DepthImageCI.format = Image::Format::D32_SFLOAT;
@@ -233,13 +233,13 @@ bool Window::Init()
 	m_DepthImageCI.pMemoryBlock = m_DepthMB;
 	m_DepthImage = Image::Create(&m_DepthImageCI);
 
-	m_DepthImageViewCI.debugName = "GEAR_CORE_SwapchainDepthImageView";
+	m_DepthImageViewCI.debugName = "GEAR_CORE_Swapchain: DepthImageView";
 	m_DepthImageViewCI.device = m_Context->GetDevice();
 	m_DepthImageViewCI.pImage = m_DepthImage;
 	m_DepthImageViewCI.subresourceRange = { Image::AspectBit::DEPTH_BIT, 0, 1, 0, 1 };
 	m_DepthImageView = ImageView::Create(&m_DepthImageViewCI);
 
-	m_RenderPassCI.debugName = "GEAR_CORE_DefaultRenderPass";
+	m_RenderPassCI.debugName = "GEAR_CORE_RenderPass_Default";
 	m_RenderPassCI.device = m_Context->GetDevice();
 	m_RenderPassCI.attachments =
 	{
@@ -267,7 +267,7 @@ bool Window::Init()
 
 void Window::CreateFramebuffer()
 {
-	m_FramebufferCI.debugName = "GEAR_CORE_Framebuffer";
+	m_FramebufferCI.debugName = "GEAR_CORE_Framebuffer_Default";
 	m_FramebufferCI.device = m_Context->GetDevice();
 	m_FramebufferCI.renderPass = m_RenderPass;
 	m_FramebufferCI.attachments = {m_Swapchain->m_SwapchainImageViews[0], m_DepthImageView};

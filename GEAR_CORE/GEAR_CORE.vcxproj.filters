@@ -146,5 +146,8 @@
     <ClInclude Include="src\graphics\memoryblockmanager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\core\enum_string.maps.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

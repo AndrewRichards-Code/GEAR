@@ -1,5 +1,7 @@
 #include "gear_core_common.h"
 #include "renderer.h"
+#include "core/enum_string.maps.h"
+#include "JSON/json.hpp"
 
 using namespace gear;
 using namespace graphics;
@@ -17,7 +19,7 @@ Renderer::Renderer(const miru::Ref<miru::crossplatform::Context>& context)
 	m_CmdPoolCI.queueFamilyIndex = 0;
 	m_CmdPool = CommandPool::Create(&m_CmdPoolCI);
 
-	m_CmdBufferCI.debugName = "GEAR_CORE_CommandBuffer_Renderer";;
+	m_CmdBufferCI.debugName = "GEAR_CORE_CommandBuffer_Renderer";
 	m_CmdBufferCI.pCommandPool = m_CmdPool;
 	m_CmdBufferCI.level = CommandBuffer::Level::PRIMARY;
 	m_CmdBufferCI.commandBufferCount = 3;
@@ -30,7 +32,7 @@ Renderer::Renderer(const miru::Ref<miru::crossplatform::Context>& context)
 	m_TransCmdPoolCI.queueFamilyIndex = 2;
 	m_TransCmdPool = CommandPool::Create(&m_TransCmdPoolCI);
 
-	m_TransCmdBufferCI.debugName = "GEAR_CORE_CommandBuffer_Renderer_Transfer";;
+	m_TransCmdBufferCI.debugName = "GEAR_CORE_CommandBuffer_Renderer_Transfer";
 	m_TransCmdBufferCI.pCommandPool = m_TransCmdPool;
 	m_TransCmdBufferCI.level = CommandBuffer::Level::PRIMARY;
 	m_TransCmdBufferCI.commandBufferCount = 1;
@@ -41,17 +43,17 @@ Renderer::Renderer(const miru::Ref<miru::crossplatform::Context>& context)
 	m_Device = context->GetDevice();
 	
 	//Present Synchronisation
-	m_DrawFenceCI.debugName = "GEAR_CORE_Sync_DrawFence";
+	m_DrawFenceCI.debugName = "GEAR_CORE_Fence_Renderer_Draw";
 	m_DrawFenceCI.device = m_Device;
 	m_DrawFenceCI.signaled = true;
 	m_DrawFenceCI.timeout = UINT64_MAX;
 	m_DrawFences = { Fence::Create(&m_DrawFenceCI), Fence::Create(&m_DrawFenceCI) };
 
-	m_AcquireSemaphoreCI.debugName = "GEAR_CORE_Sync_AcquireSeamphore";
+	m_AcquireSemaphoreCI.debugName = "GEAR_CORE_Seamphore_Renderer_Acquire";
 	m_AcquireSemaphoreCI.device = m_Device;
 	m_AcquireSemaphores = { Semaphore::Create(&m_AcquireSemaphoreCI), Semaphore::Create(&m_AcquireSemaphoreCI) };
 
-	m_SubmitSemaphoreCI.debugName = "GEAR_CORE_Sync_AcquireSeamphore";
+	m_SubmitSemaphoreCI.debugName = "GEAR_CORE_Seamphore_Renderer_Submit";
 	m_SubmitSemaphoreCI.device = m_Device;
 	m_SubmitSemaphores = { Semaphore::Create(&m_SubmitSemaphoreCI), Semaphore::Create(&m_SubmitSemaphoreCI) };
 
@@ -63,99 +65,10 @@ Renderer::~Renderer()
 	ClearupRenderPipelines();
 }
 
-void Renderer::InitialiseRenderPipelines(float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass)
+void Renderer::InitialiseRenderPipelines(const std::vector<std::string>& filepaths, float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass)
 {
-	std::string mscDirectory = "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/";
-#if _DEBUG
-	mscDirectory += "Debug";
-#else
-	mscDirectory += "Release";
-#endif
-
-	std::string binaryFilepath, hlslFilePath, debugName, binaryDir;
-	auto get_shader_filepath_strings = [&](const std::string& _binaryFilepath) -> void
-	{
-		binaryFilepath = _binaryFilepath;
-		hlslFilePath = binaryFilepath;
-		hlslFilePath.replace(hlslFilePath.find("bin"), 3, "HLSL");
-		hlslFilePath.replace(hlslFilePath.find("spv"), 3, "hlsl");
-		debugName = binaryFilepath.substr(binaryFilepath.find_last_of('/') + 1);
-		binaryDir = binaryFilepath.substr(0, binaryFilepath.find_last_of('/'));
-	};
-
-	//Basic
-	graphics::RenderPipeline::CreateInfo basicPipelineCI;
-	basicPipelineCI.shaderCreateInfo.resize(2);
-
-	get_shader_filepath_strings("res/shaders/bin/basic.vert.spv");
-	basicPipelineCI.shaderCreateInfo[0].debugName = _strdup(debugName.c_str());
-	basicPipelineCI.shaderCreateInfo[0].device = m_Device;
-	basicPipelineCI.shaderCreateInfo[0].stage = Shader::StageBit::VERTEX_BIT;
-	basicPipelineCI.shaderCreateInfo[0].entryPoint = "main";
-	basicPipelineCI.shaderCreateInfo[0].binaryFilepath = _strdup(binaryFilepath.c_str());
-	basicPipelineCI.shaderCreateInfo[0].binaryCode = {};
-	basicPipelineCI.shaderCreateInfo[0].recompileArguments = {
-		_strdup(mscDirectory.c_str()), _strdup(hlslFilePath.c_str()), _strdup(binaryDir.c_str()), { "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" },
-		nullptr, "6_4", {}, true, true, nullptr, nullptr, nullptr, false, false };
-
-	get_shader_filepath_strings("res/shaders/bin/basic.frag.spv");
-	basicPipelineCI.shaderCreateInfo[1].debugName = _strdup(debugName.c_str());
-	basicPipelineCI.shaderCreateInfo[1].device = m_Device;
-	basicPipelineCI.shaderCreateInfo[1].stage = Shader::StageBit::FRAGMENT_BIT;
-	basicPipelineCI.shaderCreateInfo[1].entryPoint = "main";
-	basicPipelineCI.shaderCreateInfo[1].binaryFilepath = _strdup(binaryFilepath.c_str());
-	basicPipelineCI.shaderCreateInfo[1].binaryCode = {};
-	basicPipelineCI.shaderCreateInfo[1].recompileArguments = {
-		_strdup(mscDirectory.c_str()), _strdup(hlslFilePath.c_str()), _strdup(binaryDir.c_str()), { "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" },
-		nullptr, "6_4", {}, true, true, nullptr, nullptr, nullptr, false, false };
-
-	basicPipelineCI.viewportState.viewports = { { 0.0f, 0.0f, viewportWidth, viewportHeight, 0.0f, 1.0f } };
-	basicPipelineCI.viewportState.scissors = { { { 0, 0 },{ (uint32_t)viewportWidth, (uint32_t)viewportHeight } } };
-	basicPipelineCI.rasterisationState = { false, false, PolygonMode::FILL, CullModeBit::BACK_BIT, FrontFace::COUNTER_CLOCKWISE, false, 0.0f, 0.0, 0.0f, 1.0f };
-	basicPipelineCI.multisampleState = { Image::SampleCountBit::SAMPLE_COUNT_1_BIT, false, 1.0f, false, false };
-	basicPipelineCI.depthStencilState = { true, true, CompareOp::LESS, false, false, {}, {}, 0.0f, 1.0f };
-	basicPipelineCI.colourBlendState = { false, LogicOp::COPY, { {true, BlendFactor::SRC_ALPHA, BlendFactor::ONE_MINUS_SRC_ALPHA, BlendOp::ADD,
-		BlendFactor::ONE, BlendFactor::ZERO, BlendOp::ADD, (ColourComponentBit)15 } }, { 0.0f, 0.0f, 0.0f, 0.0f } };
-	basicPipelineCI.renderPass = renderPass;
-	basicPipelineCI.subpassIndex = 0;
-	m_RenderPipelines["basic"] = gear::CreateRef<graphics::RenderPipeline>(&basicPipelineCI);
-
-	//Cube
-	graphics::RenderPipeline::CreateInfo cubePipelineCI;
-	cubePipelineCI.shaderCreateInfo.resize(2);
-
-	get_shader_filepath_strings("res/shaders/bin/cube.vert.spv");
-	cubePipelineCI.shaderCreateInfo[0].debugName = _strdup(debugName.c_str());
-	cubePipelineCI.shaderCreateInfo[0].device = m_Device;
-	cubePipelineCI.shaderCreateInfo[0].stage = Shader::StageBit::VERTEX_BIT;
-	cubePipelineCI.shaderCreateInfo[0].entryPoint = "main";
-	cubePipelineCI.shaderCreateInfo[0].binaryFilepath = _strdup(binaryFilepath.c_str());
-	cubePipelineCI.shaderCreateInfo[0].binaryCode = {};
-	cubePipelineCI.shaderCreateInfo[0].recompileArguments = {
-		_strdup(mscDirectory.c_str()), _strdup(hlslFilePath.c_str()), _strdup(binaryDir.c_str()), { "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" },
-		nullptr, "6_4", {}, true, true, nullptr, nullptr, nullptr, false, false };
-
-	get_shader_filepath_strings("res/shaders/bin/cube.frag.spv");
-	cubePipelineCI.shaderCreateInfo[1].debugName = _strdup(debugName.c_str());
-	cubePipelineCI.shaderCreateInfo[1].device = m_Device;
-	cubePipelineCI.shaderCreateInfo[1].stage = Shader::StageBit::FRAGMENT_BIT;
-	cubePipelineCI.shaderCreateInfo[1].entryPoint = "main";
-	cubePipelineCI.shaderCreateInfo[1].binaryFilepath = _strdup(binaryFilepath.c_str());
-	cubePipelineCI.shaderCreateInfo[1].binaryCode = {};
-	cubePipelineCI.shaderCreateInfo[1].recompileArguments = {
-		_strdup(mscDirectory.c_str()), _strdup(hlslFilePath.c_str()), _strdup(binaryDir.c_str()), { "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" },
-		nullptr, "6_4", {}, true, true, nullptr, nullptr, nullptr, false, false };
-
-	cubePipelineCI.viewportState.viewports = { { 0.0f, 0.0f, viewportWidth, viewportHeight, 0.0f, 1.0f } };
-	cubePipelineCI.viewportState.scissors = { { { 0, 0 },{ (uint32_t)viewportWidth, (uint32_t)viewportHeight } } };
-	cubePipelineCI.rasterisationState = { false, false, PolygonMode::FILL, CullModeBit::NONE_BIT, FrontFace::COUNTER_CLOCKWISE, false, 0.0f, 0.0, 0.0f, 1.0f };
-	cubePipelineCI.multisampleState = { Image::SampleCountBit::SAMPLE_COUNT_1_BIT, false, 1.0f, false, false };
-	cubePipelineCI.depthStencilState = { true, true, CompareOp::LESS, false, false, {}, {}, 0.0f, 1.0f };
-	cubePipelineCI.colourBlendState = { false, LogicOp::COPY, { {true, BlendFactor::SRC_ALPHA, BlendFactor::ONE_MINUS_SRC_ALPHA, BlendOp::ADD,
-		BlendFactor::ONE, BlendFactor::ZERO, BlendOp::ADD, (ColourComponentBit)15 } }, { 0.0f, 0.0f, 0.0f, 0.0f } };
-	cubePipelineCI.renderPass = renderPass;
-	cubePipelineCI.subpassIndex = 0;
-	m_RenderPipelines["cube"] = gear::CreateRef<graphics::RenderPipeline>(&cubePipelineCI);
+	for (auto& filepath : filepaths)
+		AddRenderPipeline(filepath, viewportWidth, viewportHeight, renderPass);
 }
 
 void Renderer::ClearupRenderPipelines()
@@ -165,10 +78,20 @@ void Renderer::ClearupRenderPipelines()
 		for (auto& shaderCI : renderPipeline.second->m_CI.shaderCreateInfo)
 		{
 			free((void*)shaderCI.debugName);
+			free((void*)shaderCI.entryPoint);
 			free((void*)shaderCI.binaryFilepath);
 			free((void*)shaderCI.recompileArguments.mscDirectory);
 			free((void*)shaderCI.recompileArguments.hlslFilepath);
 			free((void*)shaderCI.recompileArguments.outputDirectory);
+
+			for(auto& includeDir : shaderCI.recompileArguments.includeDirectories)
+				free((void*)includeDir);
+			for(auto& macro : shaderCI.recompileArguments.macros)
+				free((void*)macro);
+
+			free((void*)shaderCI.recompileArguments.dxcLocation);
+			free((void*)shaderCI.recompileArguments.glslangLocation);
+			free((void*)shaderCI.recompileArguments.additioalArguments);
 		}
 	}
 }
@@ -181,9 +104,9 @@ void Renderer::Submit(const gear::Ref<Model>& obj)
 void Renderer::Flush()
 {
 	//Upload CmdBufer
-	Semaphore::CreateInfo transSemaphoreCI = { "GEAR_CORE_SemaphoreRenderTransfer", m_TransCmdPoolCI.pContext->GetDevice() };
+	Semaphore::CreateInfo transSemaphoreCI = { "GEAR_CORE_Semaphore_RenderTransfer", m_TransCmdPoolCI.pContext->GetDevice() };
 	Ref<Semaphore> transfer = Semaphore::Create(&transSemaphoreCI);
-	Fence::CreateInfo transFenceCI = { "GEAR_CORE_FenceRenderTransfer", m_TransCmdPoolCI.pContext->GetDevice(), false, UINT64_MAX };
+	Fence::CreateInfo transFenceCI = { "GEAR_CORE_Fence_RenderTransfer", m_TransCmdPoolCI.pContext->GetDevice(), false, UINT64_MAX };
 	Ref<Fence> transferFence = Fence::Create(&transFenceCI);
 	{
 		m_TransCmdBuffer->Reset(0, false);
@@ -232,14 +155,14 @@ void Renderer::Flush()
 	if(!builtDescPoolsAndSets)
 	{
 		//Build DescriptorPools and Sets
-		m_DescPoolCI.debugName = "GEAR_CORE_DescPoolRenderer";
+		m_DescPoolCI.debugName = "GEAR_CORE_DescPool_Renderer";
 		m_DescPoolCI.device = m_TransCmdPoolCI.pContext->GetDevice();
 		m_DescPoolCI.poolSizes = { {DescriptorType::COMBINED_IMAGE_SAMPLER, (uint32_t)m_RenderQueue.size()}, {DescriptorType::UNIFORM_BUFFER, (uint32_t)m_RenderQueue.size() + 3} };
 		m_DescPoolCI.maxSets = (uint32_t)m_RenderQueue.size() + 3;
 		m_DescPool = DescriptorPool::Create(&m_DescPoolCI);
 	
 		DescriptorSetLayout::CreateInfo descSetLayoutCI;
-		descSetLayoutCI.debugName = "GEAR_CORE_DescSetLayoutRenderer";
+		descSetLayoutCI.debugName = "GEAR_CORE_DescSetLayout_Renderer";
 		descSetLayoutCI.device = m_TransCmdPoolCI.pContext->GetDevice();
 		descSetLayoutCI.descriptorSetLayoutBinding = { {0, DescriptorType::UNIFORM_BUFFER, 1, Shader::StageBit::VERTEX_BIT} };
 		m_DescSetLayouts.push_back(DescriptorSetLayout::Create(&descSetLayoutCI));
@@ -248,7 +171,7 @@ void Renderer::Flush()
 		descSetLayoutCI.descriptorSetLayoutBinding = { {0, DescriptorType::UNIFORM_BUFFER, 1, Shader::StageBit::FRAGMENT_BIT}, {1, DescriptorType::UNIFORM_BUFFER, 1, Shader::StageBit::FRAGMENT_BIT} };
 		m_DescSetLayouts.push_back(DescriptorSetLayout::Create(&descSetLayoutCI));
 	
-		m_DescSetCI.debugName = "GEAR_CORE_DescSetRenderer";
+		m_DescSetCI.debugName = "GEAR_CORE_DescSet_Renderer";
 		m_DescSetCI.pDescriptorPool = m_DescPool;
 		m_DescSetCI.pDescriptorSetLayouts = { m_DescSetLayouts[0] };
 		m_DescSetCamera = DescriptorSet::Create(&m_DescSetCI);
@@ -323,4 +246,188 @@ void Renderer::Present(const miru::Ref<miru::crossplatform::Swapchain>& swapchai
 	m_CmdBuffer->Present({ 0, 1 }, swapchain, m_DrawFences, m_AcquireSemaphores, m_SubmitSemaphores, windowResize);
 	m_FrameIndex = (m_FrameIndex + 1) % swapchain->GetCreateInfo().swapchainCount;
 	m_FrameCount++;
+}
+
+void Renderer::AddRenderPipeline(const std::string& filepath, float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass)
+{
+	using namespace nlohmann;
+
+	std::string mscDirectory = "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/";
+#if _DEBUG
+	mscDirectory += "Debug";
+#else
+	mscDirectory += "Release";
+#endif
+
+	json pipeline_grpf_json;
+	std::ifstream pipeline_grpf(filepath, std::ios::binary);
+	if (pipeline_grpf.is_open())
+	{
+		pipeline_grpf >> pipeline_grpf_json;
+	}
+	else
+	{
+		GEAR_WARN(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_NO_FILE, "WARNING: gear::graphics::Renderer: Unable to open grpf.json file.");
+	}
+
+	if (pipeline_grpf_json.empty())
+	{
+		GEAR_WARN(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_LOAD_FAILED, "WARNING: gear::graphics::Renderer: grpf.json file is not valid.");
+	}
+
+	std::string fileType = pipeline_grpf_json["fileType"];
+	if (fileType.compare("GEAR_RENDER_PIPELINE_FILE") != 0)
+	{
+		GEAR_WARN(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_NOT_SUPPORTED, "WARNING: gear::graphics::Renderer: grpf.json file is not valid.");
+	}
+
+	auto dup_string = [](const std::string& value) -> const char*
+	{
+		if (value.size())
+			return _strdup(value.c_str());
+		else
+			return nullptr;
+	};
+
+	RenderPipeline::CreateInfo rpCI;
+	rpCI.debugName = dup_string(pipeline_grpf_json["debugName"]);
+
+	//Shaders
+	for (auto& shader : pipeline_grpf_json["shaders"])
+	{
+		Shader::CreateInfo shaderCI;
+		shaderCI.debugName = dup_string(shader["debugName"]);
+		shaderCI.device = m_Device;
+		shaderCI.stage = ShaderStageBitStrings[shader["stage"]];
+		shaderCI.entryPoint = dup_string(shader["entryPoint"]);
+		shaderCI.binaryFilepath = dup_string(shader["binaryFilepath"]);
+		shaderCI.binaryCode = {};
+
+		auto& recompileArgs = shader["recompileArguments"];
+		shaderCI.recompileArguments.mscDirectory = dup_string(recompileArgs["mscDirectory"]);
+		shaderCI.recompileArguments.hlslFilepath = dup_string(recompileArgs["hlslFilepath"]);
+		shaderCI.recompileArguments.outputDirectory = dup_string(recompileArgs["outputDirectory"]);
+		for (auto& includeDir : recompileArgs["includeDirectories"])
+			shaderCI.recompileArguments.includeDirectories.push_back(dup_string(includeDir));
+		shaderCI.recompileArguments.entryPoint = dup_string(recompileArgs["entryPoint"]);
+		shaderCI.recompileArguments.shaderModel = dup_string(recompileArgs["shaderModel"]);
+		for (auto& macro : recompileArgs["macros"])
+			shaderCI.recompileArguments.macros.push_back(dup_string(macro));
+		shaderCI.recompileArguments.cso = recompileArgs["cso"];
+		shaderCI.recompileArguments.spv = recompileArgs["spv"];
+		shaderCI.recompileArguments.dxcLocation = dup_string(recompileArgs["dxcLocation"]);
+		shaderCI.recompileArguments.glslangLocation = dup_string(recompileArgs["glslangLocation"]);
+		shaderCI.recompileArguments.additioalArguments = dup_string(recompileArgs["additioalArguments"]);
+		shaderCI.recompileArguments.nologo = recompileArgs["nologo"];
+		shaderCI.recompileArguments.nooutput = recompileArgs["nooutput"];
+
+		rpCI.shaderCreateInfo.push_back(shaderCI);
+	}
+
+	//ViewportState
+	for (auto& viewport : pipeline_grpf_json["viewportState"]["viewports"])
+	{
+		rpCI.viewportState.viewports.push_back({
+			viewport["x"],
+			viewport["y"],
+			std::string(viewport["width"]).compare("VIEWPORT_WIDTH") == 0 ? viewportWidth : viewport["width"],
+			std::string(viewport["height"]).compare("VIEWPORT_HEIGHT") == 0 ? viewportHeight : viewport["height"],
+			viewport["minDepth"],
+			viewport["maxDepth"]
+			});
+	}
+	for (auto& scissor : pipeline_grpf_json["viewportState"]["scissors"])
+	{
+		rpCI.viewportState.scissors.push_back({
+			{
+				scissor["x"],
+				scissor["y"]
+			},
+			{
+				(uint32_t)(std::string(scissor["width"]).compare("VIEWPORT_WIDTH") == 0 ? viewportWidth : scissor["width"]),
+				(uint32_t)(std::string(scissor["height"]).compare("VIEWPORT_HEIGHT") == 0 ? viewportHeight : scissor["height"]),
+			}
+			});
+	}
+
+	//RasterisationState
+	rpCI.rasterisationState.depthClampEnable = pipeline_grpf_json["rasterisationState"]["depthClampEnable"];
+	rpCI.rasterisationState.rasteriserDiscardEnable = pipeline_grpf_json["rasterisationState"]["depthClampEnable"];
+	rpCI.rasterisationState.polygonMode = PolygonModeStrings[pipeline_grpf_json["rasterisationState"]["polygonMode"]];
+	rpCI.rasterisationState.cullMode = CullModeBitStrings[pipeline_grpf_json["rasterisationState"]["cullMode"]];
+	rpCI.rasterisationState.frontFace = FrontFaceStrings[pipeline_grpf_json["rasterisationState"]["frontFace"]];
+	rpCI.rasterisationState.depthBiasEnable = pipeline_grpf_json["rasterisationState"]["depthBiasEnable"];
+	rpCI.rasterisationState.depthBiasConstantFactor = pipeline_grpf_json["rasterisationState"]["depthBiasConstantFactor"];
+	rpCI.rasterisationState.depthBiasClamp = pipeline_grpf_json["rasterisationState"]["depthBiasClamp"];
+	rpCI.rasterisationState.depthBiasSlopeFactor = pipeline_grpf_json["rasterisationState"]["depthBiasSlopeFactor"];
+	rpCI.rasterisationState.lineWidth = pipeline_grpf_json["rasterisationState"]["lineWidth"];
+
+	//MultisampleState
+	rpCI.multisampleState.rasterisationSamples = SampleCountBitStrings[pipeline_grpf_json["multisampleState"]["rasterisationSamples"]];
+	rpCI.multisampleState.sampleShadingEnable = pipeline_grpf_json["multisampleState"]["sampleShadingEnable"];
+	rpCI.multisampleState.minSampleShading = pipeline_grpf_json["multisampleState"]["minSampleShading"];
+	rpCI.multisampleState.alphaToCoverageEnable = pipeline_grpf_json["multisampleState"]["alphaToCoverageEnable"];
+	rpCI.multisampleState.alphaToOneEnable = pipeline_grpf_json["multisampleState"]["alphaToOneEnable"];
+
+	//DepthStencilState
+	rpCI.depthStencilState.depthTestEnable = pipeline_grpf_json["depthStencilState"]["depthTestEnable"];
+	rpCI.depthStencilState.depthWriteEnable = pipeline_grpf_json["depthStencilState"]["depthWriteEnable"];
+	rpCI.depthStencilState.depthCompareOp = CompareOpStrings[pipeline_grpf_json["depthStencilState"]["depthCompareOp"]];
+	rpCI.depthStencilState.depthBoundsTestEnable = pipeline_grpf_json["depthStencilState"]["depthBoundsTestEnable"];
+	rpCI.depthStencilState.stencilTestEnable = pipeline_grpf_json["depthStencilState"]["stencilTestEnable"];
+	if (rpCI.depthStencilState.stencilTestEnable)
+	{
+		rpCI.depthStencilState.front.failOp = StencilOpStrings[pipeline_grpf_json["depthStencilState"]["front"]["failOp"]];
+		rpCI.depthStencilState.front.passOp = StencilOpStrings[pipeline_grpf_json["depthStencilState"]["front"]["passOp"]];
+		rpCI.depthStencilState.front.depthFailOp = StencilOpStrings[pipeline_grpf_json["depthStencilState"]["front"]["depthFailOp"]];
+		rpCI.depthStencilState.front.compareOp = CompareOpStrings[pipeline_grpf_json["depthStencilState"]["front"]["compareOp"]];
+		rpCI.depthStencilState.front.compareMask = pipeline_grpf_json["depthStencilState"]["front"]["compareMask"];
+		rpCI.depthStencilState.front.writeMask = pipeline_grpf_json["depthStencilState"]["front"]["writeMask"];
+		rpCI.depthStencilState.front.reference = pipeline_grpf_json["depthStencilState"]["front"]["reference"];
+		rpCI.depthStencilState.back.failOp = StencilOpStrings[pipeline_grpf_json["depthStencilState"]["back"]["failOp"]];
+		rpCI.depthStencilState.back.passOp = StencilOpStrings[pipeline_grpf_json["depthStencilState"]["back"]["passOp"]];
+		rpCI.depthStencilState.back.depthFailOp = StencilOpStrings[pipeline_grpf_json["depthStencilState"]["back"]["depthFailOp"]];
+		rpCI.depthStencilState.back.compareOp = CompareOpStrings[pipeline_grpf_json["depthStencilState"]["back"]["compareOp"]];
+		rpCI.depthStencilState.back.compareMask = pipeline_grpf_json["depthStencilState"]["back"]["compareMask"];
+		rpCI.depthStencilState.back.writeMask = pipeline_grpf_json["depthStencilState"]["back"]["writeMask"];
+		rpCI.depthStencilState.back.reference = pipeline_grpf_json["depthStencilState"]["back"]["reference"];
+	}
+	else
+	{
+		rpCI.depthStencilState.front = {};
+		rpCI.depthStencilState.back = {};
+	}
+	rpCI.depthStencilState.minDepthBounds = pipeline_grpf_json["depthStencilState"]["minDepthBounds"];
+	rpCI.depthStencilState.maxDepthBounds = pipeline_grpf_json["depthStencilState"]["maxDepthBounds"];
+
+	//ColourBlendState
+	rpCI.colourBlendState.logicOpEnable = pipeline_grpf_json["colourBlendState"]["logicOpEnable"];
+	rpCI.colourBlendState.logicOp = LogicOpStrings[pipeline_grpf_json["colourBlendState"]["logicOp"]];
+	for (auto& attachment : pipeline_grpf_json["colourBlendState"]["attachments"])
+	{
+		ColourComponentBit ccb = ColourComponentBit(0);
+		for (auto& cc : attachment["colourWriteMask"])
+			ccb |= ColourComponentBitStrings[cc];
+
+		rpCI.colourBlendState.attachments.push_back({
+			attachment["blendEnable"],
+			BlendFactorStrings[attachment["srcColourBlendFactor"]],
+			BlendFactorStrings[attachment["dstColourBlendFactor"]],
+			BlendOpStrings[attachment["colourBlendOp"]],
+			BlendFactorStrings[attachment["srcAlphaBlendFactor"]],
+			BlendFactorStrings[attachment["dstAlphaBlendFactor"]],
+			BlendOpStrings[attachment["alphaBlendOp"]],
+			ccb
+			});
+	}
+	rpCI.colourBlendState.blendConstants[0] = pipeline_grpf_json["colourBlendState"]["blendConstants"][0];
+	rpCI.colourBlendState.blendConstants[1] = pipeline_grpf_json["colourBlendState"]["blendConstants"][1];
+	rpCI.colourBlendState.blendConstants[2] = pipeline_grpf_json["colourBlendState"]["blendConstants"][2];
+	rpCI.colourBlendState.blendConstants[3] = pipeline_grpf_json["colourBlendState"]["blendConstants"][3];
+
+	//RenderPass
+	rpCI.renderPass = renderPass;
+	rpCI.subpassIndex = 0;
+
+	m_RenderPipelines[rpCI.debugName] = gear::CreateRef<graphics::RenderPipeline>(&rpCI);
 }

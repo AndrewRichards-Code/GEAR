@@ -127,6 +127,7 @@
     <ClInclude Include="dep\STBI\stb_image.h" />
     <ClInclude Include="src\audio\audiosource.h" />
     <ClInclude Include="src\audio\listener.h" />
+    <ClInclude Include="src\core\enum_string.maps.h" />
     <ClInclude Include="src\core\string_conversion.h" />
     <ClInclude Include="src\core\timer.h" />
     <ClInclude Include="src\graphics\framebuffer.h" />

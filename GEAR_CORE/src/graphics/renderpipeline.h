@@ -10,6 +10,7 @@ class RenderPipeline
 public:
 	struct CreateInfo
 	{
+		const char*												debugName;
 		std::vector<miru::crossplatform::Shader::CreateInfo>	shaderCreateInfo;
 		miru::crossplatform::Pipeline::ViewportState			viewportState;
 		miru::crossplatform::Pipeline::RasterisationState		rasterisationState;
@@ -29,6 +30,9 @@ private:
 	std::vector<miru::crossplatform::DescriptorSetLayout::CreateInfo> m_DescSetLayoutCIs;
 
 	std::vector<miru::Ref<miru::crossplatform::Shader>> m_Shaders;
+	
+	std::string m_PipelineDebugName;
+	std::vector<std::string> m_DescSetLayoutDebugNames;
 
 public:
 	CreateInfo m_CI;

@@ -8,6 +8,7 @@ using namespace miru;
 using namespace miru::crossplatform;
 
 MemoryBlockManager::CreateInfo MemoryBlockManager::s_CI;
+std::map<miru::Ref<miru::crossplatform::MemoryBlock>, std::string> MemoryBlockManager::s_MB_DebugNames;
 uint32_t MemoryBlockManager::s_MB_CPU_ID = 0;
 uint32_t MemoryBlockManager::s_MB_GPU_ID = 0;
 bool MemoryBlockManager::s_Initialised = false;
@@ -75,9 +76,12 @@ miru::Ref<MemoryBlock> MemoryBlockManager::AddMemoryBlock(MemoryBlockType type, 
 	bool bOverrideBlockSize = overrideBlockSize != miru::crossplatform::MemoryBlock::BlockSize(0);
 
 	MemoryBlock::CreateInfo mbCI;
+	std::string debugName;
+
 	if (type == MemoryBlockType::CPU)
 	{
-		mbCI.debugName = "GEAR_CORE_MB_CPU";
+		debugName = "GEAR_CORE_MB_" + std::to_string(s_MB_CPU_ID) + "_CPU";
+		mbCI.debugName = debugName.c_str();
 		mbCI.pContext = s_CI.pContext;
 		mbCI.blockSize = bOverrideBlockSize ? overrideBlockSize : s_CI.defaultBlockSize;
 		mbCI.properties = MemoryBlock::PropertiesBit::HOST_VISIBLE_BIT | MemoryBlock::PropertiesBit::HOST_COHERENT_BIT;
@@ -85,7 +89,8 @@ miru::Ref<MemoryBlock> MemoryBlockManager::AddMemoryBlock(MemoryBlockType type, 
 	}
 	else if (type == MemoryBlockType::GPU)
 	{
-		mbCI.debugName = "GEAR_CORE_MB_GPU";
+		debugName = "GEAR_CORE_MB_" + std::to_string(s_MB_GPU_ID) + "_GPU";
+		mbCI.debugName = debugName.c_str();
 		mbCI.pContext = s_CI.pContext;
 		mbCI.blockSize = bOverrideBlockSize ? overrideBlockSize : s_CI.defaultBlockSize;
 		mbCI.properties = MemoryBlock::PropertiesBit::DEVICE_LOCAL_BIT;
@@ -96,7 +101,9 @@ miru::Ref<MemoryBlock> MemoryBlockManager::AddMemoryBlock(MemoryBlockType type, 
 		GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_INVALID_VALUE, "ERROR: gear::graphics::MemoryBlockManager: Unknown MemoryBlockType.");
 	}
 
-	return MemoryBlock::Create(&mbCI);
+	miru::Ref<MemoryBlock> memoryBlock = MemoryBlock::Create(&mbCI);
+	s_MB_DebugNames[memoryBlock] = std::move(debugName);
+	return memoryBlock;
 }
 
 MemoryBlockManager::MemoryBlockType MemoryBlockManager::GetMemoryBlockType(miru::Ref<MemoryBlock> memoryBlock)

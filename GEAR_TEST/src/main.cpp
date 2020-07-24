@@ -15,7 +15,7 @@ int main()
 	system("CLS");
 
 	Window::CreateInfo windowCI;
-	windowCI.api = GraphicsAPI::API::VULKAN;
+	windowCI.api = GraphicsAPI::API::D3D12;
 	windowCI.title = "GEAR_MIRU_TEST";
 	windowCI.width = 1920;
 	windowCI.height = 1080;
@@ -157,7 +157,7 @@ int main()
 	Camera cam(&cameraCI);
 
 	Renderer renderer(window.GetContext());
-	renderer.InitialiseRenderPipelines((float)window.GetWidth(), (float)window.GetHeight(), window.GetRenderPass());
+	renderer.InitialiseRenderPipelines({"res/pipelines/basic.grpf.json", "res/pipelines/cube.grpf.json" }, (float)window.GetWidth(), (float)window.GetHeight(), window.GetRenderPass());
 
 	MemoryBlockManager::PrintMemoryBlockStatus();
 	

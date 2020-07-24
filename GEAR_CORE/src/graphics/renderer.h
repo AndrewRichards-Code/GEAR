@@ -58,7 +58,7 @@ public:
 	Renderer(const miru::Ref<miru::crossplatform::Context>& context);
 	virtual ~Renderer();
 
-	void InitialiseRenderPipelines(float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass);
+	void InitialiseRenderPipelines(const std::vector<std::string>& filepaths, float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass);
 	void ClearupRenderPipelines();
 	virtual void SubmitFramebuffer(const miru::Ref<miru::crossplatform::Framebuffer>* framebuffers) { m_Framebuffers = framebuffers; };
 	virtual void SubmitCamera(objects::Camera* camera) { m_Camera = camera; };
@@ -70,6 +70,9 @@ public:
 	inline std::deque<gear::Ref<objects::Model>>& GetRenderQueue() { return m_RenderQueue; };
 	inline const miru::Ref<miru::crossplatform::CommandBuffer>& GetCmdBuffer() { return m_CmdBuffer; };
 	inline const std::map<std::string, gear::Ref<graphics::RenderPipeline>>& GetRenderPipelines() const { return m_RenderPipelines;  }
+
+private:
+	void AddRenderPipeline(const std::string& filepath, float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass);
 };
 }
 }

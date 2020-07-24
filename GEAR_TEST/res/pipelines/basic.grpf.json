@@ -1,0 +1,138 @@
+{
+	"fileType": "GEAR_RENDER_PIPELINE_FILE", 
+	"debugName": "basic",
+	"shaders": [
+		{
+			"debugName": "basic.vert.spv",
+			"stage": "VERTEX_BIT",
+			"entryPoint": "main",
+			"binaryFilepath": "res/shaders/bin/basic.vert.spv",
+			"recompileArguments": {
+				"mscDirectory": "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
+				"hlslFilepath": "res/shaders/HLSL/basic.vert.hlsl",
+				"outputDirectory": "res/shaders/bin/",
+				"includeDirectories": [ "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
+				"entryPoint": "",
+				"shaderModel": "6_4",
+				"macros": [],
+				"cso": true,
+				"spv": true,
+				"dxcLocation": "",
+				"glslangLocation": "",
+				"additioalArguments": "",
+				"nologo": false,
+				"nooutput": false
+			}
+		},
+		{
+			"debugName": "basic.frag.spv",
+			"stage": "FRAGMENT_BIT",
+			"entryPoint": "main",
+			"binaryFilepath": "res/shaders/bin/basic.frag.spv",
+			"recompileArguments": {
+				"mscDirectory": "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
+				"hlslFilepath": "res/shaders/HLSL/basic.frag.hlsl",
+				"outputDirectory": "res/shaders/bin/",
+				"includeDirectories": [ "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
+				"entryPoint": "",
+				"shaderModel": "6_4",
+				"macros": [],
+				"cso": true,
+				"spv": true,
+				"dxcLocation": "",
+				"glslangLocation": "",
+				"additioalArguments": "",
+				"nologo": false,
+				"nooutput": false
+			}
+		}
+	],
+	"viewportState": {
+		"viewports": [
+			{
+				"x": 0.0,
+				"y": 0.0,
+				"width": "VIEWPORT_WIDTH",
+				"height": "VIEWPORT_HEIGHT",
+				"minDepth": 0.0,
+				"maxDepth": 1.0
+			}
+		],
+		"scissors": [
+			{
+				"x": 0.0,
+				"y": 0.0,
+				"width": "VIEWPORT_WIDTH",
+				"height": "VIEWPORT_HEIGHT"
+			}
+		]
+	},
+	"rasterisationState": {
+		"depthClampEnable": false,
+		"rasteriserDiscardEnable": false,
+		"polygonMode": "FILL",
+		"cullMode": "BACK_BIT",
+		"frontFace": "COUNTER_CLOCKWISE",
+		"depthBiasEnable": false,
+		"depthBiasConstantFactor": 0.0,
+		"depthBiasClamp": 0.0,
+		"depthBiasSlopeFactor": 0.0,
+		"lineWidth": 1.0
+	},
+	"multisampleState": {
+		"rasterisationSamples": "SAMPLE_COUNT_1_BIT",
+		"sampleShadingEnable": false,
+		"minSampleShading": 1.0,
+		"alphaToCoverageEnable": false,
+		"alphaToOneEnable": false
+	},
+	"depthStencilState": {
+		"depthTestEnable": true,
+		"depthWriteEnable": true,
+		"depthCompareOp": "LESS",
+		"depthBoundsTestEnable": false,
+		"stencilTestEnable": false,
+		"front": {
+			"failOp": "",
+			"passOp": "",
+			"depthFailOp": "",
+			"compareOp": "",
+			"compareMask": "",
+			"writeMask": "",
+			"reference": ""
+		},
+		"back": {
+			"failOp": "",
+			"passOp": "",
+			"depthFailOp": "",
+			"compareOp": "",
+			"compareMask": "",
+			"writeMask": "",
+			"reference": ""
+		},
+		"minDepthBounds": 0.0,
+		"maxDepthBounds": 1.0
+	},
+	"colourBlendState": {
+		"logicOpEnable": false,
+		"logicOp": "COPY",
+		"attachments": [
+			{
+				"blendEnable": true,
+				"srcColourBlendFactor": "SRC_ALPHA",
+				"dstColourBlendFactor": "ONE_MINUS_SRC_ALPHA",
+				"colourBlendOp": "ADD",
+				"srcAlphaBlendFactor": "ONE",
+				"dstAlphaBlendFactor": "ZERO",
+				"alphaBlendOp": "ADD",
+				"colourWriteMask": [ "R_BIT", "G_BIT", "B_BIT", "A_BIT" ]
+			}
+		],
+		"blendConstants": [
+			0.0,
+			0.0,
+			0.0,
+			0.0
+		]
+	}
+}
