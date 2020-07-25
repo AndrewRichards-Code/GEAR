@@ -3,7 +3,7 @@ Game Engine for Windows(x64) using D3D12 or Vulkan via MIRU.
 
 ![GEAR_LOGO](/Branding/GEAR_logo_dark.png)
 
-GEAR (Game Engine Andrew Richards) is simple 3D game engine, that I have developed to improve both my C++ and graphic programming, using my own Graphics (MIRU) and Mathematics (MARS) libraries. 
+GEAR (Game Engine Andrew Richards) is a 3D game engine, that I have developed to improve both my C++ and graphic programming, using my own Graphics (MIRU) and Mathematics (MARS) libraries. 
 Inspired by Yan Chernikov's (aka TheCheno) videos on C++, OpenGL and Game Engines. TheChernoProject
 
 # Projects:
