@@ -1,0 +1,25 @@
+GEAR Features to implement:
+
+Broad changes:
+DONE: GEAR-CORE build as static library .lib (.dll for a C# WPF Editor? - Doubtful)
+
+Class:
+DONE: CROSSPLATFORM::Material class
+DONE: CROSSPLATFORM::Probe for environment look-up and reflection
+
+On-going:
+Assimp Model loading
+Fix PBR
+
+Scripting: 
+Pick language: C++/C#/Lua/Python - Mono?
+
+Scene Graph and File:
+.txt/.bin or other?
+
+Save Models and Textures as .bin for quick read.
+
+Long-Term:
+Vulkan Support
+Physics Engine - PEAR
+Editor using Qt - GEAR-Editor
