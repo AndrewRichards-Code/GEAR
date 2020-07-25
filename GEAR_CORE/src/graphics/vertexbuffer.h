@@ -4,7 +4,7 @@
 
 namespace gear {
 namespace graphics {
-	class VertexBuffer
+	class Vertexbuffer
 	{
 	public: 
 		struct CreateInfo
@@ -31,8 +31,8 @@ namespace graphics {
 		bool m_Upload = false;
 
 	public:
-		VertexBuffer(CreateInfo* pCreateInfo);
-		~VertexBuffer();
+		Vertexbuffer(CreateInfo* pCreateInfo);
+		~Vertexbuffer();
 
 		void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
 		inline const miru::Ref<miru::crossplatform::BufferView>& GetVertexBufferView() { return m_VertexBufferView; };

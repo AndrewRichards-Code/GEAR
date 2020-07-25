@@ -1,7 +1,7 @@
 #include "gear_core_common.h"
 #include "STBI/stb_image.h"
-#include "texture.h"
-#include "graphics/memoryblockmanager.h"
+#include "Texture.h"
+#include "Graphics/MemoryBlockManager.h"
 
 using namespace gear;
 using namespace graphics;

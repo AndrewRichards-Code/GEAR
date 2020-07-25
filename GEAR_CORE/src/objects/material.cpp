@@ -1,4 +1,5 @@
-#include "material.h"
+#include "gear_core_common.h"
+#include "Material.h"
 
 using namespace gear;
 using namespace graphics;
@@ -44,22 +45,25 @@ void Material::AddProperties(const Properties& properties)
 	m_Properties = properties;
 }
 
-void Material::SetPBRParameters(const mars::Vec4& fersnel, const mars::Vec4& albedo, float metallic, float roughness, float ambientOcclusion)
+void Material::SetPBRParameters(const Vec4& fersnel, const Vec4& albedo, float metallic, float roughness, float ambientOcclusion)
 {
-	m_PBRInfoUBO.fersnel = fersnel;
-	m_PBRInfoUBO.albedo = albedo;
-	m_PBRInfoUBO.metallic = metallic;
-	m_PBRInfoUBO.roughness = roughness;
-	m_PBRInfoUBO.ambientOcclusion = ambientOcclusion;
-	m_PBRInfoUBO.pad = 0;
-
-	m_UB->SubmitData((const void*)&m_PBRInfoUBO, sizeof(PBRInfoUBO));
+	m_UB->fersnel = fersnel;
+	m_UB->albedo = albedo;
+	m_UB->metallic = metallic;
+	m_UB->roughness = roughness;
+	m_UB->ambientOcclusion = ambientOcclusion;
+	m_UB->pad = 0;
+	m_UB->SubmitData();
 }
 
 void Material::InitialiseUB()
 {
-	m_UB = gear::CreateRef<UniformBuffer>(m_CI.device, sizeof(PBRInfoUBO), 4);
+	float zero[sizeof(PBRInfoUB)] = { 0 };
+	Uniformbuffer<PBRInfoUB>::CreateInfo ubCI;
+	ubCI.debugName;
+	ubCI.device = m_CI.device;
+	ubCI.data = zero;
 
-	const float zero[sizeof(PBRInfoUBO)] = { 0 };
-	m_UB->SubmitData(zero, sizeof(PBRInfoUBO));
+	m_UB = gear::CreateRef<Uniformbuffer<PBRInfoUB>>(&ubCI);
+
 }

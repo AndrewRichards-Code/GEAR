@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "camera.h"
+#include "Camera.h"
 
 using namespace gear;
 using namespace graphics;
@@ -75,9 +75,9 @@ void Camera::InitialiseUB()
 {
 	float zero[sizeof(CameraUB)] = { 0 };
 	
-	UniformBuffer<CameraUB>::CreateInfo ubCI;
+	Uniformbuffer<CameraUB>::CreateInfo ubCI;
 	ubCI.debugName = m_DebugName.c_str();
 	ubCI.device = m_CI.device;
 	ubCI.data = zero;
-	m_UB = gear::CreateRef<UniformBuffer<CameraUB>>(&ubCI);
+	m_UB = gear::CreateRef<Uniformbuffer<CameraUB>>(&ubCI);
 }

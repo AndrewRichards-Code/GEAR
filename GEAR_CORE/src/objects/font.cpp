@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "font.h"
+#include "Font.h"
 
 using namespace gear;
 using namespace objects;

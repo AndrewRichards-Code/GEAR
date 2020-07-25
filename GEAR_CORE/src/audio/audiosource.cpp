@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "audiosource.h"
+#include "AudioSource.h"
 
 using namespace gear;
 using namespace audio;
@@ -7,7 +7,7 @@ using namespace audio;
 AudioSource::AudioSource(const char* filepath, const mars::Vec3& position, const mars::Vec3& direction)
 	:m_FilePath(filepath), m_Position(position), m_Direction(direction)
 {
-	m_WavData = FileUtils::stream_wav(m_FilePath);
+	m_WavData = file_utils::stream_wav(m_FilePath);
 	if (m_WavData->m_Channels == 1)
 	{
 		if (m_WavData->m_BitsPerSample == 8)
@@ -151,7 +151,7 @@ void AudioSource::Loop()
 }
 void AudioSource::SubmitBuffer()
 {
-	FileUtils::get_next_wav_block(*m_WavData);
+	file_utils::get_next_wav_block(*m_WavData);
 	switch (m_WavData->m_NextBuffer)
 	{
 	case 1:

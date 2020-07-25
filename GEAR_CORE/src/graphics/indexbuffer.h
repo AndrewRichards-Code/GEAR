@@ -4,7 +4,7 @@
 
 namespace gear {
 namespace graphics {
-class IndexBuffer
+class Indexbuffer
 {
 public:
 	struct CreateInfo
@@ -31,8 +31,8 @@ private:
 	bool m_Upload = false;
 
 public:
-	IndexBuffer(CreateInfo* pCreateInfo);
-	~IndexBuffer();
+	Indexbuffer(CreateInfo* pCreateInfo);
+	~Indexbuffer();
 
 	void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
 	inline miru::Ref<miru::crossplatform::BufferView> GetIndexBufferView() { return m_IndexBufferView; };

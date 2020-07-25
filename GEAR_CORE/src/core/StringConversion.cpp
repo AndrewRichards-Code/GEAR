@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "string_conversion.h"
+#include "StringConversion.h"
 
 std::string gear::core::to_string(const std::wstring& wstring)
 {

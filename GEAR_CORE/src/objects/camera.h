@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gear_core_common.h"
-#include "graphics/uniformbuffer.h"
+#include "Graphics/Uniformbuffer.h"
 #include "mars.h"
 
 
@@ -61,7 +61,7 @@ private:
 		mars::Vec4 position;
 		
 	};
-	gear::Ref<graphics::UniformBuffer<CameraUB>> m_UB;
+	gear::Ref<graphics::Uniformbuffer<CameraUB>> m_UB;
 
 	std::string m_DebugName;
 
@@ -78,7 +78,7 @@ public:
 
 	//Update the camera the current static of Camera::CreateInfo m_CI.
 	void Update();
-	gear::Ref<graphics::UniformBuffer<CameraUB>> GetUB() { return m_UB; };
+	gear::Ref<graphics::Uniformbuffer<CameraUB>> GetUB() { return m_UB; };
 
 private:
 	void DefineProjection();

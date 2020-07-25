@@ -1,13 +1,12 @@
 #pragma once
 
 #include "gear_core_common.h"
-//#include "assimp.h"
+//#include "Assimp.h"
 
-namespace gear {
-
-class FileUtils 
+namespace gear 
 {
-public:
+namespace file_utils
+{
 	static std::string read_file(const std::string& filepath)
 	{
 		std::ifstream stream(filepath, std::fstream::in);
@@ -47,6 +46,7 @@ public:
 		return output;
 	}
 
+#if 1
 	struct ObjData
 	{
 		std::vector<mars::Vec4> m_Vertices;
@@ -224,8 +224,8 @@ public:
 
 		return result;
 	}
+#endif
 
-	private:
 	static bool IsBigEndian()
 	{
 		int a = 1;
@@ -244,7 +244,6 @@ public:
 		return a;
 	}
 
-	public:
 	struct WavData
 	{
 		const char* m_FilePath;
@@ -354,5 +353,5 @@ public:
 			input.m_Stream->close();
 		}
 	}
-};
+}
 }

@@ -1,41 +1,37 @@
 #pragma once
 
 //Audio
-#include "audio/audiosource.h"
-#include "audio/listener.h"
+#include "Audio/AudioSource.h"
+#include "Audio/Listener.h"
 
 //Core
-#include "core/string_conversion.h"
-#include "core/timer.h"
+#include "Core/StringConversion.h"
+#include "Core/Timer.h"
 
 //Graphics - MIRU
-#include "graphics/framebuffer.h"
-#include "graphics/indexbuffer.h"
-#include "graphics/memoryblockmanager.h"
-#include "graphics/renderer.h"
-#include "graphics/renderpipeline.h"
-#include "graphics/shaderstoragebuffer.h"
-#include "graphics/texture.h"
-#include "graphics/uniformbuffer.h"
-#include "graphics/vertexbuffer.h"
-#include "graphics/window.h"
-
-//#include "graphics/renderer/batchrenderer2d.h"
-//#include "graphics/renderer/batchrenderer3d.h"
-//#include "graphics/renderer/compute.h"
+#include "graphics/Framebuffer.h"
+#include "graphics/Indexbuffer.h"
+#include "graphics/MemoryBlockManager.h"
+#include "graphics/Renderer.h"
+#include "graphics/RenderPipeline.h"
+#include "graphics/Storagebuffer.h"
+#include "graphics/Texture.h"
+#include "graphics/Uniformbuffer.h"
+#include "graphics/Vertexbuffer.h"
+#include "graphics/Window.h"
 
 //Objects
-#include "objects/font.h"
-#include "objects/light.h"
-#include "objects/camera.h"
-#include "objects/model.h"
+#include "Objects/Font.h"
+#include "Objects/Light.h"
+#include "Objects/Camera.h"
+#include "Objects/Model.h"
 //#include "objects/material.h"
 //#include "objects/probe.h"
 
 
 //Input
-#include "input/inputmanager.h"
+#include "Input/InputManager.h"
 
 //Utils
-#include "utils/fileutils.h"
+#include "Utils/FileUtils.h"
 //#include "utils/assimp.h"

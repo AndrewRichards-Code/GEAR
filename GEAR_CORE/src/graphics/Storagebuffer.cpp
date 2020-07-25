@@ -1,6 +1,6 @@
 #include "gear_core_common.h"
-/*#include "shaderstoragebuffer.h"
-#include "graphics/memoryblockmanager.h"
+/*#include "Storagebuffer.h"
+#include "Graphics/MemoryBlockManager.h"
 
 using namespace gear;
 using namespace graphics;
@@ -8,7 +8,7 @@ using namespace graphics;
 using namespace miru;
 using namespace miru::crossplatform;
 
-ShaderStorageBuffer::ShaderStorageBuffer(CreateInfo* pCreateInfo)
+Storagebuffer::Storagebuffer(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
@@ -38,26 +38,26 @@ ShaderStorageBuffer::ShaderStorageBuffer(CreateInfo* pCreateInfo)
 	m_ShaderStorageBufferView = BufferView::Create(&m_ShaderStorageBufferViewCI);
 }
 
-ShaderStorageBuffer::~ShaderStorageBuffer()
+Storagebuffer::~Storagebuffer()
 {
 }
 
-void ShaderStorageBuffer::SubmitData(const void* data, size_t size) const
+void Storagebuffer::SubmitData(const void* data, size_t size) const
 {
 	m_ShaderStorageBufferUploadCI.pMemoryBlock->SubmitData(m_ShaderStorageBufferUpload->GetResource(), (size_t)size, (void*)data);
 }
 
-void ShaderStorageBuffer::AccessData(void* data, size_t size) const
+void Storagebuffer::AccessData(void* data, size_t size) const
 {
 	m_ShaderStorageBufferUploadCI.pMemoryBlock->AccessData(m_ShaderStorageBufferUpload->GetResource(), size, data);
 }
 
-void ShaderStorageBuffer::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex)
+void Storagebuffer::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex)
 {
 	cmdBuffer->CopyBuffer(cmdBufferIndex, m_ShaderStorageBufferUpload, m_ShaderStorageBuffer, { {0, 0, m_CI.size} });
 }
 
-void ShaderStorageBuffer::Download(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex)
+void Storagebuffer::Download(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex)
 {
 	cmdBuffer->CopyBuffer(cmdBufferIndex, m_ShaderStorageBuffer, m_ShaderStorageBufferUpload, { {0, 0, m_CI.size} });
 }*/

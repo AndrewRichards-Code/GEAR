@@ -1,6 +1,6 @@
 #include "gear_core_common.h"
-#include "vertexbuffer.h"
-#include "graphics//memoryblockmanager.h"
+#include "Vertexbuffer.h"
+#include "Graphics/MemoryBlockManager.h"
 
 using namespace gear;
 using namespace graphics;
@@ -8,7 +8,7 @@ using namespace graphics;
 using namespace miru;
 using namespace miru::crossplatform;
 
-VertexBuffer::VertexBuffer(CreateInfo* pCreateInfo)
+Vertexbuffer::Vertexbuffer(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
@@ -41,11 +41,11 @@ VertexBuffer::VertexBuffer(CreateInfo* pCreateInfo)
 	m_VertexBufferView = BufferView::Create(&m_VertexBufferViewCI);
 }
 
-VertexBuffer::~VertexBuffer()
+Vertexbuffer::~Vertexbuffer()
 {
 }
 
-void VertexBuffer::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
+void Vertexbuffer::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
 {
 	if (!m_Upload || force)
 	{
@@ -54,7 +54,7 @@ void VertexBuffer::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cm
 	}
 }
 
-size_t VertexBuffer::GetVertexTypeSize(VertexType type)
+size_t Vertexbuffer::GetVertexTypeSize(VertexType type)
 {
 	switch (type)
 	{

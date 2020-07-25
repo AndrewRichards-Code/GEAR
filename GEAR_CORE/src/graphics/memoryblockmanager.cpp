@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "memoryblockmanager.h"
+#include "MemoryBlockManager.h"
 
 using namespace gear;
 using namespace graphics;

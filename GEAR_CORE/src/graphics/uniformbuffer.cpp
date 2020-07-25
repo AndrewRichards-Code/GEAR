@@ -1,6 +1,6 @@
 #include "gear_core_common.h"
-/*#include "uniformbuffer.h"
-#include "graphics/memoryblockmanager.h"
+/*#include "Uniformbuffer.h"
+#include "Graphics/MemoryBlockManager.h"
 
 using namespace gear;
 using namespace graphics;
@@ -8,7 +8,7 @@ using namespace graphics;
 using namespace miru;
 using namespace miru::crossplatform;
 
-UniformBuffer::UniformBuffer(CreateInfo* pCreateInfo)
+Uniformbuffer::Uniformbuffer(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
@@ -38,16 +38,16 @@ UniformBuffer::UniformBuffer(CreateInfo* pCreateInfo)
 	m_UniformBufferView = BufferView::Create(&m_UniformBufferViewCI);
 }
 
-UniformBuffer::UniformBuffer()
+Uniformbuffer::Uniformbuffer()
 {
 }
 
-void UniformBuffer::SubmitData() const
+void Uniformbuffer::SubmitData() const
 {
 	m_UniformBufferUploadCI.pMemoryBlock->SubmitData(m_UniformBufferUpload->GetResource(), GetSize(), (void*)this);
 }
 
-void UniformBuffer::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
+void Uniformbuffer::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
 {
 	if (!m_Upload || force)
 	{

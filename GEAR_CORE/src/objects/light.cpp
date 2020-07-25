@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "light.h"
+#include "Light.h"
 
 using namespace gear;
 using namespace graphics;
@@ -79,15 +79,15 @@ void Light::InitialiseUB()
 	float zero0[sizeof(LightUBType)] = { 0 };
 	float zero1[sizeof(LightingUB)] = { 0 };
 	
-	UniformBuffer<LightUBType>::CreateInfo ubCI0;
+	Uniformbuffer<LightUBType>::CreateInfo ubCI0;
 	ubCI0.debugName = m_DebugName.c_str();
 	ubCI0.device = m_CI.device;
 	ubCI0.data = zero0;
-	m_UB0 = gear::CreateRef<UniformBuffer<LightUBType>>(&ubCI0);
+	m_UB0 = gear::CreateRef<Uniformbuffer<LightUBType>>(&ubCI0);
 	
-	UniformBuffer<LightingUB>::CreateInfo ubCI1;
+	Uniformbuffer<LightingUB>::CreateInfo ubCI1;
 	ubCI1.debugName = m_DebugName.c_str();
 	ubCI1.device = m_CI.device;
 	ubCI1.data = zero1;
-	m_UB1 = gear::CreateRef<UniformBuffer<LightingUB>>(&ubCI1);
+	m_UB1 = gear::CreateRef<Uniformbuffer<LightingUB>>(&ubCI1);
 }

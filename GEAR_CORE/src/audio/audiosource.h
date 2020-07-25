@@ -2,7 +2,7 @@
 
 #include "gear_core_common.h"
 #include "mars.h"
-#include "utils/fileutils.h"
+#include "Utils/FileUtils.h"
 
 namespace gear {
 namespace audio {
@@ -13,7 +13,7 @@ private:
 	unsigned int m_BufferID[2];
 	unsigned int m_SourceID;
 
-	std::shared_ptr<FileUtils::WavData> m_WavData;
+	std::shared_ptr<file_utils::WavData> m_WavData;
 	unsigned int m_Format;
 
 	mars::Vec3 m_Position;

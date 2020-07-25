@@ -1,10 +1,10 @@
 #pragma once
 
 #include "gear_core_common.h"
-#include "mesh.h"
-#include "graphics/uniformbuffer.h"
-#include "graphics/texture.h"
-#include "utils/fileutils.h"
+#include "Mesh.h"
+#include "Graphics/Uniformbuffer.h"
+#include "Graphics/Texture.h"
+#include "Utils/FileUtils.h"
 #include "mars.h"
 
 namespace gear {
@@ -38,7 +38,7 @@ private:
 	{
 		mars::Mat4 modlMatrix;
 	};
-	gear::Ref<graphics::UniformBuffer<ModelUB>> m_UB;
+	gear::Ref<graphics::Uniformbuffer<ModelUB>> m_UB;
 
 	std::string m_DebugName;
 
@@ -54,11 +54,11 @@ public:
 	void SetUniformModlMatrix();
 	void SetUniformModlMatrix(const mars::Mat4& modl);
 
-	inline const std::map<Mesh::VertexBufferContents, gear::Ref<graphics::VertexBuffer>> GetVBs() const { return m_CI.pMesh->GetVertexBuffers(); }
-	inline const gear::Ref<graphics::IndexBuffer> GetIB() const { return m_CI.pMesh->GetIndexBuffer(); }
+	inline const std::map<Mesh::VertexBufferContents, gear::Ref<graphics::Vertexbuffer>> GetVBs() const { return m_CI.pMesh->GetVertexBuffers(); }
+	inline const gear::Ref<graphics::Indexbuffer> GetIB() const { return m_CI.pMesh->GetIndexBuffer(); }
 	inline const std::string& GetPipelineName() const { return m_CI.renderPipelineName; }
 	inline const gear::Ref<graphics::Texture> GetTexture() const { return m_CI.pTexture; }
-	inline const gear::Ref<graphics::UniformBuffer<ModelUB>> GetUB() const { return m_UB; }
+	inline const gear::Ref<graphics::Uniformbuffer<ModelUB>> GetUB() const { return m_UB; }
 	inline const mars::Mat4 GetModlMatrix() const { return m_UB->modlMatrix; }
 };
 }

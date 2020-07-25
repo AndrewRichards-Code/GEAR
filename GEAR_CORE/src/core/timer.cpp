@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "timer.h"
+#include "Timer.h"
 
 using namespace gear;
 using namespace core;

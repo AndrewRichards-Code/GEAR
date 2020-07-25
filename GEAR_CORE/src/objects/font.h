@@ -2,9 +2,9 @@
 
 #include "gear_core_common.h"
 
-#include "graphics/renderpipeline.h"
-#include "graphics/texture.h"
-#include "objects/model.h"
+#include "Graphics/RenderPipeline.h"
+#include "Graphics/Texture.h"
+#include "Objects/Model.h"
 //#include "renderer/batchrenderer2d.h"
 
 #include "mars.h"

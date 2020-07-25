@@ -2,11 +2,11 @@
 
 #include "gear_core_common.h"
 #include "mars.h"
-#include "graphics/framebuffer.h"
-#include "graphics/renderpipeline.h"
-#include "objects/model.h"
-#include "objects/camera.h"
-#include "objects/light.h"
+#include "Graphics/Framebuffer.h"
+#include "Graphics/RenderPipeline.h"
+#include "Objects/Model.h"
+#include "Objects/Camera.h"
+#include "Objects/Light.h"
 
 namespace gear {
 namespace graphics {

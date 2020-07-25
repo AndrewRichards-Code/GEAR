@@ -1,7 +1,7 @@
 #include "gear_core_common.h"
 #include "STBI/stb_image.h"
-#include "window.h"
-#include "core/string_conversion.h"
+#include "Window.h"
+#include "Core/StringConversion.h"
 
 #include "directx12/D3D12Context.h"
 #include "vulkan/VKContext.h"
@@ -188,7 +188,7 @@ bool Window::Init()
 	}
 	
 	GLFWimage icon[1];
-	std::string iconFilepath = !m_CI.iconFilepath.empty() ? m_CI.iconFilepath : "res/gear_core/GEAR_logo_icon.png";
+	std::string iconFilepath = !m_CI.iconFilepath.empty() ? m_CI.iconFilepath : "../Branding/GEAR_logo_light.png";
 	icon[0].pixels = stbi_load(iconFilepath.c_str(), &icon->width, &icon->height, 0, 4);
 	glfwSetWindowIcon(m_Window, 1, icon);
 

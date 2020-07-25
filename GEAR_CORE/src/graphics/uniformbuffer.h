@@ -1,13 +1,13 @@
 #pragma once
 
 #include "gear_core_common.h"
-#include "graphics/memoryblockmanager.h"
+#include "Graphics/MemoryBlockManager.h"
 
 namespace gear {
 namespace graphics {
 
 	template<typename T>
-	class UniformBuffer : public T
+	class Uniformbuffer : public T
 	{
 	public:
 		struct CreateInfo
@@ -32,7 +32,7 @@ namespace graphics {
 		bool m_Upload = false;
 
 	public:
-		UniformBuffer(CreateInfo* pCreateInfo)
+		Uniformbuffer(CreateInfo* pCreateInfo)
 		{
 			m_CI = *pCreateInfo;
 
@@ -64,7 +64,7 @@ namespace graphics {
 			m_UniformBufferViewCI.stride = 0;
 			m_UniformBufferView = miru::crossplatform::BufferView::Create(&m_UniformBufferViewCI);
 		}
-		~UniformBuffer() {}
+		~Uniformbuffer() {}
 
 		void SubmitData() const
 		{

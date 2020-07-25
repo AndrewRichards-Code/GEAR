@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "model.h"
+#include "Model.h"
 
 using namespace gear;
 using namespace graphics;
@@ -43,11 +43,11 @@ void Model::InitialiseUB()
 {
 	float zero[sizeof(ModelUB)] = { 0 };
 
-	UniformBuffer<ModelUB>::CreateInfo ubCI;
+	Uniformbuffer<ModelUB>::CreateInfo ubCI;
 	ubCI.debugName = m_DebugName.c_str();
 	ubCI.device = m_CI.device;
 	ubCI.data = zero;
-	m_UB = gear::CreateRef<UniformBuffer<ModelUB>>(&ubCI);
+	m_UB = gear::CreateRef<Uniformbuffer<ModelUB>>(&ubCI);
 }
 
 void Model::AddTextureIDsVB()
@@ -58,14 +58,14 @@ void Model::AddTextureIDsVB()
 	for (size_t i = 0; i < texIdCount; i++)
 		texIdData.push_back(0.0f);
 
-	VertexBuffer::CreateInfo vbCI;
+	Vertexbuffer::CreateInfo vbCI;
 	vbCI.debugName = m_DebugName.c_str();
 	vbCI.device = m_CI.device;
 	vbCI.data = texIdData.data();
-	vbCI.size = texIdData.size() * graphics::VertexBuffer::GetVertexTypeSize(VertexType::FLOAT);
+	vbCI.size = texIdData.size() * graphics::Vertexbuffer::GetVertexTypeSize(VertexType::FLOAT);
 	vbCI.type = VertexType::FLOAT;
 
-	gear::Ref<VertexBuffer> texIdVB = gear::CreateRef<VertexBuffer>(&vbCI);
+	gear::Ref<Vertexbuffer> texIdVB = gear::CreateRef<Vertexbuffer>(&vbCI);
 	m_CI.pMesh->AddVertexBuffer(Mesh::VertexBufferContents::TEXTURE_ID, texIdVB);
 }
 
@@ -77,13 +77,13 @@ void Model::AddColourVB()
 	for (size_t i = 0; i < colourDataCount; i++)
 		colourData.push_back(m_CI.colour);
 
-	VertexBuffer::CreateInfo vbCI;
+	Vertexbuffer::CreateInfo vbCI;
 	vbCI.debugName = m_DebugName.c_str();
 	vbCI.device = m_CI.device;
 	vbCI.data = colourData.data();
-	vbCI.size = colourData.size() * graphics::VertexBuffer::GetVertexTypeSize(VertexType::VEC4);
+	vbCI.size = colourData.size() * graphics::Vertexbuffer::GetVertexTypeSize(VertexType::VEC4);
 	vbCI.type = VertexType::VEC4;
 
-	gear::Ref<VertexBuffer> colourVB = gear::CreateRef<VertexBuffer>(&vbCI);
+	gear::Ref<Vertexbuffer> colourVB = gear::CreateRef<Vertexbuffer>(&vbCI);
 	m_CI.pMesh->AddVertexBuffer(Mesh::VertexBufferContents::COLOUR, colourVB);
 }

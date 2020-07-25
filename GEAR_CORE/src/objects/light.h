@@ -1,8 +1,6 @@
 #pragma once
 
-//#include "graphics/opengl/shader/shader.h"
-#include "camera.h"
-//#include "probe.h"
+#include "Camera.h"
 #include "mars.h"
 
 #define GEAR_MAX_LIGHTS 8
@@ -48,7 +46,7 @@ private:
 		float m_CutOff;						//76
 	};										//80 Total Size
 	typedef std::array<LightUB, GEAR_MAX_LIGHTS> LightUBType;
-	gear::Ref<graphics::UniformBuffer<LightUBType>> m_UB0;
+	gear::Ref<graphics::Uniformbuffer<LightUBType>> m_UB0;
 	
 	struct LightingUB
 	{
@@ -57,7 +55,7 @@ private:
 		float u_Ambient;
 		float u_Emit;
 	};
-	gear::Ref<graphics::UniformBuffer<LightingUB>> m_UB1;
+	gear::Ref<graphics::Uniformbuffer<LightingUB>> m_UB1;
 	
 	static int s_NumOfLights;
 	size_t m_LightID;
@@ -79,8 +77,8 @@ public:
 
 	//Update the camera the current static of Camera::CreateInfo m_CI.
 	void Update();
-	gear::Ref<graphics::UniformBuffer<LightUBType>> GetUB0() { return m_UB0; };
-	gear::Ref<graphics::UniformBuffer<LightingUB>> GetUB1() { return m_UB1; };
+	gear::Ref<graphics::Uniformbuffer<LightUBType>> GetUB0() { return m_UB0; };
+	gear::Ref<graphics::Uniformbuffer<LightingUB>> GetUB1() { return m_UB1; };
 
 private:
 	void InitialiseUB();

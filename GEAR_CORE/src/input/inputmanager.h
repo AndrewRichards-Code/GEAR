@@ -1,6 +1,6 @@
 #pragma once
 
-#include "graphics/window.h"
+#include "Graphics/Window.h"
 
 #define GEAR_INPUT_KEYBOARD_AND_MOUSE 0
 #define GEAR_INPUT_JOYSTICK_CONTROLLER 1

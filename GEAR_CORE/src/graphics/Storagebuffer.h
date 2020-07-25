@@ -5,7 +5,7 @@
 namespace gear {
 namespace graphics {
 	template<typename T>
-	class ShaderStorageBuffer : public T
+	class Storagebuffer : public T
 	{
 	public:
 		struct CreateInfo
@@ -29,7 +29,7 @@ namespace graphics {
 		CreateInfo m_CI;
 
 	public:
-		ShaderStorageBuffer(CreateInfo* pCreateInfo) 
+		Storagebuffer(CreateInfo* pCreateInfo) 
 		{
 			m_CI = *pCreateInfo;
 
@@ -61,7 +61,7 @@ namespace graphics {
 			m_ShaderStorageBufferViewCI.stride = 0;
 			m_ShaderStorageBufferView = miru::crossplatform::BufferView::Create(&m_ShaderStorageBufferViewCI);
 		}
-		~ShaderStorageBuffer() {}
+		~Storagebuffer() {}
 
 		void SubmitData(const void* data, size_t  size) const
 		{

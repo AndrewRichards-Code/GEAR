@@ -1,11 +1,11 @@
 #pragma once
 
 #include "gear_core_common.h"
-#include "graphics/texture.h"
+#include "Graphics/Texture.h"
 
 namespace gear {
 namespace graphics {
-	class FrameBuffer
+	class Framebuffer
 	{
 	public:
 		struct CreateInfo
@@ -31,8 +31,8 @@ namespace graphics {
 		CreateInfo m_CI;
 
 	public:
-		FrameBuffer(CreateInfo* pCreateInfo);
-		~FrameBuffer();
+		Framebuffer(CreateInfo* pCreateInfo);
+		~Framebuffer();
 
 		void UpdateFrameBufferSize(uint32_t width, uint32_t height);
 

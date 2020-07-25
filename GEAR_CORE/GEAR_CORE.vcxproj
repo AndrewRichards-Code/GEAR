@@ -100,52 +100,56 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dep\STBI\stb_image.cpp" />
-    <ClCompile Include="src\audio\audiosource.cpp" />
-    <ClCompile Include="src\audio\listener.cpp" />
-    <ClCompile Include="src\core\string_conversion.cpp" />
-    <ClCompile Include="src\core\timer.cpp" />
+    <ClCompile Include="src\Audio\AudioSource.cpp" />
+    <ClCompile Include="src\Audio\Listener.cpp" />
+    <ClCompile Include="src\Core\StringConversion.cpp" />
+    <ClCompile Include="src\Core\Timer.cpp" />
     <ClCompile Include="src\gear_core_common.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src\graphics\framebuffer.cpp" />
-    <ClCompile Include="src\graphics\indexbuffer.cpp" />
-    <ClCompile Include="src\graphics\memoryblockmanager.cpp" />
-    <ClCompile Include="src\graphics\renderer.cpp" />
-    <ClCompile Include="src\graphics\renderpipeline.cpp" />
-    <ClCompile Include="src\graphics\shaderstoragebuffer.cpp" />
-    <ClCompile Include="src\graphics\texture.cpp" />
-    <ClCompile Include="src\graphics\uniformbuffer.cpp" />
-    <ClCompile Include="src\graphics\vertexbuffer.cpp" />
-    <ClCompile Include="src\graphics\window.cpp" />
-    <ClCompile Include="src\objects\camera.cpp" />
-    <ClCompile Include="src\objects\light.cpp" />
-    <ClCompile Include="src\objects\mesh.cpp" />
-    <ClCompile Include="src\objects\model.cpp" />
+    <ClCompile Include="src\Graphics\Framebuffer.cpp" />
+    <ClCompile Include="src\Graphics\Indexbuffer.cpp" />
+    <ClCompile Include="src\Graphics\MemoryBlockManager.cpp" />
+    <ClCompile Include="src\Graphics\Renderer.cpp" />
+    <ClCompile Include="src\Graphics\RenderPipeline.cpp" />
+    <ClCompile Include="src\Graphics\Storagebuffer.cpp" />
+    <ClCompile Include="src\Graphics\Texture.cpp" />
+    <ClCompile Include="src\Graphics\Uniformbuffer.cpp" />
+    <ClCompile Include="src\Graphics\Vertexbuffer.cpp" />
+    <ClCompile Include="src\Graphics\Window.cpp" />
+    <ClCompile Include="src\Objects\Camera.cpp" />
+    <ClCompile Include="src\Objects\Light.cpp" />
+    <ClCompile Include="src\Objects\Material.cpp" />
+    <ClCompile Include="src\Objects\Mesh.cpp" />
+    <ClCompile Include="src\Objects\Model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dep\STBI\stb_image.h" />
-    <ClInclude Include="src\audio\audiosource.h" />
-    <ClInclude Include="src\audio\listener.h" />
-    <ClInclude Include="src\core\enum_string.maps.h" />
-    <ClInclude Include="src\core\string_conversion.h" />
-    <ClInclude Include="src\core\timer.h" />
-    <ClInclude Include="src\graphics\framebuffer.h" />
-    <ClInclude Include="src\graphics\indexbuffer.h" />
-    <ClInclude Include="src\graphics\memoryblockmanager.h" />
-    <ClInclude Include="src\graphics\renderer.h" />
-    <ClInclude Include="src\graphics\renderpipeline.h" />
-    <ClInclude Include="src\graphics\shaderstoragebuffer.h" />
-    <ClInclude Include="src\graphics\texture.h" />
-    <ClInclude Include="src\graphics\uniformbuffer.h" />
-    <ClInclude Include="src\graphics\vertexbuffer.h" />
-    <ClInclude Include="src\graphics\window.h" />
-    <ClInclude Include="src\input\inputmanager.h" />
-    <ClInclude Include="src\objects\camera.h" />
-    <ClInclude Include="src\objects\light.h" />
-    <ClInclude Include="src\objects\mesh.h" />
-    <ClInclude Include="src\objects\model.h" />
-    <ClInclude Include="src\utils\fileutils.h" />
+    <ClInclude Include="src\Audio\AudioSource.h" />
+    <ClInclude Include="src\Audio\Listener.h" />
+    <ClInclude Include="src\Core\EnumStringMaps.h" />
+    <ClInclude Include="src\Core\StringConversion.h" />
+    <ClInclude Include="src\Core\Timer.h" />
+    <ClInclude Include="src\Graphics\Framebuffer.h" />
+    <ClInclude Include="src\Graphics\Indexbuffer.h" />
+    <ClInclude Include="src\Graphics\MemoryBlockBanager.h" />
+    <ClInclude Include="src\Graphics\MemoryBlockManager.h" />
+    <ClInclude Include="src\Graphics\Renderer.h" />
+    <ClInclude Include="src\Graphics\RenderPipeline.h" />
+    <ClInclude Include="src\Graphics\Storagebuffer.h" />
+    <ClInclude Include="src\Graphics\Texture.h" />
+    <ClInclude Include="src\Graphics\Uniformbuffer.h" />
+    <ClInclude Include="src\Graphics\Vertexbuffer.h" />
+    <ClInclude Include="src\Graphics\Window.h" />
+    <ClInclude Include="src\Input\InputManager.h" />
+    <ClInclude Include="src\Objects\Camera.h" />
+    <ClInclude Include="src\Objects\Light.h" />
+    <ClInclude Include="src\Objects\Material.h" />
+    <ClInclude Include="src\Objects\Mesh.h" />
+    <ClInclude Include="src\Objects\Model.h" />
+    <ClInclude Include="src\Utils\Assimp.h" />
+    <ClInclude Include="src\Utils\FileUtils.h" />
     <ClInclude Include="src\gear_core.h" />
     <ClInclude Include="src\gear_core_common.h" />
   </ItemGroup>

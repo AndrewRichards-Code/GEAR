@@ -1,6 +1,6 @@
 #include "gear_core_common.h"
-#include "indexbuffer.h"
-#include "graphics/memoryblockmanager.h"
+#include "Indexbuffer.h"
+#include "Graphics/MemoryBlockManager.h"
 
 using namespace gear;
 using namespace graphics;
@@ -8,12 +8,12 @@ using namespace graphics;
 using namespace miru;
 using namespace miru::crossplatform;
 
-IndexBuffer::IndexBuffer(CreateInfo* pCreateInfo)
+Indexbuffer::Indexbuffer(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
-	GEAR_ASSERT((m_CI.stride != 2 && m_CI.stride != 4), "ERROR: GEAR::GRAPHICS::IndexBuffer: Stride is not 2 or 4.");
-	GEAR_ASSERT((m_CI.size % m_CI.stride), "ERROR: GEAR::GRAPHICS::IndexBuffer: Size is not a multiple of the stride.");
+	GEAR_ASSERT((m_CI.stride != 2 && m_CI.stride != 4), "ERROR: GEAR::GRAPHICS::Indexbuffer: Stride is not 2 or 4.");
+	GEAR_ASSERT((m_CI.size % m_CI.stride), "ERROR: GEAR::GRAPHICS::Indexbuffer: Size is not a multiple of the stride.");
 	m_Count = static_cast<uint32_t>(m_CI.size) / m_CI.stride;
 
 	m_DebugName_IBUpload = std::string("GEAR_CORE_IndexBufferUpload: ") + m_CI.debugName;
@@ -45,11 +45,11 @@ IndexBuffer::IndexBuffer(CreateInfo* pCreateInfo)
 	m_IndexBufferView = BufferView::Create(&m_IndexBufferViewCI);
 }
 
-IndexBuffer::~IndexBuffer()
+Indexbuffer::~Indexbuffer()
 {
 }
 
-void IndexBuffer::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
+void Indexbuffer::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
 {
 	if (!m_Upload || force)
 	{

@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "renderpipeline.h"
+#include "RenderPipeline.h"
 
 using namespace gear;
 using namespace graphics;

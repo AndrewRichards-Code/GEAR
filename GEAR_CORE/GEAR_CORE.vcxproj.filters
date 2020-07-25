@@ -45,9 +45,6 @@
     <ClCompile Include="src\graphics\renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\shaderstoragebuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\graphics\texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -69,10 +66,16 @@
     <ClCompile Include="dep\STBI\stb_image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\core\string_conversion.cpp">
+    <ClCompile Include="src\graphics\memoryblockmanager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\memoryblockmanager.cpp">
+    <ClCompile Include="src\Core\StringConversion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Storagebuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Objects\Material.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -119,9 +122,6 @@
     <ClInclude Include="src\graphics\renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\shaderstoragebuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\graphics\texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -140,13 +140,25 @@
     <ClInclude Include="dep\STBI\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\string_conversion.h">
+    <ClInclude Include="src\Core\EnumStringMaps.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\memoryblockmanager.h">
+    <ClInclude Include="src\Core\StringConversion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\enum_string.maps.h">
+    <ClInclude Include="src\Graphics\MemoryBlockBanager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Storagebuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Objects\Material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Utils\Assimp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\MemoryBlockManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "gear_common.h"
+#include "gear_core_common.h"
 #include "mars.h"
-#include "graphics/opengl/buffer/framebuffer.h"
-#include "graphics/opengl/renderer/batchrenderer3d.h"
-#include "camera.h"
-#include "object.h"
+//#include "Graphics/opengl/buffer/framebuffer.h"
+//#include "Graphics/opengl/renderer/batchrenderer3d.h"
+#include "Camera.h"
+#include "Object.h"
 
 namespace GEAR {
 namespace OBJECTS {

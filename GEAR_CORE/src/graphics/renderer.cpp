@@ -1,6 +1,6 @@
 #include "gear_core_common.h"
-#include "renderer.h"
-#include "core/enum_string.maps.h"
+#include "Renderer.h"
+#include "Core/EnumStringMaps.h"
 #include "JSON/json.hpp"
 
 using namespace gear;

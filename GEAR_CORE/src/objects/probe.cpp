@@ -1,4 +1,4 @@
-#include "probe.h"
+#include "Probe.h"
 
 using namespace GEAR;
 using namespace GRAPHICS;

@@ -1,12 +1,11 @@
 #pragma once
 #include "gear_core_common.h"
-#include "objects/material.h"
+#include "Objects/Material.h"
 
 namespace gear 
 {
-class AssimpLoader
+namespace assimp_loader
 {
-public:
 	struct Vertex
 	{
 		mars::Vec4 m_Vertex;
@@ -37,7 +36,6 @@ public:
 		return result;
 	}
 
-private:
 	static void ProcessNode(aiNode* node, const aiScene* scene)
 	{
 		for (unsigned int i = 0; i < node->mNumMeshes; i++)
@@ -132,7 +130,7 @@ private:
 					texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 					Ref<graphics::Texture> tex = CreateRef<graphics::Texture>(&texCI);
 
-					result.m_Material->AddTexture(tex, type);
+					result.m_Material->AddTexture(std::move(tex), type);
 				}
 			}
 		}
@@ -223,6 +221,5 @@ private:
 			mars::Vec4(colourReflective.r, colourReflective.g, colourReflective.b, 1)}
 		);
 	}
-};
-std::vector<AssimpLoader::Mesh> AssimpLoader::result;
+}
 }
