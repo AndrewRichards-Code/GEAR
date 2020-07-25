@@ -23,7 +23,7 @@ public:
 
 	struct CreateInfo
 	{
-		miru::GraphicsAPI::API						api;
+		miru::crossplatform::GraphicsAPI::API		api;
 		std::string									title;
 		uint32_t									width;
 		uint32_t									height;
@@ -90,9 +90,9 @@ public:
 	inline const miru::Ref<miru::crossplatform::ImageView>& GetSwapchainDepthImageView() const { return m_DepthImageView; }
 	inline const miru::Ref<miru::crossplatform::Framebuffer>* GetFramebuffers() { return m_Framebuffers; }
 
-	inline const miru::GraphicsAPI::API& GetGraphicsAPI() const { return m_CI.api; }
-	inline bool IsD3D12() const { return miru::GraphicsAPI::IsD3D12(); }
-	inline bool IsVulkan() const { return miru::GraphicsAPI::IsVulkan(); }
+	inline const miru::crossplatform::GraphicsAPI::API& GetGraphicsAPI() const { return m_CI.api; }
+	inline bool IsD3D12() const { return miru::crossplatform::GraphicsAPI::IsD3D12(); }
+	inline bool IsVulkan() const { return miru::crossplatform::GraphicsAPI::IsVulkan(); }
 	inline int GetWidth() const { return m_CurrentWidth; }
 	inline int GetHeight() const { return m_CurrentHeight; }
 	inline float GetRatio() const { return ((float)m_CurrentWidth / (float)m_CurrentHeight); }

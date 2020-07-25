@@ -8,7 +8,7 @@ using namespace miru;
 using namespace miru::crossplatform;
 
 MemoryBlockManager::CreateInfo MemoryBlockManager::s_CI;
-std::map<miru::Ref<miru::crossplatform::MemoryBlock>, std::string> MemoryBlockManager::s_MB_DebugNames;
+std::map<miru::Ref<MemoryBlock>, std::string> MemoryBlockManager::s_MB_DebugNames;
 uint32_t MemoryBlockManager::s_MB_CPU_ID = 0;
 uint32_t MemoryBlockManager::s_MB_GPU_ID = 0;
 bool MemoryBlockManager::s_Initialised = false;
@@ -71,9 +71,9 @@ void MemoryBlockManager::PrintMemoryBlockStatus()
 	};
 }
 
-miru::Ref<MemoryBlock> MemoryBlockManager::AddMemoryBlock(MemoryBlockType type, miru::crossplatform::MemoryBlock::BlockSize overrideBlockSize)
+miru::Ref<MemoryBlock> MemoryBlockManager::AddMemoryBlock(MemoryBlockType type, MemoryBlock::BlockSize overrideBlockSize)
 {
-	bool bOverrideBlockSize = overrideBlockSize != miru::crossplatform::MemoryBlock::BlockSize(0);
+	bool bOverrideBlockSize = overrideBlockSize != MemoryBlock::BlockSize(0);
 
 	MemoryBlock::CreateInfo mbCI;
 	std::string debugName;

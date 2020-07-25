@@ -6,6 +6,9 @@ using namespace graphics;
 using namespace objects;
 using namespace mars;
 
+using namespace miru;
+using namespace miru::crossplatform;
+
 Model::Model(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
@@ -59,8 +62,8 @@ void Model::AddTextureIDsVB()
 	vbCI.debugName = m_DebugName.c_str();
 	vbCI.device = m_CI.device;
 	vbCI.data = texIdData.data();
-	vbCI.size = texIdData.size() * graphics::VertexBuffer::GetVertexTypeSize(miru::crossplatform::VertexType::FLOAT);
-	vbCI.type = miru::crossplatform::VertexType::FLOAT;
+	vbCI.size = texIdData.size() * graphics::VertexBuffer::GetVertexTypeSize(VertexType::FLOAT);
+	vbCI.type = VertexType::FLOAT;
 
 	gear::Ref<VertexBuffer> texIdVB = gear::CreateRef<VertexBuffer>(&vbCI);
 	m_CI.pMesh->AddVertexBuffer(Mesh::VertexBufferContents::TEXTURE_ID, texIdVB);
@@ -78,8 +81,8 @@ void Model::AddColourVB()
 	vbCI.debugName = m_DebugName.c_str();
 	vbCI.device = m_CI.device;
 	vbCI.data = colourData.data();
-	vbCI.size = colourData.size() * graphics::VertexBuffer::GetVertexTypeSize(miru::crossplatform::VertexType::VEC4);
-	vbCI.type = miru::crossplatform::VertexType::VEC4;
+	vbCI.size = colourData.size() * graphics::VertexBuffer::GetVertexTypeSize(VertexType::VEC4);
+	vbCI.type = VertexType::VEC4;
 
 	gear::Ref<VertexBuffer> colourVB = gear::CreateRef<VertexBuffer>(&vbCI);
 	m_CI.pMesh->AddVertexBuffer(Mesh::VertexBufferContents::COLOUR, colourVB);
