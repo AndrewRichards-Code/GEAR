@@ -1,4 +1,4 @@
-# GEAR_CORE
+# GEAR
 Game Engine for Windows(x64) using D3D12 or Vulkan via MIRU.
 
 ![GEAR_LOGO](/Branding/GEAR_logo_dark.png)
