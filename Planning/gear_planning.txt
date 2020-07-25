@@ -14,8 +14,11 @@ Fix PBR
 Scripting: 
 Pick language: C++/C#/Lua/Python - Mono?
 
-Scene Graph and File:
-.txt/.bin or other?
+Entity-Component/Scene system and File:
+glTF style .json
+
+Audio:
+Add XAudio2 for Win10
 
 Save Models and Textures as .bin for quick read.
 
