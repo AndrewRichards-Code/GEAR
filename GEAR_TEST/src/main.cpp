@@ -41,12 +41,12 @@ int main()
 	textureCI.type = Image::Type::TYPE_2D;
 	textureCI.samples  = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	
-	textureCI.debugName = "GEAR_logo_square";
-	textureCI.filepaths = { "res/gear_core/GEAR_logo_square.png" };
+	textureCI.debugName = "GEAR_logo_dark";
+	textureCI.filepaths = { "../Branding/GEAR_logo_dark.png" };
 	gear::Ref<Texture> gear_logo = gear::CreateRef<Texture>(&textureCI);
 	
 	textureCI.debugName = "MIRU_logo";
-	textureCI.filepaths = { "C:/Users/Andrew/source/repos/MIRU/logo.png" };
+	textureCI.filepaths = { "../GEAR_CORE/dep/MIRU/logo.png" };
 	gear::Ref<Texture> miru_logo = gear::CreateRef<Texture>(&textureCI);
 	
 	textureCI.debugName = "StallTexture";
