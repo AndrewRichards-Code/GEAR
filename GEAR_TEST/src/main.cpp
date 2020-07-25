@@ -1,5 +1,11 @@
 #include "gear_core.h"
 
+#ifndef _DEBUG
+	#if _WIN64
+	#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+	#endif
+#endif
+
 using namespace gear;
 using namespace graphics;
 using namespace objects;
@@ -11,11 +17,14 @@ using namespace mars;
 
 int main()
 {
+
+
+
 	system("BuildShaders.bat");
 	system("CLS");
 
 	Window::CreateInfo windowCI;
-	windowCI.api = GraphicsAPI::API::D3D12;
+	windowCI.api = GraphicsAPI::API::VULKAN;
 	windowCI.title = "GEAR_MIRU_TEST";
 	windowCI.width = 1920;
 	windowCI.height = 1080;

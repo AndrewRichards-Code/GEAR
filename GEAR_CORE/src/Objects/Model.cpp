@@ -26,6 +26,11 @@ Model::~Model()
 
 void Model::SetUniformModlMatrix()
 {
+	m_UB->texCoordsScale0.x = m_CI.pTexture->GetTileFactor();
+	m_UB->texCoordsScale0.y = m_CI.pTexture->GetTileFactor();
+	m_UB->texCoordsScale1.x = m_CI.pTexture->GetTileFactor();
+	m_UB->texCoordsScale1.y = m_CI.pTexture->GetTileFactor();
+
 	m_UB->modlMatrix = Mat4::
 		Translation(m_CI.transform.translation)
 		* Quat::ToMat4(m_CI.transform.orientation)

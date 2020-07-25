@@ -37,6 +37,8 @@ private:
 	struct ModelUB
 	{
 		mars::Mat4 modlMatrix;
+		mars::Vec2 texCoordsScale0;
+		mars::Vec2 texCoordsScale1;
 	};
 	gear::Ref<graphics::Uniformbuffer<ModelUB>> m_UB;
 
