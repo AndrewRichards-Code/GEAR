@@ -259,12 +259,6 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
-/GEAR_CORE/res/gear_core/GEAR_OpenGL.png
-/GEAR_CORE/res/gear_core/GEAR_OpenGL.psd
-/GEAR_CORE/res/gear_core/GEAR_Vulkan.psd
-/GEAR_CORE/res/gear_core/GEAR_Vulkan.png
-/atioglxx.dll error.JPG
-/GEAR Scripting C++.png
 /Application/res/img/galaxy/GalaxyTex_PositiveZ_2048.tga
 /Application/res/img/galaxy/GalaxyTex_PositiveZ.tga
 /Application/res/img/galaxy/GalaxyTex_PositiveY_2048.tga
