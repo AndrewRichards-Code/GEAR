@@ -4,6 +4,9 @@
 using namespace gear;
 using namespace objects;
 
+using namespace miru;
+using namespace miru::crossplatform;
+
 Mesh::Mesh(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
@@ -16,18 +19,18 @@ Mesh::Mesh(CreateInfo* pCreateInfo)
 	vbCI.device = m_CI.device;
 
 	vbCI.data = m_Data.m_Vertices.data();
-	vbCI.size = m_Data.m_Vertices.size() * graphics::VertexBuffer::GetVertexTypeSize(miru::crossplatform::VertexType::VEC4);
-	vbCI.type = miru::crossplatform::VertexType::VEC4;
+	vbCI.size = m_Data.m_Vertices.size() * graphics::VertexBuffer::GetVertexTypeSize(VertexType::VEC4);
+	vbCI.type = VertexType::VEC4;
 	m_VBs[VertexBufferContents::POSITION] = gear::CreateRef<graphics::VertexBuffer>(&vbCI);
 
 	vbCI.data = m_Data.m_TexCoords.data();
-	vbCI.size = m_Data.m_TexCoords.size() * graphics::VertexBuffer::GetVertexTypeSize(miru::crossplatform::VertexType::VEC2);
-	vbCI.type = miru::crossplatform::VertexType::VEC2;
+	vbCI.size = m_Data.m_TexCoords.size() * graphics::VertexBuffer::GetVertexTypeSize(VertexType::VEC2);
+	vbCI.type = VertexType::VEC2;
 	m_VBs[VertexBufferContents::TEXTURE_COORD] = gear::CreateRef<graphics::VertexBuffer>(&vbCI);
 	
 	vbCI.data = m_Data.m_Normals.data();
-	vbCI.size = m_Data.m_Normals.size() * graphics::VertexBuffer::GetVertexTypeSize(miru::crossplatform::VertexType::VEC4);
-	vbCI.type = miru::crossplatform::VertexType::VEC4;
+	vbCI.size = m_Data.m_Normals.size() * graphics::VertexBuffer::GetVertexTypeSize(VertexType::VEC4);
+	vbCI.type = VertexType::VEC4;
 	m_VBs[VertexBufferContents::NORMAL] = gear::CreateRef<graphics::VertexBuffer>(&vbCI);
 	
 	graphics::IndexBuffer::CreateInfo ibCI;

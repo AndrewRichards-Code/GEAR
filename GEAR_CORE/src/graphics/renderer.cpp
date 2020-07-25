@@ -10,7 +10,7 @@ using namespace objects;
 using namespace miru;
 using namespace miru::crossplatform;
 
-Renderer::Renderer(const miru::Ref<miru::crossplatform::Context>& context)
+Renderer::Renderer(const miru::Ref<Context>& context)
 {
 	//Renderer and Transfer CmdPools and CmdBuffers
 	m_CmdPoolCI.debugName = "GEAR_CORE_CommandPool_Renderer";
@@ -65,7 +65,7 @@ Renderer::~Renderer()
 	ClearupRenderPipelines();
 }
 
-void Renderer::InitialiseRenderPipelines(const std::vector<std::string>& filepaths, float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass)
+void Renderer::InitialiseRenderPipelines(const std::vector<std::string>& filepaths, float viewportWidth, float viewportHeight, const miru::Ref<RenderPass>& renderPass)
 {
 	for (auto& filepath : filepaths)
 		AddRenderPipeline(filepath, viewportWidth, viewportHeight, renderPass);
@@ -204,8 +204,8 @@ void Renderer::Flush()
 
 		for (auto& obj : m_RenderQueue)
 		{
-			const miru::Ref<miru::crossplatform::Pipeline>& pipeline = m_RenderPipelines[obj->GetPipelineName()]->GetPipeline();
-			const std::vector<miru::Ref<miru::crossplatform::DescriptorSetLayout>>& descriptorSetLayouts = m_RenderPipelines[obj->GetPipelineName()]->GetDescriptorSetLayouts();
+			const miru::Ref<Pipeline>& pipeline = m_RenderPipelines[obj->GetPipelineName()]->GetPipeline();
+			const std::vector<miru::Ref<DescriptorSetLayout>>& descriptorSetLayouts = m_RenderPipelines[obj->GetPipelineName()]->GetDescriptorSetLayouts();
 
 			m_CmdBuffer->BindPipeline(m_FrameIndex, pipeline);
 
@@ -241,14 +241,14 @@ void Renderer::Flush()
 	m_RenderQueue.clear();
 }
 
-void Renderer::Present(const miru::Ref<miru::crossplatform::Swapchain>& swapchain, bool& windowResize)
+void Renderer::Present(const miru::Ref<Swapchain>& swapchain, bool& windowResize)
 {
 	m_CmdBuffer->Present({ 0, 1 }, swapchain, m_DrawFences, m_AcquireSemaphores, m_SubmitSemaphores, windowResize);
 	m_FrameIndex = (m_FrameIndex + 1) % swapchain->GetCreateInfo().swapchainCount;
 	m_FrameCount++;
 }
 
-void Renderer::AddRenderPipeline(const std::string& filepath, float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass)
+void Renderer::AddRenderPipeline(const std::string& filepath, float viewportWidth, float viewportHeight, const miru::Ref<RenderPass>& renderPass)
 {
 	using namespace nlohmann;
 

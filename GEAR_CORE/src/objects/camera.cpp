@@ -51,7 +51,7 @@ void Camera::DefineProjection()
 	if (m_CI.flipY)
 		m_UB->projectionMatrix.f *= -1;
 
-	if (miru::GraphicsAPI::IsVulkan())
+	if (miru::crossplatform::GraphicsAPI::IsVulkan())
 		m_UB->projectionMatrix.f *= -1;
 }
 

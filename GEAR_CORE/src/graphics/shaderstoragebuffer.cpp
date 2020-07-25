@@ -52,12 +52,12 @@ void ShaderStorageBuffer::AccessData(void* data, size_t size) const
 	m_ShaderStorageBufferUploadCI.pMemoryBlock->AccessData(m_ShaderStorageBufferUpload->GetResource(), size, data);
 }
 
-void ShaderStorageBuffer::Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex)
+void ShaderStorageBuffer::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex)
 {
 	cmdBuffer->CopyBuffer(cmdBufferIndex, m_ShaderStorageBufferUpload, m_ShaderStorageBuffer, { {0, 0, m_CI.size} });
 }
 
-void ShaderStorageBuffer::Download(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex)
+void ShaderStorageBuffer::Download(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex)
 {
 	cmdBuffer->CopyBuffer(cmdBufferIndex, m_ShaderStorageBuffer, m_ShaderStorageBufferUpload, { {0, 0, m_CI.size} });
 }*/

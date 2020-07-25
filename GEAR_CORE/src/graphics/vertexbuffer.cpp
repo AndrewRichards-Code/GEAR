@@ -45,7 +45,7 @@ VertexBuffer::~VertexBuffer()
 {
 }
 
-void VertexBuffer::Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
+void VertexBuffer::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
 {
 	if (!m_Upload || force)
 	{
@@ -54,33 +54,33 @@ void VertexBuffer::Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& c
 	}
 }
 
-size_t VertexBuffer::GetVertexTypeSize(miru::crossplatform::VertexType type)
+size_t VertexBuffer::GetVertexTypeSize(VertexType type)
 {
 	switch (type)
 	{
-	case miru::crossplatform::VertexType::FLOAT:
-	case miru::crossplatform::VertexType::INT:
-	case miru::crossplatform::VertexType::UINT:
+	case VertexType::FLOAT:
+	case VertexType::INT:
+	case VertexType::UINT:
 		return 4 * 1;
-	case miru::crossplatform::VertexType::VEC2:
-	case miru::crossplatform::VertexType::IVEC2:
-	case miru::crossplatform::VertexType::UVEC2:
+	case VertexType::VEC2:
+	case VertexType::IVEC2:
+	case VertexType::UVEC2:
 		return 4 * 2;
-	case miru::crossplatform::VertexType::VEC3:
-	case miru::crossplatform::VertexType::IVEC3:
-	case miru::crossplatform::VertexType::UVEC3:
+	case VertexType::VEC3:
+	case VertexType::IVEC3:
+	case VertexType::UVEC3:
 		return 4 * 3;
-	case miru::crossplatform::VertexType::VEC4:
-	case miru::crossplatform::VertexType::IVEC4:
-	case miru::crossplatform::VertexType::UVEC4:
+	case VertexType::VEC4:
+	case VertexType::IVEC4:
+	case VertexType::UVEC4:
 		return 4 * 4;
-	case miru::crossplatform::VertexType::DOUBLE:
+	case VertexType::DOUBLE:
 		return 8 * 1;
-	case miru::crossplatform::VertexType::DVEC2:
+	case VertexType::DVEC2:
 		return 8 * 2;
-	case miru::crossplatform::VertexType::DVEC3:
+	case VertexType::DVEC3:
 		return 8 * 3;
-	case miru::crossplatform::VertexType::DVEC4:
+	case VertexType::DVEC4:
 		return 8 * 4;
 	default:
 		return 0;

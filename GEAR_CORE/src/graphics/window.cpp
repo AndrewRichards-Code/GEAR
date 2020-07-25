@@ -134,11 +134,11 @@ bool Window::Init()
 		GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_INIT_FAILED, "ERROR: GEAR::GRAPHICS::Window: Failed to initialise GLFW.");
 		return false;
 	}
-	miru::GraphicsAPI::SetAPI(m_CI.api);
-	miru::GraphicsAPI::AllowSetName();
+	GraphicsAPI::SetAPI(m_CI.api);
+	GraphicsAPI::AllowSetName();
 
 #ifdef _DEBUG
-	GraphicsAPI::LoadGraphicsDebugger();
+	GraphicsAPI::LoadGraphicsDebugger(debug::GraphicsDebugger::DebuggerType::RENDER_DOC);
 #endif 
 
 	m_ContextCI.applicationName = m_CI.title.c_str();
@@ -158,7 +158,7 @@ bool Window::Init()
 	m_ContextCI.deviceDebugName = "GEAR_CORE_Context";
 	m_Context = Context::Create(&m_ContextCI);
 
-	if (miru::GraphicsAPI::IsVulkan())
+	if (GraphicsAPI::IsVulkan())
 	{
 		if (glfwVulkanSupported() == GLFW_FALSE)
 		{
