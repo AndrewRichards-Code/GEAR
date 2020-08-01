@@ -1,0 +1,2 @@
+FreeType Release 2.10.2
+Redistribution - No Modifications.
