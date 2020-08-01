@@ -17,5 +17,5 @@ Simple test application for development, test and demostration. Build as executa
 ## Windows x64:
 - Microsoft Visual Studio 2019
 - Toolset: v142 
-- Windows SDK: 10.0.18362
+- Windows SDK: 10.0.19401
 - ISO C++ 17
