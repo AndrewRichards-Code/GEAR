@@ -1,10 +1,6 @@
 #include "gear_core.h"
+#include "Utils/Assimp.h"
 
-#ifndef _DEBUG
-	#if _WIN64
-	#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
-	#endif
-#endif
 
 using namespace gear;
 using namespace graphics;
@@ -17,9 +13,6 @@ using namespace mars;
 
 int main()
 {
-
-
-
 	system("BuildShaders.bat");
 	system("CLS");
 
@@ -33,6 +26,9 @@ int main()
 	windowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	windowCI.iconFilepath;
 	Window window(&windowCI);
+	
+	//AssimpLoader::m_Device = window.GetDevice();
+	//auto kagemitsuG4 = AssimpLoader::LoadModel("res/obj/KagemitsuG4.fbx");
 
 	MemoryBlockManager::CreateInfo mbmCI;
 	mbmCI.pContext = window.GetContext();

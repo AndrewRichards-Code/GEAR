@@ -4,8 +4,8 @@
 
 namespace gear {
 namespace graphics {
-	template<typename T>
-	class Storagebuffer : public T
+template<typename T>
+class Storagebuffer : public T
 	{
 	public:
 		struct CreateInfo

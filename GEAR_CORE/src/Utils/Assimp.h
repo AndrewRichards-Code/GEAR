@@ -4,8 +4,9 @@
 
 namespace gear 
 {
-namespace assimp_loader
+class AssimpLoader
 {
+public:
 	struct Vertex
 	{
 		mars::Vec4 m_Vertex;
@@ -18,9 +19,10 @@ namespace assimp_loader
 	{
 		std::vector<Vertex>	m_Vertices;
 		std::vector<uint32_t> m_Indices;
-		Ref<objects::Material> m_Material = CreateRef<objects::Material>();
+		Ref<objects::Material> m_Material;
 	};
 
+	static void* m_Device;
 	static std::vector<Mesh> result;
 	static std::vector<Mesh> LoadModel(const std::string& filepath)
 	{
@@ -36,6 +38,7 @@ namespace assimp_loader
 		return result;
 	}
 
+private:
 	static void ProcessNode(aiNode* node, const aiScene* scene)
 	{
 		for (unsigned int i = 0; i < node->mNumMeshes; i++)
@@ -79,6 +82,16 @@ namespace assimp_loader
 
 		//Materials
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+		objects::Material::CreateInfo materialCI;
+		materialCI.debugName = nullptr;
+		materialCI.device = m_Device;
+		materialCI.pRenderPipeline = nullptr;
+		
+		material->Get(AI_MATKEY_NAME, materialCI.debugName);
+		
+		result.m_Material = gear::CreateRef<objects::Material>(&materialCI);
+
 		for (unsigned int i = 0; i < AI_TEXTURE_TYPE_MAX; i++)
 		{
 			std::vector<std::string> filepaths = GetMaterialFilePath(material, (aiTextureType)i);
@@ -202,8 +215,8 @@ namespace assimp_loader
 		aiMaterial->Get(AI_MATKEY_COLOR_REFLECTIVE, colourReflective);
 		//aiMaterial->Get(AI_MATKEY_GLOBAL_BACKGROUND_IMAGE, colour_diffuse);
 
-		material->AddProperties(
-			{name.C_Str(),
+		material->AddProperties({
+			name.C_Str(),
 			twoSided,
 			shadingModel,
 			wireframe,
@@ -218,8 +231,10 @@ namespace assimp_loader
 			mars::Vec4(colourSpecular.r, colourSpecular.g, colourSpecular.b, 1),
 			mars::Vec4(colourEmissive.r, colourEmissive.g, colourEmissive.b, 1),
 			mars::Vec4(colourTransparent.r, colourTransparent.g, colourTransparent.b, 1),
-			mars::Vec4(colourReflective.r, colourReflective.g, colourReflective.b, 1)}
-		);
+			mars::Vec4(colourReflective.r, colourReflective.g, colourReflective.b, 1)
+			});
 	}
-}
+};
+std::vector<AssimpLoader::Mesh> AssimpLoader::result;
+void* AssimpLoader::m_Device = nullptr;
 }

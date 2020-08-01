@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "STBI/stb_image.h"
+#include "stb_image.h"
 #include "Texture.h"
 #include "Graphics/MemoryBlockManager.h"
 

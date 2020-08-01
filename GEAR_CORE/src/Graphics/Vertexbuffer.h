@@ -4,7 +4,7 @@
 
 namespace gear {
 namespace graphics {
-	class Vertexbuffer
+class Vertexbuffer
 	{
 	public: 
 		struct CreateInfo

@@ -5,7 +5,6 @@
 #include "Graphics/Uniformbuffer.h"
 #include "Graphics/Texture.h"
 #include "Utils/FileUtils.h"
-#include "mars.h"
 
 namespace gear {
 namespace objects {

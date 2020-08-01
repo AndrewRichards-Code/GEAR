@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "STBI/stb_image.h"
+#include "stb_image.h"
 #include "Window.h"
 #include "Core/StringConversion.h"
 
@@ -166,13 +166,13 @@ bool Window::Init()
 			return false;
 		}
 
-		bool glfwPresentationSupport = false;
+		/*bool glfwPresentationSupport = false;
 		glfwPresentationSupport = glfwGetPhysicalDevicePresentationSupport(ref_cast<vulkan::Context>(m_Context)->m_Instance, ref_cast<vulkan::Context>(m_Context)->m_PhysicalDevices.m_PhysicalDevices[0], 0);
 		if (!glfwPresentationSupport)
 		{
 			GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_NOT_SUPPORTED, "ERROR: GEAR::GRAPHICS::Window: The Vulkan queue family doesn't support presentation to GLFW.");
 			return false;
-		}
+		}*/
 	}
 	
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);

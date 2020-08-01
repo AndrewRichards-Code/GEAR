@@ -1,4 +1,12 @@
 #pragma once
+#if defined(_MSC_VER)
+#pragma warning(disable : 26812) //Disables 'Prefered scoped enum'  warning C26812
+#pragma warning(disable : 26495) //Disables 'Unitialised variable'  warning C26495
+#pragma warning(disable : 26451) //Disables 'Arithmetic overflow'   warning C26451
+#pragma warning(disable : 6011)  //Disables 'Dereferencing nullptr' warning C6011
+#pragma warning(disable : 6001)  //Disables 'Uninitialized memory'  warning C6001
+#pragma warning(disable : 4251)  //Disables 'DLL-interface needed'  warning C4251
+#endif
 
 //C Standard Libraries
 #include <iostream>
@@ -18,30 +26,76 @@
 //Smart Poiners
 #include <memory>
 
+//Removed Window Definition and Set Subsystem
+#if defined(_WIN64)
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+
+#ifndef _DEBUG
+#if _WIN64
+#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+#endif
+#endif
+#endif
+
 //Dependencies
-//MIRU
-#include "miru_core.h"
+
+//Assimp
+#include "assimp/Importer.hpp"
+#include "assimp/scene.h"
+#include "assimp/postprocess.h"
+#ifdef _DEBUG
+#pragma comment(lib, "ASSIMP/build/lib/Debug/assimp-vc142-mtd.lib")
+#else
+#pragma comment(lib, "ASSIMP/build/lib/Release/assimp-vc142-mt.lib")
+#endif
+
+//FreeType
+#include "ft2build.h"
+#include FT_FREETYPE_H
+#ifdef _DEBUG
+#pragma comment(lib, "FREETYPE/build/Debug/freetyped.lib")
+#else
+#pragma comment(lib, "FREETYPE/build/Release/freetype.lib")
+#endif
+
+//GLFW
+#include "GLFW/glfw3.h"
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include "GLFW/glfw3native.h"
+#ifdef _DEBUG
+#pragma comment(lib, "GLFW/build/src/Debug/glfw3.lib")
+#else
+#pragma comment(lib, "GLFW/build/src/Release/glfw3.lib")
+#endif
+
+//JSON
+#include "json.hpp"
 
 //MARS
 #include "mars.h"
+#ifdef _DEBUG
+#pragma comment(lib, "MARS/MARS/lib/x64/Debug/MARS.lib")
+#else
+#pragma comment(lib, "MARS/MARS/lib/x64/Release/MARS.lib")
+#endif
 
-//GLFW
-#include "GLFW/x64/include/GLFW/glfw3.h"
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include "GLFW/x64/include/GLFW/glfw3native.h"
+//MIRU
+#include "miru_core.h"
+#ifdef _DEBUG
+#pragma comment(lib, "MIRU/MIRU_CORE/lib/x64/Debug/MIRU_CORE.lib")
+#else
+#pragma comment(lib, "MIRU/MIRU_CORE/lib/x64/Release/MIRU_CORE.lib")
+#endif
 
 //OpenAL
-#include "OPENAL/include/AL/al.h"
-#include "OPENAL/include/AL/alc.h"
-
-//FreeType
-#include "FREETYPE/include/ft2build.h"
-#include FT_FREETYPE_H
-
-//Assimp
-#include "ASSIMP/include/assimp/Importer.hpp"
-#include "ASSIMP/include/assimp/scene.h"
-#include "ASSIMP/include/assimp/postprocess.h"
+#include "AL/al.h"
+#include "AL/alc.h"
+#ifdef _DEBUG
+#pragma comment(lib, "OPENAL/build/Debug/OpenAL32.lib")
+#else
+#pragma comment(lib, "OPENAL/build/Release/OpenAL32.lib")
+#endif
 
 //GEAR Helpers
 namespace gear

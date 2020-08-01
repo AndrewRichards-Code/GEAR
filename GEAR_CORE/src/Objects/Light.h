@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Camera.h"
-#include "mars.h"
 
 #define GEAR_MAX_LIGHTS 8
 

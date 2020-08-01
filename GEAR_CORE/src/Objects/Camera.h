@@ -2,8 +2,6 @@
 
 #include "gear_core_common.h"
 #include "Graphics/Uniformbuffer.h"
-#include "mars.h"
-
 
 #undef far
 #undef near

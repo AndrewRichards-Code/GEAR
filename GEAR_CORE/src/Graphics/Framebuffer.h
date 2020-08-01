@@ -5,7 +5,7 @@
 
 namespace gear {
 namespace graphics {
-	class Framebuffer
+class Framebuffer
 	{
 	public:
 		struct CreateInfo

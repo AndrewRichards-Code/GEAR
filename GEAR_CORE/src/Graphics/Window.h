@@ -2,14 +2,13 @@
 
 #include "gear_core_common.h"
 
-namespace gear {
-namespace graphics {
-
 #define MAX_KEYS 1024 
 #define MAX_BUTTONS 32 
 #define MAX_AXES 6
 #define MAX_JOY_BUTTONS 16
 
+namespace gear {
+namespace graphics {
 class Window
 {
 public:

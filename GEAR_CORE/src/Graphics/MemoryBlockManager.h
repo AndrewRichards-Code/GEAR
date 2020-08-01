@@ -4,7 +4,6 @@
 
 namespace gear {
 namespace graphics{
-
 class MemoryBlockManager
 {
 public:

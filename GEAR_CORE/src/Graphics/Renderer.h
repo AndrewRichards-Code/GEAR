@@ -1,7 +1,6 @@
 #pragma once
 
 #include "gear_core_common.h"
-#include "mars.h"
 #include "Graphics/Framebuffer.h"
 #include "Graphics/RenderPipeline.h"
 #include "Objects/Model.h"

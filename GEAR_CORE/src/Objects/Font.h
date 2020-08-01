@@ -7,8 +7,6 @@
 #include "Objects/Model.h"
 //#include "renderer/batchrenderer2d.h"
 
-#include "mars.h"
-
 #define GEAR_NUM_OF_CHARACTERS 128
 
 namespace gear {
