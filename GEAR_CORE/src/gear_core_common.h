@@ -45,29 +45,21 @@
 #include "assimp/scene.h"
 #include "assimp/postprocess.h"
 #ifdef _DEBUG
-#pragma comment(lib, "ASSIMP/build/lib/Debug/assimp-vc142-mtd.lib")
+#pragma comment(lib, "ASSIMP/lib/Debug/assimp-vc142-mtd.lib")
 #else
-#pragma comment(lib, "ASSIMP/build/lib/Release/assimp-vc142-mt.lib")
+#pragma comment(lib, "ASSIMP/lib/Release/assimp-vc142-mt.lib")
 #endif
 
 //FreeType
 #include "ft2build.h"
 #include FT_FREETYPE_H
-#ifdef _DEBUG
-#pragma comment(lib, "FREETYPE/build/Debug/freetyped.lib")
-#else
-#pragma comment(lib, "FREETYPE/build/Release/freetype.lib")
-#endif
+#pragma comment(lib, "FREETYPE/win64/freetype.lib")
 
 //GLFW
 #include "GLFW/glfw3.h"
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include "GLFW/glfw3native.h"
-#ifdef _DEBUG
-#pragma comment(lib, "GLFW/build/src/Debug/glfw3.lib")
-#else
-#pragma comment(lib, "GLFW/build/src/Release/glfw3.lib")
-#endif
+#pragma comment(lib, "GLFW/lib-vc2019/glfw3.lib")
 
 //JSON
 #include "json.hpp"
@@ -91,11 +83,7 @@
 //OpenAL
 #include "AL/al.h"
 #include "AL/alc.h"
-#ifdef _DEBUG
-#pragma comment(lib, "OPENAL/build/Debug/OpenAL32.lib")
-#else
-#pragma comment(lib, "OPENAL/build/Release/OpenAL32.lib")
-#endif
+#pragma comment(lib, "OPENAL/libs/Win64/OpenAL32.lib")
 
 //GEAR Helpers
 namespace gear

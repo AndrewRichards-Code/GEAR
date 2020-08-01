@@ -13,8 +13,8 @@ using namespace mars;
 
 int main()
 {
-	system("BuildShaders.bat");
-	system("CLS");
+	//system("BuildShaders.bat");
+	//system("CLS");
 
 	Window::CreateInfo windowCI;
 	windowCI.api = GraphicsAPI::API::VULKAN;
@@ -27,13 +27,13 @@ int main()
 	windowCI.iconFilepath;
 	Window window(&windowCI);
 	
-	//AssimpLoader::m_Device = window.GetDevice();
-	//auto kagemitsuG4 = AssimpLoader::LoadModel("res/obj/KagemitsuG4.fbx");
-
 	MemoryBlockManager::CreateInfo mbmCI;
 	mbmCI.pContext = window.GetContext();
 	mbmCI.defaultBlockSize = MemoryBlock::BlockSize::BLOCK_SIZE_128MB;
 	MemoryBlockManager::Initialise(&mbmCI);
+	
+	AssimpLoader::m_Device = window.GetDevice();
+	auto kagemitsuG4 = AssimpLoader::LoadModel("res/obj/KagemitsuG4.fbx");
 
 	Texture::CreateInfo textureCI;
 	textureCI.device =  window.GetDevice();
