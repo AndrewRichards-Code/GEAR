@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
 #include "RenderPipeline.h"
+#include "Utils/ModelLoader.h"
 
 using namespace gear;
 using namespace graphics;
@@ -29,19 +30,17 @@ void RenderPipeline::FinalisePipline()
 {
 	if (m_Shaders.size() > 1)
 	{
-		std::vector<VertexInputBindingDescription> vibds;
+		uint32_t stride = 0;
 		std::vector<VertexInputAttributeDescription> viads;
-		uint32_t i = 0;
 		for (auto& vsiad : m_Shaders[0]->GetVSIADs())
 		{
-			uint32_t typeSize = 4;
-			if (vsiad.vertexType > VertexType::VEC4 && vsiad.vertexType < VertexType::INT)
-				typeSize = 8;
+			uint32_t typeSize = (vsiad.vertexType > VertexType::VEC4 && vsiad.vertexType < VertexType::INT) ? 8 : 4;
+			stride += (((uint32_t)vsiad.vertexType % 4) + 1) * typeSize;
 
-			vibds.push_back({ i, (((uint32_t)vsiad.vertexType % 4) + 1) * typeSize, VertexInputRate::VERTEX });
-			viads.push_back({ vsiad.location, vsiad.binding + i, vsiad.vertexType, 0, vsiad.semanticName.c_str() });
-			i++;
+			viads.push_back({ vsiad.location, vsiad.binding, vsiad.vertexType, 0, vsiad.semanticName.c_str() });
 		}
+		std::vector<VertexInputBindingDescription> vibds;
+		vibds.push_back({ 0, stride, VertexInputRate::VERTEX });
 
 		for (auto& shader : m_Shaders)
 		{

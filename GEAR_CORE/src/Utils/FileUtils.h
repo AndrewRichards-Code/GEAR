@@ -46,7 +46,7 @@ namespace file_utils
 		return output;
 	}
 
-#if 1
+#if 0
 	struct ObjData
 	{
 		std::vector<mars::Vec4> m_Vertices;

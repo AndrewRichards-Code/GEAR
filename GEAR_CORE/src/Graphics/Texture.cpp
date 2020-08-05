@@ -13,7 +13,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
-	bool loadFromFile = !m_CI.filepaths.empty() && !m_CI.data;
+	bool loadFromFile = !m_CI.filepaths.empty();
 	m_Cubemap = m_CI.type == Image::Type::TYPE_CUBE;
 	m_DepthTexture = m_CI.format >= Image::Format::D16_UNORM;
 	
@@ -47,8 +47,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 			}
 
 		}
-		if (m_CI.depth == 0)
-			m_CI.depth = 1;
+		m_CI.depth = 1;
 	}
 	else
 	{

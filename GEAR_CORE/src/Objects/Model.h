@@ -2,8 +2,8 @@
 
 #include "gear_core_common.h"
 #include "Mesh.h"
+#include "Material.h"
 #include "Graphics/Uniformbuffer.h"
-#include "Graphics/Texture.h"
 #include "Utils/FileUtils.h"
 
 namespace gear {
@@ -21,13 +21,11 @@ class Model
 public:
 	struct CreateInfo
 	{
-		const char*						debugName;
-		void*							device;
-		gear::Ref<Mesh>					pMesh;
-		Transform						transform;
-		gear::Ref<graphics::Texture>	pTexture;
-		mars::Vec4						colour;
-		std::string						renderPipelineName;
+		const char*			debugName;
+		void*				device;
+		gear::Ref<Mesh>		pMesh;
+		Transform			transform;
+		std::string			renderPipelineName;
 	};
 
 private:
@@ -45,8 +43,6 @@ private:
 
 private:
 	void InitialiseUB();
-	void AddTextureIDsVB();
-	void AddColourVB();
 
 public:
 	Model(CreateInfo* pCreateInfo);
@@ -55,12 +51,13 @@ public:
 	void SetUniformModlMatrix();
 	void SetUniformModlMatrix(const mars::Mat4& modl);
 
-	inline const std::map<Mesh::VertexBufferContents, gear::Ref<graphics::Vertexbuffer>> GetVBs() const { return m_CI.pMesh->GetVertexBuffers(); }
-	inline const gear::Ref<graphics::Indexbuffer> GetIB() const { return m_CI.pMesh->GetIndexBuffer(); }
+	inline const gear::Ref<objects::Mesh>& GetMesh() const { return m_CI.pMesh; }
 	inline const std::string& GetPipelineName() const { return m_CI.renderPipelineName; }
-	inline const gear::Ref<graphics::Texture> GetTexture() const { return m_CI.pTexture; }
+
 	inline const gear::Ref<graphics::Uniformbuffer<ModelUB>> GetUB() const { return m_UB; }
 	inline const mars::Mat4 GetModlMatrix() const { return m_UB->modlMatrix; }
+	
+	inline const std::string& GetDebugName() const { return m_DebugName; }
 };
 }
 }

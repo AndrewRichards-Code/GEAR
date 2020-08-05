@@ -32,29 +32,12 @@ public:
 private:
 	struct LightUB
 	{
-		mars::Vec4 m_Colour;				//00
-		mars::Vec4 m_Position;				//16
-		mars::Vec4 m_Direction;				//32
-		float m_Type;						//48
-		float m_ShineFactor;				//52
-		float m_Reflectivity;				//56
-		float m_AmbientFactor;				//60
-		float m_AttenuationConstant;		//64
-		float m_AttenuationLinear;			//68
-		float m_AttenuationQuadratic;		//72
-		float m_CutOff;						//76
-	};										//80 Total Size
+		mars::Vec4 colour;
+		mars::Vec4 position;
+		mars::Vec4 direction;
+	};						
 	typedef std::array<LightUB, GEAR_MAX_LIGHTS> LightUBType;
-	gear::Ref<graphics::Uniformbuffer<LightUBType>> m_UB0;
-	
-	struct LightingUB
-	{
-		float u_Diffuse;
-		float u_Specular;
-		float u_Ambient;
-		float u_Emit;
-	};
-	gear::Ref<graphics::Uniformbuffer<LightingUB>> m_UB1;
+	gear::Ref<graphics::Uniformbuffer<LightUBType>> m_UB;
 	
 	static int s_NumOfLights;
 	size_t m_LightID;
@@ -69,15 +52,9 @@ public:
 	Light(CreateInfo* pCreateInfo);
 	~Light();
 
-	void Specular(float shineFactor, float reflectivity);
-	void Ambient(float ambientFactor);
-	void Attenuation(float linear, float quadratic);
-	void SpotCone(double theta);
-
 	//Update the camera the current static of Camera::CreateInfo m_CI.
 	void Update();
-	gear::Ref<graphics::Uniformbuffer<LightUBType>> GetUB0() { return m_UB0; };
-	gear::Ref<graphics::Uniformbuffer<LightingUB>> GetUB1() { return m_UB1; };
+	gear::Ref<graphics::Uniformbuffer<LightUBType>> GetUB() { return m_UB; };
 
 private:
 	void InitialiseUB();

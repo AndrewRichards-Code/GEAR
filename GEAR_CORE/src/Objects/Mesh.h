@@ -3,7 +3,7 @@
 #include "gear_core_common.h"
 #include "Graphics/Vertexbuffer.h"
 #include "Graphics/Indexbuffer.h"
-#include "Utils/FileUtils.h"
+#include "Utils/ModelLoader.h"
 
 namespace gear {
 namespace objects {
@@ -18,36 +18,26 @@ namespace objects {
 			std::string filepath;
 		};
 
-		enum class VertexBufferContents : size_t
-		{
-			POSITION,
-			TEXTURE_COORD,
-			TEXTURE_ID,
-			NORMAL,
-			COLOUR,
-			BI_NORMAL,
-			TANGENT,
-		};
-
 	private:
 		std::string m_DebugName;
 
 		CreateInfo m_CI;
-		file_utils::ObjData m_Data;
+		ModelLoader::ModelData m_Data;
 
-		std::map<VertexBufferContents, gear::Ref<graphics::Vertexbuffer>> m_VBs;
-		gear::Ref<graphics::Indexbuffer> m_IB;
+		std::vector<gear::Ref<graphics::Vertexbuffer>> m_VBs;
+		std::vector<gear::Ref<graphics::Indexbuffer>> m_IBs;
+		std::vector<gear::Ref<objects::Material>> m_Materials;
 
 	public:
 		Mesh(CreateInfo* pCreateInfo);
 		~Mesh();
 
-		void AddVertexBuffer(VertexBufferContents type, gear::Ref<graphics::Vertexbuffer> vertexBuffer);
-		void RemoveVertexBuffer(VertexBufferContents type);
+		inline const std::vector<gear::Ref<graphics::Vertexbuffer>>& GetVertexBuffers() const { return m_VBs; }
+		inline const std::vector<gear::Ref<graphics::Indexbuffer>>& GetIndexBuffers() const { return m_IBs; }
+		inline const std::vector<gear::Ref<objects::Material>>& GetMaterials() const { return m_Materials; }
+		inline const ModelLoader::ModelData& GetModelData() const { return m_Data; }
 
-		inline const std::map<VertexBufferContents, gear::Ref<graphics::Vertexbuffer>>& GetVertexBuffers() const { return m_VBs; }
-		inline const gear::Ref<graphics::Indexbuffer> GetIndexBuffer() const { return m_IB; }
-		inline const file_utils::ObjData& GetObjData() const { return m_Data; }
+		inline void SetOverrideMaterial(size_t index, const gear::Ref<objects::Material>& material) { m_Materials[index] = material; }
 	};
 }
 }

@@ -34,4 +34,4 @@
 
 //Utils
 #include "Utils/FileUtils.h"
-//#include "utils/assimp.h"
+#include "Utils/ModelLoader.h"

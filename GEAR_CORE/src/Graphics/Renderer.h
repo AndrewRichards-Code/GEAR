@@ -29,18 +29,17 @@ private:
 	miru::Ref<miru::crossplatform::DescriptorPool> m_DescPool;
 	miru::crossplatform::DescriptorPool::CreateInfo m_DescPoolCI;
 
-	std::vector<miru::Ref<miru::crossplatform::DescriptorSetLayout>> m_DescSetLayouts;
-	
 	miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetCamera;
-	std::map<gear::Ref<objects::Model>, miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSetObj;
+	std::map<gear::Ref<objects::Model>, miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSetModelMaterials;
 	miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetLight;
-	miru::crossplatform::DescriptorSet::CreateInfo m_DescSetCI;
+
+	std::map<gear::Ref<objects::Model>, std::string> m_DescSetModelMaterialDebugName;
 
 	std::map<std::string, gear::Ref<graphics::RenderPipeline>> m_RenderPipelines;
 	const miru::Ref<miru::crossplatform::Framebuffer>* m_Framebuffers;
 	std::deque<gear::Ref<objects::Model>> m_RenderQueue;
-	objects::Camera* m_Camera;
-	std::vector<objects::Light*> m_Lights;
+	gear::Ref<objects::Camera> m_Camera;
+	std::vector<gear::Ref<objects::Light>> m_Lights;
 
 	uint32_t m_FrameIndex = 0;
 	uint32_t m_FrameCount = 0;
@@ -60,9 +59,9 @@ public:
 	void InitialiseRenderPipelines(const std::vector<std::string>& filepaths, float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass);
 	void ClearupRenderPipelines();
 	virtual void SubmitFramebuffer(const miru::Ref<miru::crossplatform::Framebuffer>* framebuffers) { m_Framebuffers = framebuffers; };
-	virtual void SubmitCamera(objects::Camera* camera) { m_Camera = camera; };
-	virtual void SubmitLights(std::vector<objects::Light*> lights) { m_Lights = lights; };
-	virtual void Submit(const gear::Ref<objects::Model>& obj);
+	virtual void SubmitCamera(gear::Ref<objects::Camera> camera) { m_Camera = camera; };
+	virtual void SubmitLights(std::vector<gear::Ref<objects::Light>> lights) { m_Lights = lights; };
+	virtual void SubmitModel(const gear::Ref<objects::Model>& obj);
 	virtual void Flush();
 	virtual void Present(const miru::Ref<miru::crossplatform::Swapchain>& swapchain, bool& windowResize);
 

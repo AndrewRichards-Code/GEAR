@@ -37,7 +37,7 @@ Vertexbuffer::Vertexbuffer(CreateInfo* pCreateInfo)
 	m_VertexBufferViewCI.pBuffer = m_VertexBuffer;
 	m_VertexBufferViewCI.offset = 0;
 	m_VertexBufferViewCI.size = m_CI.size;
-	m_VertexBufferViewCI.stride = GetVertexTypeSize(m_CI.type);
+	m_VertexBufferViewCI.stride = m_CI.stride;
 	m_VertexBufferView = BufferView::Create(&m_VertexBufferViewCI);
 }
 
@@ -51,38 +51,5 @@ void Vertexbuffer::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cm
 	{
 		cmdBuffer->CopyBuffer(cmdBufferIndex, m_VertexBufferUpload, m_VertexBuffer, { {0, 0, m_CI.size} });
 		m_Upload = true;
-	}
-}
-
-size_t Vertexbuffer::GetVertexTypeSize(VertexType type)
-{
-	switch (type)
-	{
-	case VertexType::FLOAT:
-	case VertexType::INT:
-	case VertexType::UINT:
-		return 4 * 1;
-	case VertexType::VEC2:
-	case VertexType::IVEC2:
-	case VertexType::UVEC2:
-		return 4 * 2;
-	case VertexType::VEC3:
-	case VertexType::IVEC3:
-	case VertexType::UVEC3:
-		return 4 * 3;
-	case VertexType::VEC4:
-	case VertexType::IVEC4:
-	case VertexType::UVEC4:
-		return 4 * 4;
-	case VertexType::DOUBLE:
-		return 8 * 1;
-	case VertexType::DVEC2:
-		return 8 * 2;
-	case VertexType::DVEC3:
-		return 8 * 3;
-	case VertexType::DVEC4:
-		return 8 * 4;
-	default:
-		return 0;
 	}
 }

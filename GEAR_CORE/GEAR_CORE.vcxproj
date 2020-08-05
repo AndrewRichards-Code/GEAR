@@ -120,6 +120,7 @@
     <ClCompile Include="src\Objects\Material.cpp" />
     <ClCompile Include="src\Objects\Mesh.cpp" />
     <ClCompile Include="src\Objects\Model.cpp" />
+    <ClCompile Include="src\Utils\ModelLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dep\STBI\stb_image.h" />
@@ -145,7 +146,7 @@
     <ClInclude Include="src\Objects\Material.h" />
     <ClInclude Include="src\Objects\Mesh.h" />
     <ClInclude Include="src\Objects\Model.h" />
-    <ClInclude Include="src\Utils\Assimp.h" />
+    <ClInclude Include="src\Utils\ModelLoader.h" />
     <ClInclude Include="src\Utils\FileUtils.h" />
     <ClInclude Include="src\gear_core.h" />
     <ClInclude Include="src\gear_core_common.h" />

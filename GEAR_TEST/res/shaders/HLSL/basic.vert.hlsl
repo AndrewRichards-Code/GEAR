@@ -4,52 +4,50 @@
 struct VS_IN
 {
 	MIRU_LOCATION(0, float4, positions, POSITION0);
-	MIRU_LOCATION(1, float2, textCoords, TEXCOORD1);
-	MIRU_LOCATION(2, float, textIds, PSIZE2);
-	MIRU_LOCATION(3, float4, normals, NORMAL3);
-	MIRU_LOCATION(4, float4, colours, COLOR4);
+	MIRU_LOCATION(1, float2, texCoords, TEXCOORD1);
+	MIRU_LOCATION(2, float4, normals, NORMAL2);
+	MIRU_LOCATION(3, float4, tangents, TANGENT3);
+	MIRU_LOCATION(4, float4, binormals, BINORMAL4);
+	MIRU_LOCATION(5, float4, colours, COLOR5);
 };
 
 struct Camera
 {
-	float4x4 u_Proj;
-	float4x4 u_View;
-	float4	u_CameraPosition;
+	float4x4 proj;
+	float4x4 view;
+	float4	cameraPosition;
 };
 MIRU_UNIFORM_BUFFER(0, 0, Camera, camera);
 
 struct Model
 {
-	float4x4 u_Modl;
-	float2 u_UV0;
-	float2 u_UV1;
+	float4x4 modl;
+	float2 texCoordScale0;
+	float2 texCoordScale1;
 };
 MIRU_UNIFORM_BUFFER(1, 0, Model, model);
 
 //To Fragment Shader
 struct VS_OUT
 {
-	MIRU_LOCATION(0, float4, v_Position, SV_POSITION);
-	MIRU_LOCATION(1, float2, v_TextCoord, TEXCOORD1);
-	MIRU_LOCATION(2, float, v_TextIds, PSIZE2);
-	MIRU_LOCATION(3, float4, v_Normal, NORMAL3);
-	MIRU_LOCATION(4, float4, v_WorldSpace, POSITION5);
-	MIRU_LOCATION(5, float4, v_VertexToCamera, POSITION6);
-	MIRU_LOCATION(6, float4, v_Colour, COLOR7);
+	MIRU_LOCATION(0, float4, position, SV_POSITION);
+	MIRU_LOCATION(1, float2, texCoord, TEXCOORD1);
+	MIRU_LOCATION(2, float3x3, tbn, MATRIX2);
+	MIRU_LOCATION(3, float4, worldSpace, POSITION3);
+	MIRU_LOCATION(4, float4, vertexToCamera, POSITION4);
+	MIRU_LOCATION(5, float4, colour, COLOR5);
 };
 
 VS_OUT main(VS_IN IN)
 {
 	VS_OUT OUT;
 	
-	OUT.v_Position = mul(mul(mul(transpose(camera.u_Proj), transpose(camera.u_View)), transpose(model.u_Modl)), IN.positions);
-	OUT.v_TextCoord.x = model.u_UV0.x * (IN.textCoords.x);
-	OUT.v_TextCoord.y = model.u_UV0.y * (1.0 - IN.textCoords.y);
-	OUT.v_TextIds = IN.textIds;
-	OUT.v_Normal = mul(transpose(model.u_Modl), IN.normals);
-	OUT.v_WorldSpace = mul(IN.positions, model.u_Modl);
-	OUT.v_VertexToCamera = camera.u_CameraPosition - OUT.v_WorldSpace;
-	OUT.v_Colour = IN.colours;
+	OUT.position = mul(mul(mul(transpose(camera.proj), transpose(camera.view)), transpose(model.modl)), IN.positions);
+	OUT.texCoord = float2(model.texCoordScale0.x * (IN.texCoords.x + 0.5), model.texCoordScale0.y * (1.0 - (IN.texCoords.y + 0.5)));	
+	OUT.tbn = float3x3(IN.tangents.xyz, IN.binormals.xyz, IN.normals.xyz);
+	OUT.worldSpace = mul(transpose(model.modl), IN.positions);	
+	OUT.vertexToCamera = normalize(camera.cameraPosition - OUT.worldSpace);
+	OUT.colour = IN.colours;
 	
 	return OUT;
 }

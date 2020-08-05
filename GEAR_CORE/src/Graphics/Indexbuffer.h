@@ -13,7 +13,7 @@ public:
 		void*		device;
 		void*		data;
 		size_t		size;
-		uint32_t	stride;
+		size_t		stride;
 	};
 private:
 	miru::Ref<miru::crossplatform::Buffer> m_IndexBuffer, m_IndexBufferUpload;

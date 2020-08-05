@@ -13,7 +13,7 @@ class Vertexbuffer
 			void*							device;
 			void*							data;
 			size_t							size;
-			miru::crossplatform::VertexType type;
+			size_t							stride;
 		};
 	
 	private:
@@ -36,8 +36,6 @@ class Vertexbuffer
 
 		void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
 		inline const miru::Ref<miru::crossplatform::BufferView>& GetVertexBufferView() { return m_VertexBufferView; };
-
-		static size_t GetVertexTypeSize(miru::crossplatform::VertexType type);
 	};
 }
 }
