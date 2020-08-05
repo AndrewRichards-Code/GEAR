@@ -10,18 +10,6 @@ using namespace miru::crossplatform;
 
 using namespace mars;
 
-gear::Ref<graphics::Texture> LoadTexture(gear::Ref<Window> window, std::string filepath, std::string debugName)
-{
-	Texture::CreateInfo texCI;
-	texCI.debugName = debugName.c_str();
-	texCI.device = window->GetDevice();
-	texCI.filepaths = { filepath };
-	texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
-	texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
-	texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-	return std::move(gear::CreateRef<Texture>(&texCI));
-};
-
 int main()
 {
 	system("BuildShaders.bat");
@@ -58,6 +46,18 @@ int main()
 	modelCI.transform.scale = Vec3(0.01f, 0.01f, 0.01f);
 	modelCI.renderPipelineName = "basic";
 	gear::Ref<Model> kagemitsuG4 = gear::CreateRef<Model>(&modelCI);*/
+
+	auto LoadTexture = [](gear::Ref<Window> window, std::string filepath, std::string debugName) -> gear::Ref<graphics::Texture>
+	{
+		Texture::CreateInfo texCI;
+		texCI.debugName = debugName.c_str();
+		texCI.device = window->GetDevice();
+		texCI.filepaths = { filepath };
+		texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
+		texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
+		texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+		return std::move(gear::CreateRef<Texture>(&texCI));
+	};
 
 	std::future<gear::Ref<graphics::Texture>> rustIronAlbedo = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_basecolor.png"), std::string("UE4 Rust Iron: Albedo"));
 	std::future<gear::Ref<graphics::Texture>> rustIronMetallic = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_metallic.png"), std::string("UE4 Rust Iron: Metallic"));

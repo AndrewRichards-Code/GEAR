@@ -18,12 +18,6 @@ struct PS_IN
 };
 
 //From Application
-MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 1, float4, normal);
-MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 2, float4, albedo);
-MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 3, float4, metalness);
-MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 4, float4, roughness);
-MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 5, float4, ambientOcclusion);
-MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 6, float4, emissive);
 
 struct PBRConstants
 {
@@ -35,7 +29,14 @@ struct PBRConstants
 	float pad;
 	float4 emissive;
 };
-MIRU_UNIFORM_BUFFER(1, 7, PBRConstants, pbrConsts);
+MIRU_UNIFORM_BUFFER(1, 1, PBRConstants, pbrConsts);
+
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 2, float4, normal);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 3, float4, albedo);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 4, float4, metalness);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 5, float4, roughness);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 6, float4, ambientOcclusion);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 7, float4, emissive);
 
 struct Light
 {

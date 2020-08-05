@@ -297,6 +297,9 @@ void Renderer::Flush()
 			modelMaterialSetCI.pDescriptorSetLayouts = { modelMaterialDescSetLayout };
 			m_DescSetModelMaterials[model] = DescriptorSet::Create(&modelMaterialSetCI);
 
+			m_DescSetModelMaterials[model]->AddBuffer(0, 0, { { model->GetUB()->GetBufferView() } });
+			m_DescSetModelMaterials[model]->AddBuffer(0, 1, { { model->GetMesh()->GetMaterials()[0]->GetUB()->GetBufferView() } });
+			
 			for (auto& materialTexture : model->GetMesh()->GetMaterials()[0]->GetTextures()) //TODO: Deal with all materials
 			{
 				const Material::TextureType& type = materialTexture.first;
@@ -305,23 +308,21 @@ void Renderer::Flush()
 				switch (type)
 				{
 				case Material::TextureType::NORMAL:
-					m_DescSetModelMaterials[model]->AddImage(0, 1, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
-				case Material::TextureType::ALBEDO:
 					m_DescSetModelMaterials[model]->AddImage(0, 2, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
-				case Material::TextureType::METALLIC:
+				case Material::TextureType::ALBEDO:
 					m_DescSetModelMaterials[model]->AddImage(0, 3, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
-				case Material::TextureType::ROUGHNESS:
+				case Material::TextureType::METALLIC:
 					m_DescSetModelMaterials[model]->AddImage(0, 4, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
-				case Material::TextureType::AMBIENT_OCCLUSION:
+				case Material::TextureType::ROUGHNESS:
 					m_DescSetModelMaterials[model]->AddImage(0, 5, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
-				case Material::TextureType::EMISSIVE:
+				case Material::TextureType::AMBIENT_OCCLUSION:
 					m_DescSetModelMaterials[model]->AddImage(0, 6, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
+				case Material::TextureType::EMISSIVE:
+					m_DescSetModelMaterials[model]->AddImage(0, 7, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
 				default:
 					continue;
 				}
 			}
-			m_DescSetModelMaterials[model]->AddBuffer(0, 0, { { model->GetUB()->GetBufferView() } });
-			m_DescSetModelMaterials[model]->AddBuffer(0, 7, { { model->GetMesh()->GetMaterials()[0]->GetUB()->GetBufferView() } });
 			m_DescSetModelMaterials[model]->Update();
 		}
 
