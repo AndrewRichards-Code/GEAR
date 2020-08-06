@@ -43,7 +43,10 @@ VS_OUT main(VS_IN IN)
 	VS_OUT OUT;
 	
 	OUT.position = mul(mul(mul(transpose(camera.proj), transpose(camera.view)), transpose(model.modl)), IN.positions);
-	OUT.texCoord = float2(model.texCoordScale0.x * (IN.texCoords.x + 0.5), model.texCoordScale0.y * (1.0 - (IN.texCoords.y + 0.5)));	
+	OUT.texCoord = float2(model.texCoordScale0.x * IN.texCoords.x, model.texCoordScale0.y * IN.texCoords.y);
+	OUT.texCoord += float2(1, 1);
+	OUT.texCoord /= 2.0;
+	OUT.texCoord.y = 1.0 - OUT.texCoord.y;
 	OUT.tbn = float3x3(IN.tangents.xyz, IN.binormals.xyz, IN.normals.xyz);
 	OUT.worldSpace = mul(transpose(model.modl), IN.positions);	
 	OUT.vertexToCamera = normalize(camera.cameraPosition - OUT.worldSpace);

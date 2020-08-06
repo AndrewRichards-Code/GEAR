@@ -40,7 +40,7 @@ public:
 		const char*		debugName;
 		void*			device;
 		mars::Vec3		position;
-		mars::Quat		orientation;
+		mars::Mat4		orientation;
 		ProjectionType	projectionType;
 		union
 		{
@@ -57,7 +57,6 @@ private:
 		mars::Mat4 projectionMatrix;
 		mars::Mat4 viewMatrix;
 		mars::Vec4 position;
-		
 	};
 	gear::Ref<graphics::Uniformbuffer<CameraUB>> m_UB;
 

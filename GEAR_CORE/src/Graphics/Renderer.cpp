@@ -119,11 +119,11 @@ void Renderer::Flush()
 		std::vector<Ref<Barrier>> initialBarrier;
 		for (auto& model : m_RenderQueue)
 		{
-			for(auto& vb : model->GetMesh()->GetVertexBuffers())
+			for (auto& vb : model->GetMesh()->GetVertexBuffers())
 				vb->Upload(m_TransCmdBuffer, 0);
-			for(auto& ib : model->GetMesh()->GetIndexBuffers())
+			for (auto& ib : model->GetMesh()->GetIndexBuffers())
 				ib->Upload(m_TransCmdBuffer, 0);
-			
+
 			model->GetUB()->Upload(m_TransCmdBuffer, 0);
 			model->GetMesh()->GetMaterials()[0]->GetUB()->Upload(m_TransCmdBuffer, 0);
 

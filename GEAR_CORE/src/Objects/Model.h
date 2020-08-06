@@ -24,6 +24,7 @@ public:
 		const char*			debugName;
 		void*				device;
 		gear::Ref<Mesh>		pMesh;
+		mars::Vec2			materialTextureScaling = mars::Vec2(1.0f, 1.0f);
 		Transform			transform;
 		std::string			renderPipelineName;
 	};

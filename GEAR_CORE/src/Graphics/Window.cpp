@@ -17,7 +17,7 @@ Window::Window(CreateInfo* pCreateInfo)
 	m_CI = *pCreateInfo;
 
 #ifdef _DEBUG
-	m_CI.title += ": GEAR_CORE(x64)";
+	m_CI.title += ": GEAR_CORE(x64) Debug";
 #endif
 
 	m_CurrentWidth = m_CI.width;
@@ -136,10 +136,7 @@ bool Window::Init()
 	}
 	GraphicsAPI::SetAPI(m_CI.api);
 	GraphicsAPI::AllowSetName();
-
-#ifdef _DEBUG
-	GraphicsAPI::LoadGraphicsDebugger(debug::GraphicsDebugger::DebuggerType::RENDER_DOC);
-#endif 
+	GraphicsAPI::LoadGraphicsDebugger(m_CI.graphicsDebugger);
 
 	m_ContextCI.applicationName = m_CI.title.c_str();
 	m_ContextCI.api_version_major = GraphicsAPI::IsD3D12() ? 11 : 1;

@@ -181,9 +181,9 @@ void Texture::CreateSampler()
 	m_SamplerCI.magFilter = Sampler::Filter::LINEAR;
 	m_SamplerCI.minFilter = Sampler::Filter::LINEAR;
 	m_SamplerCI.mipmapMode = Sampler::MipmapMode::LINEAR;
-	m_SamplerCI.addressModeU = m_TileFactor > 1.0f ? Sampler::AddressMode::REPEAT : Sampler::AddressMode::CLAMP_TO_EDGE;
-	m_SamplerCI.addressModeV = m_TileFactor > 1.0f ? Sampler::AddressMode::REPEAT : Sampler::AddressMode::CLAMP_TO_EDGE;
-	m_SamplerCI.addressModeW = m_TileFactor > 1.0f ? Sampler::AddressMode::REPEAT : Sampler::AddressMode::CLAMP_TO_EDGE;
+	m_SamplerCI.addressModeU = Sampler::AddressMode::REPEAT;
+	m_SamplerCI.addressModeV = Sampler::AddressMode::REPEAT;
+	m_SamplerCI.addressModeW = Sampler::AddressMode::REPEAT;
 	m_SamplerCI.mipLodBias = 1.0f;
 	m_SamplerCI.anisotropyEnable =  m_AnisotrophicValue > 1.0f;
 	m_SamplerCI.maxAnisotropy = m_AnisotrophicValue;

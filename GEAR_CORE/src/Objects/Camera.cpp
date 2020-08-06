@@ -57,12 +57,16 @@ void Camera::DefineProjection()
 
 void Camera::DefineView()
 {
-	m_Direction	= mars::Vec3(0, 0, +1).RotateQuat(m_CI.orientation);
-	m_Up		= mars::Vec3(0, +1, 0).RotateQuat(m_CI.orientation);
-	m_Right		= mars::Vec3(+1, 0, 0).RotateQuat(m_CI.orientation);
+	auto toVec3 = [](const Vec4& vec) -> Vec3
+	{
+		return Vec3(vec.x, vec.y, vec.z);
+	};
 
+	m_Direction	= toVec3(m_CI.orientation * Vec4(0, 0, -1, 0));
+	m_Up		= toVec3(m_CI.orientation * Vec4(0, +1, 0, 0));
+	m_Right		= toVec3(m_CI.orientation * Vec4(+1, 0, 0, 0));
 
-	m_UB->viewMatrix = Quat::ToMat4(m_CI.orientation) * Mat4::Translation(-m_CI.position);
+	m_UB->viewMatrix = m_CI.orientation * Mat4::Translation(-m_CI.position);
 }
 
 

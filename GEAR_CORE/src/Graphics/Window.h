@@ -12,14 +12,6 @@ namespace graphics {
 class Window
 {
 public:
-	enum class MSAALevel : uint32_t
-	{
-		MSAA_1X = 0x00000001,
-		MSAA_2X = 0x00000002,
-		MSAA_4X = 0x00000004,
-		MSAA_8X = 0x00000008
-	};
-
 	struct CreateInfo
 	{
 		miru::crossplatform::GraphicsAPI::API		api;
@@ -30,6 +22,7 @@ public:
 		bool										vSync;
 		miru::crossplatform::Image::SampleCountBit	samples;
 		std::string									iconFilepath;
+		miru::debug::GraphicsDebugger::DebuggerType graphicsDebugger;
 	};
 
 private:

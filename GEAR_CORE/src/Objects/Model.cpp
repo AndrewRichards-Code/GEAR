@@ -24,10 +24,10 @@ Model::~Model()
 
 void Model::SetUniformModlMatrix()
 {
-	m_UB->texCoordsScale0.x = 1.0f;
-	m_UB->texCoordsScale0.y = 1.0f;
-	m_UB->texCoordsScale1.x = 1.0f;
-	m_UB->texCoordsScale1.y = 1.0f;
+	m_UB->texCoordsScale0.x = m_CI.materialTextureScaling.x;
+	m_UB->texCoordsScale0.y = m_CI.materialTextureScaling.y;
+	m_UB->texCoordsScale1.x = m_CI.materialTextureScaling.x;
+	m_UB->texCoordsScale1.y = m_CI.materialTextureScaling.y;
 
 	m_UB->modlMatrix = 
 		Mat4::Translation(m_CI.transform.translation) * 

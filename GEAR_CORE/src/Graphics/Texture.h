@@ -50,7 +50,6 @@ private:
 	bool m_Cubemap = false;
 	bool m_DepthTexture = false;
 	
-	float m_TileFactor = 1.0f;
 	float m_AnisotrophicValue = 1.0f;
 	
 	bool m_Upload = false;
@@ -74,9 +73,6 @@ public:
 	inline const miru::Ref<miru::crossplatform::Sampler>& GetTextureSampler() const { return m_Sampler; }
 	inline bool IsCubeMap() const { return m_Cubemap; }
 	inline bool IsDepthTexture() const { return m_DepthTexture; }
-
-	inline void SetTileFactor(float factor) { m_TileFactor = factor; CreateSampler();}
-	inline float GetTileFactor() const { return m_TileFactor; }
 
 	inline void SetAnisotrophicValue(float anisostrphicVal) { m_AnisotrophicValue = anisostrphicVal; CreateSampler();};
 	inline float GetAnisotrophicValue() const { return m_AnisotrophicValue; };
