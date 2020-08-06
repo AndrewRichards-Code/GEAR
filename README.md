@@ -6,6 +6,12 @@ Game Engine for Windows(x64) using D3D12 or Vulkan via MIRU.
 GEAR (Game Engine Andrew Richards) is a 3D game engine, that I am developing to improve both my C++ and graphic programming, using my own Graphics (MIRU) and Mathematics (MARS) libraries. 
 Inspired by Yan Chernikov's (aka TheCheno) videos on C++, OpenGL and Game Engines. https://www.youtube.com/c/TheChernoProject
 
+## PBR Rendering Demo
+D3D12
+![pbr_d3d12](/gear_test_pbr_d3d12.png)
+Vulkan
+![pbr_vulkan](/gear_test_pbr_vulkan.png)
+
 # Projects:
 ## GEAR_CORE: 
 Contains the core functionality of the game engine. Build as static library; Dynamic Runtime Linking (MD).
