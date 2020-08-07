@@ -10,18 +10,17 @@ using namespace miru::crossplatform;
 Mesh::Mesh(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
-	m_DebugName = m_DebugName = std::string("GEAR_CORE_Mesh: ") + m_CI.debugName;
 
 	ModelLoader::SetDevice(m_CI.device);
 	m_Data = ModelLoader::LoadModelData(m_CI.filepath.c_str());
 
 	graphics::Vertexbuffer::CreateInfo vbCI;
-	vbCI.debugName = m_DebugName.c_str();
+	vbCI.debugName = "GEAR_CORE_Mesh: " + m_CI.debugName;
 	vbCI.device = m_CI.device;
 	vbCI.stride = ModelLoader::GetSizeOfVertex();
 
 	graphics::Indexbuffer::CreateInfo ibCI;
-	ibCI.debugName = m_DebugName.c_str();
+	ibCI.debugName = "GEAR_CORE_Mesh: " + m_CI.debugName;
 	ibCI.device = m_CI.device;
 	ibCI.stride = ModelLoader::GetSizeOfIndex();
 	

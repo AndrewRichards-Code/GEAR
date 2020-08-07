@@ -12,7 +12,6 @@ using namespace miru::crossplatform;
 Model::Model(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
-	m_DebugName = std::string("GEAR_CORE_Model: ") +  m_CI.debugName;
 	
 	InitialiseUB();
 	SetUniformModlMatrix();
@@ -47,7 +46,7 @@ void Model::InitialiseUB()
 	float zero[sizeof(ModelUB)] = { 0 };
 
 	Uniformbuffer<ModelUB>::CreateInfo ubCI;
-	ubCI.debugName = m_DebugName.c_str();
+	ubCI.debugName = "GEAR_CORE_Model: " + m_CI.debugName;
 	ubCI.device = m_CI.device;
 	ubCI.data = zero;
 	m_UB = gear::CreateRef<Uniformbuffer<ModelUB>>(&ubCI);

@@ -37,7 +37,7 @@ public:
 
 	struct CreateInfo
 	{
-		const char*		debugName;
+		std::string		debugName;
 		void*			device;
 		mars::Vec3		position;
 		mars::Mat4		orientation;
@@ -59,8 +59,6 @@ private:
 		mars::Vec4 position;
 	};
 	gear::Ref<graphics::Uniformbuffer<CameraUB>> m_UB;
-
-	std::string m_DebugName;
 
 public:
 	CreateInfo m_CI;

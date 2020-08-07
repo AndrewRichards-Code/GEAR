@@ -10,7 +10,7 @@ class Framebuffer
 	public:
 		struct CreateInfo
 		{
-			const char*									debugName;
+			std::string									debugName;
 			void*										device;
 			uint32_t									width;
 			uint32_t									height;

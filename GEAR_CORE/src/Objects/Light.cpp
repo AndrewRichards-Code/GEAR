@@ -11,7 +11,6 @@ int Light::s_NumOfLights = 0;
 Light::Light(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
-	m_DebugName = std::string("GEAR_CORE_Light: ") + m_CI.debugName;
 
 	InitialiseUB();
 	s_NumOfLights++;
@@ -48,7 +47,7 @@ void Light::InitialiseUB()
 	float zero0[sizeof(LightUBType)] = { 0 };
 	
 	Uniformbuffer<LightUBType>::CreateInfo ubCI;
-	ubCI.debugName = m_DebugName.c_str();
+	ubCI.debugName = "GEAR_CORE_Light: " + m_CI.debugName;
 	ubCI.device = m_CI.device;
 	ubCI.data = zero0;
 	m_UB = gear::CreateRef<Uniformbuffer<LightUBType>>(&ubCI);

@@ -21,7 +21,7 @@ public:
 	
 	struct CreateInfo
 	{
-		const char* debugName;
+		std::string debugName;
 		void*		device;
 		LightType	type;
 		mars::Vec4	colour;
@@ -42,8 +42,6 @@ private:
 	static int s_NumOfLights;
 	size_t m_LightID;
 	LightType m_Type;
-
-	std::string m_DebugName;
 
 public:
 	CreateInfo m_CI;

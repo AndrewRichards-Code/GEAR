@@ -15,7 +15,7 @@ ModelLoader::ModelData ModelLoader::LoadModelData(const std::string& filepath)
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
 		std::cout << "ERROR: GEAR::ModelLoader::LoadModelData: " << importer.GetErrorString() << std::endl;
-		return std::vector<MeshData>(0);
+		return ModelData(0);
 	}
 	modelData.clear();
 	ProcessNode(scene->mRootNode, scene);

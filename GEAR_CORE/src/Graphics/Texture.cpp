@@ -55,7 +55,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 		memcpy(imageData.data(), m_CI.data, m_CI.size);
 	}
 
-	m_DebugName_TexUpload = std::string("GEAR_CORE_TextureUploadBuffer: ") + m_CI.debugName;
+	m_DebugName_TexUpload = "GEAR_CORE_TextureUploadBuffer: " + m_CI.debugName;
 	m_TextureUploadBufferCI.debugName = m_DebugName_TexUpload.c_str();
 	m_TextureUploadBufferCI.device = m_CI.device;
 	m_TextureUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC;
@@ -65,7 +65,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_TextureUploadBufferCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::CPU);// , MemoryBlock::BlockSize::BLOCK_SIZE_128MB);
 	m_TextureUploadBuffer = Buffer::Create(&m_TextureUploadBufferCI);
 
-	m_DebugName_Tex = std::string("GEAR_CORE_Texture: ") + m_CI.debugName;
+	m_DebugName_Tex = "GEAR_CORE_Texture: " + m_CI.debugName;
 	m_TextureCI.debugName = m_DebugName_Tex.c_str();
 	m_TextureCI.device = m_CI.device;
 	m_TextureCI.type = m_CI.type;
@@ -105,7 +105,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_FinalBarrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
 	m_FinalBarrier = Barrier::Create(&m_FinalBarrierCI);
 
-	m_DebugName_TexIV = std::string("GEAR_CORE_TextureImageView: ") + m_CI.debugName;
+	m_DebugName_TexIV = "GEAR_CORE_TextureImageView: " + m_CI.debugName;
 	m_TextureImageViewCI.debugName = m_DebugName_TexIV.c_str();
 	m_TextureImageViewCI.device = m_CI.device;
 	m_TextureImageViewCI.pImage = m_Texture;
@@ -175,7 +175,7 @@ void Texture::GetFinalTransition(std::vector<Ref<Barrier>>& barriers, bool force
 
 void Texture::CreateSampler()
 {
-	m_DebugName_Sampler = std::string("GEAR_CORE_Sampler: ") + m_CI.debugName;
+	m_DebugName_Sampler = "GEAR_CORE_Sampler: " + m_CI.debugName;
 	m_SamplerCI.debugName = m_DebugName_Sampler.c_str();
 	m_SamplerCI.device = m_CI.device;
 	m_SamplerCI.magFilter = Sampler::Filter::LINEAR;
@@ -185,7 +185,7 @@ void Texture::CreateSampler()
 	m_SamplerCI.addressModeV = Sampler::AddressMode::REPEAT;
 	m_SamplerCI.addressModeW = Sampler::AddressMode::REPEAT;
 	m_SamplerCI.mipLodBias = 1.0f;
-	m_SamplerCI.anisotropyEnable =  m_AnisotrophicValue > 1.0f;
+	m_SamplerCI.anisotropyEnable = m_AnisotrophicValue > 1.0f;
 	m_SamplerCI.maxAnisotropy = m_AnisotrophicValue;
 	m_SamplerCI.compareEnable = false;
 	m_SamplerCI.compareOp = CompareOp::NEVER;

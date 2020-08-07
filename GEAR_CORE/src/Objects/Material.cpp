@@ -60,7 +60,7 @@ void Material::InitialiseUB()
 {
 	float zero[sizeof(PBRConstants)] = { 0 };
 	Uniformbuffer<PBRConstants>::CreateInfo ubCI;
-	ubCI.debugName = m_DebugName.c_str();
+	ubCI.debugName = "GEAR_CORE_Material: " + m_CI.debugName;
 	ubCI.device = m_CI.device;
 	ubCI.data = zero;
 

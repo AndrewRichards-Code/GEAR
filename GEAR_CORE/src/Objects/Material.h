@@ -35,7 +35,7 @@ public:
 
 	struct CreateInfo
 	{
-		const char*											debugName;
+		std::string											debugName;
 		void*												device;
 		std::map<TextureType, gear::Ref<graphics::Texture>> pbrTextures;
 		PBRConstants										pbrConstants;
@@ -69,8 +69,6 @@ private:
 		mars::Vec4	colourReflective;
 	} m_Properties;
 
-	std::string m_DebugName;
-	
 public:
 	CreateInfo m_CI;
 

@@ -11,7 +11,7 @@ class Uniformbuffer : public T
 	public:
 		struct CreateInfo
 		{
-			const char* debugName;
+			std::string debugName;
 			void*		device;
 			void*		data;
 		};
@@ -35,7 +35,7 @@ class Uniformbuffer : public T
 		{
 			m_CI = *pCreateInfo;
 
-			m_DebugName_UBUpload = std::string("GEAR_CORE_UniformBufferUpload: ") + m_CI.debugName;
+			m_DebugName_UBUpload = "GEAR_CORE_UniformBufferUpload: " + m_CI.debugName;
 			m_UniformBufferUploadCI.debugName = m_DebugName_UBUpload.c_str();
 			m_UniformBufferUploadCI.device = m_CI.device;
 			m_UniformBufferUploadCI.usage = miru::crossplatform::Buffer::UsageBit::TRANSFER_SRC;
@@ -44,7 +44,7 @@ class Uniformbuffer : public T
 			m_UniformBufferUploadCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::CPU);
 			m_UniformBufferUpload = miru::crossplatform::Buffer::Create(&m_UniformBufferUploadCI);
 
-			m_DebugName_UB = std::string("GEAR_CORE_UniformBuffer: ") + m_CI.debugName;
+			m_DebugName_UB = "GEAR_CORE_UniformBuffer: " + m_CI.debugName;
 			m_UniformBufferCI.debugName = m_DebugName_UB.c_str();
 			m_UniformBufferCI.device = m_CI.device;
 			m_UniformBufferCI.usage = miru::crossplatform::Buffer::UsageBit::TRANSFER_DST | miru::crossplatform::Buffer::UsageBit::UNIFORM;
@@ -53,7 +53,7 @@ class Uniformbuffer : public T
 			m_UniformBufferCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::GPU);
 			m_UniformBuffer = miru::crossplatform::Buffer::Create(&m_UniformBufferCI);
 
-			m_DebugName_UBV= std::string("GEAR_CORE_UniformBufferViewUsage: ") + m_CI.debugName;
+			m_DebugName_UBV= "GEAR_CORE_UniformBufferViewUsage: " + m_CI.debugName;
 			m_UniformBufferViewCI.debugName = m_DebugName_UBV.c_str();
 			m_UniformBufferViewCI.device = m_CI.device;
 			m_UniformBufferViewCI.type = miru::crossplatform::BufferView::Type::UNIFORM;

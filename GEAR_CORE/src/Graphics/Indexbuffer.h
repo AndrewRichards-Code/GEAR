@@ -9,7 +9,7 @@ class Indexbuffer
 public:
 	struct CreateInfo
 	{
-		const char* debugName;
+		std::string debugName;
 		void*		device;
 		void*		data;
 		size_t		size;

@@ -9,11 +9,11 @@ class Vertexbuffer
 	public: 
 		struct CreateInfo
 		{
-			const char*						debugName;
-			void*							device;
-			void*							data;
-			size_t							size;
-			size_t							stride;
+			std::string debugName;
+			void*		device;
+			void*		data;
+			size_t		size;
+			size_t		stride;
 		};
 	
 	private:

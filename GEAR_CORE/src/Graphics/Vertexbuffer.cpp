@@ -12,7 +12,7 @@ Vertexbuffer::Vertexbuffer(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
-	m_DebugName_VBUpload = std::string("GEAR_CORE_VertexBufferUpload: ") + m_CI.debugName;
+	m_DebugName_VBUpload = "GEAR_CORE_VertexBufferUpload: " + m_CI.debugName;
 	m_VertexBufferUploadCI.debugName = m_DebugName_VBUpload.c_str();
 	m_VertexBufferUploadCI.device = m_CI.device;
 	m_VertexBufferUploadCI.usage = Buffer::UsageBit::TRANSFER_SRC;
@@ -21,7 +21,7 @@ Vertexbuffer::Vertexbuffer(CreateInfo* pCreateInfo)
 	m_VertexBufferUploadCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::CPU);
 	m_VertexBufferUpload = Buffer::Create(&m_VertexBufferUploadCI);
 
-	m_DebugName_VB = std::string("GEAR_CORE_VertexBuffer: ") + m_CI.debugName;
+	m_DebugName_VB = "GEAR_CORE_VertexBuffer: " + m_CI.debugName;
 	m_VertexBufferCI.debugName = m_DebugName_VB.c_str();
 	m_VertexBufferCI.device = m_CI.device;
 	m_VertexBufferCI.usage = Buffer::UsageBit::TRANSFER_DST | Buffer::UsageBit::VERTEX;
@@ -30,7 +30,7 @@ Vertexbuffer::Vertexbuffer(CreateInfo* pCreateInfo)
 	m_VertexBufferCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::GPU);
 	m_VertexBuffer = Buffer::Create(&m_VertexBufferCI);
 
-	m_DebugName_VBV = std::string("GEAR_CORE_VertexBufferViewUsage: ") + m_CI.debugName;
+	m_DebugName_VBV = "GEAR_CORE_VertexBufferViewUsage: " + m_CI.debugName;
 	m_VertexBufferViewCI.debugName = m_DebugName_VBV.c_str();
 	m_VertexBufferViewCI.device = m_CI.device;
 	m_VertexBufferViewCI.type = BufferView::Type::VERTEX;

@@ -10,7 +10,7 @@ public:
 	//Provide either filepaths or data, size and image dimension details.
 	struct CreateInfo
 	{
-		const char*									debugName;
+		std::string									debugName;
 		void*										device;
 		std::vector<std::string>					filepaths;	//Option 1
 		const uint8_t*								data;		//Option 2

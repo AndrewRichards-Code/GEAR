@@ -52,9 +52,7 @@ void RenderPipeline::FinalisePipline()
 
 				for (auto& rbd : rbds.second)
 				{
-					m_DescSetLayoutDebugNames[set] = std::string("GEAR_CORE_Pipeline_DescSetLayout_Set_") 
-						+ std::to_string(set) + std::string(": ") + std::string(m_CI.debugName);
-					
+					m_DescSetLayoutDebugNames[set] = "GEAR_CORE_Pipeline_DescSetLayout_Set_" + std::to_string(set) + ": " + m_CI.debugName;
 					m_DescSetLayoutCIs[set].debugName = m_DescSetLayoutDebugNames[set].c_str();
 					m_DescSetLayoutCIs[set].device = m_Device;
 					m_DescSetLayoutCIs[set].descriptorSetLayoutBinding.push_back({
@@ -70,7 +68,7 @@ void RenderPipeline::FinalisePipline()
 			m_DescSetLayouts.emplace_back(DescriptorSetLayout::Create(&descSetLayoutCI));
 		}
 
-		m_PipelineDebugName = std::string("GEAR_CORE_Pipeline: ") + m_CI.debugName;
+		m_PipelineDebugName = "GEAR_CORE_Pipeline: " + m_CI.debugName;
 		m_PipelineCI.debugName = m_PipelineDebugName.c_str();
 		m_PipelineCI.device = m_Device;
 		m_PipelineCI.type = PipelineType::GRAPHICS;
@@ -100,9 +98,7 @@ void RenderPipeline::FinalisePipline()
 
 			for (auto& rbd : rbds.second)
 			{
-				m_DescSetLayoutDebugNames[set] = std::string("GEAR_CORE_Pipeline_DescSetLayout_Set_")
-					+ std::to_string(set) + std::string(": ") + std::string(m_CI.debugName);
-
+				m_DescSetLayoutDebugNames[set] = "GEAR_CORE_Pipeline_DescSetLayout_Set_" + std::to_string(set) + ": " + m_CI.debugName;
 				m_DescSetLayoutCIs[set].debugName = m_DescSetLayoutDebugNames[set].c_str();
 				m_DescSetLayoutCIs[set].device = m_Device;
 				m_DescSetLayoutCIs[set].descriptorSetLayoutBinding.push_back({
@@ -117,7 +113,7 @@ void RenderPipeline::FinalisePipline()
 			m_DescSetLayouts.emplace_back(DescriptorSetLayout::Create(&descSetLayoutCI));
 		}
 
-		m_PipelineDebugName = std::string("GEAR_CORE_Pipeline: ") + m_CI.debugName;
+		m_PipelineDebugName = "GEAR_CORE_Pipeline: " + m_CI.debugName;
 		m_PipelineCI.debugName = m_PipelineDebugName.c_str();
 		m_PipelineCI.device = m_Device;
 		m_PipelineCI.type = PipelineType::COMPUTE;

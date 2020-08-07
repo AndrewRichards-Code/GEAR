@@ -12,10 +12,11 @@ namespace graphics {
 class Renderer
 {
 private:
+	//Context and Device
 	void* m_Device;
-
 	miru::Ref<miru::crossplatform::Context> m_Context;
 
+	//Cmd Pools and CmdBuffers
 	miru::Ref<miru::crossplatform::CommandPool> m_CmdPool;
 	miru::crossplatform::CommandPool::CreateInfo m_CmdPoolCI;
 	miru::Ref<miru::crossplatform::CommandBuffer> m_CmdBuffer;
@@ -26,31 +27,33 @@ private:
 	miru::Ref<miru::crossplatform::CommandBuffer> m_TransCmdBuffer;
 	miru::crossplatform::CommandBuffer::CreateInfo m_TransCmdBufferCI;
 
+	//Descriptor Pool and Sets
 	miru::Ref<miru::crossplatform::DescriptorPool> m_DescPool;
 	miru::crossplatform::DescriptorPool::CreateInfo m_DescPoolCI;
-
+	
 	miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetCamera;
 	std::map<gear::Ref<objects::Model>, miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSetModelMaterials;
 	miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetLight;
+	
+	bool builtDescPoolsAndSets = false;
 
-	std::map<gear::Ref<objects::Model>, std::string> m_DescSetModelMaterialDebugName;
-
+	//Renderering Objects
 	std::map<std::string, gear::Ref<graphics::RenderPipeline>> m_RenderPipelines;
 	const miru::Ref<miru::crossplatform::Framebuffer>* m_Framebuffers;
 	std::deque<gear::Ref<objects::Model>> m_RenderQueue;
 	gear::Ref<objects::Camera> m_Camera;
 	std::vector<gear::Ref<objects::Light>> m_Lights;
 
-	uint32_t m_FrameIndex = 0;
-	uint32_t m_FrameCount = 0;
-	bool builtDescPoolsAndSets = false;
-
+	//Present Synchronisation Primitives
 	std::vector<miru::Ref<miru::crossplatform::Fence>> m_DrawFences;
 	miru::crossplatform::Fence::CreateInfo m_DrawFenceCI;
 	std::vector<miru::Ref<miru::crossplatform::Semaphore>>m_AcquireSemaphores;
 	miru::crossplatform::Semaphore::CreateInfo m_AcquireSemaphoreCI;
 	std::vector<miru::Ref<miru::crossplatform::Semaphore>>m_SubmitSemaphores;
 	miru::crossplatform::Semaphore::CreateInfo m_SubmitSemaphoreCI;
+	
+	uint32_t m_FrameIndex = 0;
+	uint32_t m_FrameCount = 0;
 
 public:
 	Renderer(const miru::Ref<miru::crossplatform::Context>& context);

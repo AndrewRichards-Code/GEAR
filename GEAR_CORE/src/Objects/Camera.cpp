@@ -9,7 +9,6 @@ using namespace mars;
 Camera::Camera(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
-	m_DebugName = std::string("GEAR_CORE_Camera: ") + m_CI.debugName;
 
 	InitialiseUB();
 	Update();
@@ -26,8 +25,6 @@ void Camera::Update()
 	SetPosition();
 	m_UB->SubmitData();
 }
-
-//private:
 
 void Camera::DefineProjection()
 {
@@ -80,7 +77,7 @@ void Camera::InitialiseUB()
 	float zero[sizeof(CameraUB)] = { 0 };
 	
 	Uniformbuffer<CameraUB>::CreateInfo ubCI;
-	ubCI.debugName = m_DebugName.c_str();
+	ubCI.debugName = "GEAR_CORE_Camera: ") + m_CI.debugName;
 	ubCI.device = m_CI.device;
 	ubCI.data = zero;
 	m_UB = gear::CreateRef<Uniformbuffer<CameraUB>>(&ubCI);

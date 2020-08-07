@@ -21,7 +21,7 @@ class Model
 public:
 	struct CreateInfo
 	{
-		const char*			debugName;
+		std::string			debugName;
 		void*				device;
 		gear::Ref<Mesh>		pMesh;
 		mars::Vec2			materialTextureScaling = mars::Vec2(1.0f, 1.0f);
@@ -40,8 +40,6 @@ private:
 	};
 	gear::Ref<graphics::Uniformbuffer<ModelUB>> m_UB;
 
-	std::string m_DebugName;
-
 private:
 	void InitialiseUB();
 
@@ -58,7 +56,7 @@ public:
 	inline const gear::Ref<graphics::Uniformbuffer<ModelUB>> GetUB() const { return m_UB; }
 	inline const mars::Mat4 GetModlMatrix() const { return m_UB->modlMatrix; }
 	
-	inline const std::string& GetDebugName() const { return m_DebugName; }
+	inline const std::string& GetDebugName() const { return "GEAR_CORE_Model: " + m_CI.debugName; }
 };
 }
 }

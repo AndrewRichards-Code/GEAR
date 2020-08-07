@@ -291,8 +291,7 @@ void Renderer::Flush()
 			}
 
 			DescriptorSet::CreateInfo modelMaterialSetCI;
-			m_DescSetModelMaterialDebugName[model] = std::string("GEAR_CORE_DescriptorSet_ModelMaterial: ") + std::string(model->GetDebugName());
-			modelMaterialSetCI.debugName = m_DescSetModelMaterialDebugName[model].c_str();
+			modelMaterialSetCI.debugName = "GEAR_CORE_DescriptorSet_ModelMaterial: " + model->GetDebugName();
 			modelMaterialSetCI.pDescriptorPool = m_DescPool;
 			modelMaterialSetCI.pDescriptorSetLayouts = { modelMaterialDescSetLayout };
 			m_DescSetModelMaterials[model] = DescriptorSet::Create(&modelMaterialSetCI);

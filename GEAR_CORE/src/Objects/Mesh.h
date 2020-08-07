@@ -13,14 +13,12 @@ namespace objects {
 	public:
 		struct CreateInfo
 		{
-			const char* debugName;
+			std::string debugName;
 			void*		device;
 			std::string filepath;
 		};
 
 	private:
-		std::string m_DebugName;
-
 		CreateInfo m_CI;
 		ModelLoader::ModelData m_Data;
 
