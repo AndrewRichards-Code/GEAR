@@ -77,7 +77,7 @@ void Camera::InitialiseUB()
 	float zero[sizeof(CameraUB)] = { 0 };
 	
 	Uniformbuffer<CameraUB>::CreateInfo ubCI;
-	ubCI.debugName = "GEAR_CORE_Camera: ") + m_CI.debugName;
+	ubCI.debugName = "GEAR_CORE_Camera: " + m_CI.debugName;
 	ubCI.device = m_CI.device;
 	ubCI.data = zero;
 	m_UB = gear::CreateRef<Uniformbuffer<CameraUB>>(&ubCI);

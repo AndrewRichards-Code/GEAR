@@ -56,7 +56,7 @@ public:
 	inline const gear::Ref<graphics::Uniformbuffer<ModelUB>> GetUB() const { return m_UB; }
 	inline const mars::Mat4 GetModlMatrix() const { return m_UB->modlMatrix; }
 	
-	inline const std::string& GetDebugName() const { return "GEAR_CORE_Model: " + m_CI.debugName; }
+	inline std::string GetDebugName() const { return "GEAR_CORE_Model: " + m_CI.debugName; }
 };
 }
 }

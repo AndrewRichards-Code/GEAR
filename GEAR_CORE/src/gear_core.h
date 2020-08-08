@@ -7,8 +7,9 @@
 //Core
 #include "Core/StringConversion.h"
 #include "Core/Timer.h"
+#include "Core/TypeLibrary.h"
 
-//Graphics - MIRU
+//Graphics
 #include "graphics/Framebuffer.h"
 #include "graphics/Indexbuffer.h"
 #include "graphics/MemoryBlockManager.h"
@@ -25,7 +26,7 @@
 #include "Objects/Light.h"
 #include "Objects/Camera.h"
 #include "Objects/Model.h"
-//#include "objects/material.h"
+#include "Objects/Material.h"
 //#include "objects/probe.h"
 
 

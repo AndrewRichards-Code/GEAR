@@ -1,5 +1,6 @@
 #include "gear_core.h"
 #include <future>
+#include "Core/TypeLibrary.h"
 
 using namespace gear;
 using namespace graphics;
@@ -12,9 +13,6 @@ using namespace mars;
 
 int main()
 {
-	system("BuildShaders.bat");
-	system("CLS");
-
 	Window::CreateInfo windowCI;
 	windowCI.api = GraphicsAPI::API::D3D12;
 	windowCI.title = "GEAR_MIRU_TEST";
@@ -205,13 +203,13 @@ int main()
 
 		//Camera Update
 		if (window->IsKeyPressed(GLFW_KEY_D))
-			cam->m_CI.position += Vec3::Normalise(cam->m_Right) * 0.05;// *timer;
+			cam->m_CI.position += Vec3::Normalise(cam->m_Right) * 0.05f;// *timer;
 		if (window->IsKeyPressed(GLFW_KEY_A))
-			cam->m_CI.position -= Vec3::Normalise(cam->m_Right) * 0.05;// * timer;
+			cam->m_CI.position -= Vec3::Normalise(cam->m_Right) * 0.05f;// * timer;
 		if (window->IsKeyPressed(GLFW_KEY_S))
-			cam->m_CI.position += cam->m_Direction * 0.05;// * timer;
+			cam->m_CI.position += cam->m_Direction * 0.05f;// * timer;
 		if (window->IsKeyPressed(GLFW_KEY_W))
-			cam->m_CI.position -= cam->m_Direction * 0.05;// * timer;
+			cam->m_CI.position -= cam->m_Direction * 0.05f;// * timer;
 		
 		double fov = 0.0;
 		window->GetScrollPosition(fov);

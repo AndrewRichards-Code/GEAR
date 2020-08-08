@@ -14,7 +14,6 @@ std::map<std::string, Ref<Material>> Material::s_LoadedMaterials;
 Material::Material(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
-	m_DebugName = std::string("GEAR_CORE_Material: ") + m_CI.debugName;
 
 	InitialiseUB();
 	CreateDefaultColourTextures();
