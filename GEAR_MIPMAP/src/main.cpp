@@ -420,7 +420,7 @@ int main(int argc, const char** argv)
 			bic.imageExtent = { imageWidth >> i , imageHeight >> i, 1 };
 			bics.push_back(bic);
 
-			bufferOffset = imageWidth >> i * imageHeight >> i * STBI_rgb_alpha;
+			bufferOffset += (imageWidth >> i) * (imageHeight >> i) * STBI_rgb_alpha;
 		}
 		computeCmdBuffer->CopyImageToBuffer(0, image, imageBuffer, Image::Layout::TRANSFER_SRC_OPTIMAL, bics); //Copy all mips.
 

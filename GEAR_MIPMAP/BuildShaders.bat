@@ -5,5 +5,3 @@ MIRU_SHADER_COMPILER.exe ^
 -o:C:\Users\Andrew\source\repos\GEAR\GEAR_MIPMAP/res/shaders/bin ^
 -i:C:\Users\Andrew\source\repos\GEAR\GEAR_CORE\dep\MIRU\MIRU_SHADER_COMPILER/shaders/includes ^
 -spv -cso -t:6_4
-
-pause
