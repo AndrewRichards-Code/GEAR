@@ -56,10 +56,10 @@ void RenderPipeline::FinalisePipline()
 					m_DescSetLayoutCIs[set].debugName = m_DescSetLayoutDebugNames[set].c_str();
 					m_DescSetLayoutCIs[set].device = m_Device;
 					m_DescSetLayoutCIs[set].descriptorSetLayoutBinding.push_back({
-						rbd.binding,
-						rbd.type,
-						rbd.descriptorCount,
-						rbd.stage });
+						rbd.second.binding,
+						rbd.second.type,
+						rbd.second.descriptorCount,
+						rbd.second.stage });
 				}
 			}
 		}
@@ -102,10 +102,10 @@ void RenderPipeline::FinalisePipline()
 				m_DescSetLayoutCIs[set].debugName = m_DescSetLayoutDebugNames[set].c_str();
 				m_DescSetLayoutCIs[set].device = m_Device;
 				m_DescSetLayoutCIs[set].descriptorSetLayoutBinding.push_back({
-					rbd.binding,
-					rbd.type,
-					rbd.descriptorCount,
-					rbd.stage });
+					rbd.second.binding,
+					rbd.second.type,
+					rbd.second.descriptorCount,
+					rbd.second.stage });
 			}
 		}
 		for (auto& descSetLayoutCI : m_DescSetLayoutCIs)

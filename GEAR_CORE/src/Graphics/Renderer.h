@@ -33,6 +33,7 @@ private:
 	
 	miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetCamera;
 	std::map<gear::Ref<objects::Model>, miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSetModelMaterials;
+	std::map<gear::Ref<objects::Model>, std::string> m_DescSetModelMaterialDebugName;
 	miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetLight;
 	
 	bool builtDescPoolsAndSets = false;
