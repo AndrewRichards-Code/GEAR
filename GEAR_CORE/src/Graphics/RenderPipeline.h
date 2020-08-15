@@ -30,9 +30,6 @@ private:
 
 	std::vector<miru::Ref<miru::crossplatform::Shader>> m_Shaders;
 	
-	std::string m_PipelineDebugName;
-	std::vector<std::string> m_DescSetLayoutDebugNames;
-
 public:
 	CreateInfo m_CI;
 

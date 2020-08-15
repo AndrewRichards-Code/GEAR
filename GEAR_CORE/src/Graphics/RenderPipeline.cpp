@@ -48,12 +48,10 @@ void RenderPipeline::FinalisePipline()
 			{
 				uint32_t set = rbds.first;
 				m_DescSetLayoutCIs.resize(std::max((size_t)set + 1, m_DescSetLayoutCIs.size()));
-				m_DescSetLayoutDebugNames.resize(m_DescSetLayoutCIs.size());
 
 				for (auto& rbd : rbds.second)
 				{
-					m_DescSetLayoutDebugNames[set] = "GEAR_CORE_Pipeline_DescSetLayout_Set_" + std::to_string(set) + ": " + m_CI.debugName;
-					m_DescSetLayoutCIs[set].debugName = m_DescSetLayoutDebugNames[set].c_str();
+					m_DescSetLayoutCIs[set].debugName = "GEAR_CORE_Pipeline_DescSetLayout_Set_" + std::to_string(set) + ": " + m_CI.debugName;;
 					m_DescSetLayoutCIs[set].device = m_Device;
 					m_DescSetLayoutCIs[set].descriptorSetLayoutBinding.push_back({
 						rbd.second.binding,
@@ -68,8 +66,7 @@ void RenderPipeline::FinalisePipline()
 			m_DescSetLayouts.emplace_back(DescriptorSetLayout::Create(&descSetLayoutCI));
 		}
 
-		m_PipelineDebugName = "GEAR_CORE_Pipeline: " + m_CI.debugName;
-		m_PipelineCI.debugName = m_PipelineDebugName.c_str();
+		m_PipelineCI.debugName = "GEAR_CORE_Pipeline: " + m_CI.debugName;
 		m_PipelineCI.device = m_Device;
 		m_PipelineCI.type = PipelineType::GRAPHICS;
 		m_PipelineCI.vertexInputState.vertexInputBindingDescriptions = vibds;
@@ -94,12 +91,10 @@ void RenderPipeline::FinalisePipline()
 		{
 			uint32_t set = rbds.first;
 			m_DescSetLayoutCIs.resize(std::max((size_t)set, m_DescSetLayoutCIs.size()));
-			m_DescSetLayoutDebugNames.resize(m_DescSetLayoutCIs.size());
 
 			for (auto& rbd : rbds.second)
 			{
-				m_DescSetLayoutDebugNames[set] = "GEAR_CORE_Pipeline_DescSetLayout_Set_" + std::to_string(set) + ": " + m_CI.debugName;
-				m_DescSetLayoutCIs[set].debugName = m_DescSetLayoutDebugNames[set].c_str();
+				m_DescSetLayoutCIs[set].debugName = "GEAR_CORE_Pipeline_DescSetLayout_Set_" + std::to_string(set) + ": " + m_CI.debugName;
 				m_DescSetLayoutCIs[set].device = m_Device;
 				m_DescSetLayoutCIs[set].descriptorSetLayoutBinding.push_back({
 					rbd.second.binding,
@@ -113,8 +108,7 @@ void RenderPipeline::FinalisePipline()
 			m_DescSetLayouts.emplace_back(DescriptorSetLayout::Create(&descSetLayoutCI));
 		}
 
-		m_PipelineDebugName = "GEAR_CORE_Pipeline: " + m_CI.debugName;
-		m_PipelineCI.debugName = m_PipelineDebugName.c_str();
+		m_PipelineCI.debugName = "GEAR_CORE_Pipeline: " + m_CI.debugName;
 		m_PipelineCI.device = m_Device;
 		m_PipelineCI.type = PipelineType::COMPUTE;
 		m_PipelineCI.shaders = m_Shaders;

@@ -61,38 +61,12 @@ Renderer::Renderer(const miru::Ref<Context>& context)
 Renderer::~Renderer()
 {
 	m_Context->DeviceWaitIdle();
-	ClearupRenderPipelines();
 }
 
 void Renderer::InitialiseRenderPipelines(const std::vector<std::string>& filepaths, float viewportWidth, float viewportHeight, const miru::Ref<RenderPass>& renderPass)
 {
 	for (auto& filepath : filepaths)
 		AddRenderPipeline(filepath, viewportWidth, viewportHeight, renderPass);
-}
-
-void Renderer::ClearupRenderPipelines()
-{
-	for (auto& renderPipeline : m_RenderPipelines)
-	{
-		for (auto& shaderCI : renderPipeline.second->m_CI.shaderCreateInfo)
-		{
-			free((void*)shaderCI.debugName);
-			free((void*)shaderCI.entryPoint);
-			free((void*)shaderCI.binaryFilepath);
-			free((void*)shaderCI.recompileArguments.mscDirectory);
-			free((void*)shaderCI.recompileArguments.hlslFilepath);
-			free((void*)shaderCI.recompileArguments.outputDirectory);
-
-			for(auto& includeDir : shaderCI.recompileArguments.includeDirectories)
-				free((void*)includeDir);
-			for(auto& macro : shaderCI.recompileArguments.macros)
-				free((void*)macro);
-
-			free((void*)shaderCI.recompileArguments.dxcLocation);
-			free((void*)shaderCI.recompileArguments.glslangLocation);
-			free((void*)shaderCI.recompileArguments.additioalArguments);
-		}
-	}
 }
 
 void Renderer::SubmitModel(const gear::Ref<Model>& obj)
@@ -164,7 +138,7 @@ void Renderer::Flush()
 			{
 				for (auto& texture : material->GetTextures())
 				{
-					texture.second->GetFinalTransition(finalBarrier);
+					texture.second->GetTransition_ToShaderReadOnly(finalBarrier);
 				}
 			}
 		}
@@ -178,49 +152,6 @@ void Renderer::Flush()
 
 	if(!builtDescPoolsAndSets)
 	{
-		/*//Build DescriptorPools and Sets
-		m_DescPoolCI.debugName = "GEAR_CORE_DescPool_Renderer";
-		m_DescPoolCI.device = m_TransCmdPoolCI.pContext->GetDevice();
-		m_DescPoolCI.poolSizes = { {DescriptorType::COMBINED_IMAGE_SAMPLER, std::max(uploadedTexturesCount, (uint32_t)m_RenderQueue.size())}, {DescriptorType::UNIFORM_BUFFER, (uint32_t)m_RenderQueue.size() + 2} };
-		m_DescPoolCI.maxSets = (uint32_t)m_RenderQueue.size() + 3;
-		m_DescPool = DescriptorPool::Create(&m_DescPoolCI);
-	
-		DescriptorSetLayout::CreateInfo descSetLayoutCI;
-		descSetLayoutCI.debugName = "GEAR_CORE_DescSetLayout_Renderer";
-		descSetLayoutCI.device = m_TransCmdPoolCI.pContext->GetDevice();
-		descSetLayoutCI.descriptorSetLayoutBinding = { {0, DescriptorType::UNIFORM_BUFFER, 1, Shader::StageBit::VERTEX_BIT} };
-		m_DescSetLayouts.push_back(DescriptorSetLayout::Create(&descSetLayoutCI));
-		descSetLayoutCI.descriptorSetLayoutBinding = { {0, DescriptorType::UNIFORM_BUFFER, 1, Shader::StageBit::VERTEX_BIT}, {1, DescriptorType::COMBINED_IMAGE_SAMPLER, 1, Shader::StageBit::FRAGMENT_BIT} };
-		m_DescSetLayouts.push_back(DescriptorSetLayout::Create(&descSetLayoutCI));
-		descSetLayoutCI.descriptorSetLayoutBinding = { {0, DescriptorType::UNIFORM_BUFFER, 1, Shader::StageBit::FRAGMENT_BIT}, {1, DescriptorType::UNIFORM_BUFFER, 1, Shader::StageBit::FRAGMENT_BIT} };
-		m_DescSetLayouts.push_back(DescriptorSetLayout::Create(&descSetLayoutCI));
-	
-		m_DescSetCI.debugName = "GEAR_CORE_DescSet_Renderer";
-		m_DescSetCI.pDescriptorPool = m_DescPool;
-		m_DescSetCI.pDescriptorSetLayouts = { m_DescSetLayouts[0] };
-		m_DescSetCamera = DescriptorSet::Create(&m_DescSetCI);
-		m_DescSetCamera->AddBuffer(0, 0, { { m_Camera->GetUB()->GetBufferView() } });
-		m_DescSetCamera->Update();
-	
-		m_DescSetCI.pDescriptorSetLayouts = { m_DescSetLayouts[2] };
-		m_DescSetLight = DescriptorSet::Create(&m_DescSetCI);
-		m_DescSetLight->AddBuffer(0, 0, { { m_Lights[0]->GetUB()->GetBufferView() } });
-		m_DescSetLight->Update();
-	
-		for (auto& obj : m_RenderQueue)
-		{
-			auto& materialTextures = obj->GetMesh()->GetMaterials()[0]->GetTextures();
-			gear::Ref<Texture> texture = nullptr;
-			if(!materialTextures.empty())
-				materialTextures.begin()->second;
-
-			m_DescSetCI.pDescriptorSetLayouts = { m_DescSetLayouts[1] };
-			m_DescSetObj[obj] = DescriptorSet::Create(&m_DescSetCI);
-			if(texture)
-				m_DescSetObj[obj]->AddImage(0, 1, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
-			m_DescSetObj[obj]->AddBuffer(0, 0, { { obj->GetUB()->GetBufferView() } });
-			m_DescSetObj[obj]->Update();
-		}*/
 		bool cameraPoolSize = false, lightPoolSize = false;
 		std::map<DescriptorType, uint32_t> poolSizesMap;
 		for (auto& model : m_RenderQueue)
@@ -291,8 +222,7 @@ void Renderer::Flush()
 			}
 
 			DescriptorSet::CreateInfo modelMaterialSetCI;
-			m_DescSetModelMaterialDebugName[model] = "GEAR_CORE_DescriptorSet_ModelMaterial: " + model->GetDebugName();
-			modelMaterialSetCI.debugName = m_DescSetModelMaterialDebugName[model].c_str();
+			modelMaterialSetCI.debugName = "GEAR_CORE_DescriptorSet_ModelMaterial: " + model->GetDebugName();
 			modelMaterialSetCI.pDescriptorPool = m_DescPool;
 			modelMaterialSetCI.pDescriptorSetLayouts = { modelMaterialDescSetLayout };
 			m_DescSetModelMaterials[model] = DescriptorSet::Create(&modelMaterialSetCI);
@@ -382,6 +312,24 @@ void Renderer::Present(const miru::Ref<Swapchain>& swapchain, bool& windowResize
 	m_FrameCount++;
 }
 
+void Renderer::ResizeRenderPipelineViewports(uint32_t width, uint32_t height)
+{
+	m_Context->DeviceWaitIdle();
+	for (auto& renderPipeline : m_RenderPipelines)
+	{
+		renderPipeline.second->m_CI.viewportState.viewports = { { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f } };
+		renderPipeline.second->m_CI.viewportState.scissors = { { { 0, 0 },{ width, height } } };
+		renderPipeline.second->Rebuild();
+	}
+}
+
+void Renderer::RecompileRenderPipelineShaders()
+{
+	m_Context->DeviceWaitIdle();
+	for (auto& renderPipeline : m_RenderPipelines)
+		renderPipeline.second->RecompileShaders();
+}
+
 void Renderer::AddRenderPipeline(const std::string& filepath, float viewportWidth, float viewportHeight, const miru::Ref<RenderPass>& renderPass)
 {
 	using namespace nlohmann;
@@ -415,43 +363,35 @@ void Renderer::AddRenderPipeline(const std::string& filepath, float viewportWidt
 		GEAR_WARN(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_NOT_SUPPORTED, "WARNING: gear::graphics::Renderer: grpf.json file is not valid.");
 	}
 
-	auto dup_string = [](const std::string& value) -> const char*
-	{
-		if (value.size())
-			return _strdup(value.c_str());
-		else
-			return nullptr;
-	};
-
 	RenderPipeline::CreateInfo rpCI;
-	rpCI.debugName = dup_string(pipeline_grpf_json["debugName"]);
+	rpCI.debugName = pipeline_grpf_json["debugName"];
 
 	//Shaders
 	for (auto& shader : pipeline_grpf_json["shaders"])
 	{
 		Shader::CreateInfo shaderCI;
-		shaderCI.debugName = dup_string(shader["debugName"]);
+		shaderCI.debugName = shader["debugName"];
 		shaderCI.device = m_Device;
 		shaderCI.stage = ShaderStageBitStrings[shader["stage"]];
-		shaderCI.entryPoint = dup_string(shader["entryPoint"]);
-		shaderCI.binaryFilepath = dup_string(shader["binaryFilepath"]);
+		shaderCI.entryPoint = shader["entryPoint"];
+		shaderCI.binaryFilepath = shader["binaryFilepath"];
 		shaderCI.binaryCode = {};
 
 		auto& recompileArgs = shader["recompileArguments"];
-		shaderCI.recompileArguments.mscDirectory = dup_string(recompileArgs["mscDirectory"]);
-		shaderCI.recompileArguments.hlslFilepath = dup_string(recompileArgs["hlslFilepath"]);
-		shaderCI.recompileArguments.outputDirectory = dup_string(recompileArgs["outputDirectory"]);
+		shaderCI.recompileArguments.mscDirectory = recompileArgs["mscDirectory"];
+		shaderCI.recompileArguments.hlslFilepath = recompileArgs["hlslFilepath"];
+		shaderCI.recompileArguments.outputDirectory = recompileArgs["outputDirectory"];
 		for (auto& includeDir : recompileArgs["includeDirectories"])
-			shaderCI.recompileArguments.includeDirectories.push_back(dup_string(includeDir));
-		shaderCI.recompileArguments.entryPoint = dup_string(recompileArgs["entryPoint"]);
-		shaderCI.recompileArguments.shaderModel = dup_string(recompileArgs["shaderModel"]);
+			shaderCI.recompileArguments.includeDirectories.push_back(includeDir);
+		shaderCI.recompileArguments.entryPoint = recompileArgs["entryPoint"];
+		shaderCI.recompileArguments.shaderModel = recompileArgs["shaderModel"];
 		for (auto& macro : recompileArgs["macros"])
-			shaderCI.recompileArguments.macros.push_back(dup_string(macro));
+			shaderCI.recompileArguments.macros.push_back(macro);
 		shaderCI.recompileArguments.cso = recompileArgs["cso"];
 		shaderCI.recompileArguments.spv = recompileArgs["spv"];
-		shaderCI.recompileArguments.dxcLocation = dup_string(recompileArgs["dxcLocation"]);
-		shaderCI.recompileArguments.glslangLocation = dup_string(recompileArgs["glslangLocation"]);
-		shaderCI.recompileArguments.additioalArguments = dup_string(recompileArgs["additioalArguments"]);
+		shaderCI.recompileArguments.dxcLocation = recompileArgs["dxcLocation"];
+		shaderCI.recompileArguments.glslangLocation = recompileArgs["glslangLocation"];
+		shaderCI.recompileArguments.additioalArguments = recompileArgs["additioalArguments"];
 		shaderCI.recompileArguments.nologo = recompileArgs["nologo"];
 		shaderCI.recompileArguments.nooutput = recompileArgs["nooutput"];
 

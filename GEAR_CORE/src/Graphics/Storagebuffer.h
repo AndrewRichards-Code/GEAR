@@ -22,10 +22,6 @@ class Storagebuffer : public T
 		miru::Ref<miru::crossplatform::BufferView> m_ShaderStorageBufferView;
 		miru::crossplatform::BufferView::CreateInfo m_ShaderStorageBufferViewCI;
 
-		std::string m_DebugName_SSBUpload;
-		std::string m_DebugName_SSB;
-		std::string m_DebugName_SSBV;
-
 		CreateInfo m_CI;
 
 	public:
@@ -33,8 +29,7 @@ class Storagebuffer : public T
 		{
 			m_CI = *pCreateInfo;
 
-			m_DebugName_SSBUpload = "GEAR_CORE_ShaderStorageBufferUpload: " + m_CI.debugName;
-			m_ShaderStorageBufferUploadCI.debugName = m_DebugName_SSBUpload.c_str();
+			m_ShaderStorageBufferUploadCI.debugName = "GEAR_CORE_ShaderStorageBufferUpload: " + m_CI.debugName;
 			m_ShaderStorageBufferUploadCI.device = m_CI.device;
 			m_ShaderStorageBufferUploadCI.usage = miru::crossplatform::Buffer::UsageBit::TRANSFER_SRC | miru::crossplatform::Buffer::UsageBit::TRANSFER_DST;
 			m_ShaderStorageBufferUploadCI.size = GetSize();
@@ -42,8 +37,7 @@ class Storagebuffer : public T
 			m_ShaderStorageBufferUploadCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::CPU);
 			m_ShaderStorageBufferUpload = miru::crossplatform::Buffer::Create(&m_ShaderStorageBufferUploadCI);
 
-			m_DebugName_SSB = "GEAR_CORE_ShaderStorageBuffer: " + m_CI.debugName;
-			m_ShaderStorageBufferCI.debugName = m_DebugName_SSB.c_str();
+			m_ShaderStorageBufferCI.debugName = "GEAR_CORE_ShaderStorageBuffer: " + m_CI.debugName;
 			m_ShaderStorageBufferCI.device = m_CI.device;
 			m_ShaderStorageBufferCI.usage = miru::crossplatform::Buffer::UsageBit::TRANSFER_SRC | miru::crossplatform::Buffer::UsageBit::TRANSFER_DST | miru::crossplatform::Buffer::UsageBit::STORAGE;
 			m_ShaderStorageBufferCI.size = GetSize();
@@ -51,8 +45,7 @@ class Storagebuffer : public T
 			m_ShaderStorageBufferCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::GPU);
 			m_ShaderStorageBuffer = miru::crossplatform::Buffer::Create(&m_ShaderStorageBufferCI);
 
-			m_DebugName_SSBV = "GEAR_CORE_ShaderStorageViewUsage: " + m_CI.debugName;
-			m_ShaderStorageBufferViewCI.debugName = m_DebugName_SSBV.c_str();
+			m_ShaderStorageBufferViewCI.debugName = "GEAR_CORE_ShaderStorageViewUsage: " + m_CI.debugName;
 			m_ShaderStorageBufferViewCI.device = m_CI.device;
 			m_ShaderStorageBufferViewCI.type = miru::crossplatform::BufferView::Type::UNIFORM;
 			m_ShaderStorageBufferViewCI.pBuffer = m_ShaderStorageBuffer;

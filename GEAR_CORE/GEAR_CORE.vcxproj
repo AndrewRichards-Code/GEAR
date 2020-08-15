@@ -110,9 +110,7 @@
     <ClCompile Include="src\Graphics\MemoryBlockManager.cpp" />
     <ClCompile Include="src\Graphics\Renderer.cpp" />
     <ClCompile Include="src\Graphics\RenderPipeline.cpp" />
-    <ClCompile Include="src\Graphics\Storagebuffer.cpp" />
     <ClCompile Include="src\Graphics\Texture.cpp" />
-    <ClCompile Include="src\Graphics\Uniformbuffer.cpp" />
     <ClCompile Include="src\Graphics\Vertexbuffer.cpp" />
     <ClCompile Include="src\Graphics\Window.cpp" />
     <ClCompile Include="src\Objects\Camera.cpp" />

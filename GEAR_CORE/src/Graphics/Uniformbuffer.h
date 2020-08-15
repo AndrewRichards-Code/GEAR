@@ -23,11 +23,8 @@ class Uniformbuffer : public T
 		miru::Ref<miru::crossplatform::BufferView> m_UniformBufferView;
 		miru::crossplatform::BufferView::CreateInfo m_UniformBufferViewCI;
 
-		std::string m_DebugName_UBUpload;
-		std::string m_DebugName_UB;
-		std::string m_DebugName_UBV;
-
 		CreateInfo m_CI;
+
 		bool m_Upload = false;
 
 	public:
@@ -35,8 +32,7 @@ class Uniformbuffer : public T
 		{
 			m_CI = *pCreateInfo;
 
-			m_DebugName_UBUpload = "GEAR_CORE_UniformBufferUpload: " + m_CI.debugName;
-			m_UniformBufferUploadCI.debugName = m_DebugName_UBUpload.c_str();
+			m_UniformBufferUploadCI.debugName = "GEAR_CORE_UniformBufferUpload: " + m_CI.debugName;
 			m_UniformBufferUploadCI.device = m_CI.device;
 			m_UniformBufferUploadCI.usage = miru::crossplatform::Buffer::UsageBit::TRANSFER_SRC;
 			m_UniformBufferUploadCI.size = GetSize();
@@ -44,8 +40,7 @@ class Uniformbuffer : public T
 			m_UniformBufferUploadCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::CPU);
 			m_UniformBufferUpload = miru::crossplatform::Buffer::Create(&m_UniformBufferUploadCI);
 
-			m_DebugName_UB = "GEAR_CORE_UniformBuffer: " + m_CI.debugName;
-			m_UniformBufferCI.debugName = m_DebugName_UB.c_str();
+			m_UniformBufferCI.debugName = "GEAR_CORE_UniformBuffer: " + m_CI.debugName;
 			m_UniformBufferCI.device = m_CI.device;
 			m_UniformBufferCI.usage = miru::crossplatform::Buffer::UsageBit::TRANSFER_DST | miru::crossplatform::Buffer::UsageBit::UNIFORM;
 			m_UniformBufferCI.size = GetSize();
@@ -53,8 +48,7 @@ class Uniformbuffer : public T
 			m_UniformBufferCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::GPU);
 			m_UniformBuffer = miru::crossplatform::Buffer::Create(&m_UniformBufferCI);
 
-			m_DebugName_UBV= "GEAR_CORE_UniformBufferViewUsage: " + m_CI.debugName;
-			m_UniformBufferViewCI.debugName = m_DebugName_UBV.c_str();
+			m_UniformBufferViewCI.debugName = "GEAR_CORE_UniformBufferViewUsage: " + m_CI.debugName;
 			m_UniformBufferViewCI.device = m_CI.device;
 			m_UniformBufferViewCI.type = miru::crossplatform::BufferView::Type::UNIFORM;
 			m_UniformBufferViewCI.pBuffer = m_UniformBuffer;

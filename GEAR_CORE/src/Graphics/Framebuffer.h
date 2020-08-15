@@ -26,8 +26,6 @@ class Framebuffer
 		std::array<gear::Ref<Texture>, 8> m_ColourTextures;
 		gear::Ref<Texture> m_DepthTexture;
 
-		std::string m_DebugName_FB;
-
 		CreateInfo m_CI;
 
 	public:

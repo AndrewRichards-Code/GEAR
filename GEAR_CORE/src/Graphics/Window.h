@@ -88,6 +88,7 @@ public:
 	inline int GetWidth() const { return m_CurrentWidth; }
 	inline int GetHeight() const { return m_CurrentHeight; }
 	inline float GetRatio() const { return ((float)m_CurrentWidth / (float)m_CurrentHeight); }
+	inline bool& Resized() const { return m_Swapchain->m_Resized; }
 	inline std::string GetTitle() const { return m_CI.title; }
 	std::string GetGraphicsAPIVersion() const;
 	std::string GetDeviceName() const;

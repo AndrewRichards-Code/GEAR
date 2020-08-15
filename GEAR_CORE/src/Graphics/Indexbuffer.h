@@ -22,11 +22,8 @@ private:
 	miru::Ref<miru::crossplatform::BufferView> m_IndexBufferView;
 	miru::crossplatform::BufferView::CreateInfo m_IndexBufferViewCI;
 
-	std::string m_DebugName_IBUpload;
-	std::string m_DebugName_IB;
-	std::string m_DebugName_IBV;
-
 	CreateInfo m_CI;
+
 	uint32_t m_Count;
 	bool m_Upload = false;
 

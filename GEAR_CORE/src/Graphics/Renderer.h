@@ -33,7 +33,6 @@ private:
 	
 	miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetCamera;
 	std::map<gear::Ref<objects::Model>, miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSetModelMaterials;
-	std::map<gear::Ref<objects::Model>, std::string> m_DescSetModelMaterialDebugName;
 	miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetLight;
 	
 	bool builtDescPoolsAndSets = false;
@@ -61,13 +60,15 @@ public:
 	virtual ~Renderer();
 
 	void InitialiseRenderPipelines(const std::vector<std::string>& filepaths, float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass);
-	void ClearupRenderPipelines();
 	virtual void SubmitFramebuffer(const miru::Ref<miru::crossplatform::Framebuffer>* framebuffers) { m_Framebuffers = framebuffers; };
 	virtual void SubmitCamera(gear::Ref<objects::Camera> camera) { m_Camera = camera; };
 	virtual void SubmitLights(std::vector<gear::Ref<objects::Light>> lights) { m_Lights = lights; };
 	virtual void SubmitModel(const gear::Ref<objects::Model>& obj);
 	virtual void Flush();
 	virtual void Present(const miru::Ref<miru::crossplatform::Swapchain>& swapchain, bool& windowResize);
+
+	virtual void ResizeRenderPipelineViewports(uint32_t width, uint32_t height);
+	virtual void RecompileRenderPipelineShaders();
 
 	inline std::deque<gear::Ref<objects::Model>>& GetRenderQueue() { return m_RenderQueue; };
 	inline const miru::Ref<miru::crossplatform::CommandBuffer>& GetCmdBuffer() { return m_CmdBuffer; };

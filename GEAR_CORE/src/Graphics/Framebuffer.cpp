@@ -6,8 +6,7 @@ using namespace graphics;
 
 Framebuffer::Framebuffer(CreateInfo* pCreateInfo)
 {
-	m_DebugName_FB = std::string("GEAR_CORE_FrameBuffer: ") + m_CI.debugName;
-	m_FramebufferCI.debugName = m_DebugName_FB.c_str();
+	m_FramebufferCI.debugName = "GEAR_CORE_FrameBuffer: " + m_CI.debugName;
 	m_FramebufferCI.device = m_CI.device;
 	m_FramebufferCI.width = m_CI.width;
 	m_FramebufferCI.height = m_CI.height;

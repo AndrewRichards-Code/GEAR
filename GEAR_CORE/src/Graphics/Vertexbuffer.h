@@ -23,10 +23,6 @@ class Vertexbuffer
 		miru::Ref<miru::crossplatform::BufferView> m_VertexBufferView;
 		miru::crossplatform::BufferView::CreateInfo m_VertexBufferViewCI;
 
-		std::string m_DebugName_VBUpload;
-		std::string m_DebugName_VB;
-		std::string m_DebugName_VBV;
-
 		CreateInfo m_CI;
 		bool m_Upload = false;
 

@@ -161,22 +161,15 @@ int main()
 	bool windowResize = false;
 	while (!window->Closed())
 	{
-		if (window->GetSwapchain()->m_Resized)
+		if (window->Resized())
 		{
-			for (auto& renderPipeline : renderer->GetRenderPipelines())
-			{
-				renderPipeline.second->m_CI.viewportState.viewports = { { 0.0f, 0.0f, (float)window->GetWidth(), (float)window->GetHeight(), 0.0f, 1.0f } };
-				renderPipeline.second->m_CI.viewportState.scissors = { { { 0, 0 },{ (uint32_t)window->GetWidth(), (uint32_t)window->GetHeight() } } };
-				renderPipeline.second->Rebuild();
-			}
-			window->GetSwapchain()->m_Resized = false;
+			renderer->ResizeRenderPipelineViewports((uint32_t)window->GetWidth(), (uint32_t)window->GetHeight());
+			window->Resized() = false;
 		}
 
 		if (window->IsKeyPressed(GLFW_KEY_R))
 		{
-			window->GetContext()->DeviceWaitIdle();
-			for (auto& renderPipeline : renderer->GetRenderPipelines())
-				renderPipeline.second->RecompileShaders();
+			renderer->RecompileRenderPipelineShaders();
 		}
 
 		//Keyboard and Mouse input

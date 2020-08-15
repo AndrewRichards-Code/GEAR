@@ -12,61 +12,23 @@ using namespace miru::crossplatform;
 Texture::Texture(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
-
-	bool loadFromFile = !m_CI.filepaths.empty();
+	
 	m_Cubemap = m_CI.type == Image::Type::TYPE_CUBE;
 	m_DepthTexture = m_CI.format >= Image::Format::D16_UNORM;
 	
 	std::vector<uint8_t> imageData;
-	
-	if (loadFromFile)
-	{
-		if (!m_Cubemap)
-		{
-			m_LocalBuffer = stbi_load(m_CI.filepaths[0].c_str(), (int*)&m_CI.width, (int*)&m_CI.height, &m_BPP, 4);
+	LoadImageData(imageData);
 
-			imageData.resize(m_CI.width * m_CI.height * 4);
-			memcpy(imageData.data(), m_LocalBuffer, m_CI.width * m_CI.height * 4);
-
-			if (m_LocalBuffer)
-				stbi_image_free(m_LocalBuffer);
-
-		}
-		else
-		{
-			for (size_t i = 0; i < 6; i++)
-			{
-				m_LocalBuffer = stbi_load(m_CI.filepaths[i].c_str(), (int*)&m_CI.width, (int*)&m_CI.height, &m_BPP, 4);
-				if (i == 0)
-					imageData.resize(6 * m_CI.width * m_CI.height * 4);
-
-				memcpy(imageData.data() + (i * m_CI.width * m_CI.height * 4), m_LocalBuffer, (m_CI.width * m_CI.height * 4));
-
-				if (m_LocalBuffer)
-					stbi_image_free(m_LocalBuffer);
-			}
-
-		}
-		m_CI.depth = 1;
-	}
-	else
-	{
-		imageData.resize(m_CI.size);
-		memcpy(imageData.data(), m_CI.data, m_CI.size);
-	}
-
-	m_DebugName_TexUpload = "GEAR_CORE_TextureUploadBuffer: " + m_CI.debugName;
-	m_TextureUploadBufferCI.debugName = m_DebugName_TexUpload.c_str();
+	m_TextureUploadBufferCI.debugName = "GEAR_CORE_TextureUploadBuffer: " + m_CI.debugName;
 	m_TextureUploadBufferCI.device = m_CI.device;
 	m_TextureUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC;
-	m_TextureUploadBufferCI.size = imageData.size();
 	m_TextureUploadBufferCI.imageDimension = { m_CI.width, m_CI.height, 4 };
+	m_TextureUploadBufferCI.size = imageData.size();
 	m_TextureUploadBufferCI.data = imageData.data();
 	m_TextureUploadBufferCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::CPU);// , MemoryBlock::BlockSize::BLOCK_SIZE_128MB);
 	m_TextureUploadBuffer = Buffer::Create(&m_TextureUploadBufferCI);
 
-	m_DebugName_Tex = "GEAR_CORE_Texture: " + m_CI.debugName;
-	m_TextureCI.debugName = m_DebugName_Tex.c_str();
+	m_TextureCI.debugName = "GEAR_CORE_Texture: " + m_CI.debugName;
 	m_TextureCI.device = m_CI.device;
 	m_TextureCI.type = m_CI.type;
 	m_TextureCI.format = m_CI.format;
@@ -94,19 +56,29 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_InitialBarrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
 	m_InitialBarrier = Barrier::Create(&m_InitialBarrierCI);
 
-	m_FinalBarrierCI.type = Barrier::Type::IMAGE;
-	m_FinalBarrierCI.srcAccess = Barrier::AccessBit::TRANSFER_WRITE_BIT;
-	m_FinalBarrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
-	m_FinalBarrierCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
-	m_FinalBarrierCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
-	m_FinalBarrierCI.pImage = m_Texture;
-	m_FinalBarrierCI.oldLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
-	m_FinalBarrierCI.newLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
-	m_FinalBarrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
-	m_FinalBarrier = Barrier::Create(&m_FinalBarrierCI);
+	m_ToShaderReadOnlyBarrierCI.type = Barrier::Type::IMAGE;
+	m_ToShaderReadOnlyBarrierCI.srcAccess = Barrier::AccessBit::TRANSFER_WRITE_BIT;
+	m_ToShaderReadOnlyBarrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
+	m_ToShaderReadOnlyBarrierCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
+	m_ToShaderReadOnlyBarrierCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
+	m_ToShaderReadOnlyBarrierCI.pImage = m_Texture;
+	m_ToShaderReadOnlyBarrierCI.oldLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
+	m_ToShaderReadOnlyBarrierCI.newLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
+	m_ToShaderReadOnlyBarrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
+	m_ToShaderReadOnlyBarrier = Barrier::Create(&m_ToShaderReadOnlyBarrierCI);
 
-	m_DebugName_TexIV = "GEAR_CORE_TextureImageView: " + m_CI.debugName;
-	m_TextureImageViewCI.debugName = m_DebugName_TexIV.c_str();
+	m_ToTransferDstBarrierCI.type = Barrier::Type::IMAGE;
+	m_ToTransferDstBarrierCI.srcAccess = Barrier::AccessBit::SHADER_READ_BIT;
+	m_ToTransferDstBarrierCI.dstAccess = Barrier::AccessBit::TRANSFER_WRITE_BIT;
+	m_ToTransferDstBarrierCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
+	m_ToTransferDstBarrierCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
+	m_ToTransferDstBarrierCI.pImage = m_Texture;
+	m_ToTransferDstBarrierCI.oldLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
+	m_ToTransferDstBarrierCI.newLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
+	m_ToTransferDstBarrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
+	m_ToTransferDstBarrier = Barrier::Create(&m_ToTransferDstBarrierCI);
+
+	m_TextureImageViewCI.debugName = "GEAR_CORE_TextureImageView: " + m_CI.debugName;
 	m_TextureImageViewCI.device = m_CI.device;
 	m_TextureImageViewCI.pImage = m_Texture;
 	m_TextureImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
@@ -164,19 +136,39 @@ void Texture::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBuff
 	}
 }
 
-void Texture::GetFinalTransition(std::vector<Ref<Barrier>>& barriers, bool force)
+void Texture::GetTransition_ToShaderReadOnly(std::vector<Ref<Barrier>>& barriers, bool force)
 {
-	if (!m_FinalTransition || force)
+	if (!m_Transition_ToShaderReadOnly || force)
 	{
-		barriers.push_back(m_FinalBarrier);
-		m_FinalTransition = true;
+		barriers.push_back(m_ToShaderReadOnlyBarrier);
+		m_Transition_ToShaderReadOnly = true;
 	}
+}
+
+void Texture::GetTransition_ToTransferDst(std::vector<Ref<Barrier>>& barriers, bool force)
+{
+	if (!m_Transition_ToTransferDst || force)
+	{
+		barriers.push_back(m_ToTransferDstBarrier);
+		m_Transition_ToTransferDst = true;
+	}
+}
+
+void Texture::Reload()
+{
+	std::vector<uint8_t> imageData;
+	LoadImageData(imageData);
+
+	m_TextureUploadBufferCI.pMemoryBlock->SubmitData(m_TextureUploadBuffer->GetResource(), imageData.size(), imageData.data());
+
+	m_Upload = false;
+	m_Transition_ToShaderReadOnly = false;
+	m_Transition_ToTransferDst = false;
 }
 
 void Texture::CreateSampler()
 {
-	m_DebugName_Sampler = "GEAR_CORE_Sampler: " + m_CI.debugName;
-	m_SamplerCI.debugName = m_DebugName_Sampler.c_str();
+	m_SamplerCI.debugName = "GEAR_CORE_Sampler: " + m_CI.debugName;
 	m_SamplerCI.device = m_CI.device;
 	m_SamplerCI.magFilter = Sampler::Filter::LINEAR;
 	m_SamplerCI.minFilter = Sampler::Filter::LINEAR;
@@ -194,4 +186,44 @@ void Texture::CreateSampler()
 	m_SamplerCI.borderColour = Sampler::BorderColour::FLOAT_OPAQUE_BLACK;
 	m_SamplerCI.unnormalisedCoordinates = false;
 	m_Sampler = Sampler::Create(&m_SamplerCI);
+}
+
+void Texture::LoadImageData(std::vector<uint8_t>& imageData)
+{
+	if (!m_CI.filepaths.empty())
+	{
+		uint8_t* stbiBuffer = nullptr;
+		if (!m_Cubemap)
+		{
+			stbiBuffer = stbi_load(m_CI.filepaths[0].c_str(), (int*)&m_CI.width, (int*)&m_CI.height, &m_BPP, 4);
+
+			imageData.resize(m_CI.width * m_CI.height * 4);
+			memcpy(imageData.data(), stbiBuffer, m_CI.width * m_CI.height * 4);
+
+			if (stbiBuffer)
+				stbi_image_free(stbiBuffer);
+
+		}
+		else
+		{
+			for (size_t i = 0; i < 6; i++)
+			{
+				stbiBuffer = stbi_load(m_CI.filepaths[i].c_str(), (int*)&m_CI.width, (int*)&m_CI.height, &m_BPP, 4);
+				if (i == 0)
+					imageData.resize(6 * m_CI.width * m_CI.height * 4);
+
+				memcpy(imageData.data() + (i * m_CI.width * m_CI.height * 4), stbiBuffer, (m_CI.width * m_CI.height * 4));
+
+				if (stbiBuffer)
+					stbi_image_free(stbiBuffer);
+			}
+
+		}
+		m_CI.depth = 1;
+	}
+	else
+	{
+		imageData.resize(m_CI.size);
+		memcpy(imageData.data(), m_CI.data, m_CI.size);
+	}
 }
