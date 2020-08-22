@@ -26,7 +26,7 @@ miru::Ref<MemoryBlock> MemoryBlockManager::GetMemoryBlock(MemoryBlockType type, 
 {
 	if (!s_Initialised)
 	{
-		GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_INIT_FAILED, "ERROR: gear::graphics::MemoryBlockManager: MemoryBlockManager has not been initialised.");
+		GEAR_ASSERT(core::Log::Level::FATAL, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INIT_FAILED, "MemoryBlockManager has not been initialised.");
 	}
 
 	std::vector<miru::Ref<MemoryBlock>>& mbs = MemoryBlock::GetMemoryBlocks();
@@ -66,7 +66,7 @@ void MemoryBlockManager::PrintMemoryBlockStatus()
 		}
 		float loadPercent = 100.0f * (float)currentAllocatedSize / (float)(memoryBlock->GetCreateInfo().blockSize);
 
-		std::cout << name << "(" << ptrVal << "): " << " - Usage(Bytes): " << currentAllocatedSize << " - " << loadPercent << "%.\n";
+		GEAR_PRINT_MESSAGE(core::Log::Level::INFO, core::Log::ErrorCode::OK, "%-48s(0x%x): - Usage(Bytes): %zu - %.3f%%.", name.c_str(), ptrVal, currentAllocatedSize, loadPercent);
 	};
 }
 
@@ -94,7 +94,7 @@ miru::Ref<MemoryBlock> MemoryBlockManager::AddMemoryBlock(MemoryBlockType type, 
 	}
 	else
 	{
-		GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_INVALID_VALUE, "ERROR: gear::graphics::MemoryBlockManager: Unknown MemoryBlockType.");
+		GEAR_ASSERT(core::Log::Level::FATAL, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_VALUE, "MemoryBlockManager: Unknown MemoryBlockType.");
 	}
 
 	miru::Ref<MemoryBlock> memoryBlock = MemoryBlock::Create(&mbCI);
@@ -115,7 +115,7 @@ MemoryBlockManager::MemoryBlockType MemoryBlockManager::GetMemoryBlockType(miru:
 	}
 	else
 	{
-		GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_INVALID_VALUE, "ERROR: gear::graphics::MemoryBlockManager: Unknown MemoryBlockType.");
+		GEAR_ASSERT(core::Log::Level::FATAL, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_VALUE, "MemoryBlockManager: Unknown MemoryBlockType.");
 		return MemoryBlockType::UNKNOWN;
 	}
 }

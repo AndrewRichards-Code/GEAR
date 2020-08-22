@@ -22,7 +22,7 @@ int main()
 	windowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	windowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::RENDER_DOC;
 	gear::Ref<Window> window = gear::CreateRef<Window>(&windowCI);
-	
+
 	MemoryBlockManager::CreateInfo mbmCI;
 	mbmCI.pContext = window->GetContext();
 	mbmCI.defaultBlockSize = MemoryBlock::BlockSize::BLOCK_SIZE_128MB;

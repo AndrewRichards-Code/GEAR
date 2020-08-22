@@ -3,9 +3,6 @@
 #pragma warning(disable : 26812) //Disables 'Prefered scoped enum'  warning C26812
 #pragma warning(disable : 26495) //Disables 'Unitialised variable'  warning C26495
 #pragma warning(disable : 26451) //Disables 'Arithmetic overflow'   warning C26451
-#pragma warning(disable : 6011)  //Disables 'Dereferencing nullptr' warning C6011
-#pragma warning(disable : 6001)  //Disables 'Uninitialized memory'  warning C6001
-#pragma warning(disable : 4251)  //Disables 'DLL-interface needed'  warning C4251
 #endif
 
 //C Standard Libraries
@@ -108,41 +105,44 @@ namespace gear
 
 	template<class _Ty1, class _Ty2>
 	inline constexpr Ref<_Ty1> ref_cast(const Ref<_Ty2>& x) noexcept { return std::dynamic_pointer_cast<_Ty1>(x); }
-
-	enum class GEAR_ERROR_CODE : uint32_t
-	{
-		GEAR_OK				= 0x00000000,
-		GEAR_AUDIO			= 0x00000001,
-		GEAR_CORE			= 0x00000002,
-		GEAR_GRAPHICS		= 0x00000004,
-		GEAR_INPUT			= 0x00000008,
-		GEAR_OBJECTS		= 0x00000010,
-		GEAR_UTILS			= 0x00000020,
-		GEAR_REVERSED0		= 0x00000040,
-		GEAR_REVERSED1		= 0x00000080,
-
-		GEAR_NO_DEVICE		= 0x00000100,
-		GEAR_NO_CONTEXT		= 0x00000200,
-		GEAR_INIT_FAILED	= 0x00000400,
-		GEAR_FUNC_FAILED	= 0x00000800,
-		GEAR_NOT_SUPPORTED	= 0x00001000,
-		GEAR_INVALID_VALUE	= 0x00002000,
-		GEAR_NO_FILE		= 0x00004000,
-		GEAR_LOAD_FAILED	= 0x00008000,
-	};
 }
 
 //GEAR printf
 #if defined(_DEBUG)
 #if !defined(__ANDROID__)
-#define GEAR_PRINTF(s, ...) printf((s), __VA_ARGS__)
+#define GEAR_PRINTF(fmt, ...) printf_s((fmt), __VA_ARGS__)
 #else
-#define GEAR_PRINTF(s, ...) __android_log_print(ANDROID_LOG_DEBUG, "GEAR_CORE", s, __VA_ARGS__)
+#define GEAR_PRINTF(fmt, ...) __android_log_print(ANDROID_LOG_DEBUG, "GEAR_CORE", fmt, __VA_ARGS__)
 #endif
 #else
-#define GEAR_PRINTF(s, ...) printf("")
+#define GEAR_PRINTF(fmt, ...) printf_s("")
 #endif
 
+#if(_WIN64)
+#define GEAR_FUNCSIG __FUNCSIG__
+#elif(__linux__)
+#define GEAR_FUNCSIG __PRETTY_FUNCTION__
+#endif
+
+#include "Core/Log.h"
+#if defined(_DEBUG)
+
+#define GEAR_SET_LOG_LEVEL(level) gear::core::Log::SetLevel(gear::core::Log::Level(level))
+#define GEAR_PRINT_MESSAGE(level, error_code, fmt, ...) gear::core::Log::PrintMessage(gear::core::Log::Level(level), __FILE__, __LINE__, GEAR_FUNCSIG, gear::core::Log::ErrorCode(error_code), fmt, __VA_ARGS__)
+
 //Triggered if x != 0
-#define GEAR_ASSERT(x, y) if(static_cast<int>(x) != 0) { GEAR_PRINTF("GEAR_ASSERT: %s(%d): ERROR_CODE: %d(0x%x) - %s\n", __FILE__, __LINE__, static_cast<int>(x), static_cast<int>(x), y); DEBUG_BREAK; }
-#define GEAR_WARN(x, y) if(static_cast<int>(x) != 0) { GEAR_PRINTF("GEAR_WARN: %s(%d): ERROR_CODE: %d(0x%x) - %s\n", __FILE__, __LINE__, static_cast<int>(x), static_cast<int>(x), y); }
+#define GEAR_ASSERT(level, error_code, fmt, ...) if(static_cast<int>(error_code) != 0) { GEAR_PRINT_MESSAGE(level, error_code, fmt, __VA_ARGS__); DEBUG_BREAK; }
+//Triggered if x != 0
+#define GEAR_LOG(level, error_code, fmt, ...) if(static_cast<int>(error_code) != 0) { GEAR_PRINT_MESSAGE(level, error_code, fmt, __VA_ARGS__); }
+
+#else
+
+#define GEAR_SET_LOG_LEVEL(level)
+#define GEAR_PRINT_MESSAGE(level, error_code, fmt, ...)
+
+//Triggered if x != 0
+#define GEAR_ASSERT(level, error_code, fmt, ...)
+//Triggered if x != 0
+#define GEAR_LOG(level, error_code, fmt, ...)
+
+#endif

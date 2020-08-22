@@ -1,7 +1,6 @@
 #pragma once
 
 #include "gear_core_common.h"
-//#include "Assimp.h"
 
 namespace gear 
 {
@@ -14,7 +13,7 @@ namespace file_utils
 
 		if (!stream.is_open())
 		{
-			GEAR_WARN(GEAR_ERROR_CODE::GEAR_UTILS | GEAR_ERROR_CODE::GEAR_NO_FILE, ("ERROR: GEAR::FileUtils: Could not read file " + filepath + ". File does not exist.").c_str());
+			GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::UTILS | core::Log::ErrorCode::NO_FILE, "Could not read file %s. File does not exist.", filepath);
 			return "";
 		}
 
@@ -33,7 +32,7 @@ namespace file_utils
 		std::ifstream stream(filepath, std::fstream::in | std::fstream::binary | std::fstream::ate);
 		if (!stream.is_open())
 		{
-			GEAR_WARN(GEAR_ERROR_CODE::GEAR_UTILS | GEAR_ERROR_CODE::GEAR_NO_FILE, ("ERROR: GEAR::FileUtils: Could not read file " + filepath + ". File does not exist.").c_str());
+			GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::UTILS | core::Log::ErrorCode::NO_FILE, "Could not read file %s. File does not exist.", filepath);
 			return {};
 		}
 
@@ -94,7 +93,7 @@ namespace file_utils
 		result->m_Stream->read(buffer, 4);     //RIFF
 		if (strncmp(buffer, "RIFF", 4) != 0)
 		{
-			GEAR_WARN(GEAR_ERROR_CODE::GEAR_UTILS | GEAR_ERROR_CODE::GEAR_NO_FILE, ("ERROR: GEAR::FileUtils: Could not read file " + filepath + ". File does not exist.").c_str());
+			GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::UTILS | core::Log::ErrorCode::NO_FILE, "Could not read file %s. File does not exist.", filepath);
 			return result;
 		}
 		result->m_Stream->read(buffer, 4);

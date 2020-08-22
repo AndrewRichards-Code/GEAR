@@ -40,7 +40,7 @@ void Camera::DefineProjection()
 	}
 	else
 	{
-		GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_INVALID_VALUE, "ERROR: GEAR::OBJECTS::Camera: The parameters for DefinieProjection() don't match the projection type.");
+		GEAR_ASSERT(core::Log::Level::ERROR, core::Log::ErrorCode::OBJECTS| core::Log::ErrorCode::INVALID_VALUE, "The parameters for DefinieProjection() don't match the projection type.");
 		throw;
 	}
 	if (m_CI.flipX)

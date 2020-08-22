@@ -17,7 +17,7 @@ Window::Window(CreateInfo* pCreateInfo)
 	m_CI = *pCreateInfo;
 
 #ifdef _DEBUG
-	m_CI.title += ": GEAR_CORE(x64) Debug";
+	m_CI.title += ": CORE(x64) Debug";
 #endif
 
 	m_CurrentWidth = m_CI.width;
@@ -131,7 +131,7 @@ bool Window::Init()
 {
 	if (!glfwInit())
 	{
-		GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_INIT_FAILED, "ERROR: GEAR::GRAPHICS::Window: Failed to initialise GLFW.");
+		GEAR_ASSERT(core::Log::Level::FATAL, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INIT_FAILED, "Failed to initialise GLFW.");
 		return false;
 	}
 	GraphicsAPI::SetAPI(m_CI.api);
@@ -159,7 +159,7 @@ bool Window::Init()
 	{
 		if (glfwVulkanSupported() == GLFW_FALSE)
 		{
-			GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_NOT_SUPPORTED, "ERROR: GEAR::GRAPHICS::Window: GLFW does not support Vulkan.");
+			GEAR_ASSERT(core::Log::Level::FATAL, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::NOT_SUPPORTED, "GLFW does not support Vulkan.");
 			return false;
 		}
 
@@ -180,7 +180,7 @@ bool Window::Init()
 	{
 		glfwDestroyWindow(m_Window);
 		glfwTerminate();
-		GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_FUNC_FAILED, "ERROR: GEAR::GRAPHICS::Window: Failed to create GLFW window.");
+		GEAR_ASSERT(core::Log::Level::FATAL, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::FUNC_FAILED, "Failed to create GLFW window.");
 		return false;
 	}
 	
@@ -207,7 +207,7 @@ bool Window::Init()
 	m_Swapchain = Swapchain::Create(&m_SwapchainCI);
 
 	MemoryBlock::CreateInfo dpethMBCI;
-	dpethMBCI.debugName = "GEAR_CORE_MB_0s_GPU_SwapchainDepthImage";
+	dpethMBCI.debugName = "GEAR_CORE_MB_0_GPU_SwapchainDepthImage";
 	dpethMBCI.pContext = m_Context;
 	dpethMBCI.blockSize = MemoryBlock::BlockSize::BLOCK_SIZE_32MB;
 	dpethMBCI.properties = MemoryBlock::PropertiesBit::DEVICE_LOCAL_BIT;

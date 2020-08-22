@@ -25,7 +25,7 @@ Light::Light(CreateInfo* pCreateInfo)
 	}
 	else
 	{
-		GEAR_WARN(GEAR_ERROR_CODE::GEAR_OBJECTS | GEAR_ERROR_CODE::GEAR_INIT_FAILED, "ERROR: GEAR::OBJECTS::Light: Too many lights declared.");
+		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::OBJECTS | core::Log::ErrorCode::INIT_FAILED, "Too many lights declared.");
 	}
 }
 

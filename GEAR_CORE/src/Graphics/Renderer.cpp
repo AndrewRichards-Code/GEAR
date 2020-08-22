@@ -334,7 +334,7 @@ void Renderer::AddRenderPipeline(const std::string& filepath, float viewportWidt
 {
 	using namespace nlohmann;
 
-	std::string mscDirectory = "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/";
+	std::string mscDirectory = "../CORE/dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/";
 #if _DEBUG
 	mscDirectory += "Debug";
 #else
@@ -349,18 +349,18 @@ void Renderer::AddRenderPipeline(const std::string& filepath, float viewportWidt
 	}
 	else
 	{
-		GEAR_WARN(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_NO_FILE, "WARNING: gear::graphics::Renderer: Unable to open grpf.json file.");
+		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::NO_FILE, "Unable to open grpf.json file.");
 	}
 
 	if (pipeline_grpf_json.empty())
 	{
-		GEAR_WARN(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_LOAD_FAILED, "WARNING: gear::graphics::Renderer: grpf.json file is not valid.");
+		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::LOAD_FAILED, "grpf.json file is not valid.");
 	}
 
 	std::string fileType = pipeline_grpf_json["fileType"];
 	if (fileType.compare("GEAR_RENDER_PIPELINE_FILE") != 0)
 	{
-		GEAR_WARN(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_NOT_SUPPORTED, "WARNING: gear::graphics::Renderer: grpf.json file is not valid.");
+		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::NOT_SUPPORTED, "grpf.json file is not valid.");
 	}
 
 	RenderPipeline::CreateInfo rpCI;

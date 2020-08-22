@@ -5,6 +5,7 @@
 #include "Audio/Listener.h"
 
 //Core
+#include "Core/Log.h"
 #include "Core/StringConversion.h"
 #include "Core/Timer.h"
 #include "Core/TypeLibrary.h"

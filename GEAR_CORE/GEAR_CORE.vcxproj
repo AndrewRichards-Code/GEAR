@@ -57,7 +57,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\GLFW\include;$(ProjectDir)dep\JSON;$(ProjectDir)dep\MARS\MARS\src;$(ProjectDir)dep\MIRU\MIRU_CORE\redist;$(ProjectDir)dep\MIRU\MIRU_CORE\src;$(ProjectDir)dep\OPENAL\include;$(ProjectDir)dep\STBI;$(VULKAN_SDK)\Include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep\DATE;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\GLFW\include;$(ProjectDir)dep\JSON;$(ProjectDir)dep\MARS\MARS\src;$(ProjectDir)dep\MIRU\MIRU_CORE\redist;$(ProjectDir)dep\MIRU\MIRU_CORE\src;$(ProjectDir)dep\OPENAL\include;$(ProjectDir)dep\STBI;$(VULKAN_SDK)\Include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>gear_core_common.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -79,7 +79,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\GLFW\include;$(ProjectDir)dep\JSON;$(ProjectDir)dep\MARS\MARS\src;$(ProjectDir)dep\MIRU\MIRU_CORE\redist;$(ProjectDir)dep\MIRU\MIRU_CORE\src;$(ProjectDir)dep\OPENAL\include;$(ProjectDir)dep\STBI;$(VULKAN_SDK)\Include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep\DATE;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\GLFW\include;$(ProjectDir)dep\JSON;$(ProjectDir)dep\MARS\MARS\src;$(ProjectDir)dep\MIRU\MIRU_CORE\redist;$(ProjectDir)dep\MIRU\MIRU_CORE\src;$(ProjectDir)dep\OPENAL\include;$(ProjectDir)dep\STBI;$(VULKAN_SDK)\Include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>gear_core_common.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -99,6 +99,7 @@
     <ClCompile Include="dep\STBI\stb_image.cpp" />
     <ClCompile Include="src\Audio\AudioSource.cpp" />
     <ClCompile Include="src\Audio\Listener.cpp" />
+    <ClCompile Include="src\Core\Log.cpp" />
     <ClCompile Include="src\Core\StringConversion.cpp" />
     <ClCompile Include="src\Core\Timer.cpp" />
     <ClCompile Include="src\gear_core_common.cpp">
@@ -121,14 +122,17 @@
     <ClCompile Include="src\Utils\ModelLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="dep\DATE\include\date.h" />
     <ClInclude Include="dep\STBI\stb_image.h" />
     <ClInclude Include="src\Audio\AudioSource.h" />
     <ClInclude Include="src\Audio\Listener.h" />
     <ClInclude Include="src\Core\EnumStringMaps.h" />
+    <ClInclude Include="src\Core\Log.h" />
     <ClInclude Include="src\Core\StringConversion.h" />
     <ClInclude Include="src\Core\Timer.h" />
     <ClInclude Include="src\Core\TypeLibrary.h" />
     <ClInclude Include="src\Graphics\Framebuffer.h" />
+    <ClInclude Include="src\Graphics\GenerateMipMaps.h" />
     <ClInclude Include="src\Graphics\Indexbuffer.h" />
     <ClInclude Include="src\Graphics\MemoryBlockBanager.h" />
     <ClInclude Include="src\Graphics\MemoryBlockManager.h" />

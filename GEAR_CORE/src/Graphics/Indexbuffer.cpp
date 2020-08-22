@@ -12,8 +12,14 @@ Indexbuffer::Indexbuffer(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
-	GEAR_ASSERT((m_CI.stride != 2 && m_CI.stride != 4), "ERROR: GEAR::GRAPHICS::Indexbuffer: Stride is not 2 or 4.");
-	GEAR_ASSERT((m_CI.size % m_CI.stride), "ERROR: GEAR::GRAPHICS::Indexbuffer: Size is not a multiple of the stride.");
+	if (m_CI.stride != 2 && m_CI.stride != 4)
+	{
+		GEAR_ASSERT(core::Log::Level::ERROR, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_VALUE, "Stride is not 2 or 4.");
+	}
+	if (m_CI.size % m_CI.stride)
+	{
+		GEAR_ASSERT(core::Log::Level::ERROR, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_VALUE, "Size is not a multiple of the stride.");
+	}	
 	m_Count = static_cast<uint32_t>(m_CI.size / m_CI.stride);
 
 	m_IndexBufferUploadCI.debugName = "GEAR_CORE_IndexBufferUpload: " + m_CI.debugName;

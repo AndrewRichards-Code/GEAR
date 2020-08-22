@@ -75,6 +75,9 @@
     <ClCompile Include="src\Utils\ModelLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Core\Log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\utils\fileutils.h">
@@ -159,6 +162,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\TypeLibrary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\GenerateMipMaps.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\Log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dep\DATE\include\date.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -90,13 +90,13 @@ void Framebuffer::CheckColourTextureAttachments(size_t attachment)
 {
 	if (attachment > m_ColourTextures.size())
 	{
-		GEAR_WARN(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_INVALID_VALUE, "ERROR: GEAR::GRAPHICS::Framebuffer: Attachment slot unavailable! Only 8 available slots.");
+		GEAR_LOG(core::Log::Level::ERROR, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_VALUE, "Attachment slot unavailable! Only 8 available slots.");
 		return;
 	}
 
 	if (m_ColourTextures[attachment] != nullptr)
 	{
-		GEAR_WARN(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_INVALID_VALUE, "ERROR: GEAR::GRAPHICS::Framebuffer: Attachment slot is already taken.");
+		GEAR_LOG(core::Log::Level::ERROR, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_VALUE, "Attachment slot is already taken.");
 		return;
 	}
 }
