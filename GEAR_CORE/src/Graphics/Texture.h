@@ -76,6 +76,7 @@ namespace graphics
 		inline const miru::Ref<miru::crossplatform::Sampler>& GetTextureSampler() const { return m_Sampler; }
 		inline bool IsCubeMap() const { return m_Cubemap; }
 		inline bool IsDepthTexture() const { return m_DepthTexture; }
+		inline const CreateInfo& GetCreateInfo() const { return m_CI; }
 
 		inline void SetAnisotrophicValue(float anisostrphicVal) { m_AnisotrophicValue = anisostrphicVal; CreateSampler(); };
 		inline float GetAnisotrophicValue() const { return m_AnisotrophicValue; };

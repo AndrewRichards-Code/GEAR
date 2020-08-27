@@ -316,7 +316,7 @@ int main(int argc, const char** argv)
 
 	//Create DescriptorPool and DescriptorSet
 	DescriptorPool::CreateInfo descPoolCI;
-	descPoolCI.debugName = "GEAR_MIPMAP_DescriptorSet";
+	descPoolCI.debugName = "GEAR_MIPMAP_DescriptorPool";
 	descPoolCI.device = context->GetDevice();
 	descPoolCI.poolSizes = { {DescriptorType::STORAGE_IMAGE, (levels - 1)}, {DescriptorType::COMBINED_IMAGE_SAMPLER, (levels - 1)} };
 	descPoolCI.maxSets = levels - 1;

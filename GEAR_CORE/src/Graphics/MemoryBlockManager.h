@@ -28,11 +28,11 @@ namespace graphics
 		static uint32_t s_MB_GPU_ID;
 		static bool s_Initialised;
 
-
 	public:
 		static void Initialise(CreateInfo* pCreateInfo);
 		static miru::Ref<miru::crossplatform::MemoryBlock> GetMemoryBlock(MemoryBlockType type, miru::crossplatform::MemoryBlock::BlockSize overrideBlockSize = miru::crossplatform::MemoryBlock::BlockSize(0));
 		static void PrintMemoryBlockStatus();
+		static const CreateInfo& GetCreateInfo() { return s_CI; }
 
 	private:
 		static miru::Ref<miru::crossplatform::MemoryBlock> AddMemoryBlock(MemoryBlockType type, miru::crossplatform::MemoryBlock::BlockSize overrideBlockSize = miru::crossplatform::MemoryBlock::BlockSize(0));

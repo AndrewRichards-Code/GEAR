@@ -21,6 +21,14 @@ namespace graphics
 			miru::Ref<miru::crossplatform::RenderPass>				renderPass;
 			uint32_t												subpassIndex;
 		};
+		struct LoadInfo
+		{
+			std::string									filepath;
+			float										viewportWidth;
+			float										viewportHeight;
+			miru::Ref<miru::crossplatform::RenderPass>	renderPass;
+			uint32_t									subpassIndex;
+		};
 
 	private:
 		void* m_Device;
@@ -37,6 +45,7 @@ namespace graphics
 
 	public:
 		RenderPipeline(CreateInfo* pCreateInfo);
+		RenderPipeline(LoadInfo* pLoadInfo);
 		~RenderPipeline();
 
 		void FinalisePipline();

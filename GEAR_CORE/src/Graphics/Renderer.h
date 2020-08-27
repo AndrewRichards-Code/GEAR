@@ -62,22 +62,20 @@ namespace graphics
 		virtual ~Renderer();
 
 		void InitialiseRenderPipelines(const std::vector<std::string>& filepaths, float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass);
-		virtual void SubmitFramebuffer(const miru::Ref<miru::crossplatform::Framebuffer>* framebuffers) { m_Framebuffers = framebuffers; };
-		virtual void SubmitCamera(gear::Ref<objects::Camera> camera) { m_Camera = camera; };
-		virtual void SubmitLights(std::vector<gear::Ref<objects::Light>> lights) { m_Lights = lights; };
-		virtual void SubmitModel(const gear::Ref<objects::Model>& obj);
-		virtual void Flush();
-		virtual void Present(const miru::Ref<miru::crossplatform::Swapchain>& swapchain, bool& windowResize);
+		
+		void SubmitFramebuffer(const miru::Ref<miru::crossplatform::Framebuffer>* framebuffers) { m_Framebuffers = framebuffers; };
+		void SubmitCamera(gear::Ref<objects::Camera> camera) { m_Camera = camera; };
+		void SubmitLights(std::vector<gear::Ref<objects::Light>> lights) { m_Lights = lights; };
+		void SubmitModel(const gear::Ref<objects::Model>& obj);
+		void Flush();
+		void Present(const miru::Ref<miru::crossplatform::Swapchain>& swapchain, bool& windowResize);
 
-		virtual void ResizeRenderPipelineViewports(uint32_t width, uint32_t height);
-		virtual void RecompileRenderPipelineShaders();
+		void ResizeRenderPipelineViewports(uint32_t width, uint32_t height);
+		void RecompileRenderPipelineShaders();
 
 		inline std::deque<gear::Ref<objects::Model>>& GetRenderQueue() { return m_RenderQueue; };
 		inline const miru::Ref<miru::crossplatform::CommandBuffer>& GetCmdBuffer() { return m_CmdBuffer; };
 		inline const std::map<std::string, gear::Ref<graphics::RenderPipeline>>& GetRenderPipelines() const { return m_RenderPipelines; }
-
-	private:
-		void AddRenderPipeline(const std::string& filepath, float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass);
 	};
 }
 }
