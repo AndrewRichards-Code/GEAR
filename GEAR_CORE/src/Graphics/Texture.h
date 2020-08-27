@@ -1,4 +1,5 @@
 #pragma once
+
 #include "gear_core_common.h"
 
 namespace gear 
@@ -14,7 +15,7 @@ namespace graphics
 			std::string									debugName;
 			void* device;
 			std::vector<std::string>					filepaths;		//Option 1
-			const uint8_t* data;			//Option 2
+			const uint8_t*								data;			//Option 2
 			size_t										size;			//Option 2
 			uint32_t									width;			//Option 2
 			uint32_t									height;			//Option 2

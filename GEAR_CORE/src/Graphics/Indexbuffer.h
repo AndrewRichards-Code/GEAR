@@ -12,8 +12,8 @@ namespace graphics
 		struct CreateInfo
 		{
 			std::string debugName;
-			void* device;
-			void* data;
+			void*		device;
+			void*		data;
 			size_t		size;
 			size_t		stride;
 		};

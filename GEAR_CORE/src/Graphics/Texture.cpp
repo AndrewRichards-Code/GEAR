@@ -35,10 +35,10 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_TextureCI.width = m_CI.width;
 	m_TextureCI.height = m_CI.height;
 	m_TextureCI.depth = m_CI.depth;
-	m_TextureCI.mipLevels = 1;
+	m_TextureCI.mipLevels = m_CI.mipLevels;
 	m_TextureCI.arrayLayers = m_Cubemap ? 6 : 1;
 	m_TextureCI.sampleCount = m_CI.samples;
-	m_TextureCI.usage = Image::UsageBit::SAMPLED_BIT | Image::UsageBit::TRANSFER_DST_BIT;
+	m_TextureCI.usage = Image::UsageBit::SAMPLED_BIT | Image::UsageBit::TRANSFER_DST_BIT | (m_CI.mipLevels > 1 ? Image::UsageBit::STORAGE_BIT : Image::UsageBit(0)) | m_CI.usage;
 	m_TextureCI.layout = Image::Layout::UNKNOWN;
 	m_TextureCI.size = 0;
 	m_TextureCI.data = nullptr;
@@ -53,7 +53,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_InitialBarrierCI.pImage = m_Texture;
 	m_InitialBarrierCI.oldLayout = Image::Layout::UNKNOWN;
 	m_InitialBarrierCI.newLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
-	m_InitialBarrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
+	m_InitialBarrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, m_CI.mipLevels, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
 	m_InitialBarrier = Barrier::Create(&m_InitialBarrierCI);
 
 	m_ToShaderReadOnlyBarrierCI.type = Barrier::Type::IMAGE;
@@ -64,7 +64,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_ToShaderReadOnlyBarrierCI.pImage = m_Texture;
 	m_ToShaderReadOnlyBarrierCI.oldLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
 	m_ToShaderReadOnlyBarrierCI.newLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
-	m_ToShaderReadOnlyBarrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
+	m_ToShaderReadOnlyBarrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, m_CI.mipLevels, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
 	m_ToShaderReadOnlyBarrier = Barrier::Create(&m_ToShaderReadOnlyBarrierCI);
 
 	m_ToTransferDstBarrierCI.type = Barrier::Type::IMAGE;
@@ -75,13 +75,13 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_ToTransferDstBarrierCI.pImage = m_Texture;
 	m_ToTransferDstBarrierCI.oldLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
 	m_ToTransferDstBarrierCI.newLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
-	m_ToTransferDstBarrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
+	m_ToTransferDstBarrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, m_CI.mipLevels, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
 	m_ToTransferDstBarrier = Barrier::Create(&m_ToTransferDstBarrierCI);
 
 	m_TextureImageViewCI.debugName = "GEAR_CORE_TextureImageView: " + m_CI.debugName;
 	m_TextureImageViewCI.device = m_CI.device;
 	m_TextureImageViewCI.pImage = m_Texture;
-	m_TextureImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
+	m_TextureImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, m_CI.mipLevels, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
 	m_TextureImageView = ImageView::Create(&m_TextureImageViewCI);
 
 	CreateSampler();
