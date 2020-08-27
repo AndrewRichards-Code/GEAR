@@ -6,80 +6,81 @@
 #undef far
 #undef near
 
-namespace gear {
-namespace objects {
-
-class Camera
+namespace gear 
 {
-public:
-	enum class ProjectionType : uint32_t
+namespace objects 
+{
+	class Camera
 	{
-		PERSPECTIVE,
-		ORTHOGRAPHIC 
-	};
-
-	struct OrthographicParameters
-	{
-		float	left;
-		float	right;
-		float	bottom;
-		float	top;
-		float	near;
-		float	far;
-	};
-	struct PerspectiveParameters
-	{
-		double	horizonalFOV;
-		float	aspectRatio;
-		float	zNear;
-		float	zFar;
-	};
-
-	struct CreateInfo
-	{
-		std::string		debugName;
-		void*			device;
-		mars::Vec3		position;
-		mars::Mat4		orientation;
-		ProjectionType	projectionType;
-		union
+	public:
+		enum class ProjectionType : uint32_t
 		{
-			OrthographicParameters	orthographicsParams;
-			PerspectiveParameters	perspectiveParams;
+			PERSPECTIVE,
+			ORTHOGRAPHIC
 		};
-		bool			flipX;
-		bool			flipY;
+
+		struct OrthographicParameters
+		{
+			float	left;
+			float	right;
+			float	bottom;
+			float	top;
+			float	near;
+			float	far;
+		};
+		struct PerspectiveParameters
+		{
+			double	horizonalFOV;
+			float	aspectRatio;
+			float	zNear;
+			float	zFar;
+		};
+
+		struct CreateInfo
+		{
+			std::string		debugName;
+			void* device;
+			mars::Vec3		position;
+			mars::Mat4		orientation;
+			ProjectionType	projectionType;
+			union
+			{
+				OrthographicParameters	orthographicsParams;
+				PerspectiveParameters	perspectiveParams;
+			};
+			bool			flipX;
+			bool			flipY;
+		};
+
+	private:
+		struct CameraUB
+		{
+			mars::Mat4 projectionMatrix;
+			mars::Mat4 viewMatrix;
+			mars::Vec4 position;
+		};
+		gear::Ref<graphics::Uniformbuffer<CameraUB>> m_UB;
+
+	public:
+		CreateInfo m_CI;
+
+		mars::Vec3 m_Direction;
+		mars::Vec3 m_Up;
+		mars::Vec3 m_Right;
+
+	public:
+		Camera(CreateInfo* pCreateInfo);
+		~Camera();
+
+		//Update the camera the current static of Camera::CreateInfo m_CI.
+		void Update();
+		gear::Ref<graphics::Uniformbuffer<CameraUB>> GetUB() { return m_UB; };
+
+	private:
+		void DefineProjection();
+		void DefineView();
+		void SetPosition();
+		void InitialiseUB();
 	};
-
-private:
-	struct CameraUB
-	{
-		mars::Mat4 projectionMatrix;
-		mars::Mat4 viewMatrix;
-		mars::Vec4 position;
-	};
-	gear::Ref<graphics::Uniformbuffer<CameraUB>> m_UB;
-
-public:
-	CreateInfo m_CI;
-
-	mars::Vec3 m_Direction;
-	mars::Vec3 m_Up;
-	mars::Vec3 m_Right;
-
-public:
-	Camera(CreateInfo* pCreateInfo);
-	~Camera();
-
-	//Update the camera the current static of Camera::CreateInfo m_CI.
-	void Update();
-	gear::Ref<graphics::Uniformbuffer<CameraUB>> GetUB() { return m_UB; };
-
-private:
-	void DefineProjection();
-	void DefineView();
-	void SetPosition();
-	void InitialiseUB();
-};
 }
 }

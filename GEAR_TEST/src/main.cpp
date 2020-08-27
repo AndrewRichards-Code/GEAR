@@ -144,7 +144,7 @@ int main()
 	gear::Ref<Camera> cam = gear::CreateRef<Camera>(&cameraCI);
 
 	gear::Ref<Renderer> renderer = gear::CreateRef<Renderer>(window->GetContext());
-	renderer->InitialiseRenderPipelines({"res/pipelines/basic.grpf.json", "res/pipelines/cube.grpf.json" }, (float)window->GetWidth(), (float)window->GetHeight(), window->GetRenderPass());
+	renderer->InitialiseRenderPipelines({"res/pipelines/basic.grpf.json", "res/pipelines/cube.grpf.json", "res/pipelines/GenerateMipMaps.grpf.json" }, (float)window->GetWidth(), (float)window->GetHeight(), window->GetRenderPass());
 
 	MemoryBlockManager::PrintMemoryBlockStatus();
 	

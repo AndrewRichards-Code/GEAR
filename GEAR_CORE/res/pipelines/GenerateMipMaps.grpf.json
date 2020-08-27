@@ -1,0 +1,28 @@
+{
+	"fileType": "GEAR_RENDER_PIPELINE_FILE", 
+	"debugName": "GenerateMipMaps",
+	"shaders": [
+		{
+			"debugName": "GenerateMipMaps.comp.spv",
+			"stage": "COMPUTE_BIT",
+			"entryPoint": "main",
+			"binaryFilepath": "res/shaders/bin/GenerateMipMaps.comp.spv",
+			"recompileArguments": {
+				"mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
+				"hlslFilepath": "res/shaders/HLSL/GenerateMipMaps.comp.hlsl",
+				"outputDirectory": "res/shaders/bin/",
+				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
+				"entryPoint": "",
+				"shaderModel": "6_4",
+				"macros": [],
+				"cso": true,
+				"spv": true,
+				"dxcLocation": "",
+				"glslangLocation": "",
+				"additioalArguments": "",
+				"nologo": false,
+				"nooutput": false
+			}
+		}
+	]
+}

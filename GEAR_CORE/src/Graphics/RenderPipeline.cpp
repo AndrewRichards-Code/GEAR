@@ -90,7 +90,7 @@ void RenderPipeline::FinalisePipline()
 		for (auto& rbds : m_Shaders[0]->GetRBDs())
 		{
 			uint32_t set = rbds.first;
-			m_DescSetLayoutCIs.resize(std::max((size_t)set, m_DescSetLayoutCIs.size()));
+			m_DescSetLayoutCIs.resize(std::max((size_t)set + 1, m_DescSetLayoutCIs.size()));
 
 			for (auto& rbd : rbds.second)
 			{

@@ -3,10 +3,12 @@
 #include "gear_core_common.h"
 #include "Graphics/MemoryBlockManager.h"
 
-namespace gear {
-namespace graphics {
-template<typename T>
-class Uniformbuffer : public T
+namespace gear 
+{
+namespace graphics
+{
+	template<typename T>
+	class Uniformbuffer : public T
 	{
 	public:
 		struct CreateInfo

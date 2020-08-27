@@ -7,75 +7,77 @@
 #include "Objects/Camera.h"
 #include "Objects/Light.h"
 
-namespace gear {
-namespace graphics {
-class Renderer
+namespace gear 
 {
-private:
-	//Context and Device
-	void* m_Device;
-	miru::Ref<miru::crossplatform::Context> m_Context;
+namespace graphics 
+{
+	class Renderer
+	{
+	private:
+		//Context and Device
+		void* m_Device;
+		miru::Ref<miru::crossplatform::Context> m_Context;
 
-	//Cmd Pools and CmdBuffers
-	miru::Ref<miru::crossplatform::CommandPool> m_CmdPool;
-	miru::crossplatform::CommandPool::CreateInfo m_CmdPoolCI;
-	miru::Ref<miru::crossplatform::CommandBuffer> m_CmdBuffer;
-	miru::crossplatform::CommandBuffer::CreateInfo m_CmdBufferCI;
+		//Cmd Pools and CmdBuffers
+		miru::Ref<miru::crossplatform::CommandPool> m_CmdPool;
+		miru::crossplatform::CommandPool::CreateInfo m_CmdPoolCI;
+		miru::Ref<miru::crossplatform::CommandBuffer> m_CmdBuffer;
+		miru::crossplatform::CommandBuffer::CreateInfo m_CmdBufferCI;
 
-	miru::Ref<miru::crossplatform::CommandPool> m_TransCmdPool;
-	miru::crossplatform::CommandPool::CreateInfo m_TransCmdPoolCI;
-	miru::Ref<miru::crossplatform::CommandBuffer> m_TransCmdBuffer;
-	miru::crossplatform::CommandBuffer::CreateInfo m_TransCmdBufferCI;
+		miru::Ref<miru::crossplatform::CommandPool> m_TransCmdPool;
+		miru::crossplatform::CommandPool::CreateInfo m_TransCmdPoolCI;
+		miru::Ref<miru::crossplatform::CommandBuffer> m_TransCmdBuffer;
+		miru::crossplatform::CommandBuffer::CreateInfo m_TransCmdBufferCI;
 
-	//Descriptor Pool and Sets
-	miru::Ref<miru::crossplatform::DescriptorPool> m_DescPool;
-	miru::crossplatform::DescriptorPool::CreateInfo m_DescPoolCI;
-	
-	miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetCamera;
-	std::map<gear::Ref<objects::Model>, miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSetModelMaterials;
-	miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetLight;
-	
-	bool builtDescPoolsAndSets = false;
+		//Descriptor Pool and Sets
+		miru::Ref<miru::crossplatform::DescriptorPool> m_DescPool;
+		miru::crossplatform::DescriptorPool::CreateInfo m_DescPoolCI;
 
-	//Renderering Objects
-	std::map<std::string, gear::Ref<graphics::RenderPipeline>> m_RenderPipelines;
-	const miru::Ref<miru::crossplatform::Framebuffer>* m_Framebuffers;
-	std::deque<gear::Ref<objects::Model>> m_RenderQueue;
-	gear::Ref<objects::Camera> m_Camera;
-	std::vector<gear::Ref<objects::Light>> m_Lights;
+		miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetCamera;
+		std::map<gear::Ref<objects::Model>, miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSetModelMaterials;
+		miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetLight;
 
-	//Present Synchronisation Primitives
-	std::vector<miru::Ref<miru::crossplatform::Fence>> m_DrawFences;
-	miru::crossplatform::Fence::CreateInfo m_DrawFenceCI;
-	std::vector<miru::Ref<miru::crossplatform::Semaphore>>m_AcquireSemaphores;
-	miru::crossplatform::Semaphore::CreateInfo m_AcquireSemaphoreCI;
-	std::vector<miru::Ref<miru::crossplatform::Semaphore>>m_SubmitSemaphores;
-	miru::crossplatform::Semaphore::CreateInfo m_SubmitSemaphoreCI;
-	
-	uint32_t m_FrameIndex = 0;
-	uint32_t m_FrameCount = 0;
+		bool builtDescPoolsAndSets = false;
 
-public:
-	Renderer(const miru::Ref<miru::crossplatform::Context>& context);
-	virtual ~Renderer();
+		//Renderering Objects
+		std::map<std::string, gear::Ref<graphics::RenderPipeline>> m_RenderPipelines;
+		const miru::Ref<miru::crossplatform::Framebuffer>* m_Framebuffers;
+		std::deque<gear::Ref<objects::Model>> m_RenderQueue;
+		gear::Ref<objects::Camera> m_Camera;
+		std::vector<gear::Ref<objects::Light>> m_Lights;
 
-	void InitialiseRenderPipelines(const std::vector<std::string>& filepaths, float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass);
-	virtual void SubmitFramebuffer(const miru::Ref<miru::crossplatform::Framebuffer>* framebuffers) { m_Framebuffers = framebuffers; };
-	virtual void SubmitCamera(gear::Ref<objects::Camera> camera) { m_Camera = camera; };
-	virtual void SubmitLights(std::vector<gear::Ref<objects::Light>> lights) { m_Lights = lights; };
-	virtual void SubmitModel(const gear::Ref<objects::Model>& obj);
-	virtual void Flush();
-	virtual void Present(const miru::Ref<miru::crossplatform::Swapchain>& swapchain, bool& windowResize);
+		//Present Synchronisation Primitives
+		std::vector<miru::Ref<miru::crossplatform::Fence>> m_DrawFences;
+		miru::crossplatform::Fence::CreateInfo m_DrawFenceCI;
+		std::vector<miru::Ref<miru::crossplatform::Semaphore>>m_AcquireSemaphores;
+		miru::crossplatform::Semaphore::CreateInfo m_AcquireSemaphoreCI;
+		std::vector<miru::Ref<miru::crossplatform::Semaphore>>m_SubmitSemaphores;
+		miru::crossplatform::Semaphore::CreateInfo m_SubmitSemaphoreCI;
 
-	virtual void ResizeRenderPipelineViewports(uint32_t width, uint32_t height);
-	virtual void RecompileRenderPipelineShaders();
+		uint32_t m_FrameIndex = 0;
+		uint32_t m_FrameCount = 0;
 
-	inline std::deque<gear::Ref<objects::Model>>& GetRenderQueue() { return m_RenderQueue; };
-	inline const miru::Ref<miru::crossplatform::CommandBuffer>& GetCmdBuffer() { return m_CmdBuffer; };
-	inline const std::map<std::string, gear::Ref<graphics::RenderPipeline>>& GetRenderPipelines() const { return m_RenderPipelines;  }
+	public:
+		Renderer(const miru::Ref<miru::crossplatform::Context>& context);
+		virtual ~Renderer();
 
-private:
-	void AddRenderPipeline(const std::string& filepath, float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass);
-};
+		void InitialiseRenderPipelines(const std::vector<std::string>& filepaths, float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass);
+		virtual void SubmitFramebuffer(const miru::Ref<miru::crossplatform::Framebuffer>* framebuffers) { m_Framebuffers = framebuffers; };
+		virtual void SubmitCamera(gear::Ref<objects::Camera> camera) { m_Camera = camera; };
+		virtual void SubmitLights(std::vector<gear::Ref<objects::Light>> lights) { m_Lights = lights; };
+		virtual void SubmitModel(const gear::Ref<objects::Model>& obj);
+		virtual void Flush();
+		virtual void Present(const miru::Ref<miru::crossplatform::Swapchain>& swapchain, bool& windowResize);
+
+		virtual void ResizeRenderPipelineViewports(uint32_t width, uint32_t height);
+		virtual void RecompileRenderPipelineShaders();
+
+		inline std::deque<gear::Ref<objects::Model>>& GetRenderQueue() { return m_RenderQueue; };
+		inline const miru::Ref<miru::crossplatform::CommandBuffer>& GetCmdBuffer() { return m_CmdBuffer; };
+		inline const std::map<std::string, gear::Ref<graphics::RenderPipeline>>& GetRenderPipelines() const { return m_RenderPipelines; }
+
+	private:
+		void AddRenderPipeline(const std::string& filepath, float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass);
+	};
 }
 }

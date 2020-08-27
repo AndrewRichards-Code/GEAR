@@ -5,9 +5,10 @@
 #include "Graphics/Indexbuffer.h"
 #include "Utils/ModelLoader.h"
 
-namespace gear {
-namespace objects {
-
+namespace gear 
+{
+namespace objects 
+{
 	class Mesh
 	{
 	public:

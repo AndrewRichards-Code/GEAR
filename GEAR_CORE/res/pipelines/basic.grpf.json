@@ -1,17 +1,17 @@
 {
 	"fileType": "GEAR_RENDER_PIPELINE_FILE", 
-	"debugName": "cube",
+	"debugName": "basic",
 	"shaders": [
 		{
-			"debugName": "cube.vert.spv",
+			"debugName": "basic.vert.spv",
 			"stage": "VERTEX_BIT",
 			"entryPoint": "main",
-			"binaryFilepath": "res/shaders/bin/cube.vert.spv",
+			"binaryFilepath": "res/shaders/bin/basic.vert.spv",
 			"recompileArguments": {
-				"mscDirectory": "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
-				"hlslFilepath": "res/shaders/HLSL/cube.vert.hlsl",
+				"mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
+				"hlslFilepath": "res/shaders/HLSL/basic.vert.hlsl",
 				"outputDirectory": "res/shaders/bin/",
-				"includeDirectories": [ "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
+				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
 				"entryPoint": "",
 				"shaderModel": "6_4",
 				"macros": [],
@@ -25,15 +25,15 @@
 			}
 		},
 		{
-			"debugName": "cube.frag.spv",
+			"debugName": "basic.frag.spv",
 			"stage": "FRAGMENT_BIT",
 			"entryPoint": "main",
-			"binaryFilepath": "res/shaders/bin/cube.frag.spv",
+			"binaryFilepath": "res/shaders/bin/basic.frag.spv",
 			"recompileArguments": {
-				"mscDirectory": "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
-				"hlslFilepath": "res/shaders/HLSL/cube.frag.hlsl",
+				"mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
+				"hlslFilepath": "res/shaders/HLSL/basic.frag.hlsl",
 				"outputDirectory": "res/shaders/bin/",
-				"includeDirectories": [ "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
+				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
 				"entryPoint": "",
 				"shaderModel": "6_4",
 				"macros": [],
@@ -71,7 +71,7 @@
 		"depthClampEnable": false,
 		"rasteriserDiscardEnable": false,
 		"polygonMode": "FILL",
-		"cullMode": "NONE_BIT",
+		"cullMode": "BACK_BIT",
 		"frontFace": "COUNTER_CLOCKWISE",
 		"depthBiasEnable": false,
 		"depthBiasConstantFactor": 0.0,

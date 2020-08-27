@@ -2,9 +2,11 @@
 
 #include "gear_core_common.h"
 
-namespace gear {
-namespace graphics {
-class Vertexbuffer
+namespace gear 
+{
+namespace graphics 
+{
+	class Vertexbuffer
 	{
 	public: 
 		struct CreateInfo

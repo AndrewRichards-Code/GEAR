@@ -334,36 +334,35 @@ void Renderer::AddRenderPipeline(const std::string& filepath, float viewportWidt
 {
 	using namespace nlohmann;
 
-	std::string mscDirectory = "../CORE/dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/";
-#if _DEBUG
-	mscDirectory += "Debug";
-#else
-	mscDirectory += "Release";
-#endif
+	std::string projectDirectory = PROJECT_DIR;
+	std::string finalFilePath = projectDirectory + filepath;
 
 	json pipeline_grpf_json;
-	std::ifstream pipeline_grpf(filepath, std::ios::binary);
+	std::ifstream pipeline_grpf(finalFilePath, std::ios::binary);
 	if (pipeline_grpf.is_open())
 	{
 		pipeline_grpf >> pipeline_grpf_json;
 	}
 	else
 	{
-		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::NO_FILE, "Unable to open grpf.json file.");
+		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::NO_FILE, "Unable to open %s.", finalFilePath.c_str());
+		return;
 	}
 
 	if (pipeline_grpf_json.empty())
 	{
-		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::LOAD_FAILED, "grpf.json file is not valid.");
+		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::LOAD_FAILED, "%s is not valid.", finalFilePath.c_str());
+		return;
 	}
 
 	std::string fileType = pipeline_grpf_json["fileType"];
 	if (fileType.compare("GEAR_RENDER_PIPELINE_FILE") != 0)
 	{
-		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::NOT_SUPPORTED, "grpf.json file is not valid.");
+		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::NOT_SUPPORTED, "%s is not valid.", finalFilePath.c_str());
+		return;
 	}
 
-	RenderPipeline::CreateInfo rpCI;
+	RenderPipeline::CreateInfo rpCI = {};
 	rpCI.debugName = pipeline_grpf_json["debugName"];
 
 	//Shaders
@@ -374,15 +373,15 @@ void Renderer::AddRenderPipeline(const std::string& filepath, float viewportWidt
 		shaderCI.device = m_Device;
 		shaderCI.stage = ShaderStageBitStrings[shader["stage"]];
 		shaderCI.entryPoint = shader["entryPoint"];
-		shaderCI.binaryFilepath = shader["binaryFilepath"];
+		shaderCI.binaryFilepath = projectDirectory + std::string(shader["binaryFilepath"]);
 		shaderCI.binaryCode = {};
 
 		auto& recompileArgs = shader["recompileArguments"];
-		shaderCI.recompileArguments.mscDirectory = recompileArgs["mscDirectory"];
-		shaderCI.recompileArguments.hlslFilepath = recompileArgs["hlslFilepath"];
-		shaderCI.recompileArguments.outputDirectory = recompileArgs["outputDirectory"];
+		shaderCI.recompileArguments.mscDirectory = projectDirectory + std::string(recompileArgs["mscDirectory"]);
+		shaderCI.recompileArguments.hlslFilepath = projectDirectory + std::string(recompileArgs["hlslFilepath"]);
+		shaderCI.recompileArguments.outputDirectory = projectDirectory + std::string(recompileArgs["outputDirectory"]);
 		for (auto& includeDir : recompileArgs["includeDirectories"])
-			shaderCI.recompileArguments.includeDirectories.push_back(includeDir);
+			shaderCI.recompileArguments.includeDirectories.push_back(projectDirectory + std::string(includeDir));
 		shaderCI.recompileArguments.entryPoint = recompileArgs["entryPoint"];
 		shaderCI.recompileArguments.shaderModel = recompileArgs["shaderModel"];
 		for (auto& macro : recompileArgs["macros"])
@@ -396,6 +395,13 @@ void Renderer::AddRenderPipeline(const std::string& filepath, float viewportWidt
 		shaderCI.recompileArguments.nooutput = recompileArgs["nooutput"];
 
 		rpCI.shaderCreateInfo.push_back(shaderCI);
+	}
+
+	//Compute Pipelines are completed here.
+	if (rpCI.shaderCreateInfo.size() == 1 && rpCI.shaderCreateInfo.back().stage == Shader::StageBit::COMPUTE_BIT)
+	{
+		m_RenderPipelines[rpCI.debugName] = gear::CreateRef<graphics::RenderPipeline>(&rpCI);
+		return;
 	}
 
 	//ViewportState

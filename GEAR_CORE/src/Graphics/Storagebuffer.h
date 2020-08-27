@@ -2,10 +2,12 @@
 
 #include "gear_core_common.h"
 
-namespace gear {
-namespace graphics {
-template<typename T>
-class Storagebuffer : public T
+namespace gear 
+{
+namespace graphics 
+{
+	template<typename T>
+	class Storagebuffer : public T
 	{
 	public:
 		struct CreateInfo

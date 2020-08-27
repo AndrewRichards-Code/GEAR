@@ -91,15 +91,6 @@ Texture::~Texture()
 {
 }
 
-void Texture::GetInitialTransition(std::vector<Ref<Barrier>>& barriers, bool force)
-{
-	if (!m_InitialTransition|| force)
-	{
-		barriers.push_back(m_InitialBarrier);
-		m_InitialTransition = true;
-	}
-}
-
 void Texture::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
 {
 	if (!m_Upload || force)
@@ -133,6 +124,15 @@ void Texture::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBuff
 
 		cmdBuffer->CopyBufferToImage(cmdBufferIndex, m_TextureUploadBuffer, m_Texture, Image::Layout::TRANSFER_DST_OPTIMAL, bics);
 		m_Upload = true;
+	}
+}
+
+void Texture::GetTransition_Initial(std::vector<Ref<Barrier>>& barriers, bool force)
+{
+	if (!m_InitialTransition|| force)
+	{
+		barriers.push_back(m_InitialBarrier);
+		m_InitialTransition = true;
 	}
 }
 

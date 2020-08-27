@@ -3,9 +3,11 @@
 #include "gear_core_common.h"
 #include "Graphics/Texture.h"
 
-namespace gear {
-namespace graphics {
-class Framebuffer
+namespace gear 
+{
+namespace graphics 
+{
+	class Framebuffer
 	{
 	public:
 		struct CreateInfo
