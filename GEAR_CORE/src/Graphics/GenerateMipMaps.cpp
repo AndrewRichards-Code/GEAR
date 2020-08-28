@@ -1,6 +1,9 @@
 #include "gear_core_common.h"
 #include "GenerateMipMaps.h"
-#include "Graphics/MemoryBlockManager.h"
+
+#include "MemoryBlockManager.h"
+#include "RenderPipeline.h"
+#include "Texture.h"
 
 using namespace gear;
 using namespace graphics;
@@ -8,19 +11,20 @@ using namespace graphics;
 using namespace miru;
 using namespace miru::crossplatform;
 
-gear::Ref<RenderPipeline> GenerateMipMaps::s_GenerateMipMapPipeline;
-RenderPipeline::LoadInfo GenerateMipMaps::s_GenerateMipMapPipelineLI;
+gear::Ref<RenderPipeline> GenerateMipMaps::s_Pipeline;
 
-GenerateMipMaps::GenerateMipMaps(gear::Ref<Texture>& texture)
+GenerateMipMaps::GenerateMipMaps(Texture* texture)
 {
-	if(!s_GenerateMipMapPipeline)
+	if(!s_Pipeline)
 	{ 
-		s_GenerateMipMapPipelineLI.filepath = "res/pipelines/GenerateMipMaps.grpf.json";
-		s_GenerateMipMapPipelineLI.viewportWidth = 0.0f;
-		s_GenerateMipMapPipelineLI.viewportHeight = 0.0f;
-		s_GenerateMipMapPipelineLI.renderPass = nullptr;
-		s_GenerateMipMapPipelineLI.subpassIndex = 0;
-		s_GenerateMipMapPipeline = CreateRef<RenderPipeline>(&s_GenerateMipMapPipelineLI);
+		RenderPipeline::LoadInfo s_PipelineLI;
+		s_PipelineLI.device = MemoryBlockManager::GetCreateInfo().pContext->GetDevice();
+		s_PipelineLI.filepath = "res/pipelines/GenerateMipMaps.grpf.json";
+		s_PipelineLI.viewportWidth = 0.0f;
+		s_PipelineLI.viewportHeight = 0.0f;
+		s_PipelineLI.renderPass = nullptr;
+		s_PipelineLI.subpassIndex = 0;
+		s_Pipeline = CreateRef<RenderPipeline>(&s_PipelineLI);
 	}
 
 	m_ComputeCmdPoolCI.debugName = "GEAR_Core_CommandPool_GenerateMipMaps_Compute";
@@ -76,7 +80,7 @@ GenerateMipMaps::GenerateMipMaps(gear::Ref<Texture>& texture)
 	m_DescSets.reserve(levels);
 	m_DescSetCI.debugName = "GEAR_CORE_DescriptorSet_GenerateMipMaps";
 	m_DescSetCI.pDescriptorPool = m_DescPool;
-	m_DescSetCI.pDescriptorSetLayouts = s_GenerateMipMapPipeline->GetDescriptorSetLayouts();
+	m_DescSetCI.pDescriptorSetLayouts = s_Pipeline->GetDescriptorSetLayouts();
 	for (uint32_t i = 0; i < m_DescPoolCI.maxSets; i++)
 	{
 		m_DescSets.emplace_back(DescriptorSet::Create(&m_DescSetCI));
@@ -86,6 +90,67 @@ GenerateMipMaps::GenerateMipMaps(gear::Ref<Texture>& texture)
 		m_DescSets[i]->Update();
 	}
 
+	m_FenceCI.debugName = "GEAR_MIPMAP_FenceComputeTask";
+	m_FenceCI.device = m_ComputeCmdPoolCI.pContext->GetDevice();
+	m_FenceCI.signaled = false;
+	m_FenceCI.timeout = UINT64_MAX;
+	m_Fence = Fence::Create(&m_FenceCI);
+
+	//Record Compute CommandBuffer
+	{
+		m_ComputeCmdBuffer->Reset(0, false);
+		m_ComputeCmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
+
+		std::vector<miru::Ref<Barrier>> barrierInitial;
+		texture->GetTransition_Initial(barrierInitial);
+		m_ComputeCmdBuffer->PipelineBarrier(0, PipelineStageBit::TOP_OF_PIPE_BIT, PipelineStageBit::TRANSFER_BIT, DependencyBit::NONE_BIT, { barrierInitial });
+			
+		texture->Upload(m_ComputeCmdBuffer);
+
+		Barrier::CreateInfo barrierCI;
+		barrierCI.type = Barrier::Type::IMAGE;
+		barrierCI.srcAccess = Barrier::AccessBit::TRANSFER_WRITE_BIT;
+		barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
+		barrierCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
+		barrierCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
+		barrierCI.pImage = texture->GetTexture();
+		barrierCI.oldLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
+		barrierCI.newLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
+		barrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
+		Ref<Barrier> barrierMip0Sampled = Barrier::Create(&barrierCI);
+
+		barrierCI.newLayout = Image::Layout::GENERAL;
+		barrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 1, (levels - 1), 0, 1 };
+		Ref<Barrier> barrierMip1ToLevelStorage = Barrier::Create(&barrierCI);
+
+		m_ComputeCmdBuffer->PipelineBarrier(0, PipelineStageBit::TRANSFER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, { barrierMip0Sampled, barrierMip1ToLevelStorage});
+
+		m_ComputeCmdBuffer->BindPipeline(0, s_Pipeline->GetPipeline());
+		m_ComputeCmdBuffer->BindDescriptorSets(0, { m_DescSets[0] }, s_Pipeline->GetPipeline());
+		m_ComputeCmdBuffer->Dispatch(0, texture->GetCreateInfo().width / 8, texture->GetCreateInfo().height / 8, 1);
+
+		barrierCI.type = Barrier::Type::IMAGE;
+		barrierCI.srcAccess = Barrier::AccessBit::SHADER_WRITE_BIT;
+		barrierCI.dstAccess = Barrier::AccessBit::TRANSFER_READ_BIT;
+		barrierCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
+		barrierCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
+		barrierCI.pImage = texture->GetTexture();
+		barrierCI.oldLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
+		barrierCI.newLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
+		barrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
+		Ref<Barrier> barrierMip0TransferDst= Barrier::Create(&barrierCI);
+
+		barrierCI.oldLayout = Image::Layout::GENERAL;
+		barrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 1, (levels - 1), 0, 1 };
+		Ref<Barrier> barrierMip1ToLevelTransferDst = Barrier::Create(&barrierCI);
+
+		m_ComputeCmdBuffer->PipelineBarrier(0, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::TRANSFER_BIT, DependencyBit::NONE_BIT, { barrierMip0TransferDst, barrierMip1ToLevelTransferDst });
+
+		m_ComputeCmdBuffer->End(0);
+	}
+
+	m_ComputeCmdBuffer->Submit({ 0 }, {}, {}, {}, m_Fence);
+	m_Fence->Wait();
 }
 
 GenerateMipMaps::~GenerateMipMaps()

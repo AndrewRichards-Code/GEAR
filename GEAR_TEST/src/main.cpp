@@ -13,14 +13,14 @@ using namespace mars;
 int main()
 {
 	Window::CreateInfo windowCI;
-	windowCI.api = GraphicsAPI::API::D3D12;
+	windowCI.api = GraphicsAPI::API::VULKAN;
 	windowCI.title = "GEAR_MIRU_TEST";
 	windowCI.width = 1920;
 	windowCI.height = 1080;
 	windowCI.fullscreen = false;
 	windowCI.vSync = true;
 	windowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-	windowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::RENDER_DOC;
+	windowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::NONE;
 	gear::Ref<Window> window = gear::CreateRef<Window>(&windowCI);
 
 	MemoryBlockManager::CreateInfo mbmCI;
@@ -50,12 +50,12 @@ int main()
 		texCI.debugName = debugName.c_str();
 		texCI.device = window->GetDevice();
 		texCI.filepaths = { filepath };
-		texCI.mipLevels = 1;
+		texCI.mipLevels = 16;
 		texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
 		texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
 		texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 		texCI.usage = miru::crossplatform::Image::UsageBit(0);
-		texCI.generateMipMaps = false;
+		texCI.generateMipMaps = true;
 		return std::move(gear::CreateRef<Texture>(&texCI));
 	};
 
@@ -213,6 +213,8 @@ int main()
 		cam->m_CI.perspectiveParams.aspectRatio = window->GetRatio();
 		cam->m_CI.position.y = 1.0f;
 		cam->Update();
+
+		rustIronMaterial->GetTextures()[Material::TextureType::ALBEDO]->GenerateMipMaps();
 		
 		renderer->SubmitFramebuffer(window->GetFramebuffers());
 		renderer->SubmitCamera(cam);

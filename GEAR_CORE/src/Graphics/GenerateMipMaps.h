@@ -1,18 +1,17 @@
 #pragma once
 #include "gear_core_common.h"
 
-#include "Graphics/RenderPipeline.h"
-#include "Graphics/Texture.h"
-
 namespace gear 
 {
 namespace graphics 
 {
+	class Texture;
+	class RenderPipeline;
+
 	class GenerateMipMaps
 	{
 	private:
-		static gear::Ref<RenderPipeline> s_GenerateMipMapPipeline;
-		static RenderPipeline::LoadInfo s_GenerateMipMapPipelineLI;
+		static gear::Ref<RenderPipeline> s_Pipeline;
 
 		miru::Ref<miru::crossplatform::CommandPool> m_ComputeCmdPool;
 		miru::crossplatform::CommandPool::CreateInfo m_ComputeCmdPoolCI;
@@ -32,8 +31,11 @@ namespace graphics
 		std::vector<miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSets;
 		miru::crossplatform::DescriptorSet::CreateInfo m_DescSetCI;
 
+		miru::Ref<miru::crossplatform::Fence> m_Fence;
+		miru::crossplatform::Fence::CreateInfo m_FenceCI;
+
 	public:
-		GenerateMipMaps(gear::Ref<Texture>& texture);
+		GenerateMipMaps(Texture* texture);
 		~GenerateMipMaps();
 
 	};

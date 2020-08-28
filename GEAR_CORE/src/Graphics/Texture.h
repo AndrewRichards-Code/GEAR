@@ -48,6 +48,7 @@ namespace graphics
 		int m_BPP = 0; //BPP = Bits per pixel
 		bool m_Cubemap = false;
 		bool m_DepthTexture = false;
+		bool m_GenerateMipMaps = false;
 
 		float m_AnisotrophicValue = 1.0f;
 
@@ -64,6 +65,8 @@ namespace graphics
 		void GetTransition_Initial(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers, bool force = false);
 		void GetTransition_ToShaderReadOnly(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers, bool force = false);
 		void GetTransition_ToTransferDst(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers, bool force = false);
+
+		void GenerateMipMaps();
 
 		void Reload();
 

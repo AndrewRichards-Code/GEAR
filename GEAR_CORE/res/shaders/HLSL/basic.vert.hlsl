@@ -33,9 +33,9 @@ struct VS_OUT
 	MIRU_LOCATION(0, float4, position, SV_POSITION);
 	MIRU_LOCATION(1, float2, texCoord, TEXCOORD1);
 	MIRU_LOCATION(2, float3x3, tbn, MATRIX2);
-	MIRU_LOCATION(3, float4, worldSpace, POSITION3);
-	MIRU_LOCATION(4, float4, vertexToCamera, POSITION4);
-	MIRU_LOCATION(5, float4, colour, COLOR5);
+	MIRU_LOCATION(6, float4, worldSpace, POSITION6);
+	MIRU_LOCATION(7, float4, vertexToCamera, POSITION7);
+	MIRU_LOCATION(8, float4, colour, COLOR8);
 };
 
 VS_OUT main(VS_IN IN)

@@ -81,6 +81,7 @@ namespace objects
 		void Update();
 		void AddProperties(const Properties& properties);
 		
+		inline std::map<TextureType, gear::Ref<graphics::Texture>>& GetTextures() { return m_CI.pbrTextures; }
 		inline const std::map<TextureType, gear::Ref<graphics::Texture>>& GetTextures() const { return m_CI.pbrTextures; }
 		inline const gear::Ref<graphics::Uniformbuffer<PBRConstants>>& GetUB() const { return m_UB; }
 	

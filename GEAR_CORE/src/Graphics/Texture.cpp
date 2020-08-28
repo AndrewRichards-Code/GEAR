@@ -1,7 +1,8 @@
 #include "gear_core_common.h"
 #include "stb_image.h"
 #include "Texture.h"
-#include "Graphics/MemoryBlockManager.h"
+#include "MemoryBlockManager.h"
+#include "GenerateMipMaps.h"
 
 using namespace gear;
 using namespace graphics;
@@ -12,12 +13,25 @@ using namespace miru::crossplatform;
 Texture::Texture(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
-	
+
 	m_Cubemap = m_CI.type == Image::Type::TYPE_CUBE;
 	m_DepthTexture = m_CI.format >= Image::Format::D16_UNORM;
-	
+
 	std::vector<uint8_t> imageData;
 	LoadImageData(imageData);
+	
+	auto IsPowerOf2 = [](uint32_t x) -> bool { return !(x == 0) && !(x & (x - 1)); };
+	if (!(IsPowerOf2(m_CI.width) && IsPowerOf2(m_CI.height)))
+	{
+		m_CI.mipLevels = 1;
+		m_CI.generateMipMaps = false;
+	}
+	else
+	{
+		uint32_t maxLevels = static_cast<uint32_t>(log2(static_cast<double>(std::min(m_CI.width, m_CI.height)))) + 1;
+		m_CI.mipLevels = std::min(maxLevels, m_CI.mipLevels);
+	}
+	m_GenerateMipMaps = m_CI.mipLevels > 1 && m_CI.generateMipMaps;
 
 	m_TextureUploadBufferCI.debugName = "GEAR_CORE_TextureUploadBuffer: " + m_CI.debugName;
 	m_TextureUploadBufferCI.device = m_CI.device;
@@ -38,7 +52,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_TextureCI.mipLevels = m_CI.mipLevels;
 	m_TextureCI.arrayLayers = m_Cubemap ? 6 : 1;
 	m_TextureCI.sampleCount = m_CI.samples;
-	m_TextureCI.usage = Image::UsageBit::SAMPLED_BIT | Image::UsageBit::TRANSFER_DST_BIT | (m_CI.mipLevels > 1 ? Image::UsageBit::STORAGE_BIT : Image::UsageBit(0)) | m_CI.usage;
+	m_TextureCI.usage = Image::UsageBit::SAMPLED_BIT | Image::UsageBit::TRANSFER_DST_BIT | (m_GenerateMipMaps ? Image::UsageBit::STORAGE_BIT : Image::UsageBit(0)) | m_CI.usage;
 	m_TextureCI.layout = Image::Layout::UNKNOWN;
 	m_TextureCI.size = 0;
 	m_TextureCI.data = nullptr;
@@ -129,7 +143,7 @@ void Texture::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBuff
 
 void Texture::GetTransition_Initial(std::vector<Ref<Barrier>>& barriers, bool force)
 {
-	if (!m_InitialTransition|| force)
+	if (!m_InitialTransition || force)
 	{
 		barriers.push_back(m_InitialBarrier);
 		m_InitialTransition = true;
@@ -151,6 +165,14 @@ void Texture::GetTransition_ToTransferDst(std::vector<Ref<Barrier>>& barriers, b
 	{
 		barriers.push_back(m_ToTransferDstBarrier);
 		m_Transition_ToTransferDst = true;
+	}
+}
+
+void Texture::GenerateMipMaps()
+{
+	if (m_GenerateMipMaps)
+	{
+		GenerateMipMaps::GenerateMipMaps(this);
 	}
 }
 

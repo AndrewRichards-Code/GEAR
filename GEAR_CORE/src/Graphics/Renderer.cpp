@@ -136,7 +136,7 @@ void Renderer::Flush()
 
 		m_TransCmdBuffer->End(0);
 	}
-	m_TransCmdBuffer->Submit({ 0 }, {}, { transfer }, PipelineStageBit::TRANSFER_BIT, nullptr);
+	m_TransCmdBuffer->Submit({ 0 }, {}, {}, { transfer }, nullptr);
 	{
 		m_CmdBuffer->Reset(2, false);
 		m_CmdBuffer->Begin(2, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
@@ -148,7 +148,7 @@ void Renderer::Flush()
 			{
 				for (auto& texture : material->GetTextures())
 				{
-					texture.second->GetTransition_ToShaderReadOnly(finalBarrier);
+					texture.second->GetTransition_ToShaderReadOnly(finalBarrier, true);
 				}
 			}
 		}
@@ -156,7 +156,7 @@ void Renderer::Flush()
 		m_CmdBuffer->PipelineBarrier(2, PipelineStageBit::TRANSFER_BIT, PipelineStageBit::FRAGMENT_SHADER_BIT, DependencyBit::NONE_BIT, finalBarrier);
 		m_CmdBuffer->End(2);
 	}
-	m_CmdBuffer->Submit({ 2 }, { transfer }, {}, PipelineStageBit::TRANSFER_BIT, transferFence);
+	m_CmdBuffer->Submit({ 2 }, { transfer }, { PipelineStageBit::TRANSFER_BIT }, {}, transferFence);
 
 	transferFence->Wait();
 
@@ -311,7 +311,6 @@ void Renderer::Flush()
 		m_CmdBuffer->EndRenderPass(m_FrameIndex);
 		m_CmdBuffer->End(m_FrameIndex);
 	}
-
 	m_RenderQueue.clear();
 }
 
