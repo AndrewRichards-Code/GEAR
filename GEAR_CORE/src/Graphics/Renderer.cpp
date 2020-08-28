@@ -68,9 +68,10 @@ void Renderer::InitialiseRenderPipelines(const std::vector<std::string>& filepat
 	for (auto& filepath : filepaths)
 	{
 		//TODO: What if the Pipeline is already loaded?
+		renderPipelineLI.device = m_Device;
 		renderPipelineLI.filepath = filepath;
 		renderPipelineLI.viewportWidth = viewportWidth;
-		renderPipelineLI.viewportHeight = viewportWidth;
+		renderPipelineLI.viewportHeight = viewportHeight;
 		renderPipelineLI.renderPass = renderPass;
 		renderPipelineLI.subpassIndex = 0;
 		Ref<RenderPipeline> renderPipeline = CreateRef<RenderPipeline>(&renderPipelineLI);

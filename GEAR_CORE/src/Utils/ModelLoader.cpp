@@ -124,9 +124,12 @@ ModelLoader::MeshData ModelLoader::ProcessMesh(aiMesh* mesh, aiNode* node, const
 				texCI.width = 0;
 				texCI.height = 0 ;
 				texCI.depth = 0;
-				texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
+				texCI.mipLevels = 1;
 				texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
+				texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
 				texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+				texCI.usage = miru::crossplatform::Image::UsageBit(0);
+				texCI.generateMipMaps = false;
 				textures[type] = CreateRef<graphics::Texture>(&texCI);
 			}
 		}

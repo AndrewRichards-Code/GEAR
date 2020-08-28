@@ -65,7 +65,7 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 	{
 		Shader::CreateInfo shaderCI;
 		shaderCI.debugName = shader["debugName"];
-		shaderCI.device = m_Device;
+		shaderCI.device = pLoadInfo->device;
 		shaderCI.stage = ShaderStageBitStrings[shader["stage"]];
 		shaderCI.entryPoint = shader["entryPoint"];
 		shaderCI.binaryFilepath = projectDirectory + std::string(shader["binaryFilepath"]);

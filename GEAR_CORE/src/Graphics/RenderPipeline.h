@@ -23,6 +23,7 @@ namespace graphics
 		};
 		struct LoadInfo
 		{
+			void*										device;
 			std::string									filepath;
 			float										viewportWidth;
 			float										viewportHeight;

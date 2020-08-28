@@ -49,9 +49,12 @@ void Framebuffer::AddColourTextureAttachment(size_t attachment)
 	colourTextureCI.width = m_CI.width;
 	colourTextureCI.height = m_CI.height;
 	colourTextureCI.depth = 1;
-	colourTextureCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
+	colourTextureCI.mipLevels = 1;
 	colourTextureCI.type = m_CI.cubemap ? miru::crossplatform::Image::Type::TYPE_CUBE : miru::crossplatform::Image::Type::TYPE_2D;
+	colourTextureCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
 	colourTextureCI.samples = m_CI.samples;
+	colourTextureCI.usage = miru::crossplatform::Image::UsageBit::COLOUR_ATTACHMENT_BIT;
+	colourTextureCI.generateMipMaps = false;
 	m_ColourTextures[attachment] = gear::CreateRef<Texture>(&colourTextureCI);
 	
 	m_FramebufferCI.attachments[attachment] = m_ColourTextures[attachment]->GetTextureImageView();
@@ -70,9 +73,12 @@ void Framebuffer::AddDepthTextureAttachment(size_t attachment)
 	depthTextureCI.width = m_CI.width;
 	depthTextureCI.height = m_CI.height;
 	depthTextureCI.depth = 1;
-	depthTextureCI.format = miru::crossplatform::Image::Format::D32_SFLOAT;
+	depthTextureCI.mipLevels = 1;
 	depthTextureCI.type = m_CI.cubemap ? miru::crossplatform::Image::Type::TYPE_CUBE : miru::crossplatform::Image::Type::TYPE_2D;
+	depthTextureCI.format = miru::crossplatform::Image::Format::D32_SFLOAT;
 	depthTextureCI.samples = m_CI.samples;
+	depthTextureCI.usage = miru::crossplatform::Image::UsageBit::DEPTH_STENCIL_ATTACHMENT_BIT;
+	depthTextureCI.generateMipMaps = false;
 	m_ColourTextures[attachment] = m_DepthTexture = std::make_shared<Texture>(&depthTextureCI);
 	
 	if (m_DepthTexture->IsDepthTexture())
