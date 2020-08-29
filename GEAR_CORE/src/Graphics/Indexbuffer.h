@@ -33,6 +33,8 @@ namespace graphics
 		Indexbuffer(CreateInfo* pCreateInfo);
 		~Indexbuffer();
 
+		const CreateInfo& GetCreateInfo() { return m_CI; }
+
 		void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
 		inline miru::Ref<miru::crossplatform::BufferView> GetIndexBufferView() { return m_IndexBufferView; };
 

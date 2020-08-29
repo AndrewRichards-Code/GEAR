@@ -61,6 +61,8 @@ namespace graphics
 		}
 		~Uniformbuffer() {}
 
+		const CreateInfo& GetCreateInfo() { return m_CI; }
+
 		void SubmitData() const
 		{
 			m_UniformBufferUploadCI.pMemoryBlock->SubmitData(m_UniformBufferUpload->GetResource(), GetSize(), (void*)this);

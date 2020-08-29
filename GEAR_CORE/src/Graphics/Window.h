@@ -69,7 +69,9 @@ namespace graphics
 	public:
 		Window(CreateInfo* pCreateInfo);
 		virtual ~Window();
-	
+
+		const CreateInfo& GetCreateInfo() { return m_CI; }
+			
 		void Update();
 		bool Closed() const;
 		void Fullscreen();

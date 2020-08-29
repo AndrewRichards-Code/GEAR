@@ -20,12 +20,14 @@ namespace objects
 		};
 
 	private:
-		CreateInfo m_CI;
 		ModelLoader::ModelData m_Data;
 
 		std::vector<gear::Ref<graphics::Vertexbuffer>> m_VBs;
 		std::vector<gear::Ref<graphics::Indexbuffer>> m_IBs;
 		std::vector<gear::Ref<objects::Material>> m_Materials;
+
+	public:
+		CreateInfo m_CI;
 
 	public:
 		Mesh(CreateInfo* pCreateInfo);

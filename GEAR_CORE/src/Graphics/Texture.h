@@ -61,6 +61,8 @@ namespace graphics
 		Texture(CreateInfo* pCreateInfo);
 		~Texture();
 
+		const CreateInfo& GetCreateInfo() { return m_CI; }
+
 		void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
 		void GetTransition_Initial(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers, bool force = false);
 		void GetTransition_ToShaderReadOnly(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers, bool force = false);

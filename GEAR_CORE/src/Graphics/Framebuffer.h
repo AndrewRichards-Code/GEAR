@@ -34,6 +34,8 @@ namespace graphics
 		Framebuffer(CreateInfo* pCreateInfo);
 		~Framebuffer();
 
+		const CreateInfo& GetCreateInfo() { return m_CI; }
+
 		void UpdateFrameBufferSize(uint32_t width, uint32_t height);
 
 		void AddColourTextureAttachment(size_t attachment = 0);

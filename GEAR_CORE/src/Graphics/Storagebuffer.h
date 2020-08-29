@@ -58,6 +58,8 @@ namespace graphics
 		}
 		~Storagebuffer() {}
 
+		const CreateInfo& GetCreateInfo() { return m_CI; }
+
 		void SubmitData(const void* data, size_t  size) const
 		{
 			m_ShaderStorageBufferUploadCI.pMemoryBlock->SubmitData(m_ShaderStorageBufferUpload->GetResource(), (size_t)size, (void*)data);

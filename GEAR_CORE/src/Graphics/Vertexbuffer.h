@@ -32,6 +32,8 @@ namespace graphics
 		Vertexbuffer(CreateInfo* pCreateInfo);
 		~Vertexbuffer();
 
+		const CreateInfo& GetCreateInfo() { return m_CI; }
+
 		void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
 		inline const miru::Ref<miru::crossplatform::BufferView>& GetVertexBufferView() { return m_VertexBufferView; };
 	};

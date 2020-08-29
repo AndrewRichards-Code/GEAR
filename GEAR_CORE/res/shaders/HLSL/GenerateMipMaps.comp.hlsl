@@ -27,7 +27,7 @@ float4 ColateColour(uint2 t)
 MIRU_COMPUTE_LAYOUT(8, 8, 1)
 void main(uint3 t : MIRU_DISPATCH_THREAD_ID)
 {
-	gs_Colour[t.x][t.y] = imageMip0.SampleLevel(samplerMip0, float2(t.xy)/float2(1024.0, 1024.0), 0);
+	gs_Colour[t.x][t.y] = imageMip0.SampleLevel(samplerMip0, float2(t.xy)/float2(2048.0, 2048.0), 0);
 	
 	GroupMemoryBarrierWithGroupSync();
 	if(t.x % 2 || t.y % 2)

@@ -49,6 +49,8 @@ namespace graphics
 		RenderPipeline(LoadInfo* pLoadInfo);
 		~RenderPipeline();
 
+		const CreateInfo& GetCreateInfo() { return m_CI; }
+
 		void FinalisePipline();
 		void RecompileShaders();
 		void Rebuild();

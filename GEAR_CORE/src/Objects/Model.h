@@ -31,8 +31,6 @@ namespace objects
 		};
 	
 	private:
-		CreateInfo m_CI;
-	
 		struct ModelUB
 		{
 			mars::Mat4 modlMatrix;
@@ -41,8 +39,8 @@ namespace objects
 		};
 		gear::Ref<graphics::Uniformbuffer<ModelUB>> m_UB;
 	
-	private:
-		void InitialiseUB();
+	public:
+		CreateInfo m_CI;
 	
 	public:
 		Model(CreateInfo* pCreateInfo);
@@ -58,6 +56,9 @@ namespace objects
 		inline const mars::Mat4 GetModlMatrix() const { return m_UB->modlMatrix; }
 	
 		inline std::string GetDebugName() const { return "GEAR_CORE_Model: " + m_CI.debugName; }
+	
+	private:
+		void InitialiseUB();
 	};
 }
 }
