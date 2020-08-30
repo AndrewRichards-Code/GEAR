@@ -20,7 +20,7 @@ Renderer::Renderer(const miru::Ref<Context>& context)
 	m_CmdBufferCI.debugName = "GEAR_CORE_CommandBuffer_Renderer";
 	m_CmdBufferCI.pCommandPool = m_CmdPool;
 	m_CmdBufferCI.level = CommandBuffer::Level::PRIMARY;
-	m_CmdBufferCI.commandBufferCount = 3;
+	m_CmdBufferCI.commandBufferCount = 4;
 	m_CmdBufferCI.allocateNewCommandPoolPerBuffer = GraphicsAPI::IsD3D12();
 	m_CmdBuffer = CommandBuffer::Create(&m_CmdBufferCI);
 
@@ -84,83 +84,153 @@ void Renderer::SubmitModel(const gear::Ref<Model>& obj)
 	m_RenderQueue.push_back(obj);
 }
 
-void Renderer::Flush()
+void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool forceUploadMeshes)
 {
 	Semaphore::CreateInfo transSemaphoreCI = { "GEAR_CORE_Semaphore_RenderTransfer", m_TransCmdPoolCI.pContext->GetDevice() };
-	Ref<Semaphore> transfer = Semaphore::Create(&transSemaphoreCI);
-	Fence::CreateInfo transFenceCI = { "GEAR_CORE_Fence_RenderTransfer", m_TransCmdPoolCI.pContext->GetDevice(), false, UINT64_MAX };
-	Ref<Fence> transferFence = Fence::Create(&transFenceCI);
+	Ref<Semaphore> transfer0 = Semaphore::Create(&transSemaphoreCI);
+	Ref<Semaphore> transfer1 = Semaphore::Create(&transSemaphoreCI);
 
-	uint32_t uploadedTexturesCount = 0;
+	Fence::CreateInfo fenceCI = { "GEAR_CORE_Fence_RenderTransfer", m_TransCmdPoolCI.pContext->GetDevice(), false, UINT64_MAX };
+	Ref<Fence> preTransferGraphicsFence = Fence::Create(&fenceCI);
+	Ref<Fence> transferFence = Fence::Create(&fenceCI);
+	Ref<Fence> postTransferGraphicsFence = Fence::Create(&fenceCI);
 
-	//Upload CmdBufer
+	//Get Texture Barries and/or Reload Textures
+	std::vector<Ref<Barrier>> textureUnknownToTransferDstBarrier;
+	std::vector<Ref<Barrier>> textureShaderReadOnlyBarrierToTransferDst;
+	std::vector<Ref<Barrier>> textureTransferDstToShaderReadOnlyBarrier;
+	for (auto& model : m_RenderQueue)
 	{
-		m_TransCmdBuffer->Reset(0, false);
-		m_TransCmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
-		m_Camera->GetUB()->Upload(m_TransCmdBuffer, 0, true);
-		m_Lights[0]->GetUB()->Upload(m_TransCmdBuffer, 0);
-
-		std::vector<Ref<Barrier>> initialBarrier;
-		for (auto& model : m_RenderQueue)
+		for (auto& material : model->GetMesh()->GetMaterials())
 		{
-			for (auto& vb : model->GetMesh()->GetVertexBuffers())
-				vb->Upload(m_TransCmdBuffer, 0);
-			for (auto& ib : model->GetMesh()->GetIndexBuffers())
-				ib->Upload(m_TransCmdBuffer, 0);
-
-			model->GetUB()->Upload(m_TransCmdBuffer, 0);
-			model->GetMesh()->GetMaterials()[0]->GetUB()->Upload(m_TransCmdBuffer, 0);
-
-			for (auto& material : model->GetMesh()->GetMaterials())
+			for (auto& texture : material->GetTextures())
 			{
-				for (auto& texture : material->GetTextures())
+				if (m_ReloadTextures)
 				{
-					texture.second->GetTransition_Initial(initialBarrier);
+					auto reload_texture = [](gear::Ref<Texture> texture) -> void { texture->Reload(); };
+					std::async(std::launch::async, reload_texture, texture.second);
+				}
+
+				if (!texture.second->m_TransitionUnknownToTransferDst)
+				{
+					texture.second->TransitionSubResources(textureUnknownToTransferDstBarrier,
+						{ { Barrier::AccessBit::NONE, Barrier::AccessBit::TRANSFER_WRITE_BIT,
+						Image::Layout::UNKNOWN, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
+					texture.second->m_TransitionUnknownToTransferDst = true;
+				}
+
+				if (m_ReloadTextures && texture.second->m_TransitionTransferDstToShaderReadOnly)
+				{
+					texture.second->TransitionSubResources(textureShaderReadOnlyBarrierToTransferDst,
+						{ { Barrier::AccessBit::SHADER_READ_BIT, Barrier::AccessBit::TRANSFER_WRITE_BIT,
+						Image::Layout::SHADER_READ_ONLY_OPTIMAL, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
+					texture.second->m_TransitionTransferDstToShaderReadOnly = false;
+				}
+
+				if (!texture.second->m_TransitionTransferDstToShaderReadOnly)
+				{
+					texture.second->TransitionSubResources(textureTransferDstToShaderReadOnlyBarrier,
+						{ { Barrier::AccessBit::TRANSFER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT,
+						Image::Layout::TRANSFER_DST_OPTIMAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
+					texture.second->m_TransitionTransferDstToShaderReadOnly = true;
 				}
 			}
 		}
-
-		m_TransCmdBuffer->PipelineBarrier(0, PipelineStageBit::TOP_OF_PIPE_BIT, PipelineStageBit::TRANSFER_BIT, DependencyBit::NONE_BIT, initialBarrier);
-
-		for (auto& model : m_RenderQueue)
-		{
-			for (auto& material : model->GetMesh()->GetMaterials())
-			{
-				for (auto& texture : material->GetTextures())
-				{
-					texture.second->Upload(m_TransCmdBuffer, 0);
-					uploadedTexturesCount++;
-				}
-			}
-		}
-
-		m_TransCmdBuffer->End(0);
 	}
-	m_TransCmdBuffer->Submit({ 0 }, {}, {}, { transfer }, nullptr);
+
+	bool preTransferGraphicsCmdBuffer = textureShaderReadOnlyBarrierToTransferDst.size();
+	bool transferCmdBuffer = forceUploadCamera || forceUploadLights || forceUploadMeshes || textureUnknownToTransferDstBarrier.size();
+	bool postTransferGraphicsCmdBuffer = textureTransferDstToShaderReadOnlyBarrier.size();
+
+	//Upload Pre-Transfer Graphics CmdBuffer
 	{
-		m_CmdBuffer->Reset(2, false);
-		m_CmdBuffer->Begin(2, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
-		std::vector<Ref<Barrier>> finalBarrier;
-		finalBarrier.reserve(uploadedTexturesCount);
-		for (auto& model : m_RenderQueue)
+		if (preTransferGraphicsCmdBuffer)
 		{
-			for (auto& material : model->GetMesh()->GetMaterials())
+			m_CmdBuffer->Reset(3, false);
+			m_CmdBuffer->Begin(3, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
+
+			if (textureShaderReadOnlyBarrierToTransferDst.size())
+				m_CmdBuffer->PipelineBarrier(3, PipelineStageBit::FRAGMENT_SHADER_BIT, PipelineStageBit::TRANSFER_BIT, DependencyBit::NONE_BIT, textureShaderReadOnlyBarrierToTransferDst);
+
+			m_CmdBuffer->End(3);
+			m_CmdBuffer->Submit({ 3 }, {}, {}, { transfer0 }, preTransferGraphicsFence);
+		}
+	}
+
+	//Upload Transfer CmdBuffer
+	{
+		if (transferCmdBuffer)
+		{
+			m_TransCmdBuffer->Reset(0, false);
+			m_TransCmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
+			m_Camera->GetUB()->Upload(m_TransCmdBuffer, 0, forceUploadCamera);
+			m_Lights[0]->GetUB()->Upload(m_TransCmdBuffer, 0, forceUploadLights);
+
+			for (auto& model : m_RenderQueue)
 			{
-				for (auto& texture : material->GetTextures())
+				for (auto& vb : model->GetMesh()->GetVertexBuffers())
+					vb->Upload(m_TransCmdBuffer, 0, forceUploadMeshes);
+				for (auto& ib : model->GetMesh()->GetIndexBuffers())
+					ib->Upload(m_TransCmdBuffer, 0, forceUploadMeshes);
+
+				model->GetUB()->Upload(m_TransCmdBuffer, 0);
+				model->GetMesh()->GetMaterials()[0]->GetUB()->Upload(m_TransCmdBuffer, 0);
+			}
+
+			if (textureUnknownToTransferDstBarrier.size())
+				m_TransCmdBuffer->PipelineBarrier(0, PipelineStageBit::TOP_OF_PIPE_BIT, PipelineStageBit::TRANSFER_BIT, DependencyBit::NONE_BIT, textureUnknownToTransferDstBarrier);
+			
+			for (auto& model : m_RenderQueue)
+			{
+				for (auto& material : model->GetMesh()->GetMaterials())
 				{
-					texture.second->GetTransition_ToShaderReadOnly(finalBarrier, true);
+					for (auto& texture : material->GetTextures())
+					{
+						texture.second->Upload(m_TransCmdBuffer, 0);
+					}
 				}
 			}
+			m_TransCmdBuffer->End(0);
+
+			if (preTransferGraphicsCmdBuffer)
+				m_TransCmdBuffer->Submit({ 0 }, { transfer0 }, { PipelineStageBit::TRANSFER_BIT }, { transfer1 }, transferFence);
+			else
+				m_TransCmdBuffer->Submit({ 0 }, {}, {}, { transfer1 }, transferFence);
 		}
-
-		m_CmdBuffer->PipelineBarrier(2, PipelineStageBit::TRANSFER_BIT, PipelineStageBit::FRAGMENT_SHADER_BIT, DependencyBit::NONE_BIT, finalBarrier);
-		m_CmdBuffer->End(2);
 	}
-	m_CmdBuffer->Submit({ 2 }, { transfer }, { PipelineStageBit::TRANSFER_BIT }, {}, transferFence);
 
-	transferFence->Wait();
+	//Upload Post-Transfer Graphics CmdBuffer
+	{
+		if (postTransferGraphicsCmdBuffer)
+		{
+			m_CmdBuffer->Reset(2, false);
+			m_CmdBuffer->Begin(2, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
 
-	if(!builtDescPoolsAndSets)
+			m_CmdBuffer->PipelineBarrier(2, PipelineStageBit::TRANSFER_BIT, PipelineStageBit::FRAGMENT_SHADER_BIT, DependencyBit::NONE_BIT, textureTransferDstToShaderReadOnlyBarrier);
+
+			m_CmdBuffer->End(2);
+
+			if (transferCmdBuffer)
+				m_CmdBuffer->Submit({ 2 }, { transfer1 }, { PipelineStageBit::TRANSFER_BIT }, {}, postTransferGraphicsFence);
+			else
+				m_CmdBuffer->Submit({ 2 }, {}, {}, {}, postTransferGraphicsFence);
+		}
+	}
+
+	if (preTransferGraphicsCmdBuffer)
+		preTransferGraphicsFence->Wait();
+	if (transferCmdBuffer)
+		transferFence->Wait();
+	if (postTransferGraphicsCmdBuffer)
+		postTransferGraphicsFence->Wait();
+
+	m_ReloadTextures = false;
+}
+
+void Renderer::Flush()
+{
+
+	if(!m_BuiltDescPoolsAndSets)
 	{
 		bool cameraPoolSize = false, lightPoolSize = false;
 		std::map<DescriptorType, uint32_t> poolSizesMap;
@@ -266,7 +336,7 @@ void Renderer::Flush()
 			m_DescSetModelMaterials[model]->Update();
 		}
 
-		builtDescPoolsAndSets = true;
+		m_BuiltDescPoolsAndSets = true;
 	}
 
 	//Record Present CmdBuffers
@@ -337,4 +407,10 @@ void Renderer::RecompileRenderPipelineShaders()
 	m_Context->DeviceWaitIdle();
 	for (auto& renderPipeline : m_RenderPipelines)
 		renderPipeline.second->RecompileShaders();
+}
+
+void Renderer::ReloadTextures()
+{
+	m_Context->DeviceWaitIdle();
+	m_ReloadTextures = true;
 }

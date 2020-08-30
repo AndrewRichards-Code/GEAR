@@ -90,7 +90,7 @@ GenerateMipMaps::GenerateMipMaps(Texture* texture)
 		m_DescSets[i]->Update();
 	}
 
-	m_FenceCI.debugName = "GEAR_MIPMAP_FenceComputeTask";
+	m_FenceCI.debugName = "GEAR_CORE_Fence_GenerateMipMaps";
 	m_FenceCI.device = m_ComputeCmdPoolCI.pContext->GetDevice();
 	m_FenceCI.signaled = false;
 	m_FenceCI.timeout = UINT64_MAX;
@@ -101,50 +101,43 @@ GenerateMipMaps::GenerateMipMaps(Texture* texture)
 		m_ComputeCmdBuffer->Reset(0, false);
 		m_ComputeCmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
 
-		std::vector<miru::Ref<Barrier>> barrierInitial;
-		texture->GetTransition_Initial(barrierInitial);
-		m_ComputeCmdBuffer->PipelineBarrier(0, PipelineStageBit::TOP_OF_PIPE_BIT, PipelineStageBit::TRANSFER_BIT, DependencyBit::NONE_BIT, { barrierInitial });
-			
-		texture->Upload(m_ComputeCmdBuffer);
+		std::vector<Ref<Barrier>> barriers;
 
-		Barrier::CreateInfo barrierCI;
-		barrierCI.type = Barrier::Type::IMAGE;
-		barrierCI.srcAccess = Barrier::AccessBit::TRANSFER_WRITE_BIT;
-		barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
-		barrierCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
-		barrierCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
-		barrierCI.pImage = texture->GetTexture();
-		barrierCI.oldLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
-		barrierCI.newLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
-		barrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
-		Ref<Barrier> barrierMip0Sampled = Barrier::Create(&barrierCI);
+		Texture::SubresouresTransitionInfo mip0ToShaderReadOnly;
+		mip0ToShaderReadOnly.srcAccess = Barrier::AccessBit::TRANSFER_WRITE_BIT;
+		mip0ToShaderReadOnly.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
+		mip0ToShaderReadOnly.oldLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
+		mip0ToShaderReadOnly.newLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
+		mip0ToShaderReadOnly.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
+		mip0ToShaderReadOnly.allSubresources = false;
 
-		barrierCI.newLayout = Image::Layout::GENERAL;
-		barrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 1, (levels - 1), 0, 1 };
-		Ref<Barrier> barrierMip1ToLevelStorage = Barrier::Create(&barrierCI);
-
-		m_ComputeCmdBuffer->PipelineBarrier(0, PipelineStageBit::TRANSFER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, { barrierMip0Sampled, barrierMip1ToLevelStorage});
+		Texture::SubresouresTransitionInfo mip1ToLevelToGeneral;
+		mip1ToLevelToGeneral.srcAccess = Barrier::AccessBit::TRANSFER_WRITE_BIT;
+		mip1ToLevelToGeneral.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
+		mip1ToLevelToGeneral.oldLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
+		mip1ToLevelToGeneral.newLayout = Image::Layout::GENERAL;
+		mip1ToLevelToGeneral.subresoureRange = { Image::AspectBit::COLOUR_BIT, 1, (levels - 1), 0, 1 };
+		mip1ToLevelToGeneral.allSubresources = false;
+		
+		barriers.clear();
+		texture->TransitionSubResources(barriers, { mip0ToShaderReadOnly, mip1ToLevelToGeneral });
+		m_ComputeCmdBuffer->PipelineBarrier(0, PipelineStageBit::TRANSFER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
 
 		m_ComputeCmdBuffer->BindPipeline(0, s_Pipeline->GetPipeline());
 		m_ComputeCmdBuffer->BindDescriptorSets(0, { m_DescSets[0] }, s_Pipeline->GetPipeline());
 		m_ComputeCmdBuffer->Dispatch(0, texture->GetCreateInfo().width / 8, texture->GetCreateInfo().height / 8, 1);
 
-		barrierCI.type = Barrier::Type::IMAGE;
-		barrierCI.srcAccess = Barrier::AccessBit::SHADER_WRITE_BIT;
-		barrierCI.dstAccess = Barrier::AccessBit::TRANSFER_READ_BIT;
-		barrierCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
-		barrierCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
-		barrierCI.pImage = texture->GetTexture();
-		barrierCI.oldLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
-		barrierCI.newLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
-		barrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
-		Ref<Barrier> barrierMip0TransferDst= Barrier::Create(&barrierCI);
-
-		barrierCI.oldLayout = Image::Layout::GENERAL;
-		barrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 1, (levels - 1), 0, 1 };
-		Ref<Barrier> barrierMip1ToLevelTransferDst = Barrier::Create(&barrierCI);
-
-		m_ComputeCmdBuffer->PipelineBarrier(0, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::TRANSFER_BIT, DependencyBit::NONE_BIT, { barrierMip0TransferDst, barrierMip1ToLevelTransferDst });
+		Texture::SubresouresTransitionInfo mip1ToLevelToShaderReadOnly;
+		mip1ToLevelToShaderReadOnly.srcAccess = Barrier::AccessBit::TRANSFER_WRITE_BIT;
+		mip1ToLevelToShaderReadOnly.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
+		mip1ToLevelToShaderReadOnly.oldLayout = Image::Layout::GENERAL;
+		mip1ToLevelToShaderReadOnly.newLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
+		mip1ToLevelToShaderReadOnly.subresoureRange = { Image::AspectBit::COLOUR_BIT, 1, (levels - 1), 0, 1 };
+		mip1ToLevelToShaderReadOnly.allSubresources = false;
+		
+		barriers.clear();
+		texture->TransitionSubResources(barriers, { mip1ToLevelToShaderReadOnly});
+		m_ComputeCmdBuffer->PipelineBarrier(0, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::BOTTOM_OF_PIPE_BIT, DependencyBit::NONE_BIT, barriers);
 
 		m_ComputeCmdBuffer->End(0);
 	}

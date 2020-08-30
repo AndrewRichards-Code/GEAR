@@ -19,6 +19,7 @@
 #include <deque>
 #include <map>
 #include <algorithm>
+#include <future>
 
 //Smart Poiners
 #include <memory>

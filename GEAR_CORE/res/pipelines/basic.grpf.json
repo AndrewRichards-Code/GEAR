@@ -19,7 +19,8 @@
 				"spv": true,
 				"dxcLocation": "",
 				"glslangLocation": "",
-				"additioalArguments": "",
+				"dxcArguments": "",
+				"glslangArguments": "",
 				"nologo": false,
 				"nooutput": false
 			}
@@ -41,7 +42,8 @@
 				"spv": true,
 				"dxcLocation": "",
 				"glslangLocation": "",
-				"additioalArguments": "",
+				"dxcArguments": "",
+				"glslangArguments": "",
 				"nologo": false,
 				"nooutput": false
 			}

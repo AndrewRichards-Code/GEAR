@@ -1,5 +1,4 @@
 #include "gear_core.h"
-#include <future>
 
 using namespace gear;
 using namespace graphics;
@@ -50,12 +49,12 @@ int main()
 		texCI.debugName = debugName.c_str();
 		texCI.device = window->GetDevice();
 		texCI.filepaths = { filepath };
-		texCI.mipLevels = 16;
+		texCI.mipLevels = 1;
 		texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
 		texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
 		texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 		texCI.usage = miru::crossplatform::Image::UsageBit(0);
-		texCI.generateMipMaps = true;
+		texCI.generateMipMaps = false;
 		return std::move(gear::CreateRef<Texture>(&texCI));
 	};
 
@@ -175,6 +174,11 @@ int main()
 			renderer->RecompileRenderPipelineShaders();
 		}
 
+		if (window->IsKeyPressed(GLFW_KEY_T))
+		{
+			renderer->ReloadTextures();
+		}
+
 		//Keyboard and Mouse input
 		if(window->IsMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT))
 		{
@@ -214,13 +218,12 @@ int main()
 		cam->m_CI.position.y = 1.0f;
 		cam->Update();
 
-		rustIronMaterial->GetTextures()[Material::TextureType::ALBEDO]->GenerateMipMaps();
-		
 		renderer->SubmitFramebuffer(window->GetFramebuffers());
 		renderer->SubmitCamera(cam);
 		renderer->SubmitLights({ light });
 		renderer->SubmitModel(quad);
 		renderer->SubmitModel(sphere);
+		renderer->Upload(true, false, false);
 		renderer->Flush();
 
 		renderer->Present(window->GetSwapchain(), windowResize);

@@ -436,7 +436,7 @@ int main(int argc, const char** argv)
 
 		computeCmdBuffer->End(0);
 	}
-	computeCmdBuffer->Submit({ 0 }, {}, {}, PipelineStageBit::NONE_BIT, fence);
+	computeCmdBuffer->Submit({ 0 }, {}, {}, {}, fence);
 	fence->Wait();
 
 	imageDataArray.clear();

@@ -19,7 +19,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 
 	std::vector<uint8_t> imageData;
 	LoadImageData(imageData);
-	
+
 	auto IsPowerOf2 = [](uint32_t x) -> bool { return !(x == 0) && !(x & (x - 1)); };
 	if (!(IsPowerOf2(m_CI.width) && IsPowerOf2(m_CI.height)))
 	{
@@ -52,50 +52,29 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_TextureCI.mipLevels = m_CI.mipLevels;
 	m_TextureCI.arrayLayers = m_Cubemap ? 6 : 1;
 	m_TextureCI.sampleCount = m_CI.samples;
-	m_TextureCI.usage = Image::UsageBit::SAMPLED_BIT | Image::UsageBit::TRANSFER_DST_BIT | (m_GenerateMipMaps ? Image::UsageBit::STORAGE_BIT : Image::UsageBit(0)) | m_CI.usage;
+	m_TextureCI.usage = m_CI.usage | Image::UsageBit::SAMPLED_BIT | Image::UsageBit::TRANSFER_DST_BIT | (m_GenerateMipMaps ? Image::UsageBit::STORAGE_BIT : Image::UsageBit(0));
 	m_TextureCI.layout = Image::Layout::UNKNOWN;
 	m_TextureCI.size = 0;
 	m_TextureCI.data = nullptr;
 	m_TextureCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::GPU);// , MemoryBlock::BlockSize::BLOCK_SIZE_128MB);
 	m_Texture = Image::Create(&m_TextureCI);
 
-	m_InitialBarrierCI.type = Barrier::Type::IMAGE;
-	m_InitialBarrierCI.srcAccess = Barrier::AccessBit::NONE;
-	m_InitialBarrierCI.dstAccess = Barrier::AccessBit::TRANSFER_WRITE_BIT;
-	m_InitialBarrierCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
-	m_InitialBarrierCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
-	m_InitialBarrierCI.pImage = m_Texture;
-	m_InitialBarrierCI.oldLayout = Image::Layout::UNKNOWN;
-	m_InitialBarrierCI.newLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
-	m_InitialBarrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, m_CI.mipLevels, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
-	m_InitialBarrier = Barrier::Create(&m_InitialBarrierCI);
-
-	m_ToShaderReadOnlyBarrierCI.type = Barrier::Type::IMAGE;
-	m_ToShaderReadOnlyBarrierCI.srcAccess = Barrier::AccessBit::TRANSFER_WRITE_BIT;
-	m_ToShaderReadOnlyBarrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
-	m_ToShaderReadOnlyBarrierCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
-	m_ToShaderReadOnlyBarrierCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
-	m_ToShaderReadOnlyBarrierCI.pImage = m_Texture;
-	m_ToShaderReadOnlyBarrierCI.oldLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
-	m_ToShaderReadOnlyBarrierCI.newLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
-	m_ToShaderReadOnlyBarrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, m_CI.mipLevels, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
-	m_ToShaderReadOnlyBarrier = Barrier::Create(&m_ToShaderReadOnlyBarrierCI);
-
-	m_ToTransferDstBarrierCI.type = Barrier::Type::IMAGE;
-	m_ToTransferDstBarrierCI.srcAccess = Barrier::AccessBit::SHADER_READ_BIT;
-	m_ToTransferDstBarrierCI.dstAccess = Barrier::AccessBit::TRANSFER_WRITE_BIT;
-	m_ToTransferDstBarrierCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
-	m_ToTransferDstBarrierCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
-	m_ToTransferDstBarrierCI.pImage = m_Texture;
-	m_ToTransferDstBarrierCI.oldLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
-	m_ToTransferDstBarrierCI.newLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
-	m_ToTransferDstBarrierCI.subresoureRange = { Image::AspectBit::COLOUR_BIT, 0, m_CI.mipLevels, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
-	m_ToTransferDstBarrier = Barrier::Create(&m_ToTransferDstBarrierCI);
+	for (uint32_t mipLevel = 0; mipLevel < m_TextureCI.mipLevels; mipLevel++)
+	{
+		for (uint32_t arrayLayers = 0; arrayLayers < m_TextureCI.arrayLayers; arrayLayers++)
+		{
+			m_SubresourceMap[mipLevel][arrayLayers] = Image::Layout::UNKNOWN;
+		}
+	}
 
 	m_TextureImageViewCI.debugName = "GEAR_CORE_TextureImageView: " + m_CI.debugName;
 	m_TextureImageViewCI.device = m_CI.device;
 	m_TextureImageViewCI.pImage = m_Texture;
-	m_TextureImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, m_CI.mipLevels, 0, static_cast<uint32_t>(m_Cubemap ? 6 : 1) };
+	m_TextureImageViewCI.subresourceRange.aspect = m_DepthTexture ? Image::AspectBit::DEPTH_BIT : Image::AspectBit::COLOUR_BIT;
+	m_TextureImageViewCI.subresourceRange.baseMipLevel = 0;
+	m_TextureImageViewCI.subresourceRange.mipLevelCount = m_CI.mipLevels;
+	m_TextureImageViewCI.subresourceRange.baseArrayLayer = 0;
+	m_TextureImageViewCI.subresourceRange.arrayLayerCount = static_cast<uint32_t>(m_Cubemap ? 6 : 1);
 	m_TextureImageView = ImageView::Create(&m_TextureImageViewCI);
 
 	CreateSampler();
@@ -141,30 +120,35 @@ void Texture::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBuff
 	}
 }
 
-void Texture::GetTransition_Initial(std::vector<Ref<Barrier>>& barriers, bool force)
+void Texture::TransitionSubResources(std::vector<Ref<Barrier>>& barriers, const std::vector<SubresouresTransitionInfo>& transitionInfos)
 {
-	if (!m_InitialTransition || force)
+	Barrier::CreateInfo barrierCI;
+	for (auto& transitionInfo : transitionInfos)
 	{
-		barriers.push_back(m_InitialBarrier);
-		m_InitialTransition = true;
-	}
-}
-
-void Texture::GetTransition_ToShaderReadOnly(std::vector<Ref<Barrier>>& barriers, bool force)
-{
-	if (!m_Transition_ToShaderReadOnly || force)
-	{
-		barriers.push_back(m_ToShaderReadOnlyBarrier);
-		m_Transition_ToShaderReadOnly = true;
-	}
-}
-
-void Texture::GetTransition_ToTransferDst(std::vector<Ref<Barrier>>& barriers, bool force)
-{
-	if (!m_Transition_ToTransferDst || force)
-	{
-		barriers.push_back(m_ToTransferDstBarrier);
-		m_Transition_ToTransferDst = true;
+		barrierCI.type = Barrier::Type::IMAGE;
+		barrierCI.srcAccess = transitionInfo.srcAccess;
+		barrierCI.dstAccess = transitionInfo.dstAccess;
+		barrierCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
+		barrierCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
+		barrierCI.pImage = m_Texture;
+		barrierCI.oldLayout = transitionInfo.oldLayout;
+		barrierCI.newLayout = transitionInfo.newLayout;
+		
+		if (transitionInfo.allSubresources)
+			barrierCI.subresoureRange = m_TextureImageViewCI.subresourceRange;
+		else
+			barrierCI.subresoureRange = transitionInfo.subresoureRange;
+		
+		barriers.emplace_back(Barrier::Create(&barrierCI));
+		
+		const Image::SubresourceRange& range = barrierCI.subresoureRange;
+		for (uint32_t mipLevel = range.baseMipLevel; mipLevel < range.mipLevelCount; mipLevel++)
+		{
+			for (uint32_t arrayLayers = range.baseArrayLayer; arrayLayers < range.arrayLayerCount; arrayLayers++)
+			{
+				m_SubresourceMap[mipLevel][arrayLayers] = transitionInfo.newLayout;
+			}
+		}
 	}
 }
 
@@ -184,8 +168,6 @@ void Texture::Reload()
 	m_TextureUploadBufferCI.pMemoryBlock->SubmitData(m_TextureUploadBuffer->GetResource(), imageData.size(), imageData.data());
 
 	m_Upload = false;
-	m_Transition_ToShaderReadOnly = false;
-	m_Transition_ToTransferDst = false;
 }
 
 void Texture::CreateSampler()

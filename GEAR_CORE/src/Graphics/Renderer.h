@@ -37,7 +37,8 @@ namespace graphics
 		std::map<gear::Ref<objects::Model>, miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSetModelMaterials;
 		miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetLight;
 
-		bool builtDescPoolsAndSets = false;
+		bool m_BuiltDescPoolsAndSets = false;
+		bool m_ReloadTextures = false;
 
 		//Renderering Objects
 		std::map<std::string, gear::Ref<graphics::RenderPipeline>> m_RenderPipelines;
@@ -67,11 +68,13 @@ namespace graphics
 		void SubmitCamera(gear::Ref<objects::Camera> camera) { m_Camera = camera; };
 		void SubmitLights(std::vector<gear::Ref<objects::Light>> lights) { m_Lights = lights; };
 		void SubmitModel(const gear::Ref<objects::Model>& obj);
+		void Upload(bool forceUploadCamera, bool forceUploadLights, bool forceUploadMeshes);
 		void Flush();
 		void Present(const miru::Ref<miru::crossplatform::Swapchain>& swapchain, bool& windowResize);
 
 		void ResizeRenderPipelineViewports(uint32_t width, uint32_t height);
 		void RecompileRenderPipelineShaders();
+		void ReloadTextures();
 
 		inline std::deque<gear::Ref<objects::Model>>& GetRenderQueue() { return m_RenderQueue; };
 		inline const miru::Ref<miru::crossplatform::CommandBuffer>& GetCmdBuffer() { return m_CmdBuffer; };

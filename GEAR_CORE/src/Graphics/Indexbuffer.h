@@ -17,6 +17,7 @@ namespace graphics
 			size_t		size;
 			size_t		stride;
 		};
+
 	private:
 		miru::Ref<miru::crossplatform::Buffer> m_IndexBuffer, m_IndexBufferUpload;
 		miru::crossplatform::Buffer::CreateInfo m_IndexBufferCI, m_IndexBufferUploadCI;

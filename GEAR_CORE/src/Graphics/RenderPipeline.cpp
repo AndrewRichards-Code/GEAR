@@ -29,9 +29,11 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 {
 	using namespace nlohmann;
 
+
 	std::string projectDirectory = PROJECT_DIR;
 	std::string finalFilePath = projectDirectory + pLoadInfo->filepath;
-
+	std::string relativePathFromCwdToProjDir = std::filesystem::path(projectDirectory).lexically_relative(std::filesystem::current_path()).string();
+	
 	json pipeline_grpf_json;
 	std::ifstream pipeline_grpf(finalFilePath, std::ios::binary);
 	if (pipeline_grpf.is_open())
@@ -72,11 +74,11 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 		shaderCI.binaryCode = {};
 
 		auto& recompileArgs = shader["recompileArguments"];
-		shaderCI.recompileArguments.mscDirectory = projectDirectory + std::string(recompileArgs["mscDirectory"]);
-		shaderCI.recompileArguments.hlslFilepath = projectDirectory + std::string(recompileArgs["hlslFilepath"]);
-		shaderCI.recompileArguments.outputDirectory = projectDirectory + std::string(recompileArgs["outputDirectory"]);
+		shaderCI.recompileArguments.mscDirectory = relativePathFromCwdToProjDir + std::string(recompileArgs["mscDirectory"]);
+		shaderCI.recompileArguments.hlslFilepath = relativePathFromCwdToProjDir + std::string(recompileArgs["hlslFilepath"]);
+		shaderCI.recompileArguments.outputDirectory = relativePathFromCwdToProjDir + std::string(recompileArgs["outputDirectory"]);
 		for (auto& includeDir : recompileArgs["includeDirectories"])
-			shaderCI.recompileArguments.includeDirectories.push_back(projectDirectory + std::string(includeDir));
+			shaderCI.recompileArguments.includeDirectories.push_back(relativePathFromCwdToProjDir + std::string(includeDir));
 		shaderCI.recompileArguments.entryPoint = recompileArgs["entryPoint"];
 		shaderCI.recompileArguments.shaderModel = recompileArgs["shaderModel"];
 		for (auto& macro : recompileArgs["macros"])
@@ -85,7 +87,8 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 		shaderCI.recompileArguments.spv = recompileArgs["spv"];
 		shaderCI.recompileArguments.dxcLocation = recompileArgs["dxcLocation"];
 		shaderCI.recompileArguments.glslangLocation = recompileArgs["glslangLocation"];
-		shaderCI.recompileArguments.additioalArguments = recompileArgs["additioalArguments"];
+		shaderCI.recompileArguments.dxcArguments = recompileArgs["dxcArguments"];
+		shaderCI.recompileArguments.glslangArguments = recompileArgs["glslangArguments"];
 		shaderCI.recompileArguments.nologo = recompileArgs["nologo"];
 		shaderCI.recompileArguments.nooutput = recompileArgs["nooutput"];
 
