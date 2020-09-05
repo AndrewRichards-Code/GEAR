@@ -111,11 +111,11 @@ const std::string Log::ErrorCodeToString(ErrorCode error) noexcept
 		str += "INPUT"; break;
 	case ErrorCode::OBJECTS:
 		str += "OBJECTS"; break;
+	case ErrorCode::SCENE:
+		str += "SCENE"; break;
 	case ErrorCode::UTILS:
 		str += "UTILS"; break;
-	case ErrorCode::REVERSED0:
-		str += "REVERSED0"; break;
-	case ErrorCode::REVERSED1:
+	case ErrorCode::REVERSED:
 		str += "REVERSED1"; break;
 	default:
 		break;
@@ -141,6 +141,10 @@ const std::string Log::ErrorCodeToString(ErrorCode error) noexcept
 		str += "NO_FILE"; break;
 	case ErrorCode::LOAD_FAILED:
 		str += "LOAD_FAILED"; break;
+	case ErrorCode::INVALID_COMPONENT:
+		str += "INVALID_COMPONENT"; break;
+	case ErrorCode::INVALID_PATH:
+		str += "INVALID_PATH"; break;
 	default:
 		break;
 	}

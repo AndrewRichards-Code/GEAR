@@ -28,10 +28,7 @@ void Model::SetUniformModlMatrix()
 	m_UB->texCoordsScale1.x = m_CI.materialTextureScaling.x;
 	m_UB->texCoordsScale1.y = m_CI.materialTextureScaling.y;
 
-	m_UB->modlMatrix = 
-		Mat4::Translation(m_CI.transform.translation) * 
-		Quat::ToMat4(m_CI.transform.orientation) * 
-		Mat4::Scale(m_CI.transform.scale);
+	m_UB->modlMatrix = TransformToMat4(m_CI.transform);
 	m_UB->SubmitData();
 }
 

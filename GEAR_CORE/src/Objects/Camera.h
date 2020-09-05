@@ -2,6 +2,7 @@
 
 #include "gear_core_common.h"
 #include "Graphics/Uniformbuffer.h"
+#include "Transform.h"
 
 #undef far
 #undef near
@@ -39,9 +40,8 @@ namespace objects
 		struct CreateInfo
 		{
 			std::string		debugName;
-			void* device;
-			mars::Vec3		position;
-			mars::Mat4		orientation;
+			void*			device;
+			Transform		transform;
 			ProjectionType	projectionType;
 			union
 			{
@@ -72,7 +72,7 @@ namespace objects
 		Camera(CreateInfo* pCreateInfo);
 		~Camera();
 
-		//Update the camera the current static of Camera::CreateInfo m_CI.
+		//Update the camera from the current state of Camera::CreateInfo m_CI.
 		void Update();
 		gear::Ref<graphics::Uniformbuffer<CameraUB>> GetUB() { return m_UB; };
 

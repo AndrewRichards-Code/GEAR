@@ -38,9 +38,9 @@ void Listener::SetVolume(float value)
 
 void Listener::UpdateListenerPosVelOri()
 {
-	m_ListenerPosition[0] = m_Camera.m_CI.position.x;
-	m_ListenerPosition[1] = m_Camera.m_CI.position.y;
-	m_ListenerPosition[2] = m_Camera.m_CI.position.z;
+	m_ListenerPosition[0] = m_Camera.m_CI.transform.translation.x;
+	m_ListenerPosition[1] = m_Camera.m_CI.transform.translation.y;
+	m_ListenerPosition[2] = m_Camera.m_CI.transform.translation.z;
 
 	m_ListenerVelocity[0] = 0.0f;
 	m_ListenerVelocity[1] = 0.0f;

@@ -57,7 +57,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep\DATE;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\GLFW\include;$(ProjectDir)dep\JSON;$(ProjectDir)dep\MARS\MARS\src;$(ProjectDir)dep\MIRU\MIRU_CORE\redist;$(ProjectDir)dep\MIRU\MIRU_CORE\src;$(ProjectDir)dep\OPENAL\include;$(ProjectDir)dep\STBI;$(VULKAN_SDK)\Include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep\DATE;$(ProjectDir)dep\ENTT;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\GLFW\include;$(ProjectDir)dep\JSON;$(ProjectDir)dep\MARS\MARS\src;$(ProjectDir)dep\MIRU\MIRU_CORE\redist;$(ProjectDir)dep\MIRU\MIRU_CORE\src;$(ProjectDir)dep\OPENAL\include;$(ProjectDir)dep\STBI;$(VULKAN_SDK)\Include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;PROJECT_DIR=R"($(ProjectDir))";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>gear_core_common.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -79,7 +79,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep\DATE;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\GLFW\include;$(ProjectDir)dep\JSON;$(ProjectDir)dep\MARS\MARS\src;$(ProjectDir)dep\MIRU\MIRU_CORE\redist;$(ProjectDir)dep\MIRU\MIRU_CORE\src;$(ProjectDir)dep\OPENAL\include;$(ProjectDir)dep\STBI;$(VULKAN_SDK)\Include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep\DATE;$(ProjectDir)dep\ENTT;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\GLFW\include;$(ProjectDir)dep\JSON;$(ProjectDir)dep\MARS\MARS\src;$(ProjectDir)dep\MIRU\MIRU_CORE\redist;$(ProjectDir)dep\MIRU\MIRU_CORE\src;$(ProjectDir)dep\OPENAL\include;$(ProjectDir)dep\STBI;$(VULKAN_SDK)\Include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;PROJECT_DIR=R"($(ProjectDir))";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>gear_core_common.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -120,6 +120,9 @@
     <ClCompile Include="src\Objects\Material.cpp" />
     <ClCompile Include="src\Objects\Mesh.cpp" />
     <ClCompile Include="src\Objects\Model.cpp" />
+    <ClCompile Include="src\Scene\Entity.cpp" />
+    <ClCompile Include="src\Scene\NativeScriptManager.cpp" />
+    <ClCompile Include="src\Scene\Scene.cpp" />
     <ClCompile Include="src\Utils\ModelLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +131,7 @@
     <ClInclude Include="src\Audio\AudioSource.h" />
     <ClInclude Include="src\Audio\Listener.h" />
     <ClInclude Include="src\Core\EnumStringMaps.h" />
+    <ClInclude Include="src\Core\DynamicLibrary.h" />
     <ClInclude Include="src\Core\Log.h" />
     <ClInclude Include="src\Core\StringConversion.h" />
     <ClInclude Include="src\Core\Timer.h" />
@@ -150,6 +154,12 @@
     <ClInclude Include="src\Objects\Material.h" />
     <ClInclude Include="src\Objects\Mesh.h" />
     <ClInclude Include="src\Objects\Model.h" />
+    <ClInclude Include="src\Objects\Transform.h" />
+    <ClInclude Include="src\Scene\Components.h" />
+    <ClInclude Include="src\Scene\Entity.h" />
+    <ClInclude Include="src\Scene\INativeScript.h" />
+    <ClInclude Include="src\Scene\NativeScriptManager.h" />
+    <ClInclude Include="src\Scene\Scene.h" />
     <ClInclude Include="src\Utils\ModelLoader.h" />
     <ClInclude Include="src\Utils\FileUtils.h" />
     <ClInclude Include="src\gear_core.h" />

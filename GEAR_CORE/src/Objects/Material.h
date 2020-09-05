@@ -20,7 +20,7 @@ namespace objects
 			METALLIC,			//For PBR - Specifies metallic (sub-surface scattering)
 			ROUGHNESS,			//For PBR - Num of Micro-facets (1.0 - Smootheness)
 			AMBIENT_OCCLUSION,	//For PBR - Micro-facets shadowing
-			EMISSIVE,			//For PBR - Anu light that the surface emits
+			EMISSIVE,			//For PBR - Any light that the surface emits
 		};
 	
 		struct PBRConstants

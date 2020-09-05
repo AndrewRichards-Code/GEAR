@@ -107,7 +107,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 			{
 				if (m_ReloadTextures)
 				{
-					auto reload_texture = [](gear::Ref<Texture> texture) -> void { texture->Reload(); };
+					auto reload_texture = [](gear::Ref<Texture> texture) { texture->Reload(); };
 					std::async(std::launch::async, reload_texture, texture.second);
 				}
 

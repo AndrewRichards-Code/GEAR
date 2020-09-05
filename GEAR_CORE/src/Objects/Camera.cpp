@@ -54,22 +54,19 @@ void Camera::DefineProjection()
 
 void Camera::DefineView()
 {
-	auto toVec3 = [](const Vec4& vec) -> Vec3
-	{
-		return Vec3(vec.x, vec.y, vec.z);
-	};
+	const Mat4& orientation = m_CI.transform.orientation.ToMat4();
 
-	m_Direction	= toVec3(m_CI.orientation * Vec4(0, 0, -1, 0));
-	m_Up		= toVec3(m_CI.orientation * Vec4(0, +1, 0, 0));
-	m_Right		= toVec3(m_CI.orientation * Vec4(+1, 0, 0, 0));
+	m_Direction	= Vec3(orientation * Vec4(0, 0, -1, 0));
+	m_Up		= Vec3(orientation * Vec4(0, +1, 0, 0));
+	m_Right		= Vec3(orientation * Vec4(+1, 0, 0, 0));
 
-	m_UB->viewMatrix = m_CI.orientation * Mat4::Translation(-m_CI.position);
+	m_UB->viewMatrix = orientation * Mat4::Translation(-m_CI.transform.translation);
 }
 
 
 void Camera::SetPosition()
 {
-	m_UB->position = Vec4(m_CI.position, 1.0f);
+	m_UB->position = Vec4(m_CI.transform.translation, 1.0f);
 }
 
 void Camera::InitialiseUB()

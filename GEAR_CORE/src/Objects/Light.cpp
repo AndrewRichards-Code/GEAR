@@ -19,8 +19,8 @@ Light::Light(CreateInfo* pCreateInfo)
 		m_LightID = s_NumOfLights - 1;
 		
 		m_UB->at(m_LightID).colour = m_CI.colour;
-		m_UB->at(m_LightID).position = Vec4(m_CI.position, 1.0f);
-		m_UB->at(m_LightID).direction = Vec4(m_CI.direction, 0.0f);
+		m_UB->at(m_LightID).position = Vec4(m_CI.transform.translation, 1.0f);
+		m_UB->at(m_LightID).direction = m_CI.transform.orientation.ToMat4() * Vec4(0, 0, -1, 0);
 		m_UB->SubmitData();
 	}
 	else
@@ -37,8 +37,8 @@ Light::~Light()
 void gear::objects::Light::Update()
 {
 	m_UB->at(m_LightID).colour = m_CI.colour;
-	m_UB->at(m_LightID).position = Vec4(m_CI.position, 1.0f);
-	m_UB->at(m_LightID).direction = Vec4(m_CI.direction, 0.0f);
+	m_UB->at(m_LightID).position = Vec4(m_CI.transform.translation, 1.0f);
+	m_UB->at(m_LightID).direction = Vec4(m_CI.transform.orientation.ToVec3(), 0.0f);
 	m_UB->SubmitData();
 }
 

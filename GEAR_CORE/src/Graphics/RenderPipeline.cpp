@@ -29,7 +29,6 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 {
 	using namespace nlohmann;
 
-
 	std::string projectDirectory = PROJECT_DIR;
 	std::string finalFilePath = projectDirectory + pLoadInfo->filepath;
 	std::string relativePathFromCwdToProjDir = std::filesystem::path(projectDirectory).lexically_relative(std::filesystem::current_path()).string();

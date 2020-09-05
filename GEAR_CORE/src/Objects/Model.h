@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gear_core_common.h"
+#include "Transform.h"
 #include "Mesh.h"
 #include "Material.h"
 #include "Graphics/Uniformbuffer.h"
@@ -10,20 +11,13 @@ namespace gear
 {
 namespace objects 
 {
-	struct Transform
-	{
-		mars::Vec3 translation;
-		mars::Quat orientation;
-		mars::Vec3 scale;
-	};
-	
 	class Model
 	{
 	public:
 		struct CreateInfo
 		{
 			std::string			debugName;
-			void* device;
+			void*				device;
 			gear::Ref<Mesh>		pMesh;
 			mars::Vec2			materialTextureScaling = mars::Vec2(1.0f, 1.0f);
 			Transform			transform;

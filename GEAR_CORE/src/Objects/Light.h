@@ -24,11 +24,10 @@ namespace objects
 		struct CreateInfo
 		{
 			std::string debugName;
-			void* device;
+			void*		device;
 			LightType	type;
 			mars::Vec4	colour;
-			mars::Vec3	position;
-			mars::Vec3	direction;
+			Transform	transform;
 		};
 
 	private:
@@ -52,7 +51,7 @@ namespace objects
 		Light(CreateInfo* pCreateInfo);
 		~Light();
 
-		//Update the camera the current static of Camera::CreateInfo m_CI.
+		//Update the light from the current state of Light::CreateInfo m_CI.
 		void Update();
 		gear::Ref<graphics::Uniformbuffer<LightUBType>> GetUB() { return m_UB; };
 

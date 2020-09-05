@@ -13,7 +13,7 @@ namespace graphics
 		struct CreateInfo
 		{
 			std::string									debugName;
-			void* device;
+			void*										device;
 			std::vector<std::string>					filepaths;		//Option 1
 			const uint8_t*								data;			//Option 2
 			size_t										size;			//Option 2

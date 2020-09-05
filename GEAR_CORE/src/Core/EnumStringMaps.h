@@ -132,7 +132,7 @@ namespace core
 		{"COPY_INVERTED", miru::crossplatform::LogicOp::COPY_INVERTED },
 		{"OR_INVERTED", miru::crossplatform::LogicOp::OR_INVERTED },
 		{"NAND", miru::crossplatform::LogicOp::NAND },
-		{"SET }", miru::crossplatform::LogicOp::SET }
+		{"SET ", miru::crossplatform::LogicOp::SET }
 	};
 }
 }

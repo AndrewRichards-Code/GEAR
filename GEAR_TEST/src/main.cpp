@@ -1,8 +1,10 @@
 #include "gear_core.h"
 
 using namespace gear;
+using namespace core;
 using namespace graphics;
 using namespace objects;
+using namespace scene;
 
 using namespace miru;
 using namespace miru::crossplatform;
@@ -11,6 +13,9 @@ using namespace mars;
 
 int main()
 {
+	Scene::CreateInfo sceneCI = { "GEAR_TEST_Main_Scene", "res/scenes/current_scene.gsf.json" };
+	gear::Ref<Scene> activeScene = gear::CreateRef<Scene>(&sceneCI);
+
 	Window::CreateInfo windowCI;
 	windowCI.api = GraphicsAPI::API::VULKAN;
 	windowCI.title = "GEAR_MIRU_TEST";
@@ -113,7 +118,8 @@ int main()
 	modelCI.transform.orientation = Quat(sqrt(2)/2, -sqrt(2)/2, 0, 0);
 	modelCI.transform.scale = Vec3(100.0f, 100.0f, 100.0f);
 	modelCI.renderPipelineName = "basic";
-	gear::Ref<Model> quad = gear::CreateRef<Model>(&modelCI);
+	Entity quad = activeScene->CreateEntity();
+	quad.AddComponent<ModelComponent>(std::move(gear::CreateRef<Model>(&modelCI)));
 
 	modelCI.debugName = "Sphere";
 	modelCI.device = window->GetDevice();
@@ -123,33 +129,39 @@ int main()
 	modelCI.transform.orientation = Quat(1, 0, 0, 0);
 	modelCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
 	modelCI.renderPipelineName = "basic";
-	gear::Ref<Model> sphere = gear::CreateRef<Model>(&modelCI);
+	Entity sphere = activeScene->CreateEntity();
+	sphere.AddComponent<ModelComponent>(std::move(gear::CreateRef<Model>(&modelCI)));
 
 	Light::CreateInfo lightCI;
 	lightCI.debugName = "Main";
 	lightCI.device = window->GetDevice();
 	lightCI.type = Light::LightType::GEAR_LIGHT_POINT;
 	lightCI.colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	lightCI.position = Vec3(0.0f, 1.0f, 0.0f);
-	lightCI.direction = Vec3(0.0f, 0.0f, -1.0f);
-	gear::Ref<Light> light = gear::CreateRef<Light>(&lightCI);
+	lightCI.transform.translation = Vec3(0.0f, 1.0f, 0.0f);
+	lightCI.transform.orientation = Quat(1, 0, 0, 0);
+	lightCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
+	Entity light = activeScene->CreateEntity();
+	light.AddComponent<LightComponent>(std::move(gear::CreateRef<Light>(&lightCI)));
 
 	Camera::CreateInfo cameraCI;
 	cameraCI.debugName = "Main";
 	cameraCI.device = window->GetDevice();
-	cameraCI.position = Vec3(0, 0, 0);
-	cameraCI.orientation = Mat4::Identity();
+	cameraCI.transform.translation = Vec3(0, 0, 0);
+	cameraCI.transform.orientation = Quat(1, 0, 0, 0);
+	cameraCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
 	cameraCI.projectionType = Camera::ProjectionType::PERSPECTIVE;
 	cameraCI.perspectiveParams = { DegToRad(90.0), window->GetRatio(), 0.01f, 3000.0f };
 	cameraCI.flipX = false;
 	cameraCI.flipY = false;
-	gear::Ref<Camera> cam = gear::CreateRef<Camera>(&cameraCI);
+	Entity cameraEnitity = activeScene->CreateEntity();
+	cameraEnitity.AddComponent<CameraComponent>(std::move(gear::CreateRef<Camera>(&cameraCI)));
+	cameraEnitity.AddComponent<NativeScriptComponent>("TestScript");
 
 	gear::Ref<Renderer> renderer = gear::CreateRef<Renderer>(window->GetContext());
 	renderer->InitialiseRenderPipelines({"res/pipelines/basic.grpf.json", "res/pipelines/cube.grpf.json" }, (float)window->GetWidth(), (float)window->GetHeight(), window->GetRenderPass());
 
 	MemoryBlockManager::PrintMemoryBlockStatus();
-	
+
 	double yaw = 0;
 	double pitch = 0;
 	double roll = 0;
@@ -158,11 +170,12 @@ int main()
 	double last_pos_x = 0;
 	double last_pos_y = 0;
 	bool initMouse = true;
-	gear::core::Timer timer;
+	core::Timer timer;
 
 	bool windowResize = false;
 	while (!window->Closed())
 	{
+		//Update from Window
 		if (window->Resized())
 		{
 			renderer->ResizeRenderPipelineViewports((uint32_t)window->GetWidth(), (uint32_t)window->GetHeight());
@@ -177,6 +190,21 @@ int main()
 		if (window->IsKeyPressed(GLFW_KEY_T))
 		{
 			renderer->ReloadTextures();
+		}
+
+		if (window->IsKeyPressed(GLFW_KEY_S) && window->IsKeyPressed(GLFW_KEY_LEFT_CONTROL))
+		{
+			activeScene->SaveToFile();
+		}
+
+		if (window->IsKeyPressed(GLFW_KEY_L))
+		{
+			activeScene->UnloadNativeScriptLibrary();
+			activeScene->LoadNativeScriptLibrary();
+		}
+		if (window->IsKeyPressed(GLFW_KEY_P))
+		{
+			activeScene->TogglePlay();
 		}
 
 		//Keyboard and Mouse input
@@ -200,29 +228,30 @@ int main()
 				pitch = -pi / 2;
 		}
 
+
 		//Camera Update
+		auto& camera = cameraEnitity.GetComponent<CameraComponent>().camera;
 		if (window->IsKeyPressed(GLFW_KEY_D))
-			cam->m_CI.position += Vec3::Normalise(cam->m_Right) * 0.05f;// *timer;
+			camera->m_CI.transform.translation += Vec3::Normalise(camera->m_Right) * 0.05f;// *timer;
 		if (window->IsKeyPressed(GLFW_KEY_A))
-			cam->m_CI.position -= Vec3::Normalise(cam->m_Right) * 0.05f;// * timer;
-		if (window->IsKeyPressed(GLFW_KEY_S))
-			cam->m_CI.position += cam->m_Direction * 0.05f;// * timer;
+			camera->m_CI.transform.translation -= Vec3::Normalise(camera->m_Right) * 0.05f;// * timer;
 		if (window->IsKeyPressed(GLFW_KEY_W))
-			cam->m_CI.position -= cam->m_Direction * 0.05f;// * timer;
+			camera->m_CI.transform.translation += camera->m_Direction * 0.05f;// * timer;
+		if (window->IsKeyPressed(GLFW_KEY_S))
+			camera->m_CI.transform.translation -= camera->m_Direction * 0.05f;// * timer;
 		
 		double fov = 0.0;
 		window->GetScrollPosition(fov);
-		cam->m_CI.orientation = Mat4::Rotation(pitch, {1, 0, 0}) * Mat4::Rotation(yaw, { 0, 1, 0 });
-		cam->m_CI.perspectiveParams.horizonalFOV = DegToRad(90.0 - fov);
-		cam->m_CI.perspectiveParams.aspectRatio = window->GetRatio();
-		cam->m_CI.position.y = 1.0f;
-		cam->Update();
+		camera->m_CI.transform.orientation = Quat(pitch, {1, 0, 0}) * Quat(yaw, { 0, 1, 0 });
+		camera->m_CI.perspectiveParams.horizonalFOV = DegToRad(90.0 - fov);
+		camera->m_CI.perspectiveParams.aspectRatio = window->GetRatio();
+		camera->m_CI.transform.translation.y = 1.0f;
+		camera->Update();
+		
+		//Update Scene
+		activeScene->OnUpdate(renderer, timer);
 
 		renderer->SubmitFramebuffer(window->GetFramebuffers());
-		renderer->SubmitCamera(cam);
-		renderer->SubmitLights({ light });
-		renderer->SubmitModel(quad);
-		renderer->SubmitModel(sphere);
 		renderer->Upload(true, false, false);
 		renderer->Flush();
 
