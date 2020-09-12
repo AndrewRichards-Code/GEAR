@@ -1,6 +1,7 @@
 #include "gear_core.h"
 
 using namespace gear;
+using namespace audio;
 using namespace core;
 using namespace graphics;
 using namespace objects;
@@ -13,12 +14,24 @@ using namespace mars;
 
 int main()
 {
+	AudioListener::CreateInfo listenerCI;
+	listenerCI.audioAPI = audio::AudioListenerInterface::API::OPENAL;
+	auto listener = gear::CreateRef<AudioListener>(&listenerCI);
+
+	AudioSource::CreateInfo rainbowRaodCI;
+	rainbowRaodCI.filepath = "res/wav/Rainbow Road.wav";
+	rainbowRaodCI.pAudioListener = listener;
+	auto rainbowRoad = gear::CreateRef<AudioSource>(&rainbowRaodCI);
+	rainbowRoad->SetPitch(0.0f);
+	rainbowRoad->SetVolume(0.0f);
+	rainbowRoad->Stream();
+
 	Scene::CreateInfo sceneCI = { "GEAR_TEST_Main_Scene", "res/scenes/current_scene.gsf.json" };
 	gear::Ref<Scene> activeScene = gear::CreateRef<Scene>(&sceneCI);
 
 	Window::CreateInfo windowCI;
 	windowCI.api = GraphicsAPI::API::VULKAN;
-	windowCI.title = "GEAR_MIRU_TEST";
+	windowCI.title = "GEAR_TEST";
 	windowCI.width = 1920;
 	windowCI.height = 1080;
 	windowCI.fullscreen = false;

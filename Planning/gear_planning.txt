@@ -3,15 +3,10 @@ GEAR Features to implement:
 On-going:
 PBR
 Mipmapping
-
-Scripting: 
+Add XAudio2 for Win10 alongside OpenAL
 C++ Native Hot-reloading via DLL
+Entity-Component/Scene system with file
 
-Entity-Component/Scene system and File:
-glTF style .json
-
-Audio:
-Add XAudio2 for Win10
 
 Save Models and Textures as .bin for quick read.
 

@@ -30,10 +30,9 @@
 #define NOMINMAX
 
 #ifndef _DEBUG
-#if _WIN64
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif
-#endif
+
 #endif
 
 //Dependencies
@@ -83,6 +82,14 @@
 #include "AL/alc.h"
 #pragma comment(lib, "OPENAL/libs/Win64/OpenAL32.lib")
 
+//XAudio2
+#if defined(_WIN64)
+#define XAUDIO2_HELPER_FUNCTIONS
+#include <xaudio2.h>
+#include <x3daudio.h>
+#pragma comment(lib,"xaudio2.lib") 
+#endif
+
 //GEAR Helpers
 namespace gear
 {
@@ -119,7 +126,7 @@ namespace gear
 #define GEAR_PRINTF(fmt, ...) printf_s("")
 #endif
 
-#if(_WIN64)
+#if defined(_WIN64)
 #define GEAR_FUNCSIG __FUNCSIG__
 #elif(__linux__)
 #define GEAR_FUNCSIG __PRETTY_FUNCTION__

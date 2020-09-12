@@ -4,159 +4,55 @@
 using namespace gear;
 using namespace audio;
 
-AudioSource::AudioSource(const char* filepath, const mars::Vec3& position, const mars::Vec3& direction)
-	:m_FilePath(filepath), m_Position(position), m_Direction(direction)
+AudioSource::AudioSource(CreateInfo* pCreateInfo)
 {
-	m_WavData = file_utils::stream_wav(m_FilePath);
-	if (m_WavData->m_Channels == 1)
-	{
-		if (m_WavData->m_BitsPerSample == 8)
-		{
-			m_Format = AL_FORMAT_MONO8;
-		}
-		else {
-			m_Format = AL_FORMAT_MONO16;
-		}
-	}
-	else 
-	{
-		if (m_WavData->m_BitsPerSample == 8)
-		{
-			m_Format = AL_FORMAT_STEREO8;
-		}
-		else {
-			m_Format = AL_FORMAT_STEREO16;
-		}
-	}
-	alGenBuffers(2, &m_BufferID[0]);
-	alGenSources(1, &m_SourceID);
+	m_CI = *pCreateInfo;
 
-	Loop(); //Used to catch the first two buffers, in case the track is looped.
-	SubmitBuffer();
-	SubmitBuffer();
-	Loop(); //Same as above.
-
-	alSourceQueueBuffers(m_SourceID, 2, &m_BufferID[0]);
-	
-	alSourcef(m_SourceID, AL_GAIN, 1);
-	alSourcef(m_SourceID, AL_PITCH, 1);
-	alSourcei(m_SourceID, AL_LOOPING, AL_FALSE);
-	
-	UpdateSourcePosVelOri();
+	m_ASICI.filepath = m_CI.filepath;
+	m_ASICI.pAudioListener = m_CI.pAudioListener->GetAudioListenerInterface();
+	m_ASI = gear::CreateRef<AudioSourceInterface>(&m_ASICI);
 }
 
 AudioSource::~AudioSource()
 {
-	alDeleteBuffers(2, &m_BufferID[0]);
-	alDeleteSources(1, &m_SourceID);
+	m_AudioStreamThread.join();
 }
 
-void AudioSource::UpdateSourcePosVelOri()
+void AudioSource::SetPitch(float value)
 {
-	alSource3f(m_SourceID, AL_POSITION, m_Position.x, m_Position.y, m_Position.z);
-	alSource3f(m_SourceID, AL_VELOCITY, m_Velocity.x, m_Velocity.y, m_Velocity.z);
-	alSource3f(m_SourceID, AL_DIRECTION, m_Direction.x, m_Direction.y, m_Direction.z);
+	m_ASI->SetPitch(value);
 }
 
-void AudioSource::DefineConeParameters(float outerGain, double innerAngle, double outerAngle)
+void AudioSource::SetVolume(float value)
 {
-	alSourcef(m_SourceID, AL_CONE_OUTER_GAIN, outerGain);
-	alSourcef(m_SourceID, AL_CONE_INNER_ANGLE, static_cast<float>(innerAngle));
-	alSourcef(m_SourceID, AL_CONE_OUTER_ANGLE, static_cast<float>(outerAngle));
-}
-
-
-void AudioSource::SetPitch(float value) //By semitones (-6.0f < value < 6.0f).
-{
-	if (value > 6.0f || value < -6.0f)
-	{
-		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::AUDIO | core::Log::ErrorCode::INVALID_VALUE, "Input value out of range. Pitch has not been changed.");
-	}
-	else
-		alSourcef(m_SourceID, AL_PITCH, pow(2.0f, (value / 12.0f)));
-}
-
-void AudioSource::SetVolume(float value) //By decibels.
-{
-	float dB = pow(10.0f, (value / 20.0f));
-	if (dB < 0.0f)
-	{
-		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::AUDIO | core::Log::ErrorCode::INVALID_VALUE, "Calcualted value out of range. Volume has not been changed.");
-	}
-	else
-		alSourcef(m_SourceID, AL_GAIN, dB);
+	m_ASI->SetVolume(value);
 }
 
 void AudioSource::Stream()
 {
-	if (!m_Ended)
+	auto AudioStream = [&]()
 	{
-		Play();
-	}
-
-	int processed;
-	alGetSourcei(m_SourceID, AL_BUFFERS_PROCESSED, &processed);
-	
-	while (processed--)
-	{
-		switch (m_WavData->m_NextBuffer)
+		while (true)
 		{
-		case 1:
-			alSourceUnqueueBuffers(m_SourceID, 1, &m_BufferID[0]);
-			SubmitBuffer();
-			alSourceQueueBuffers(m_SourceID, 1, &m_BufferID[0]);
-			break;
-		case 2:
-			alSourceUnqueueBuffers(m_SourceID, 1, &m_BufferID[1]);
-			SubmitBuffer();
-			alSourceQueueBuffers(m_SourceID, 1, &m_BufferID[1]);
-			break;
-		case 0:
-			m_Ended = true;
-			alSourceUnqueueBuffers(m_SourceID, 2, &m_BufferID[0]);
-			Stop();
+			m_ASI->Stream();
+			
+			float bufferTimeInS = float(m_ASI->GetWavData()->buffer1.size()) / float(m_ASI->GetWavData()->sampleRate * m_ASI->GetWavData()->blockAlign);
+			std::chrono::duration<float> duration(bufferTimeInS / 4.0f);
+			std::this_thread::sleep_for(duration);
 		}
-	}
-}
+	};
 
-void AudioSource::Play()
-{
-	int playing;
-	alGetSourcei(m_SourceID, AL_SOURCE_STATE, &playing);
-	
-	if (playing != AL_PLAYING)
-		alSourcePlay(m_SourceID);
-}
-
-void AudioSource::Stop()
-{
-	alSourceStop(m_SourceID);
-}
-
-void AudioSource::Pause()
-{
-	alSourcePause(m_SourceID);
+	m_AudioStreamThread = std::thread(AudioStream);
 }
 
 void AudioSource::Loop()
 {
 	if(m_Looped == false)
 	{
-		m_WavData->m_LoopBufferQueue = true;
+		m_ASI->Unloop();
 	}
 	else if (m_Looped == true)
 	{
-		m_WavData->m_LoopBufferQueue = false;
-	}
-}
-void AudioSource::SubmitBuffer()
-{
-	file_utils::get_next_wav_block(*m_WavData);
-	switch (m_WavData->m_NextBuffer)
-	{
-	case 1:
-		alBufferData(m_BufferID[1], m_Format, m_WavData->m_Buffer2.data(), static_cast<ALsizei>(m_WavData->m_Buffer2.size()), m_WavData->m_SampleRate);
-	case 2:
-		alBufferData(m_BufferID[0], m_Format, m_WavData->m_Buffer1.data(), static_cast<ALsizei>(m_WavData->m_Buffer1.size()), m_WavData->m_SampleRate);
+		m_ASI->Loop();
 	}
 }

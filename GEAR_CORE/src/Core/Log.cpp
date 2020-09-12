@@ -93,8 +93,8 @@ const std::string Log::LogTypeToString(Level level) noexcept
 
 const std::string Log::ErrorCodeToString(ErrorCode error) noexcept
 {
-	uint32_t group = uint32_t(error) & 0x000000FF;
-	uint32_t errorType = uint32_t(error) & 0xFFFFFF00;
+	uint32_t group = uint32_t(error) & 0x0000FFFF;
+	uint32_t errorType = uint32_t(error) & 0xFFFF0000;
 	std::string str = "";
 
 	switch (ErrorCode(group))

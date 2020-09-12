@@ -14,7 +14,7 @@ ModelLoader::ModelData ModelLoader::LoadModelData(const std::string& filepath)
 	const aiScene* scene = importer.ReadFile(filepath, aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_FlipUVs);
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
-		std::cout << "ERROR: GEAR::ModelLoader::LoadModelData: " << importer.GetErrorString() << std::endl;
+		GEAR_ASSERT(core::Log::Level::WARN, core::Log::ErrorCode::UTILS | core::Log::ErrorCode::INIT_FAILED, "Assimp error: %s.", importer.GetErrorString());
 		return ModelData(0);
 	}
 	modelData.clear();

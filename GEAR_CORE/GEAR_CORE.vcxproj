@@ -97,8 +97,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dep\STBI\stb_image.cpp" />
+    <ClCompile Include="src\Audio\AudioInterfaces.cpp" />
     <ClCompile Include="src\Audio\AudioSource.cpp" />
-    <ClCompile Include="src\Audio\Listener.cpp" />
+    <ClCompile Include="src\Audio\AudioListener.cpp" />
     <ClCompile Include="src\Core\Log.cpp" />
     <ClCompile Include="src\Core\StringConversion.cpp" />
     <ClCompile Include="src\Core\Timer.cpp" />
@@ -128,8 +129,9 @@
   <ItemGroup>
     <ClInclude Include="dep\DATE\include\date.h" />
     <ClInclude Include="dep\STBI\stb_image.h" />
+    <ClInclude Include="src\Audio\AudioInterfaces.h" />
     <ClInclude Include="src\Audio\AudioSource.h" />
-    <ClInclude Include="src\Audio\Listener.h" />
+    <ClInclude Include="src\Audio\AudioListener.h" />
     <ClInclude Include="src\Core\EnumStringMaps.h" />
     <ClInclude Include="src\Core\DynamicLibrary.h" />
     <ClInclude Include="src\Core\Log.h" />

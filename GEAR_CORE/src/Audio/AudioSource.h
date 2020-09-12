@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gear_core_common.h"
-#include "Utils/FileUtils.h"
+#include "AudioListener.h"
 
 namespace gear 
 {
@@ -9,38 +9,40 @@ namespace audio
 {
 	class AudioSource
 	{
+	public:
+		struct CreateInfo
+		{
+			std::string					filepath;
+			gear::Ref<AudioListener>	pAudioListener;
+		};
+
 	private:
-		const char* m_FilePath;
-		unsigned int m_BufferID[2];
-		unsigned int m_SourceID;
+		CreateInfo m_CI;
 
-		std::shared_ptr<file_utils::WavData> m_WavData;
-		unsigned int m_Format;
-
+		gear::Ref<AudioSourceInterface> m_ASI;
+		AudioSourceInterface::CreateInfo m_ASICI;
+	
+		std::thread m_AudioStreamThread;
+		
 		mars::Vec3 m_Position;
 		mars::Vec3 m_Velocity = { 0.0f, 0.0f, 0.0f };
 		mars::Vec3 m_Direction;
 
-		bool m_Looped = false;
-		bool m_Ended = false;
+		bool m_Looped;
 
 	public:
-		AudioSource(const char* filepath, const mars::Vec3& position, const mars::Vec3& direction);
+		AudioSource(CreateInfo* pCreateInfo);
 		~AudioSource();
 
-		void UpdateSourcePosVelOri();
-		void DefineConeParameters(float outerGain, double innerAngle, double outerAngle);
+		const CreateInfo& GetCreateInfo() { return m_CI; }
 
-		void SetPitch(float value);
-		void SetVolume(float value);
+		//void UpdateSourcePosVelOri();
+		//void DefineConeParameters(float outerGain, double innerAngle, double outerAngle);
+
+		void SetPitch(float value);  //In semitones (-12.0f < value < 12.0f).
+		void SetVolume(float value);  //In decibels.
 		void Stream();
 		void Loop();
-
-	private:
-		void SubmitBuffer();
-		void Play();
-		void Stop();
-		void Pause();
 	};
 }
 }
