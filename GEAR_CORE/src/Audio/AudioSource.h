@@ -39,8 +39,11 @@ namespace audio
 		//void UpdateSourcePosVelOri();
 		//void DefineConeParameters(float outerGain, double innerAngle, double outerAngle);
 
-		void SetPitch(float value);  //In semitones (-12.0f < value < 12.0f).
-		void SetVolume(float value);  //In decibels.
+		//In semitones (-12.0f < value < 12.0f).
+		void SetPitch(float value);  
+		//In decibels.
+		void SetVolume(float value);  
+		
 		void Stream();
 		void Loop();
 	};

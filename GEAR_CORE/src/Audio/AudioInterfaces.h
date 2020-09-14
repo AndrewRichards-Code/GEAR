@@ -87,8 +87,11 @@ namespace audio
 		const CreateInfo& GetCreateInfo() { return m_CI; }
 
 		void Stream();
-		void SetPitch(float value);  //In semitones (-12.0f < value < 12.0f).
-		void SetVolume(float value);  //In decibels.
+		
+		//In semitones (-12.0f < value < 12.0f).
+		void SetPitch(float value);  
+		//In decibels.
+		void SetVolume(float value);  
 
 		inline void Loop() { m_WavData->loopBufferQueue = true; };
 		inline void Unloop() { m_WavData->loopBufferQueue = false; };
