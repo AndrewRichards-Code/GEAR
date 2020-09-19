@@ -40,7 +40,8 @@ namespace scene
 
 		void LoadFromFile();
 		void SaveToFile();
-		void TogglePlay() { m_Playing = !m_Playing; std::this_thread::sleep_for(std::chrono::milliseconds(100)); }
+		inline void Play() { m_Playing = true; }
+		inline void Stop() { m_Playing = false; }
 	
 	private:
 		entt::registry m_Registry;

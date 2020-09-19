@@ -20,6 +20,7 @@
 #include "Graphics/MemoryBlockManager.h"
 #include "Graphics/Renderer.h"
 #include "Graphics/RenderPipeline.h"
+#include "Graphics/RenderSurface.h"
 #include "Graphics/Storagebuffer.h"
 #include "Graphics/Texture.h"
 #include "Graphics/Uniformbuffer.h"

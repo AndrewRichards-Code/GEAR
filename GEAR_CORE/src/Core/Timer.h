@@ -9,7 +9,7 @@ namespace core
 	class Timer
 	{
 	public:
-		Timer(double time = 0.0);
+		Timer();
 		~Timer();
 
 		double GetElapsedTime();
@@ -19,9 +19,16 @@ namespace core
 		operator double();
 
 	private:
+		double GetTime();
+
+	private:
 		double m_DeltaTime;
 		double m_PreviousElapsedTime = 0.0;
 		double m_ElapsedTime = 0.0;
+		
+		std::chrono::time_point<std::chrono::system_clock> start;
+		std::chrono::time_point<std::chrono::system_clock> now;
+		std::chrono::duration<double> elapsed;
 	};
 }
 }

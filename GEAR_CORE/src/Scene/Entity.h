@@ -17,6 +17,7 @@ namespace scene
 		CreateInfo m_CI;
 	
 	public:
+		Entity() = default;
 		Entity(CreateInfo* pCreateInfo);
 		~Entity();
 

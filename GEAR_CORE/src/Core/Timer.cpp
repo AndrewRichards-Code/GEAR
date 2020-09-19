@@ -4,9 +4,10 @@
 using namespace gear;
 using namespace core;
 
-Timer::Timer(double time)
-	:m_DeltaTime(time) 
+Timer::Timer()
 {
+	start = std::chrono::system_clock::now();
+	now = std::chrono::system_clock::now();
 }
 
 Timer::~Timer()
@@ -15,7 +16,7 @@ Timer::~Timer()
 
 double Timer::GetElapsedTime()
 {
-	m_ElapsedTime = glfwGetTime();
+	m_ElapsedTime = GetTime();
 	return m_ElapsedTime;
 }
 
@@ -37,4 +38,18 @@ Timer::operator double()
 { 
 	GetDeltaTime();
 	return m_DeltaTime; 
+}
+
+double Timer::GetTime()
+{
+	static bool first = true;
+	if (first)
+	{
+		start = std::chrono::system_clock::now();
+		first = false;
+	}
+
+	now = std::chrono::system_clock::now();
+	elapsed = now - start;
+	return elapsed.count();
 }

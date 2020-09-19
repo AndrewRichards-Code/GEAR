@@ -24,13 +24,13 @@ int main()
 	auto rainbowRoad = gear::CreateRef<AudioSource>(&rainbowRaodCI);
 	rainbowRoad->SetPitch(0.0f);
 	rainbowRoad->SetVolume(0.0f);
-	rainbowRoad->Stream();
+	//rainbowRoad->Stream();
 
 	Scene::CreateInfo sceneCI = { "GEAR_TEST_Main_Scene", "res/scenes/current_scene.gsf.json" };
 	gear::Ref<Scene> activeScene = gear::CreateRef<Scene>(&sceneCI);
 
 	Window::CreateInfo windowCI;
-	windowCI.api = GraphicsAPI::API::VULKAN;
+	windowCI.api = GraphicsAPI::API::D3D12;
 	windowCI.title = "GEAR_TEST";
 	windowCI.width = 1920;
 	windowCI.height = 1080;
@@ -217,7 +217,7 @@ int main()
 		}
 		if (window->IsKeyPressed(GLFW_KEY_P))
 		{
-			activeScene->TogglePlay();
+			//activeScene->TogglePlay();
 		}
 
 		//Keyboard and Mouse input
