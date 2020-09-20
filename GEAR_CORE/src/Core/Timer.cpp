@@ -6,12 +6,17 @@ using namespace core;
 
 Timer::Timer()
 {
-	start = std::chrono::system_clock::now();
-	now = std::chrono::system_clock::now();
+	m_StartTimePoint = std::chrono::system_clock::now();
+	m_NowTimePoint = std::chrono::system_clock::now();
 }
 
 Timer::~Timer()
 {
+}
+
+void Timer::Update()
+{
+	GetDeltaTime();
 }
 
 double Timer::GetElapsedTime()
@@ -28,28 +33,9 @@ double Timer::GetDeltaTime()
 	return m_DeltaTime;
 }
 
-Timer::operator float()
-{ 
-	GetDeltaTime(); 
-	return static_cast<float>(m_DeltaTime); 
-}
-
-Timer::operator double()
-{ 
-	GetDeltaTime();
-	return m_DeltaTime; 
-}
-
 double Timer::GetTime()
 {
-	static bool first = true;
-	if (first)
-	{
-		start = std::chrono::system_clock::now();
-		first = false;
-	}
-
-	now = std::chrono::system_clock::now();
-	elapsed = now - start;
-	return elapsed.count();
+	m_NowTimePoint = std::chrono::system_clock::now();
+	m_ElapsedDuration = m_NowTimePoint - m_StartTimePoint;
+	return m_ElapsedDuration.count();
 }

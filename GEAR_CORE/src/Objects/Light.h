@@ -13,12 +13,12 @@ namespace objects
 	class Light
 	{
 	public:
-		enum class LightType : int
+		enum class LightType : uint32_t
 		{
-			GEAR_LIGHT_POINT = 0,		//pos
-			GEAR_LIGHT_DIRECTIONAL = 1,	//dir
-			GEAR_LIGHT_SPOT = 2,		//cone, umbra, penumbra
-			GEAR_LIGHT_AREA = 3			//err...
+			POINT = 0,		//pos
+			DIRECTIONAL = 1,//dir
+			SPOT = 2,		//cone, umbra, penumbra
+			AREA = 3		//err...
 		};
 
 		struct CreateInfo

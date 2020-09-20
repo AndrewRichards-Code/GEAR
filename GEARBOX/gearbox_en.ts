@@ -59,58 +59,74 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="292"/>
-        <source>Reload Scripts</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="src/GearBox.ui" line="317"/>
-        <source>Rendering API: Unknown</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="src/GearBox.ui" line="327"/>
-        <source>GPU Device: Unknown</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="src/GearBox.ui" line="340"/>
+        <location filename="src/GearBox.ui" line="224"/>
         <source>New</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="345"/>
+        <location filename="src/GearBox.ui" line="229"/>
         <source>Load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="350"/>
+        <location filename="src/GearBox.ui" line="234"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="355"/>
+        <location filename="src/GearBox.ui" line="239"/>
         <source>Save As</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="360"/>
+        <location filename="src/GearBox.ui" line="244"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="365"/>
+        <location filename="src/GearBox.ui" line="249"/>
         <source>Quit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="370"/>
+        <location filename="src/GearBox.ui" line="254"/>
         <source>English</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="375"/>
+        <location filename="src/GearBox.ui" line="259"/>
         <source>Japanese</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>GearBoxSceneHierarchy</name>
+    <message>
+        <location filename="src/GearBoxSceneHierarchy.ui" line="14"/>
+        <source>GearBoxSceneHierarchy</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>GearBoxScenePlayer</name>
+    <message>
+        <location filename="src/GearBoxScenePlayer.ui" line="14"/>
+        <source>GearBoxScenePlayer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/GearBoxScenePlayer.ui" line="80"/>
+        <source>Reload Scripts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/GearBoxScenePlayer.ui" line="97"/>
+        <source>Rendering API: Unknown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/GearBoxScenePlayer.ui" line="107"/>
+        <source>GPU Device: Unknown</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -32,8 +32,9 @@ namespace scene
 		~Scene();
 	
 		Entity CreateEntity();
-		void* Get(uint32_t id);
-		void OnUpdate(gear::Ref<graphics::Renderer>& renderer, core::Timer& timer);
+		void OnUpdate(gear::Ref<graphics::Renderer>& m_Renderer, core::Timer& timer);
+
+		entt::registry& GetRegistry();
 
 		void LoadNativeScriptLibrary();
 		void UnloadNativeScriptLibrary();

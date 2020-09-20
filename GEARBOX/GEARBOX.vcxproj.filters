@@ -37,6 +37,12 @@
     <QtUic Include="src\GearBox.ui">
       <Filter>Form Files</Filter>
     </QtUic>
+    <QtUic Include="src\GearBoxSceneHierarchy.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="src\GearBoxScenePlayer.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp">
@@ -45,9 +51,21 @@
     <ClCompile Include="src\GearBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\GearBoxSceneHierarchy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GearBoxScenePlayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\GearBox.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\GearBoxSceneHierarchy.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="src\GearBoxScenePlayer.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

@@ -54,27 +54,24 @@
         <translation>シーンプレーヤー</translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="292"/>
         <source>Reload Scripts</source>
-        <translation>スクリプトを再読み込み</translation>
+        <translation type="vanished">スクリプトを再読み込み</translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="317"/>
         <source>Rendering API: Unknown</source>
-        <translation>レンダリングAPI: 不明</translation>
+        <translation type="vanished">レンダリングAPI: 不明</translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="327"/>
         <source>GPU Device: Unknown</source>
-        <translation>GPUデバイス: 不明</translation>
+        <translation type="vanished">GPUデバイス: 不明</translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="370"/>
+        <location filename="src/GearBox.ui" line="254"/>
         <source>English</source>
         <translation>英語</translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="375"/>
+        <location filename="src/GearBox.ui" line="259"/>
         <source>Japanese</source>
         <translation>日本語</translation>
     </message>
@@ -84,34 +81,65 @@
         <translation>言語</translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="340"/>
+        <location filename="src/GearBox.ui" line="224"/>
         <source>New</source>
         <translation>新規作成</translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="345"/>
+        <location filename="src/GearBox.ui" line="229"/>
         <source>Load</source>
         <translation>ろーど</translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="350"/>
+        <location filename="src/GearBox.ui" line="234"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="355"/>
+        <location filename="src/GearBox.ui" line="239"/>
         <source>Save As</source>
         <translation>名前を付けて保存</translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="360"/>
+        <location filename="src/GearBox.ui" line="244"/>
         <source>Close</source>
         <translation>閉じる</translation>
     </message>
     <message>
-        <location filename="src/GearBox.ui" line="365"/>
+        <location filename="src/GearBox.ui" line="249"/>
         <source>Quit</source>
         <translation>終了</translation>
+    </message>
+</context>
+<context>
+    <name>GearBoxSceneHierarchy</name>
+    <message>
+        <location filename="src/GearBoxSceneHierarchy.ui" line="14"/>
+        <source>GearBoxSceneHierarchy</source>
+        <translation>ギアボックスのシーン階層</translation>
+    </message>
+</context>
+<context>
+    <name>GearBoxScenePlayer</name>
+    <message>
+        <location filename="src/GearBoxScenePlayer.ui" line="14"/>
+        <source>GearBoxScenePlayer</source>
+        <translation>ギアボックスのシーンプレーヤー</translation>
+    </message>
+    <message>
+        <location filename="src/GearBoxScenePlayer.ui" line="80"/>
+        <source>Reload Scripts</source>
+        <translation>スクリプトを再読み込み</translation>
+    </message>
+    <message>
+        <location filename="src/GearBoxScenePlayer.ui" line="97"/>
+        <source>Rendering API: Unknown</source>
+        <translation>レンダリングAPI: 不明</translation>
+    </message>
+    <message>
+        <location filename="src/GearBoxScenePlayer.ui" line="107"/>
+        <source>GPU Device: Unknown</source>
+        <translation>GPUデバイス: 不明</translation>
     </message>
 </context>
 </TS>

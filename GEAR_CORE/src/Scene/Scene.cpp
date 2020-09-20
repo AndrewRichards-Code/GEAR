@@ -36,9 +36,7 @@ Entity Scene::CreateEntity()
 	return entity;
 }
 
-void* Scene::Get(uint32_t id) { return (void*)&(m_Registry.get<CameraComponent>(entt::entity(id))); };
-
-void Scene::OnUpdate(gear::Ref<graphics::Renderer>& renderer, core::Timer& timer)
+void Scene::OnUpdate(gear::Ref<graphics::Renderer>& m_Renderer, core::Timer& timer)
 {
 	if (m_Playing)
 	{
@@ -59,7 +57,7 @@ void Scene::OnUpdate(gear::Ref<graphics::Renderer>& renderer, core::Timer& timer
 
 			if (nativeScript)
 			{
-				nativeScript->OnUpdate(float(timer.GetDeltaTime()));
+				nativeScript->OnUpdate(timer);
 			}
 		}
 	}
@@ -67,7 +65,7 @@ void Scene::OnUpdate(gear::Ref<graphics::Renderer>& renderer, core::Timer& timer
 	auto& vCameraComponents = m_Registry.view<CameraComponent>();
 	for (auto& entity : vCameraComponents)
 	{
-		renderer->SubmitCamera(vCameraComponents.get<CameraComponent>(entity));
+		m_Renderer->SubmitCamera(vCameraComponents.get<CameraComponent>(entity));
 	}
 
 	std::vector<gear::Ref<Light>> lights;
@@ -76,13 +74,18 @@ void Scene::OnUpdate(gear::Ref<graphics::Renderer>& renderer, core::Timer& timer
 	{
 		lights.push_back(vLightComponents.get<LightComponent>(entity));	
 	}
-	renderer->SubmitLights(lights);
+	m_Renderer->SubmitLights(lights);
 
 	auto& vModelComponents = m_Registry.view<ModelComponent>();
 	for (auto& entity : vModelComponents)
 	{
-		renderer->SubmitModel(vModelComponents.get<ModelComponent>(entity));
+		m_Renderer->SubmitModel(vModelComponents.get<ModelComponent>(entity));
 	}
+}
+
+entt::registry& Scene::GetRegistry()
+{
+	return m_Registry;
 }
 
 void Scene::LoadNativeScriptLibrary()

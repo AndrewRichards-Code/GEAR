@@ -148,7 +148,7 @@ color: rgb(255, 255, 255);</string>
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
-   <widget class="QWidget" name="sceneHierarchyDockWidgetContents"/>
+   <widget class="GearBoxSceneHierarchy" name="sceneHierarchyDockWidgetContents"/>
   </widget>
   <widget class="QDockWidget" name="propertiesDockWidget">
    <property name="sizePolicy">
@@ -198,7 +198,7 @@ color: rgb(255, 255, 255);</string>
    </attribute>
    <widget class="QWidget" name="assetsDockWidgetContents"/>
   </widget>
-  <widget class="QDockWidget" name="scenePlayerDockWidget_3">
+  <widget class="QDockWidget" name="scenePlayerDockWidget">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
      <horstretch>0</horstretch>
@@ -217,123 +217,7 @@ color: rgb(255, 255, 255);</string>
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
-   <widget class="QWidget" name="sceneDockWidgetContents">
-    <widget class="QWidget" name="horizontalLayoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>-1</x>
-       <y>0</y>
-       <width>242</width>
-       <height>81</height>
-      </rect>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QPushButton" name="playButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../GearBox.qrc">
-          <normaloff>:/GearBox/icons/iconfinder_Music_media_player_ui_button_play_6613197.png</normaloff>:/GearBox/icons/iconfinder_Music_media_player_ui_button_play_6613197.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>64</width>
-          <height>64</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="stopButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../GearBox.qrc">
-          <normaloff>:/GearBox/icons/iconfinder_Music_media_player_ui_button_stop_6613187.png</normaloff>:/GearBox/icons/iconfinder_Music_media_player_ui_button_stop_6613187.png</iconset>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>64</width>
-          <height>64</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="reloadScriptButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>76</width>
-          <height>72</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Reload Scripts</string>
-        </property>
-        <property name="iconSize">
-         <size>
-          <width>16</width>
-          <height>16</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>80</y>
-       <width>241</width>
-       <height>51</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <widget class="QLabel" name="renderingAPILabel">
-        <property name="text">
-         <string>Rendering API: Unknown</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="gpuDeviceLabel">
-        <property name="text">
-         <string>GPU Device: Unknown</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </widget>
+   <widget class="GearBoxScenePlayer" name="scenePlayerDockWidgetContents"/>
   </widget>
   <action name="actionNew">
    <property name="text">
@@ -377,6 +261,20 @@ color: rgb(255, 255, 255);</string>
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>GearBoxSceneHierarchy</class>
+   <extends>QWidget</extends>
+   <header location="global">GearBoxSceneHierarchy.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>GearBoxScenePlayer</class>
+   <extends>QWidget</extends>
+   <header location="global">GearBoxScenePlayer.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../GearBox.qrc"/>
  </resources>

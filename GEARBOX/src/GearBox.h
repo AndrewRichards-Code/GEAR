@@ -2,7 +2,7 @@
 
 #include "gear_core.h"
 
-#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMainWindow.h>
 #include <QtCore/QTranslator.h>
 #include <QtCore/QTimer.h>
 #include "ui_GearBox.h"
@@ -15,16 +15,14 @@ public:
     GearBox(QWidget *parent = Q_NULLPTR);
     ~GearBox();
 
+    void RetranslateUI();
+
 private:
     void changeEvent(QEvent* event) override;
 
 private slots:
     void Render();
     void LanguageChanged(QAction* action);
-    void PlayScene();
-    void StopScene();
-    void UpdateRenderingLabels();
-    void ReloadScripts();
 
 private:
     Ui::GearBoxClass ui;
@@ -34,12 +32,12 @@ private:
     gear::Ref<gear::graphics::RenderSurface> m_RenderSurface;
     gear::graphics::RenderSurface::CreateInfo m_RenderSurfaceCI;
 
-    gear::Ref<gear::scene::Scene> activeScene;
-    gear::scene::Scene::CreateInfo sceneCI;
+    gear::Ref<gear::scene::Scene> m_ActiveScene;
+    gear::scene::Scene::CreateInfo m_ActiveSceneCI;
 
-    gear::core::Timer gearTimer;
+    gear::core::Timer m_GearTimer;
     bool windowResize = false;
-    gear::Ref<gear::graphics::Renderer> renderer;
+    gear::Ref<gear::graphics::Renderer> m_Renderer;
 
     gear::scene::Entity cameraEnitity;
 };

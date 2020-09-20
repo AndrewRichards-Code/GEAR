@@ -28,11 +28,13 @@ GearBox::GearBox(QWidget* parent)
 	timer->setSingleShot(false);
 	timer->start(1);
 	connect(timer, SIGNAL(timeout()), this, SLOT(Render()));
-	connect(ui.playButton, SIGNAL(clicked()), this, SLOT(PlayScene()));
-	connect(ui.stopButton, SIGNAL(clicked()), this, SLOT(StopScene()));
-	connect(ui.reloadScriptButton, SIGNAL(clicked()), this, SLOT(ReloadScripts()));
 
-	m_RenderSurfaceCI.debugName = this->windowTitle().toStdString();;
+	m_ActiveSceneCI = { "GEAR_TEST_Main_Scene", "res/scenes/current_scene.gsf.json" };
+	m_ActiveScene = gear::CreateRef<Scene>(&m_ActiveSceneCI);
+	ui.scenePlayerDockWidgetContents->Initialise(m_ActiveScene);
+	ui.sceneHierarchyDockWidgetContents->Initialise(m_ActiveScene);
+	
+	m_RenderSurfaceCI.debugName = this->windowTitle().toStdString();
 	m_RenderSurfaceCI.window = (HWND)ui.mainView->winId();
 	m_RenderSurfaceCI.api = GraphicsAPI::API::VULKAN;
 	m_RenderSurfaceCI.width = (uint32_t)ui.mainView->width();
@@ -41,21 +43,18 @@ GearBox::GearBox(QWidget* parent)
 	m_RenderSurfaceCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	m_RenderSurfaceCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::NONE;
 	m_RenderSurface = gear::CreateRef<RenderSurface>(&m_RenderSurfaceCI);
-	UpdateRenderingLabels();
+	ui.scenePlayerDockWidgetContents->UpdateRenderingLabels(m_RenderSurface);
 
 	MemoryBlockManager::CreateInfo mbmCI;
 	mbmCI.pContext = m_RenderSurface->GetContext();
 	mbmCI.defaultBlockSize = MemoryBlock::BlockSize::BLOCK_SIZE_128MB;
 	MemoryBlockManager::Initialise(&mbmCI);
 
-	sceneCI = { "GEAR_TEST_Main_Scene", "res/scenes/current_scene.gsf.json" };
-	activeScene = gear::CreateRef<Scene>(&sceneCI);
-
-	renderer = gear::CreateRef<Renderer>(m_RenderSurface->GetContext());
-	renderer->InitialiseRenderPipelines({ "res/pipelines/basic.grpf.json", "res/pipelines/cube.grpf.json" }, (float)m_RenderSurface->GetWidth(), (float)m_RenderSurface->GetHeight(), m_RenderSurface->GetRenderPass());
+	m_Renderer = gear::CreateRef<Renderer>(m_RenderSurface->GetContext());
+	m_Renderer->InitialiseRenderPipelines({ "res/pipelines/basic.grpf.json", "res/pipelines/cube.grpf.json" }, (float)m_RenderSurface->GetWidth(), (float)m_RenderSurface->GetHeight(), m_RenderSurface->GetRenderPass());
 
 	Camera::CreateInfo cameraCI;
-	cameraCI.debugName = "Main";
+	cameraCI.debugName = "Main Camera";
 	cameraCI.device = m_RenderSurface->GetDevice();
 	cameraCI.transform.translation = Vec3(0, 0, 0);
 	cameraCI.transform.orientation = Quat(1, 0, 0, 0);
@@ -64,19 +63,19 @@ GearBox::GearBox(QWidget* parent)
 	cameraCI.perspectiveParams = { DegToRad(90.0), m_RenderSurface->GetRatio(), 0.01f, 3000.0f };
 	cameraCI.flipX = false;
 	cameraCI.flipY = false;
-	cameraEnitity = activeScene->CreateEntity();
+	cameraEnitity = m_ActiveScene->CreateEntity();
 	cameraEnitity.AddComponent<CameraComponent>(std::move(gear::CreateRef<Camera>(&cameraCI)));
 	cameraEnitity.AddComponent<NativeScriptComponent>("TestScript");
 
 	Light::CreateInfo lightCI;
-	lightCI.debugName = "Main";
+	lightCI.debugName = "Main Light";
 	lightCI.device = m_RenderSurface->GetDevice();
-	lightCI.type = Light::LightType::GEAR_LIGHT_POINT;
+	lightCI.type = Light::LightType::POINT;
 	lightCI.colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	lightCI.transform.translation = Vec3(0.0f, 1.0f, 0.0f);
 	lightCI.transform.orientation = Quat(1, 0, 0, 0);
 	lightCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
-	Entity light = activeScene->CreateEntity();
+	Entity light = m_ActiveScene->CreateEntity();
 	light.AddComponent<LightComponent>(std::move(gear::CreateRef<Light>(&lightCI)));
 
 	auto LoadTexture = [](void* device, std::string filepath, std::string debugName) -> gear::Ref<graphics::Texture>
@@ -149,7 +148,7 @@ GearBox::GearBox(QWidget* parent)
 	modelCI.transform.orientation = Quat(sqrt(2) / 2, -sqrt(2) / 2, 0, 0);
 	modelCI.transform.scale = Vec3(100.0f, 100.0f, 100.0f);
 	modelCI.renderPipelineName = "basic";
-	Entity quad = activeScene->CreateEntity();
+	Entity quad = m_ActiveScene->CreateEntity();
 	quad.AddComponent<ModelComponent>(std::move(gear::CreateRef<Model>(&modelCI)));
 
 	modelCI.debugName = "Sphere";
@@ -160,13 +159,20 @@ GearBox::GearBox(QWidget* parent)
 	modelCI.transform.orientation = Quat(1, 0, 0, 0);
 	modelCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
 	modelCI.renderPipelineName = "basic";
-	Entity sphere = activeScene->CreateEntity();
+	Entity sphere = m_ActiveScene->CreateEntity();
 	sphere.AddComponent<ModelComponent>(std::move(gear::CreateRef<Model>(&modelCI)));
+
+	ui.sceneHierarchyDockWidgetContents->Update();
 };
 
 GearBox::~GearBox()
 {
 	delete timer;
+}
+
+void GearBox::RetranslateUI()
+{
+	ui.retranslateUi(this);
 }
 
 void GearBox::changeEvent(QEvent* event)
@@ -176,8 +182,13 @@ void GearBox::changeEvent(QEvent* event)
 		switch (event->type()) 
 		{
 		case QEvent::LanguageChange:
-			ui.retranslateUi(this);
+		{
+			this->RetranslateUI();
+			ui.sceneHierarchyDockWidgetContents->RetranslateUI();
+			ui.scenePlayerDockWidgetContents->RetranslateUI();
+			ui.scenePlayerDockWidgetContents->UpdateRenderingLabels(m_RenderSurface);
 			break;
+		}
 		default:
 			break;
 		}
@@ -187,30 +198,33 @@ void GearBox::changeEvent(QEvent* event)
 
 void GearBox::Render()
 {
+	//Update Timer
+	m_GearTimer.Update();
+
 	//Update from Window
 	if (ui.mainView->width() != m_RenderSurface->GetWidth() || ui.mainView->height() != m_RenderSurface->GetHeight())
 	{
 		m_RenderSurface->Resize(ui.mainView->width(), ui.mainView->height());
 		if (m_RenderSurface->Resized())
 		{
-			renderer->ResizeRenderPipelineViewports((uint32_t)m_RenderSurface->GetWidth(), (uint32_t)m_RenderSurface->GetHeight());
+			m_Renderer->ResizeRenderPipelineViewports((uint32_t)m_RenderSurface->GetWidth(), (uint32_t)m_RenderSurface->GetHeight());
 			m_RenderSurface->Resized() = false;
 		}
 	}
-
-	//Camera Update
+	
+	//Update Camera
 	auto& camera = cameraEnitity.GetComponent<CameraComponent>().camera;
 	camera->m_CI.transform.translation.y = 1.0f;
 	camera->Update();
 
 	//Update Scene
-	activeScene->OnUpdate(renderer, gearTimer);
+	m_ActiveScene->OnUpdate(m_Renderer, m_GearTimer);
 
-	renderer->SubmitFramebuffer(m_RenderSurface->GetFramebuffers());
-	renderer->Upload(true, false, false);
-	renderer->Flush();
+	m_Renderer->SubmitFramebuffer(m_RenderSurface->GetFramebuffers());
+	m_Renderer->Upload(true, false, false);
+	m_Renderer->Flush();
 
-	renderer->Present(m_RenderSurface->GetSwapchain(), windowResize);
+	m_Renderer->Present(m_RenderSurface->GetSwapchain(), windowResize);
 }
 
 void GearBox::LanguageChanged(QAction* action)
@@ -223,28 +237,4 @@ void GearBox::LanguageChanged(QAction* action)
 	if (loaded)
 		qApp->installTranslator(&translator);
 
-}
-
-void GearBox::PlayScene()
-{
-	activeScene->Play();
-}
-
-void GearBox::StopScene()
-{
-	activeScene->Stop();
-}
-
-void GearBox::UpdateRenderingLabels()
-{
-	QString apiName = QString(m_RenderSurface->GetGraphicsAPIVersion().c_str());
-	ui.renderingAPILabel->setText(apiName);
-	QString gpuName = QString(m_RenderSurface->GetDeviceName().c_str());
-	ui.gpuDeviceLabel->setText(gpuName);
-}
-
-void GearBox::ReloadScripts()
-{
-	activeScene->UnloadNativeScriptLibrary();
-	activeScene->LoadNativeScriptLibrary();
 }

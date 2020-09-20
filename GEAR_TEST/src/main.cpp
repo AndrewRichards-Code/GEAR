@@ -170,8 +170,8 @@ int main()
 	cameraEnitity.AddComponent<CameraComponent>(std::move(gear::CreateRef<Camera>(&cameraCI)));
 	cameraEnitity.AddComponent<NativeScriptComponent>("TestScript");
 
-	gear::Ref<Renderer> renderer = gear::CreateRef<Renderer>(window->GetContext());
-	renderer->InitialiseRenderPipelines({"res/pipelines/basic.grpf.json", "res/pipelines/cube.grpf.json" }, (float)window->GetWidth(), (float)window->GetHeight(), window->GetRenderPass());
+	gear::Ref<Renderer> m_Renderer = gear::CreateRef<Renderer>(window->GetContext());
+	m_Renderer->InitialiseRenderPipelines({"res/pipelines/basic.grpf.json", "res/pipelines/cube.grpf.json" }, (float)window->GetWidth(), (float)window->GetHeight(), window->GetRenderPass());
 
 	MemoryBlockManager::PrintMemoryBlockStatus();
 
@@ -188,21 +188,25 @@ int main()
 	bool windowResize = false;
 	while (!window->Closed())
 	{
+		//Update Timer
+		timer.Update();
+
+
 		//Update from Window
 		if (window->Resized())
 		{
-			renderer->ResizeRenderPipelineViewports((uint32_t)window->GetWidth(), (uint32_t)window->GetHeight());
+			m_Renderer->ResizeRenderPipelineViewports((uint32_t)window->GetWidth(), (uint32_t)window->GetHeight());
 			window->Resized() = false;
 		}
 
 		if (window->IsKeyPressed(GLFW_KEY_R))
 		{
-			renderer->RecompileRenderPipelineShaders();
+			m_Renderer->RecompileRenderPipelineShaders();
 		}
 
 		if (window->IsKeyPressed(GLFW_KEY_T))
 		{
-			renderer->ReloadTextures();
+			m_Renderer->ReloadTextures();
 		}
 
 		if (window->IsKeyPressed(GLFW_KEY_S) && window->IsKeyPressed(GLFW_KEY_LEFT_CONTROL))
@@ -217,7 +221,7 @@ int main()
 		}
 		if (window->IsKeyPressed(GLFW_KEY_P))
 		{
-			//activeScene->TogglePlay();
+			activeScene->Play();
 		}
 
 		//Keyboard and Mouse input
@@ -262,13 +266,13 @@ int main()
 		camera->Update();
 		
 		//Update Scene
-		activeScene->OnUpdate(renderer, timer);
+		activeScene->OnUpdate(m_Renderer, timer);
 
-		renderer->SubmitFramebuffer(window->GetFramebuffers());
-		renderer->Upload(true, false, false);
-		renderer->Flush();
+		m_Renderer->SubmitFramebuffer(window->GetFramebuffers());
+		m_Renderer->Upload(true, false, false);
+		m_Renderer->Flush();
 
-		renderer->Present(window->GetSwapchain(), windowResize);
+		m_Renderer->Present(window->GetSwapchain(), windowResize);
 		window->Update();
 
 	}

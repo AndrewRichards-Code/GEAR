@@ -12,13 +12,14 @@ namespace core
 		Timer();
 		~Timer();
 
-		double GetElapsedTime();
-		double GetDeltaTime();
+		void Update();
 
-		operator float();
-		operator double();
+		inline operator float() { return static_cast<float>(m_DeltaTime); };
+		inline operator double() { return m_DeltaTime; };
 
 	private:
+		double GetElapsedTime();
+		double GetDeltaTime();
 		double GetTime();
 
 	private:
@@ -26,9 +27,9 @@ namespace core
 		double m_PreviousElapsedTime = 0.0;
 		double m_ElapsedTime = 0.0;
 		
-		std::chrono::time_point<std::chrono::system_clock> start;
-		std::chrono::time_point<std::chrono::system_clock> now;
-		std::chrono::duration<double> elapsed;
+		std::chrono::time_point<std::chrono::system_clock> m_StartTimePoint;
+		std::chrono::time_point<std::chrono::system_clock> m_NowTimePoint;
+		std::chrono::duration<double> m_ElapsedDuration;
 	};
 }
 }

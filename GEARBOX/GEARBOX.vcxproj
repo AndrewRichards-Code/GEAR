@@ -53,7 +53,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\DATE;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;$(Qt_INCLUDEPATH_);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\DATE;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;$(Qt_INCLUDEPATH_);.\;.\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <QtRcc>
       <Root>
@@ -70,7 +70,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\DATE;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;$(Qt_INCLUDEPATH_);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\DATE;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;$(Qt_INCLUDEPATH_);.\;.\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <QtRcc>
       <Root>
@@ -128,11 +128,21 @@
     <QtUic Include="src\GearBox.ui" />
     <QtMoc Include="src\GearBox.h" />
     <ClCompile Include="src\GearBox.cpp" />
+    <ClCompile Include="src\GearBoxSceneHierarchy.cpp" />
+    <ClCompile Include="src\GearBoxScenePlayer.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <QtUic Include="src\GearBoxSceneHierarchy.ui" />
+    <QtUic Include="src\GearBoxScenePlayer.ui" />
   </ItemGroup>
   <ItemGroup>
     <None Include="gearbox_en.ts" />
     <None Include="gearbox_ja.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="src\GearBoxSceneHierarchy.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="src\GearBoxScenePlayer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
