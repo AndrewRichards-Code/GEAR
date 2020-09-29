@@ -76,6 +76,12 @@ void Scene::OnUpdate(gear::Ref<graphics::Renderer>& m_Renderer, core::Timer& tim
 	}
 	m_Renderer->SubmitLights(lights);
 
+	auto& vSkyboxComponent = m_Registry.view<SkyboxComponent>();
+	for (auto& entity : vSkyboxComponent)
+	{
+		m_Renderer->SubmitSkybox(vSkyboxComponent.get<SkyboxComponent>(entity));
+	}
+
 	auto& vModelComponents = m_Registry.view<ModelComponent>();
 	for (auto& entity : vModelComponents)
 	{

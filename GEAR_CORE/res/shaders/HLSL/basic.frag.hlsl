@@ -1,4 +1,5 @@
 #include "msc_common.h"
+#include "UniformBufferStructures.h"
 
 //To Post-Processing
 struct PS_OUT
@@ -18,68 +19,45 @@ struct PS_IN
 };
 
 //From Application
-
-struct PBRConstants
-{
-	float4 albedo;
-	float4 diffuse;
-	float metallic;
-	float roughness;
-	float ambientOcclusion;
-	float pad;
-	float4 emissive;
-};
-MIRU_UNIFORM_BUFFER(1, 1, PBRConstants, pbrConsts);
-
+MIRU_UNIFORM_BUFFER(1, 1, PBRConstants, pbrConstants);
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 2, float4, normal);
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 3, float4, albedo);
-MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 4, float4, metalness);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 4, float4, metallic);
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 5, float4, roughness);
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 6, float4, ambientOcclusion);
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 7, float4, emissive);
 
-struct Light
-{
-	float4 colour;
-	float4 position;
-	float4 direction;
-};
 static const uint MAX_LIGHTS = 8;
-
-struct Lights
-{
-	Light lights[8];
-}; 
-MIRU_UNIFORM_BUFFER(2, 0, Lights, lights);
+MIRU_UNIFORM_BUFFER(0, 1, Lights, lights);
 
 //Helper Functions
 static const float PI = 3.1415926535897932384626433832795;
 
 float3 GetNormal(PS_IN IN)
 {
-	float3 N = normal_image_cis.Sample(normal_sampler_cis, IN.texCoord).xyz;
+	float3 N = normal_ImageCIS.Sample(normal_SamplerCIS, IN.texCoord).xyz;
 	N = normalize(2.0 * N - 1.0);
 	return normalize(mul(IN.tbn, N));
 }
 float3 GetAlbedo(PS_IN IN) 
 { 
-	return pbrConsts.diffuse.rgb * albedo_image_cis.Sample(albedo_sampler_cis, IN.texCoord).rgb; 
+	return pbrConstants.diffuse.rgb * albedo_ImageCIS.Sample(albedo_SamplerCIS, IN.texCoord).rgb; 
 }
 float GetMetallic(PS_IN IN) 
 { 
-	return pbrConsts.metallic * metalness_image_cis.Sample(metalness_sampler_cis, IN.texCoord).r; 
+	return pbrConstants.metallic * metallic_ImageCIS.Sample(metallic_SamplerCIS, IN.texCoord).r; 
 }
 float GetRoughness(PS_IN IN) 
 {
-	return pbrConsts.roughness * roughness_image_cis.Sample(roughness_sampler_cis, IN.texCoord).r; 
+	return pbrConstants.roughness * roughness_ImageCIS.Sample(roughness_SamplerCIS, IN.texCoord).r; 
 }
 float GetAmbientOcclusion(PS_IN IN) 
 {
-	return pbrConsts.ambientOcclusion * ambientOcclusion_image_cis.Sample(ambientOcclusion_sampler_cis, IN.texCoord).r; 
+	return pbrConstants.ambientOcclusion * ambientOcclusion_ImageCIS.Sample(ambientOcclusion_SamplerCIS, IN.texCoord).r; 
 }
 float3 GetEmissive(PS_IN IN) 
 {
-	return pbrConsts.emissive.rgb * emissive_image_cis.Sample(emissive_sampler_cis, IN.texCoord).rgb; 
+	return pbrConstants.emissive.rgb * emissive_ImageCIS.Sample(emissive_SamplerCIS, IN.texCoord).rgb; 
 }
 
 float3 FresnelSchlick(float3 F0, float3 Wo, float3 N)

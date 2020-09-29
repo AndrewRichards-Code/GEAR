@@ -3,9 +3,10 @@
 #include "gear_core_common.h"
 #include "Graphics/Framebuffer.h"
 #include "Graphics/RenderPipeline.h"
-#include "Objects/Model.h"
 #include "Objects/Camera.h"
 #include "Objects/Light.h"
+#include "Objects/Skybox.h"
+#include "Objects/Model.h"
 
 namespace gear 
 {
@@ -33,9 +34,8 @@ namespace graphics
 		miru::Ref<miru::crossplatform::DescriptorPool> m_DescPool;
 		miru::crossplatform::DescriptorPool::CreateInfo m_DescPoolCI;
 
-		miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetCamera;
-		std::map<gear::Ref<objects::Model>, miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSetModelMaterials;
-		miru::Ref<miru::crossplatform::DescriptorSet> m_DescSetLight;
+		std::map<gear::Ref<graphics::RenderPipeline>, miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSetPerView;
+		std::map<gear::Ref<objects::Model>, miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSetPerModel;
 
 		bool m_BuiltDescPoolsAndSets = false;
 		bool m_ReloadTextures = false;
@@ -43,9 +43,10 @@ namespace graphics
 		//Renderering Objects
 		std::map<std::string, gear::Ref<graphics::RenderPipeline>> m_RenderPipelines;
 		const miru::Ref<miru::crossplatform::Framebuffer>* m_Framebuffers;
-		std::deque<gear::Ref<objects::Model>> m_RenderQueue;
 		gear::Ref<objects::Camera> m_Camera;
 		std::vector<gear::Ref<objects::Light>> m_Lights;
+		gear::Ref<objects::Skybox> m_Skybox;
+		std::deque<gear::Ref<objects::Model>> m_RenderQueue;
 
 		//Present Synchronisation Primitives
 		std::vector<miru::Ref<miru::crossplatform::Fence>> m_DrawFences;
@@ -64,11 +65,13 @@ namespace graphics
 
 		void InitialiseRenderPipelines(const std::vector<std::string>& filepaths, float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass);
 		
-		void SubmitFramebuffer(const miru::Ref<miru::crossplatform::Framebuffer>* framebuffers) { m_Framebuffers = framebuffers; };
-		void SubmitCamera(gear::Ref<objects::Camera> camera) { m_Camera = camera; };
-		void SubmitLights(std::vector<gear::Ref<objects::Light>> lights) { m_Lights = lights; };
+		void SubmitFramebuffer(const miru::Ref<miru::crossplatform::Framebuffer>* framebuffers);
+		void SubmitCamera(gear::Ref<objects::Camera>& camera);
+		void SubmitLights(std::vector<gear::Ref<objects::Light>>& lights);
+		void SubmitSkybox(const gear::Ref<objects::Skybox>& skybox);
 		void SubmitModel(const gear::Ref<objects::Model>& obj);
-		void Upload(bool forceUploadCamera, bool forceUploadLights, bool forceUploadMeshes);
+
+		void Upload(bool forceUploadCamera, bool forceUploadLights, bool forceUploadSkybox, bool forceUploadMeshes);
 		void Flush();
 		void Present(const miru::Ref<miru::crossplatform::Swapchain>& swapchain, bool& windowResize);
 

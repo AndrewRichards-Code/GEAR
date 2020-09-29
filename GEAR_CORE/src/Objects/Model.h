@@ -25,12 +25,7 @@ namespace objects
 		};
 	
 	private:
-		struct ModelUB
-		{
-			mars::Mat4 modlMatrix;
-			mars::Vec2 texCoordsScale0;
-			mars::Vec2 texCoordsScale1;
-		};
+		typedef graphics::UniformBufferStructures::Model ModelUB;
 		gear::Ref<graphics::Uniformbuffer<ModelUB>> m_UB;
 	
 	public:
@@ -40,14 +35,15 @@ namespace objects
 		Model(CreateInfo* pCreateInfo);
 		~Model();
 	
-		void SetUniformModlMatrix();
-		void SetUniformModlMatrix(const mars::Mat4& modl);
+		//Update the skybox from the current state of Model::CreateInfo m_CI.
+		void Update();
 	
 		inline const gear::Ref<objects::Mesh>& GetMesh() const { return m_CI.pMesh; }
 		inline const std::string& GetPipelineName() const { return m_CI.renderPipelineName; }
 	
-		inline const gear::Ref<graphics::Uniformbuffer<ModelUB>> GetUB() const { return m_UB; }
-		inline const mars::Mat4 GetModlMatrix() const { return m_UB->modlMatrix; }
+		inline gear::Ref<graphics::Uniformbuffer<ModelUB>>& GetUB() { return m_UB; }
+		inline const gear::Ref<graphics::Uniformbuffer<ModelUB>>& GetUB() const { return m_UB; }
+		inline const mars::Mat4& GetModlMatrix() const { return m_UB->modl; }
 	
 		inline std::string GetDebugName() const { return "GEAR_CORE_Model: " + m_CI.debugName; }
 	

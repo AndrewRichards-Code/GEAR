@@ -31,12 +31,12 @@ void Camera::DefineProjection()
 	if (m_CI.projectionType == ProjectionType::ORTHOGRAPHIC)
 	{
 		OrthographicParameters& op = m_CI.orthographicsParams;
-		m_UB->projectionMatrix = Mat4::Orthographic(op.left, op.right, op.bottom, op.top, op.near, op.far);
+		m_UB->proj= Mat4::Orthographic(op.left, op.right, op.bottom, op.top, op.near, op.far);
 	}
 	else if (m_CI.projectionType == ProjectionType::PERSPECTIVE)
 	{
 		PerspectiveParameters& pp = m_CI.perspectiveParams;
-		m_UB->projectionMatrix = Mat4::Perspective(pp.horizonalFOV, pp.aspectRatio, pp.zNear, pp.zFar);
+		m_UB->proj = Mat4::Perspective(pp.horizonalFOV, pp.aspectRatio, pp.zNear, pp.zFar);
 	}
 	else
 	{
@@ -44,12 +44,12 @@ void Camera::DefineProjection()
 		throw;
 	}
 	if (m_CI.flipX)
-		m_UB->projectionMatrix.a *= -1;
+		m_UB->proj.a *= -1;
 	if (m_CI.flipY)
-		m_UB->projectionMatrix.f *= -1;
+		m_UB->proj.f *= -1;
 
 	if (miru::crossplatform::GraphicsAPI::IsVulkan())
-		m_UB->projectionMatrix.f *= -1;
+		m_UB->proj.f *= -1;
 }
 
 void Camera::DefineView()
@@ -60,21 +60,20 @@ void Camera::DefineView()
 	m_Up		= Vec3(orientation * Vec4(0, +1, 0, 0));
 	m_Right		= Vec3(orientation * Vec4(+1, 0, 0, 0));
 
-	m_UB->viewMatrix = orientation * Mat4::Translation(-m_CI.transform.translation);
+	m_UB->view = orientation * Mat4::Translation(-m_CI.transform.translation);
 }
 
 
 void Camera::SetPosition()
 {
-	m_UB->position = Vec4(m_CI.transform.translation, 1.0f);
+	m_UB->cameraPosition = Vec4(m_CI.transform.translation, 1.0f);
 }
 
 void Camera::InitialiseUB()
 {
 	float zero[sizeof(CameraUB)] = { 0 };
-	
 	Uniformbuffer<CameraUB>::CreateInfo ubCI;
-	ubCI.debugName = "GEAR_CORE_Camera: " + m_CI.debugName;
+	ubCI.debugName = "GEAR_CORE_Camera_CameraUB: " + m_CI.debugName;
 	ubCI.device = m_CI.device;
 	ubCI.data = zero;
 	m_UB = gear::CreateRef<Uniformbuffer<CameraUB>>(&ubCI);

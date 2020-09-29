@@ -85,7 +85,7 @@ void NativeScriptManager::UnloadScript(core::DynamicLibrary::LibraryHandle& libr
 
 bool NativeScriptManager::CheckPath(const std::string& directory)
 {
-	if (!std::filesystem::exists(s_BuildScriptPath))
+	if (!std::filesystem::exists(directory))
 	{
 		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::SCENE | core::Log::ErrorCode::INVALID_PATH, "%s does not exist.", s_BuildScriptPath.c_str());
 		return false;

@@ -1,4 +1,4 @@
-#include "MSC_common.h"
+#include "msc_common.h"
 
 /*struct MipMap
 {

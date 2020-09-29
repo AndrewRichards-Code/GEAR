@@ -23,23 +23,12 @@ namespace objects
 			EMISSIVE,			//For PBR - Any light that the surface emits
 		};
 	
-		struct PBRConstants
-		{
-			mars::Vec4	fersnel				= mars::Vec4(1, 1, 1, 1);
-			mars::Vec4	albedo				= mars::Vec4(1, 1, 1, 1);
-			float		metallic			= 1.0f;
-			float		roughness			= 1.0f;
-			float		ambientOcclusion	= 1.0f;
-			float		pad					= 0.0f; //Value ignored.
-			mars::Vec4	emissive			= mars::Vec4(1, 1, 1, 1);
-		};
-	
 		struct CreateInfo
 		{
 			std::string											debugName;
 			void*												device;
 			std::map<TextureType, gear::Ref<graphics::Texture>> pbrTextures;
-			PBRConstants										pbrConstants;
+			graphics::UniformBufferStructures::PBRConstants		pbrConstants;
 		};
 	
 	private:
@@ -48,7 +37,8 @@ namespace objects
 		gear::Ref<graphics::Texture> s_BlackTexture;
 		static std::map<std::string, gear::Ref<Material>> s_LoadedMaterials;
 		
-		gear::Ref<graphics::Uniformbuffer<PBRConstants>> m_UB;
+		typedef graphics::UniformBufferStructures::PBRConstants PBRConstantsUB;
+		gear::Ref<graphics::Uniformbuffer<PBRConstantsUB>> m_UB;
 	
 		struct Properties
 		{
@@ -77,13 +67,14 @@ namespace objects
 		Material(CreateInfo* pCreateInfo);
 		~Material();
 	
-		//Update material based current CreateInfo.
+		//Update material based current Material::CreateInfo m_CI.
 		void Update();
+
 		void AddProperties(const Properties& properties);
 		
 		inline std::map<TextureType, gear::Ref<graphics::Texture>>& GetTextures() { return m_CI.pbrTextures; }
 		inline const std::map<TextureType, gear::Ref<graphics::Texture>>& GetTextures() const { return m_CI.pbrTextures; }
-		inline const gear::Ref<graphics::Uniformbuffer<PBRConstants>>& GetUB() const { return m_UB; }
+		inline const gear::Ref<graphics::Uniformbuffer<PBRConstantsUB>>& GetUB() const { return m_UB; }
 	
 		/*inline static void AddMaterial(std::string name, const gear::Ref<Material>& material) { s_LoadedMaterials.insert({ name, material }); }
 		inline static gear::Ref<Material> FindMaterial(const std::string& name) 

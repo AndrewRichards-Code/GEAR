@@ -14,6 +14,7 @@ using namespace mars;
 
 int main()
 {
+#if 0
 	AudioListener::CreateInfo listenerCI;
 	listenerCI.audioAPI = audio::AudioListenerInterface::API::OPENAL;
 	auto listener = gear::CreateRef<AudioListener>(&listenerCI);
@@ -24,8 +25,8 @@ int main()
 	auto rainbowRoad = gear::CreateRef<AudioSource>(&rainbowRaodCI);
 	rainbowRoad->SetPitch(0.0f);
 	rainbowRoad->SetVolume(0.0f);
-	//rainbowRoad->Stream();
-
+	rainbowRoad->Stream();
+#endif
 	Scene::CreateInfo sceneCI = { "GEAR_TEST_Main_Scene", "res/scenes/current_scene.gsf.json" };
 	gear::Ref<Scene> activeScene = gear::CreateRef<Scene>(&sceneCI);
 
@@ -37,7 +38,7 @@ int main()
 	windowCI.fullscreen = false;
 	windowCI.vSync = true;
 	windowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-	windowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::NONE;
+	windowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::RENDER_DOC;
 	gear::Ref<Window> window = gear::CreateRef<Window>(&windowCI);
 
 	MemoryBlockManager::CreateInfo mbmCI;
@@ -60,6 +61,16 @@ int main()
 	modelCI.transform.scale = Vec3(0.01f, 0.01f, 0.01f);
 	modelCI.renderPipelineName = "basic";
 	gear::Ref<Model> kagemitsuG4 = gear::CreateRef<Model>(&modelCI);*/
+
+	Skybox::CreateInfo skyboxCI;
+	skyboxCI.debugName = "Skybox-HDR";
+	skyboxCI.device = window->GetDevice();
+	skyboxCI.filepaths = { "res/img/kloppenheim_06_2k.hdr" };
+	skyboxCI.transform.translation = Vec3(0, 0, 0);
+	skyboxCI.transform.orientation = Quat(1, 0, 0, 0);
+	skyboxCI.transform.scale = Vec3(500.0f, 500.0f, 500.0f);
+	Entity skybox = activeScene->CreateEntity();
+	skybox.AddComponent<SkyboxComponent>(std::move(gear::CreateRef<Skybox>(&skyboxCI)));
 
 	auto LoadTexture = [](gear::Ref<Window> window, std::string filepath, std::string debugName) -> gear::Ref<graphics::Texture>
 	{
@@ -110,20 +121,20 @@ int main()
 	gear::Ref<Material> slateMaterial = gear::CreateRef<Material>(&matCI);
 
 	Mesh::CreateInfo meshCI;
-	meshCI.device = window->GetDevice();
 	meshCI.debugName = "quad.fbx";
+	meshCI.device = window->GetDevice();
 	meshCI.filepath = "res/obj/quad.fbx";
 	gear::Ref<Mesh> quadMesh = gear::CreateRef<Mesh>(&meshCI);
 	quadMesh->SetOverrideMaterial(0, slateMaterial);
 
-	meshCI.device = window->GetDevice();
 	meshCI.debugName = "sphere.fbx";
+	meshCI.device = window->GetDevice();
 	meshCI.filepath = "res/obj/sphere.fbx";
 	gear::Ref<Mesh> sphereMesh = gear::CreateRef<Mesh>(&meshCI);
 	sphereMesh->SetOverrideMaterial(0, rustIronMaterial);
 
 	Model::CreateInfo modelCI;
-	modelCI.debugName = "Quad";
+	/*modelCI.debugName = "Quad";
 	modelCI.device = window->GetDevice();
 	modelCI.pMesh = quadMesh;
 	modelCI.materialTextureScaling = Vec2(100.0f, 100.0f);
@@ -132,7 +143,7 @@ int main()
 	modelCI.transform.scale = Vec3(100.0f, 100.0f, 100.0f);
 	modelCI.renderPipelineName = "basic";
 	Entity quad = activeScene->CreateEntity();
-	quad.AddComponent<ModelComponent>(std::move(gear::CreateRef<Model>(&modelCI)));
+	quad.AddComponent<ModelComponent>(std::move(gear::CreateRef<Model>(&modelCI)));*/
 
 	modelCI.debugName = "Sphere";
 	modelCI.device = window->GetDevice();
@@ -148,7 +159,7 @@ int main()
 	Light::CreateInfo lightCI;
 	lightCI.debugName = "Main";
 	lightCI.device = window->GetDevice();
-	lightCI.type = Light::LightType::GEAR_LIGHT_POINT;
+	lightCI.type = Light::LightType::POINT;
 	lightCI.colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	lightCI.transform.translation = Vec3(0.0f, 1.0f, 0.0f);
 	lightCI.transform.orientation = Quat(1, 0, 0, 0);
@@ -269,12 +280,11 @@ int main()
 		activeScene->OnUpdate(m_Renderer, timer);
 
 		m_Renderer->SubmitFramebuffer(window->GetFramebuffers());
-		m_Renderer->Upload(true, false, false);
+		m_Renderer->Upload(true, false, true, false);
 		m_Renderer->Flush();
 
 		m_Renderer->Present(window->GetSwapchain(), windowResize);
 		window->Update();
-
 	}
 	window->GetContext()->DeviceWaitIdle();
 }

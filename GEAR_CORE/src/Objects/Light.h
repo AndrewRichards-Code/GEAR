@@ -31,14 +31,8 @@ namespace objects
 		};
 
 	private:
-		struct LightUB
-		{
-			mars::Vec4 colour;
-			mars::Vec4 position;
-			mars::Vec4 direction;
-		};
-		typedef std::array<LightUB, GEAR_MAX_LIGHTS> LightUBType;
-		gear::Ref<graphics::Uniformbuffer<LightUBType>> m_UB;
+		typedef graphics::UniformBufferStructures::Lights LightUB;
+		gear::Ref<graphics::Uniformbuffer<LightUB>> m_UB;
 
 		static int s_NumOfLights;
 		size_t m_LightID;
@@ -53,7 +47,8 @@ namespace objects
 
 		//Update the light from the current state of Light::CreateInfo m_CI.
 		void Update();
-		gear::Ref<graphics::Uniformbuffer<LightUBType>> GetUB() { return m_UB; };
+
+		const gear::Ref<graphics::Uniformbuffer<LightUB>>& GetUB() const { return m_UB; };
 
 	private:
 		void InitialiseUB();

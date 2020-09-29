@@ -6,35 +6,26 @@ using namespace graphics;
 using namespace objects;
 using namespace mars;
 
-using namespace miru;
-using namespace miru::crossplatform;
-
 Model::Model(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 	
 	InitialiseUB();
-	SetUniformModlMatrix();
+	Update();
 }
 
 Model::~Model()
 {
 }
 
-void Model::SetUniformModlMatrix()
+void Model::Update()
 {
-	m_UB->texCoordsScale0.x = m_CI.materialTextureScaling.x;
-	m_UB->texCoordsScale0.y = m_CI.materialTextureScaling.y;
-	m_UB->texCoordsScale1.x = m_CI.materialTextureScaling.x;
-	m_UB->texCoordsScale1.y = m_CI.materialTextureScaling.y;
+	m_UB->texCoordScale0.x = m_CI.materialTextureScaling.x;
+	m_UB->texCoordScale0.y = m_CI.materialTextureScaling.y;
+	m_UB->texCoordScale1.x = m_CI.materialTextureScaling.x;
+	m_UB->texCoordScale1.y = m_CI.materialTextureScaling.y;
 
-	m_UB->modlMatrix = TransformToMat4(m_CI.transform);
-	m_UB->SubmitData();
-}
-
-void Model::SetUniformModlMatrix(const Mat4& modl)
-{
-	m_UB->modlMatrix = modl;
+	m_UB->modl = TransformToMat4(m_CI.transform);
 	m_UB->SubmitData();
 }
 

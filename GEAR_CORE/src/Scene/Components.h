@@ -3,6 +3,7 @@
 #include "Objects/Camera.h"
 #include "Objects/Light.h"
 #include "Objects/Model.h"
+#include "Objects/Skybox.h"
 #include "Objects/Transform.h"
 
 #define GEAR_SCENE_COMPONENTS_DEFAULTS(_struct) _struct() = default; _struct(const _struct&) = default; virtual ~##_struct() = default
@@ -74,6 +75,20 @@ namespace scene
 		Model::CreateInfo& GetCreateInfo() { return model->m_CI; }
 
 		operator gear::Ref<Model>&() { return model; }
+	};
+
+	struct SkyboxComponent
+	{
+		gear::Ref<Skybox> skybox;
+
+		GEAR_SCENE_COMPONENTS_DEFAULTS(SkyboxComponent);
+		SkyboxComponent(gear::Ref<Skybox>& _skybox) : skybox(_skybox) {}
+		SkyboxComponent(gear::Ref<Skybox>&& _skybox) : skybox(std::move(_skybox)) {}
+		SkyboxComponent(Skybox::CreateInfo* pCreateInfo) : skybox(gear::CreateRef<Skybox>(pCreateInfo)) {}
+
+		Skybox::CreateInfo& GetCreateInfo() { return skybox->m_CI; }
+
+		operator gear::Ref<Skybox>& () { return skybox; }
 	};
 
 	struct MeshComponent

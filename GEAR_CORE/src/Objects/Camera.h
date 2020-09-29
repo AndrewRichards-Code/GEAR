@@ -53,12 +53,7 @@ namespace objects
 		};
 
 	private:
-		struct CameraUB
-		{
-			mars::Mat4 projectionMatrix;
-			mars::Mat4 viewMatrix;
-			mars::Vec4 position;
-		};
+		typedef graphics::UniformBufferStructures::Camera CameraUB;
 		gear::Ref<graphics::Uniformbuffer<CameraUB>> m_UB;
 
 	public:
@@ -74,7 +69,8 @@ namespace objects
 
 		//Update the camera from the current state of Camera::CreateInfo m_CI.
 		void Update();
-		gear::Ref<graphics::Uniformbuffer<CameraUB>> GetUB() { return m_UB; };
+
+		const gear::Ref<graphics::Uniformbuffer<CameraUB>>& GetUB() const { return m_UB; };
 
 	private:
 		void DefineProjection();

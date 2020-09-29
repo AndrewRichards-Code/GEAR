@@ -122,6 +122,7 @@
     <ClCompile Include="src\Objects\Material.cpp" />
     <ClCompile Include="src\Objects\Mesh.cpp" />
     <ClCompile Include="src\Objects\Model.cpp" />
+    <ClCompile Include="src\Objects\Skybox.cpp" />
     <ClCompile Include="src\Scene\Entity.cpp" />
     <ClCompile Include="src\Scene\NativeScriptManager.cpp" />
     <ClCompile Include="src\Scene\Scene.cpp" />
@@ -150,6 +151,7 @@
     <ClInclude Include="src\Graphics\Storagebuffer.h" />
     <ClInclude Include="src\Graphics\Texture.h" />
     <ClInclude Include="src\Graphics\Uniformbuffer.h" />
+    <ClInclude Include="src\Graphics\UniformBufferStructures.h" />
     <ClInclude Include="src\Graphics\Vertexbuffer.h" />
     <ClInclude Include="src\Graphics\Window.h" />
     <ClInclude Include="src\Input\InputManager.h" />
@@ -158,6 +160,7 @@
     <ClInclude Include="src\Objects\Material.h" />
     <ClInclude Include="src\Objects\Mesh.h" />
     <ClInclude Include="src\Objects\Model.h" />
+    <ClInclude Include="src\Objects\Skybox.h" />
     <ClInclude Include="src\Objects\Transform.h" />
     <ClInclude Include="src\Scene\Components.h" />
     <ClInclude Include="src\Scene\Entity.h" />

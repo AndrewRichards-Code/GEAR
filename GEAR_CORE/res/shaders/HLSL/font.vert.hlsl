@@ -1,4 +1,5 @@
 #include "msc_common.h"
+#include "UniformBufferStructures.h"
 
 //From Application
 struct VS_IN
@@ -9,14 +10,7 @@ struct VS_IN
 	MIRU_LOCATION(4, float4, colours, COLOR4);
 };
 
-struct Camera
-{
-	float4x4 u_Proj;
-	float4x4 u_View;
-	float4	u_CameraPosition;
-};
 MIRU_UNIFORM_BUFFER(0, 0, Camera, camera);
-
 
 //To Fragment Shader
 struct VS_OUT
@@ -31,7 +25,7 @@ VS_OUT main(VS_IN IN)
 {
 	VS_OUT OUT;
 	
-	OUT.v_Position = mul(IN.positions, camera.u_Proj);
+	OUT.v_Position = mul(IN.positions, camera.proj);
 	OUT.v_TextCoord.x = IN.textCoords.x;
 	OUT.v_TextCoord.y = 1.0 - IN.textCoords.y;
 	OUT.v_TextIds = IN.textIds;

@@ -1,0 +1,77 @@
+#include "gear_core_common.h"
+#include "Skybox.h"
+#include "stb_image.h"
+
+using namespace gear;
+using namespace graphics;
+using namespace objects;
+using namespace mars;
+
+using namespace miru;
+using namespace miru::crossplatform;
+
+Skybox::Skybox(CreateInfo* pCreateInfo)
+{
+	m_CI = *pCreateInfo;
+
+	InitialiseUBs();
+	
+	m_Cubemap = m_CI.filepaths.size() == 6;
+	m_HDR = stbi_is_hdr(m_CI.filepaths[0].c_str());
+
+	m_TextureCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
+	m_TextureCI.device = m_CI.device;
+	m_TextureCI.filepaths = m_CI.filepaths;
+	m_TextureCI.mipLevels = 1;
+	m_TextureCI.type = m_CI.filepaths.size() == 6 ? Image::Type::TYPE_CUBE : Image::Type::TYPE_2D;
+	m_TextureCI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
+	m_TextureCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	m_TextureCI.usage = Image::UsageBit(0);
+	m_TextureCI.generateMipMaps = false;
+	m_Texture = gear::CreateRef<Texture>(&m_TextureCI);
+
+	m_MaterialCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
+	m_MaterialCI.device = m_CI.device;
+	m_MaterialCI.pbrTextures = { {Material::TextureType::ALBEDO, m_Texture} };
+	m_Material = gear::CreateRef<Material>(&m_MaterialCI);
+
+	m_MeshCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
+	m_MeshCI.device = m_CI.device;
+	m_MeshCI.filepath = "res/obj/cube.fbx";
+	m_Mesh = gear::CreateRef<Mesh>(&m_MeshCI);
+	m_Mesh->SetOverrideMaterial(0, m_Material);
+
+	m_ModelCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
+	m_ModelCI.device = m_CI.device;
+	m_ModelCI.pMesh = m_Mesh;
+	m_ModelCI.transform = m_CI.transform;
+	m_ModelCI.renderPipelineName = "cube";
+	m_Model = gear::CreateRef<Model>(&m_ModelCI);
+	
+	Update();
+}
+
+Skybox::~Skybox()
+{
+
+}
+
+void Skybox::Update()
+{
+	m_UB->exposure = m_CI.exposure;
+	m_UB->gamma = m_CI.gamma;
+	m_UB->SubmitData();
+
+	m_Model->GetUB()->modl = TransformToMat4(m_CI.transform);
+	m_Model->GetUB()->SubmitData();
+}
+
+void Skybox::InitialiseUBs()
+{
+	float zero[sizeof(SkyboxInfo)] = { 0 };
+	Uniformbuffer<SkyboxInfo>::CreateInfo ubCI;
+	ubCI.debugName = "GEAR_CORE_Skybox_SkyboxInfo: " + m_CI.debugName;
+	ubCI.device = m_CI.device;
+	ubCI.data = zero;
+	m_UB = gear::CreateRef<Uniformbuffer<SkyboxInfo>>(&ubCI);
+}

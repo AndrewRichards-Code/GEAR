@@ -196,33 +196,54 @@ void Texture::LoadImageData(std::vector<uint8_t>& imageData)
 {
 	if (!m_CI.filepaths.empty())
 	{
+		m_HDR = stbi_is_hdr(m_CI.filepaths[0].c_str());
 		uint8_t* stbiBuffer = nullptr;
+		float* stbiBufferf = nullptr;
+		
 		if (!m_Cubemap)
 		{
-			stbiBuffer = stbi_load(m_CI.filepaths[0].c_str(), (int*)&m_CI.width, (int*)&m_CI.height, &m_BPP, 4);
-
-			imageData.resize(m_CI.width * m_CI.height * 4);
-			memcpy(imageData.data(), stbiBuffer, m_CI.width * m_CI.height * 4);
-
-			if (stbiBuffer)
-				stbi_image_free(stbiBuffer);
-
+			if (m_HDR)
+			{
+				stbiBufferf = stbi_loadf(m_CI.filepaths[0].c_str(), (int*)&m_CI.width, (int*)&m_CI.height, &m_BPP, 4);
+				imageData.resize(m_CI.width * m_CI.height * 4 * sizeof(float));
+				memcpy(imageData.data(), stbiBufferf, imageData.size());
+			}
+			else
+			{
+				stbiBuffer = stbi_load(m_CI.filepaths[0].c_str(), (int*)&m_CI.width, (int*)&m_CI.height, &m_BPP, 4);
+				imageData.resize(m_CI.width * m_CI.height * 4 * sizeof(uint8_t));
+				memcpy(imageData.data(), stbiBuffer, imageData.size());
+			}
 		}
 		else
 		{
 			for (size_t i = 0; i < 6; i++)
 			{
-				stbiBuffer = stbi_load(m_CI.filepaths[i].c_str(), (int*)&m_CI.width, (int*)&m_CI.height, &m_BPP, 4);
-				if (i == 0)
-					imageData.resize(6 * m_CI.width * m_CI.height * 4);
+				if (m_HDR)
+				{
+					stbiBufferf = stbi_loadf(m_CI.filepaths[i].c_str(), (int*)&m_CI.width, (int*)&m_CI.height, &m_BPP, 4);
+					if (i == 0) 
+						imageData.resize(6 * m_CI.width * m_CI.height * 4 * sizeof(float));
 
-				memcpy(imageData.data() + (i * m_CI.width * m_CI.height * 4), stbiBuffer, (m_CI.width * m_CI.height * 4));
+					memcpy(imageData.data() + (i * (imageData.size() / 6)), stbiBufferf, (imageData.size() / 6));
+				}
+				else
+				{
+					stbiBuffer = stbi_load(m_CI.filepaths[i].c_str(), (int*)&m_CI.width, (int*)&m_CI.height, &m_BPP, 4);
+					if (i == 0)
+						imageData.resize(6 * m_CI.width * m_CI.height * 4 * sizeof(uint8_t));
 
-				if (stbiBuffer)
-					stbi_image_free(stbiBuffer);
+					memcpy(imageData.data() + (i * (imageData.size() / 6)), stbiBuffer, (imageData.size() / 6));
+				}
 			}
 
 		}
+
+		if (stbiBufferf)
+			stbi_image_free(stbiBufferf);
+		if (stbiBuffer)
+			stbi_image_free(stbiBuffer);
+
 		m_CI.depth = 1;
 	}
 	else

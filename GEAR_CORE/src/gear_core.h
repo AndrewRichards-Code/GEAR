@@ -36,6 +36,7 @@
 #include "Objects/Light.h"
 #include "Objects/Material.h"
 #include "Objects/Model.h"
+#include "Objects/Skybox.h"
 #include "Objects/Transform.h"
 //#include "objects/probe.h"
 

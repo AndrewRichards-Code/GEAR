@@ -3,6 +3,7 @@
   {
   },
   "hlsl.additionalIncludeDirectories": [
-    "C:/Users/Andrew/source/repos/GEAR/GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes/"
+    "C:/Users/Andrew/source/repos/GEAR/GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes/",
+    "C:/Users/Andrew/source/repos/GEAR/GEAR_CORE/src/Graphics/"
   ]
 }

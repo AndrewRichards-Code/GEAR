@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
 #include "StringConversion.h"
+#include <cwctype>
 
 std::string gear::core::to_string(const std::wstring& wstring)
 {
@@ -17,4 +18,36 @@ std::wstring gear::core::to_wstring(const std::string& string)
 	std::wstring result(wstr);
 	delete[] wstr;
 	return result;
+}
+
+std::string gear::core::toupper(const std::string& string)
+{
+	std::string str = string;
+	std::transform(str.begin(), str.end(), str.begin(),
+		[](unsigned char c) { return std::toupper(c); });
+	return str;
+}
+
+std::wstring gear::core::towupper(const std::wstring& wstring)
+{
+	std::wstring wstr = wstring;
+	std::transform(wstr.begin(), wstr.end(), wstr.begin(),
+		[](wchar_t c) { return std::towupper(c); });
+	return wstr;
+}
+
+std::string gear::core::tolower(const std::string& string)
+{
+	std::string str = string;
+	std::transform(str.begin(), str.end(), str.begin(),
+		[](unsigned char c) { return std::tolower(c); });
+	return str;
+}
+
+std::wstring gear::core::towlower(const std::wstring& wstring)
+{
+	std::wstring wstr = wstring;
+	std::transform(wstr.begin(), wstr.end(), wstr.begin(),
+		[](wchar_t c) { return std::towlower(c); });
+	return wstr;
 }

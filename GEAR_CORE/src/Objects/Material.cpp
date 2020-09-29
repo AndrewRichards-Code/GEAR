@@ -57,13 +57,13 @@ void Material::AddProperties(const Properties& properties)
 
 void Material::InitialiseUB()
 {
-	float zero[sizeof(PBRConstants)] = { 0 };
-	Uniformbuffer<PBRConstants>::CreateInfo ubCI;
-	ubCI.debugName = "GEAR_CORE_Material: " + m_CI.debugName;
+	float zero[sizeof(PBRConstantsUB)] = { 0 };
+	Uniformbuffer<PBRConstantsUB>::CreateInfo ubCI;
+	ubCI.debugName = "GEAR_CORE_Material_PBRConstants: " + m_CI.debugName;
 	ubCI.device = m_CI.device;
 	ubCI.data = zero;
 
-	m_UB = gear::CreateRef<Uniformbuffer<PBRConstants>>(&ubCI);
+	m_UB = gear::CreateRef<Uniformbuffer<PBRConstantsUB>>(&ubCI);
 }
 
 void Material::CreateDefaultColourTextures()

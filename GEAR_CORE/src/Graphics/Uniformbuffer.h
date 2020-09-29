@@ -2,6 +2,7 @@
 
 #include "gear_core_common.h"
 #include "Graphics/MemoryBlockManager.h"
+#include "Graphics/UniformBufferStructures.h"
 
 namespace gear 
 {

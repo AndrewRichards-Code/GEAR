@@ -1,4 +1,5 @@
 #include "msc_common.h"
+#include "UniformBufferStructures.h"
 
 //To Post-Processing
 struct PS_OUT
@@ -14,28 +15,29 @@ struct PS_IN
 };
 
 //From Application
-MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 1, 1, float4, uTexture);
+MIRU_UNIFORM_BUFFER(0, 1, SkyboxInfo, skyboxInfo);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 0, 2, float4, skybox);
+
+//Helper Functions
+static const float PI = 3.1415926535897932384626433832795;
+
+float2 CubemapToEquirectangularTextCoords(float3 v)
+{
+	float3 norm_v = normalize(v);
+	float theta = asin(norm_v.y);
+	float phi = atan2(norm_v.z, norm_v.x);
+	float2 uv = float2(phi/(2 * PI), -((theta/PI) + 0.5));
+	return uv;
+}
 
 PS_OUT main(PS_IN IN)
 {
 	PS_OUT OUT;
-	float dpRange = 0.9999;
-	float4 axisColour = uTexture_image_cis.Sample(uTexture_sampler_cis, IN.v_TextCoord);
 	
-	/*if(dot(normalize(IN.v_TextCoord), float3(-1.0, 0.0, 0.0)) > dpRange) 
-		axisColour = float4(1.0, 0.0, 0.0, 1.0);
-	else if(dot(normalize(IN.v_TextCoord), float3(0.0, 1.0, 0.0)) > dpRange)
-		axisColour = float4(0.0, 1.0, 0.0, 1.0);
-	else if(dot(normalize(IN.v_TextCoord), float3(0.0, 0.0, 1.0)) > dpRange)
-		axisColour = float4(0.0, 0.0, 1.0, 1.0);
-	else if(dot(normalize(IN.v_TextCoord), float3(1.0, 0.0, 0.0)) > dpRange) 
-		axisColour = float4(0.0, 1.0, 1.0, 1.0);
-	else if(dot(normalize(IN.v_TextCoord), float3(0.0, -1.0, 0.0)) > dpRange) 
-		axisColour = float4(1.0, 0.0, 1.0, 1.0);
-	else if(dot(normalize(IN.v_TextCoord), float3(0.0, 0.0, -1.0)) > dpRange) 
-		axisColour = float4(1.0, 1.0, 0.0, 1.0);*/
-	
-	OUT.colour = axisColour;
+	float4 irradiance = skybox_ImageCIS.Sample(skybox_SamplerCIS, CubemapToEquirectangularTextCoords(IN.v_TextCoord));
+	float4 mapped = float4(1.0, 1.0, 1.0, 1.0) - exp(-irradiance * skyboxInfo.exposure);
+	OUT.colour = pow(mapped, float4(1.0/skyboxInfo.gamma, 1.0/skyboxInfo.gamma, 1.0/skyboxInfo.gamma, 1.0/skyboxInfo.gamma));
+	OUT.colour.a = 1.0; 
 	
 	return OUT;
 }

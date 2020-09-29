@@ -235,6 +235,7 @@ void RenderPipeline::FinalisePipline()
 			{
 				uint32_t set = rbds.first;
 				m_DescSetLayoutCIs.resize(std::max((size_t)set + 1, m_DescSetLayoutCIs.size()));
+				m_RBDs.resize(std::max((size_t)set + 1, m_RBDs.size()));
 
 				for (auto& rbd : rbds.second)
 				{
@@ -245,6 +246,8 @@ void RenderPipeline::FinalisePipline()
 						rbd.second.type,
 						rbd.second.descriptorCount,
 						rbd.second.stage });
+
+					m_RBDs[set].push_back(rbd.second);
 				}
 			}
 		}
@@ -278,6 +281,7 @@ void RenderPipeline::FinalisePipline()
 		{
 			uint32_t set = rbds.first;
 			m_DescSetLayoutCIs.resize(std::max((size_t)set + 1, m_DescSetLayoutCIs.size()));
+			m_RBDs.resize(std::max((size_t)set + 1, m_RBDs.size()));
 
 			for (auto& rbd : rbds.second)
 			{
@@ -288,6 +292,8 @@ void RenderPipeline::FinalisePipline()
 					rbd.second.type,
 					rbd.second.descriptorCount,
 					rbd.second.stage });
+
+				m_RBDs[set].push_back(rbd.second);
 			}
 		}
 		for (auto& descSetLayoutCI : m_DescSetLayoutCIs)

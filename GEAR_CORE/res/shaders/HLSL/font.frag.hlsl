@@ -16,7 +16,7 @@ struct PS_IN
 };
 
 //From Application
-MIRU_COMBINED_IMAGE_SAMPLER_ARRAY(MIRU_IMAGE_2D, 1, 0, float4, uTextures, 32);
+MIRU_COMBINED_IMAGE_SAMPLER_ARRAY(MIRU_IMAGE_2D, 1, 0, float4, u_Textures, 32);
 
 PS_OUT main(PS_IN IN)
 {
@@ -30,7 +30,7 @@ PS_OUT main(PS_IN IN)
 			int tid = int(IN.v_TextIds - 0.5);
 			if(tid == i)
 			{
-				float alpha = uTextures_image_cis[tid].Sample(uTextures_sampler_cis[tid], IN.v_TextCoord).r;
+				float alpha = u_Textures_ImageCIS[tid].Sample(u_Textures_SamplerCIS[tid], IN.v_TextCoord).r;
 				sampled = float4(1.0, 1.0, 1.0, alpha);
 			}
 		}

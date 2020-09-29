@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
 #include "Renderer.h"
+#include "Core/StringConversion.h"
 
 using namespace gear;
 using namespace graphics;
@@ -79,12 +80,33 @@ void Renderer::InitialiseRenderPipelines(const std::vector<std::string>& filepat
 	}
 }
 
+void Renderer::SubmitFramebuffer(const miru::Ref<miru::crossplatform::Framebuffer>* framebuffers)
+{ 
+	m_Framebuffers = framebuffers; 
+}
+
+void Renderer::SubmitCamera(gear::Ref<objects::Camera>& camera)
+{ 
+	m_Camera = camera; 
+}
+
+void Renderer::SubmitLights(std::vector<gear::Ref<objects::Light>>& lights)
+{ 
+	m_Lights = lights; 
+}
+
+void Renderer::SubmitSkybox(const gear::Ref<objects::Skybox>& skybox)
+{ 
+	m_Skybox = skybox; 
+	SubmitModel(skybox->GetModel()); 
+}
+
 void Renderer::SubmitModel(const gear::Ref<Model>& obj)
 {
 	m_RenderQueue.push_back(obj);
 }
 
-void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool forceUploadMeshes)
+void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool forceUploadSkybox, bool forceUploadMeshes)
 {
 	Semaphore::CreateInfo transSemaphoreCI = { "GEAR_CORE_Semaphore_RenderTransfer", m_TransCmdPoolCI.pContext->GetDevice() };
 	Ref<Semaphore> transfer0 = Semaphore::Create(&transSemaphoreCI);
@@ -165,7 +187,8 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 			m_TransCmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
 			m_Camera->GetUB()->Upload(m_TransCmdBuffer, 0, forceUploadCamera);
 			m_Lights[0]->GetUB()->Upload(m_TransCmdBuffer, 0, forceUploadLights);
-
+			m_Skybox->GetUB()->Upload(m_TransCmdBuffer, 0, forceUploadSkybox);
+			
 			for (auto& model : m_RenderQueue)
 			{
 				for (auto& vb : model->GetMesh()->GetVertexBuffers())
@@ -232,108 +255,142 @@ void Renderer::Flush()
 
 	if(!m_BuiltDescPoolsAndSets)
 	{
-		bool cameraPoolSize = false, lightPoolSize = false;
+		//Desriptor Pool
 		std::map<DescriptorType, uint32_t> poolSizesMap;
 		for (auto& model : m_RenderQueue)
 		{
 			const miru::Ref<Pipeline>& pipeline = m_RenderPipelines[model->GetPipelineName()]->GetPipeline();
-			const std::vector<miru::Ref<DescriptorSetLayout>>& descriptorSetLayouts = m_RenderPipelines[model->GetPipelineName()]->GetDescriptorSetLayouts();
+			const std::vector<std::vector<Shader::ResourceBindingDescription>> rbds = m_RenderPipelines[model->GetPipelineName()]->GetRBDs();
 
-			const DescriptorSetLayout::CreateInfo& cameraDescSetLayoutCI = descriptorSetLayouts[0]->GetCreateInfo();
-			const DescriptorSetLayout::CreateInfo& modelMaterialDescSetLayoutCI = descriptorSetLayouts[1]->GetCreateInfo();
-			const DescriptorSetLayout::CreateInfo& lightDescSetLayoutCI = descriptorSetLayouts[2]->GetCreateInfo();
-
-			auto AddToPoolSizeMap = [&](const DescriptorSetLayout::CreateInfo& descSetLayoutCI) -> void
+			for (auto& set_rbds : rbds)
 			{
-				for (auto& descSetLayout : descSetLayoutCI.descriptorSetLayoutBinding)
+				for (auto& binding_rbds : set_rbds)
 				{
-					uint32_t& descCount = poolSizesMap[descSetLayout.type];
-					descCount += descSetLayout.descriptorCount;
+					uint32_t& descCount = poolSizesMap[binding_rbds.type];
+					descCount += binding_rbds.descriptorCount;
 				}
-			};
-
-			if (!cameraPoolSize)
-			{
-				AddToPoolSizeMap(cameraDescSetLayoutCI);
-				cameraPoolSize = true;
 			}
-			if (!lightPoolSize)
-			{
-				AddToPoolSizeMap(lightDescSetLayoutCI);
-				lightPoolSize = true;
-			}
-			AddToPoolSizeMap(modelMaterialDescSetLayoutCI);
 		}
 		m_DescPoolCI.debugName = "GEAR_CORE_DescriptorPool_Renderer";
 		m_DescPoolCI.device = m_Device;
 		for (auto& poolSize : poolSizesMap)
 			m_DescPoolCI.poolSizes.push_back({ poolSize.first, poolSize.second });
-		m_DescPoolCI.maxSets = static_cast<uint32_t>(m_RenderQueue.size() + 2);
+		m_DescPoolCI.maxSets = static_cast<uint32_t>(m_RenderPipelines.size() + m_RenderQueue.size());
 		m_DescPool = DescriptorPool::Create(&m_DescPoolCI);
 
+		//Per view Descriptor Set
+		for (auto& pipeline : m_RenderPipelines)
+		{
+			const std::vector<miru::Ref<DescriptorSetLayout>>& descriptorSetLayouts = pipeline.second->GetDescriptorSetLayouts();
+			const std::vector<std::vector<Shader::ResourceBindingDescription>> rbds = pipeline.second->GetRBDs();
+
+			DescriptorSet::CreateInfo descSetPerViewCI;
+			descSetPerViewCI.debugName = "GEAR_CORE_DescriptorSet_PerView: " + pipeline.second->GetPipeline()->GetCreateInfo().debugName;
+			descSetPerViewCI.pDescriptorPool = m_DescPool;
+			descSetPerViewCI.pDescriptorSetLayouts = { descriptorSetLayouts[0] };
+			m_DescSetPerView[pipeline.second] = DescriptorSet::Create(&descSetPerViewCI);
+			
+			for (auto& rbd : rbds[0])
+			{
+				const uint32_t& binding = rbd.binding;
+				const std::string& name = core::toupper(rbd.name);
+				if (rbd.structSize > 0)
+				{
+					if (SetUpdateTypeMap.find(name) == SetUpdateTypeMap.end())
+						continue;
+					if (SetUpdateTypeMap[name] != SetUpdateType::PER_VIEW)
+						continue;
+				}
+
+				if (name.compare("CAMERA") == 0)
+				{
+					m_DescSetPerView[pipeline.second]->AddBuffer(0, binding, { { m_Camera->GetUB()->GetBufferView() } });
+				}
+				else if (name.compare("LIGHTS") == 0)
+				{
+					m_DescSetPerView[pipeline.second]->AddBuffer(0, binding, { { m_Lights[0]->GetUB()->GetBufferView() } });
+				}
+				else if (name.compare("SKYBOXINFO") == 0)
+				{
+					m_DescSetPerView[pipeline.second]->AddBuffer(0, binding, { { m_Skybox->GetUB()->GetBufferView() } });
+				}
+				else if (name.find("SKYBOX") == 0)
+				{
+					const gear::Ref<Texture>& skyboxTexture = m_Skybox->GetModel()->GetMesh()->GetMaterials()[0]->GetTextures()[Material::TextureType::ALBEDO];
+					m_DescSetPerView[pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL }});
+				}
+				else
+					continue;
+			}
+			m_DescSetPerView[pipeline.second]->Update();
+		}
+
+		//Per model Descriptor Sets
 		for (auto& model : m_RenderQueue)
 		{
-			const miru::Ref<Pipeline>& pipeline = m_RenderPipelines[model->GetPipelineName()]->GetPipeline();
 			const std::vector<miru::Ref<DescriptorSetLayout>>& descriptorSetLayouts = m_RenderPipelines[model->GetPipelineName()]->GetDescriptorSetLayouts();
+			const std::vector<std::vector<Shader::ResourceBindingDescription>> rbds = m_RenderPipelines[model->GetPipelineName()]->GetRBDs();
 
-			const miru::Ref<DescriptorSetLayout>& cameraDescSetLayout = descriptorSetLayouts[0];
-			const miru::Ref<DescriptorSetLayout>& modelMaterialDescSetLayout = descriptorSetLayouts[1];
-			const miru::Ref<DescriptorSetLayout>& lightDescLayout = descriptorSetLayouts[2];
+			DescriptorSet::CreateInfo descSetPerModelCI;
+			descSetPerModelCI.debugName = "GEAR_CORE_DescriptorSet_PerModel: " + model->GetDebugName();
+			descSetPerModelCI.pDescriptorPool = m_DescPool;
+			descSetPerModelCI.pDescriptorSetLayouts = { descriptorSetLayouts[1] };
+			m_DescSetPerModel[model] = DescriptorSet::Create(&descSetPerModelCI);
 
-			if (!m_DescSetCamera)
+			for (auto& rbd : rbds[1])
 			{
-				DescriptorSet::CreateInfo cameraDescSetCI;
-				cameraDescSetCI.debugName = "GEAR_CORE_DescriptorSet_Camera";
-				cameraDescSetCI.pDescriptorPool = m_DescPool;
-				cameraDescSetCI.pDescriptorSetLayouts = { cameraDescSetLayout };
-				m_DescSetCamera = DescriptorSet::Create(&cameraDescSetCI);
-				m_DescSetCamera->AddBuffer(0, 0, { { m_Camera->GetUB()->GetBufferView() } });
-				m_DescSetCamera->Update();
-			}
-
-			if (!m_DescSetLight)
-			{
-				DescriptorSet::CreateInfo lightDescSetCI;
-				lightDescSetCI.debugName = "GEAR_CORE_DescriptorSet_Light";
-				lightDescSetCI.pDescriptorPool = m_DescPool;
-				lightDescSetCI.pDescriptorSetLayouts = { lightDescLayout };
-				m_DescSetLight = DescriptorSet::Create(&lightDescSetCI); m_DescSetLight->AddBuffer(0, 0, { { m_Lights[0]->GetUB()->GetBufferView() } });
-				m_DescSetLight->Update();
-			}
-
-			DescriptorSet::CreateInfo modelMaterialSetCI;
-			modelMaterialSetCI.debugName = "GEAR_CORE_DescriptorSet_ModelMaterial: " + model->GetDebugName();
-			modelMaterialSetCI.pDescriptorPool = m_DescPool;
-			modelMaterialSetCI.pDescriptorSetLayouts = { modelMaterialDescSetLayout };
-			m_DescSetModelMaterials[model] = DescriptorSet::Create(&modelMaterialSetCI);
-
-			m_DescSetModelMaterials[model]->AddBuffer(0, 0, { { model->GetUB()->GetBufferView() } });
-			m_DescSetModelMaterials[model]->AddBuffer(0, 1, { { model->GetMesh()->GetMaterials()[0]->GetUB()->GetBufferView() } });
-			
-			for (auto& materialTexture : model->GetMesh()->GetMaterials()[0]->GetTextures()) //TODO: Deal with all materials
-			{
-				const Material::TextureType& type = materialTexture.first;
-				const gear::Ref<Texture>& material = materialTexture.second;
-
-				switch (type)
+				const uint32_t& binding = rbd.binding;
+				const std::string& name = core::toupper(rbd.name);
+				if (rbd.structSize > 0)
 				{
-				case Material::TextureType::NORMAL:
-					m_DescSetModelMaterials[model]->AddImage(0, 2, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
-				case Material::TextureType::ALBEDO:
-					m_DescSetModelMaterials[model]->AddImage(0, 3, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
-				case Material::TextureType::METALLIC:
-					m_DescSetModelMaterials[model]->AddImage(0, 4, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
-				case Material::TextureType::ROUGHNESS:
-					m_DescSetModelMaterials[model]->AddImage(0, 5, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
-				case Material::TextureType::AMBIENT_OCCLUSION:
-					m_DescSetModelMaterials[model]->AddImage(0, 6, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
-				case Material::TextureType::EMISSIVE:
-					m_DescSetModelMaterials[model]->AddImage(0, 7, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
-				default:
-					continue;
+					if (SetUpdateTypeMap.find(name) == SetUpdateTypeMap.end())
+						continue;
+					if (SetUpdateTypeMap[name] != SetUpdateType::PER_MODEL)
+						continue;
 				}
+
+				if (name.compare("MODEL") == 0)
+				{
+					m_DescSetPerModel[model]->AddBuffer(0, binding, { { model->GetUB()->GetBufferView() } });
+				}
+				else if (name.compare("PBRCONSTANTS") == 0) //TODO: Deal with all materials
+				{
+					m_DescSetPerModel[model]->AddBuffer(0, binding, { { model->GetMesh()->GetMaterials()[0]->GetUB()->GetBufferView() } });
+				}
+				else if (name.find("NORMAL") == 0)
+				{	
+					const gear::Ref<Texture>& material = model->GetMesh()->GetMaterials()[0]->GetTextures()[Material::TextureType::NORMAL];
+					m_DescSetPerModel[model]->AddImage(0, binding, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
+				}
+				else if (name.find("ALBEDO") == 0)
+				{
+					const gear::Ref<Texture>& material = model->GetMesh()->GetMaterials()[0]->GetTextures()[Material::TextureType::ALBEDO];
+					m_DescSetPerModel[model]->AddImage(0, binding, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
+				}
+				else if (name.find("METALLIC") == 0)
+				{
+					const gear::Ref<Texture>& material = model->GetMesh()->GetMaterials()[0]->GetTextures()[Material::TextureType::METALLIC];
+					m_DescSetPerModel[model]->AddImage(0, binding, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
+				}
+				else if (name.find("ROUGHNESS") == 0)
+				{
+					const gear::Ref<Texture>& material = model->GetMesh()->GetMaterials()[0]->GetTextures()[Material::TextureType::ROUGHNESS];
+					m_DescSetPerModel[model]->AddImage(0, binding, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
+				}
+				else if (name.find("AMBIENTOCCLUSION") == 0)
+				{
+					const gear::Ref<Texture>& material = model->GetMesh()->GetMaterials()[0]->GetTextures()[Material::TextureType::AMBIENT_OCCLUSION];
+					m_DescSetPerModel[model]->AddImage(0, binding, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
+				}
+				else if (name.find("EMISSIVE") == 0)
+				{
+					const gear::Ref<Texture>& material = model->GetMesh()->GetMaterials()[0]->GetTextures()[Material::TextureType::EMISSIVE];
+					m_DescSetPerModel[model]->AddImage(0, binding, { {material->GetTextureSampler(), material->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
+				}
+				else
+					continue;
 			}
-			m_DescSetModelMaterials[model]->Update();
+			m_DescSetPerModel[model]->Update();
 		}
 
 		m_BuiltDescPoolsAndSets = true;
@@ -348,27 +405,11 @@ void Renderer::Flush()
 
 		for (auto& model : m_RenderQueue)
 		{
-			const miru::Ref<Pipeline>& pipeline = m_RenderPipelines[model->GetPipelineName()]->GetPipeline();
-			const std::vector<miru::Ref<DescriptorSetLayout>>& descriptorSetLayouts = m_RenderPipelines[model->GetPipelineName()]->GetDescriptorSetLayouts();
+			const gear::Ref<graphics::RenderPipeline>& renderPipeline = m_RenderPipelines[model->GetPipelineName()];
+			const miru::Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
 
 			m_CmdBuffer->BindPipeline(m_FrameIndex, pipeline);
-
-			std::vector<Ref<DescriptorSet>> bindDescriptorSets;
-			for (size_t descCount = 0; descCount < descriptorSetLayouts.size(); descCount++)
-			{
-				switch (descCount)
-				{
-				case 0:
-					bindDescriptorSets.push_back(m_DescSetCamera); continue;
-				case 1:
-					bindDescriptorSets.push_back(m_DescSetModelMaterials[model]); continue;
-				case 2:
-					bindDescriptorSets.push_back(m_DescSetLight); continue;
-				default:
-					continue;
-				}
-			}
-			m_CmdBuffer->BindDescriptorSets(m_FrameIndex, bindDescriptorSets, pipeline);
+			m_CmdBuffer->BindDescriptorSets(m_FrameIndex, { m_DescSetPerView[renderPipeline], m_DescSetPerModel[model] }, pipeline);
 
 			for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
 			{

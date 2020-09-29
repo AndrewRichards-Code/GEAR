@@ -53,6 +53,7 @@ namespace graphics
 		CreateInfo m_CI;
 
 		int m_BPP = 0; //BPP = Bits per pixel
+		bool m_HDR = false;
 		bool m_Cubemap = false;
 		bool m_DepthTexture = false;
 

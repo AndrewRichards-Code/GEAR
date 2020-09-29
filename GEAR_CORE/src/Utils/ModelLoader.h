@@ -33,8 +33,8 @@ namespace gear
 	
 	public:
 		inline static void SetDevice(void* device) { m_Device = device; }
-		inline static size_t GetSizeOfVertex() { return sizeof(Vertex); }
-		inline static size_t GetSizeOfIndex() { return sizeof(uint32_t); }
+		inline constexpr static size_t GetSizeOfVertex() { return sizeof(Vertex); }
+		inline constexpr static size_t GetSizeOfIndex() { return sizeof(uint32_t); }
 	
 		typedef std::vector<MeshData> ModelData;
 		static ModelData LoadModelData(const std::string& filepath);

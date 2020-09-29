@@ -40,6 +40,7 @@ namespace graphics
 		std::vector<miru::crossplatform::DescriptorSetLayout::CreateInfo> m_DescSetLayoutCIs;
 
 		std::vector<miru::Ref<miru::crossplatform::Shader>> m_Shaders;
+		std::vector<std::vector<miru::crossplatform::Shader::ResourceBindingDescription>> m_RBDs;
 
 	public:
 		CreateInfo m_CI;
@@ -57,6 +58,7 @@ namespace graphics
 
 		inline const miru::Ref<miru::crossplatform::Pipeline>& GetPipeline() const { return m_Pipeline; };
 		inline const std::vector<miru::Ref<miru::crossplatform::DescriptorSetLayout>>& GetDescriptorSetLayouts() { return m_DescSetLayouts; };
+		inline const std::vector<std::vector<miru::crossplatform::Shader::ResourceBindingDescription>>& GetRBDs() { return m_RBDs; };
 	};
 }
 }
