@@ -2,7 +2,7 @@
 #include "stb_image.h"
 #include "Texture.h"
 #include "MemoryBlockManager.h"
-#include "GenerateMipMaps.h"
+#include "ImageProcessing.h"
 
 using namespace gear;
 using namespace graphics;
@@ -142,9 +142,9 @@ void Texture::TransitionSubResources(std::vector<Ref<Barrier>>& barriers, const 
 		barriers.emplace_back(Barrier::Create(&barrierCI));
 		
 		const Image::SubresourceRange& range = barrierCI.subresoureRange;
-		for (uint32_t mipLevel = range.baseMipLevel; mipLevel < range.mipLevelCount; mipLevel++)
+		for (uint32_t mipLevel = range.baseMipLevel; mipLevel < range.baseMipLevel + range.mipLevelCount; mipLevel++)
 		{
-			for (uint32_t arrayLayers = range.baseArrayLayer; arrayLayers < range.arrayLayerCount; arrayLayers++)
+			for (uint32_t arrayLayers = range.baseArrayLayer; arrayLayers < range.baseArrayLayer + range.arrayLayerCount; arrayLayers++)
 			{
 				m_SubresourceMap[mipLevel][arrayLayers] = transitionInfo.newLayout;
 			}
@@ -154,9 +154,15 @@ void Texture::TransitionSubResources(std::vector<Ref<Barrier>>& barriers, const 
 
 void Texture::GenerateMipMaps()
 {
-	if (m_GenerateMipMaps)
+	if (!m_Upload)
 	{
-		GenerateMipMaps::GenerateMipMaps(this);
+		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_STATE, "Texture data has not been uploaded. Can not generate mipmaps.");
+		return;
+	}
+	if (m_GenerateMipMaps && !m_Generated)
+	{
+		ImageProcessing::GenerateMipMaps(this);;
+		m_Generated = true;
 	}
 }
 
@@ -168,6 +174,7 @@ void Texture::Reload()
 	m_TextureUploadBufferCI.pMemoryBlock->SubmitData(m_TextureUploadBuffer->GetResource(), imageData.size(), imageData.data());
 
 	m_Upload = false;
+	m_Generated = false;
 }
 
 void Texture::CreateSampler()

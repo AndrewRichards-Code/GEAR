@@ -45,3 +45,8 @@ They may not however be redistributed on other websites or anywhere else other t
 We also would greatly appreciate it if some sorrt of credit was given if you do indeed use these textures in a published game. 
 Other than that, keep on creating and have fun. :)
 
+#kloppenheim_06_2k.hdr
+Greg Zaal
+https://hdrihaven.com/hdri/?h=kloppenheim_06
+Licence: CC0
+

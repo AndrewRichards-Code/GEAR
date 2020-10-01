@@ -145,6 +145,8 @@ const std::string Log::ErrorCodeToString(ErrorCode error) noexcept
 		str += "INVALID_COMPONENT"; break;
 	case ErrorCode::INVALID_PATH:
 		str += "INVALID_PATH"; break;
+	case ErrorCode::INVALID_STATE:
+		str += "INVALID_STATE"; break;
 	default:
 		break;
 	}

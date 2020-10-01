@@ -27,6 +27,7 @@ namespace graphics
 			miru::crossplatform::Image::UsageBit		usage;
 			bool										generateMipMaps;
 		};
+		#define GEAR_TEXTURE_MAX_MIP_LEVEL 16
 
 		struct SubresouresTransitionInfo
 		{
@@ -58,7 +59,6 @@ namespace graphics
 		bool m_DepthTexture = false;
 
 		bool m_Upload = false;
-		bool m_GenerateMipMaps = false;
 
 		float m_AnisotrophicValue = 1.0f;
 
@@ -68,6 +68,9 @@ namespace graphics
 	public:
 		bool m_TransitionUnknownToTransferDst = false;
 		bool m_TransitionTransferDstToShaderReadOnly = false;
+
+		bool m_GenerateMipMaps = false;
+		bool m_Generated = false;
 
 	public:
 		Texture(CreateInfo* pCreateInfo);

@@ -78,12 +78,12 @@ int main()
 		texCI.debugName = debugName.c_str();
 		texCI.device = window->GetDevice();
 		texCI.filepaths = { filepath };
-		texCI.mipLevels = 1;
+		texCI.mipLevels = GEAR_TEXTURE_MAX_MIP_LEVEL;
 		texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
 		texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
 		texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 		texCI.usage = miru::crossplatform::Image::UsageBit(0);
-		texCI.generateMipMaps = false;
+		texCI.generateMipMaps = true;
 		return std::move(gear::CreateRef<Texture>(&texCI));
 	};
 
@@ -96,7 +96,7 @@ int main()
 	std::future<gear::Ref<graphics::Texture>> slateMetallic = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-metalness.png"), std::string("UE4 Slate: Metallic"));
 	std::future<gear::Ref<graphics::Texture>> slateNormal = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-normal3-UE4.png"), std::string("UE4 Slate: Normal"));
 	std::future<gear::Ref<graphics::Texture>> slateRoughness = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-rough.png"), std::string("UE4 Slate: Roughness"));
-	std::future<gear::Ref<graphics::Texture>> slateAO = std::async(std::launch::async, LoadTexture, window,std::string("res/img/slate2-tiled-ue4/slate2-tiled-ao.png"), std::string("UE4 Slate: AO"));
+	std::future<gear::Ref<graphics::Texture>> slateAO = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-ao.png"), std::string("UE4 Slate: AO"));
 	
 	Material::CreateInfo matCI;
 	matCI.debugName = "UE4 Rust Iron";
@@ -105,7 +105,7 @@ int main()
 		{ Material::TextureType::NORMAL, rustIronNormal.get() },
 		{ Material::TextureType::ALBEDO, rustIronAlbedo.get() },
 		{ Material::TextureType::METALLIC, rustIronMetallic.get() },
-		{ Material::TextureType::ROUGHNESS, rustIronRoughness.get() },
+		{ Material::TextureType::ROUGHNESS, rustIronRoughness.get() }
 	};
 	gear::Ref<Material> rustIronMaterial = gear::CreateRef<Material>(&matCI);
 	
@@ -116,7 +116,7 @@ int main()
 		{ Material::TextureType::ALBEDO, slateAlbedo.get() },
 		{ Material::TextureType::METALLIC, slateMetallic.get() },
 		{ Material::TextureType::ROUGHNESS, slateRoughness.get() },
-		{ Material::TextureType::AMBIENT_OCCLUSION, slateAO.get() },
+		{ Material::TextureType::AMBIENT_OCCLUSION, slateAO.get()}
 	};
 	gear::Ref<Material> slateMaterial = gear::CreateRef<Material>(&matCI);
 
@@ -202,7 +202,6 @@ int main()
 		//Update Timer
 		timer.Update();
 
-
 		//Update from Window
 		if (window->Resized())
 		{
@@ -255,7 +254,6 @@ int main()
 			if (pitch < -pi / 2)
 				pitch = -pi / 2;
 		}
-
 
 		//Camera Update
 		auto& camera = cameraEnitity.GetComponent<CameraComponent>().camera;

@@ -118,6 +118,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 	Ref<Fence> postTransferGraphicsFence = Fence::Create(&fenceCI);
 
 	//Get Texture Barries and/or Reload Textures
+	bool generateMipmps = false;
 	std::vector<Ref<Barrier>> textureUnknownToTransferDstBarrier;
 	std::vector<Ref<Barrier>> textureShaderReadOnlyBarrierToTransferDst;
 	std::vector<Ref<Barrier>> textureTransferDstToShaderReadOnlyBarrier;
@@ -131,6 +132,11 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 				{
 					auto reload_texture = [](gear::Ref<Texture> texture) { texture->Reload(); };
 					std::async(std::launch::async, reload_texture, texture.second);
+				}
+
+				if (texture.second->m_GenerateMipMaps && !texture.second->m_Generated)
+				{
+					generateMipmps = true;
 				}
 
 				if (!texture.second->m_TransitionUnknownToTransferDst)
@@ -161,7 +167,8 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 	}
 
 	bool preTransferGraphicsCmdBuffer = textureShaderReadOnlyBarrierToTransferDst.size();
-	bool transferCmdBuffer = forceUploadCamera || forceUploadLights || forceUploadMeshes || textureUnknownToTransferDstBarrier.size();
+	bool transferCmdBuffer = forceUploadCamera || forceUploadLights || forceUploadMeshes || forceUploadSkybox || textureUnknownToTransferDstBarrier.size();
+	bool asyncComputeCmdBufferMipMaps = generateMipmps;
 	bool postTransferGraphicsCmdBuffer = textureTransferDstToShaderReadOnlyBarrier.size();
 
 	//Upload Pre-Transfer Graphics CmdBuffer
@@ -188,7 +195,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 			m_Camera->GetUB()->Upload(m_TransCmdBuffer, 0, forceUploadCamera);
 			m_Lights[0]->GetUB()->Upload(m_TransCmdBuffer, 0, forceUploadLights);
 			m_Skybox->GetUB()->Upload(m_TransCmdBuffer, 0, forceUploadSkybox);
-			
+
 			for (auto& model : m_RenderQueue)
 			{
 				for (auto& vb : model->GetMesh()->GetVertexBuffers())
@@ -202,7 +209,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 
 			if (textureUnknownToTransferDstBarrier.size())
 				m_TransCmdBuffer->PipelineBarrier(0, PipelineStageBit::TOP_OF_PIPE_BIT, PipelineStageBit::TRANSFER_BIT, DependencyBit::NONE_BIT, textureUnknownToTransferDstBarrier);
-			
+
 			for (auto& model : m_RenderQueue)
 			{
 				for (auto& material : model->GetMesh()->GetMaterials())
@@ -219,6 +226,33 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 				m_TransCmdBuffer->Submit({ 0 }, { transfer0 }, { PipelineStageBit::TRANSFER_BIT }, { transfer1 }, transferFence);
 			else
 				m_TransCmdBuffer->Submit({ 0 }, {}, {}, { transfer1 }, transferFence);
+		}
+	}
+
+	if (asyncComputeCmdBufferMipMaps && transferCmdBuffer)
+		transferFence->Wait();
+
+	//Generate MipMaps on independent Compute Queue
+	{
+		if (asyncComputeCmdBufferMipMaps)
+		{
+			std::vector<std::future<void>> mipmapsDispatchs;
+			for (auto& model : m_RenderQueue)
+			{
+				for (auto& material : model->GetMesh()->GetMaterials())
+				{
+					for (auto& texture : material->GetTextures())
+					{
+						texture.second->GenerateMipMaps();
+						/*auto generateMipMaps_texture = [](gear::Ref<Texture> texture) { texture->GenerateMipMaps(); };
+						mipmapsDispatchs.push_back(std::async(std::launch::async, generateMipMaps_texture, texture.second));*/
+					}
+				}
+			}
+			for (auto& dispatch : mipmapsDispatchs)
+			{
+				dispatch.wait();
+			}
 		}
 	}
 
@@ -242,7 +276,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 
 	if (preTransferGraphicsCmdBuffer)
 		preTransferGraphicsFence->Wait();
-	if (transferCmdBuffer)
+	if (!asyncComputeCmdBufferMipMaps && transferCmdBuffer)
 		transferFence->Wait();
 	if (postTransferGraphicsCmdBuffer)
 		postTransferGraphicsFence->Wait();

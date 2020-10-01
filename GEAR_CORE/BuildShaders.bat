@@ -40,7 +40,7 @@ MIRU_SHADER_COMPILER.exe ^
 -spv -cso -t:6_4
 
 MIRU_SHADER_COMPILER.exe ^
--f:C:\Users\Andrew\source\repos\GEAR\GEAR_CORE/res/shaders/HLSL/GenerateMipMaps.comp.hlsl ^
+-f:C:\Users\Andrew\source\repos\GEAR\GEAR_CORE/res/shaders/HLSL/mipmap.comp.hlsl ^
 -o:C:\Users\Andrew\source\repos\GEAR\GEAR_CORE/res/shaders/bin ^
 -i:C:\Users\Andrew\source\repos\GEAR\GEAR_CORE\dep\MIRU\MIRU_SHADER_COMPILER/shaders/includes ^
 -i:C:\Users\Andrew\source\repos\GEAR\GEAR_CORE\src/Graphics ^

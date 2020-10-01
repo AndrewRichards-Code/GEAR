@@ -15,7 +15,7 @@
 
 //Graphics
 #include "Graphics/Framebuffer.h"
-#include "Graphics/GenerateMipMaps.h"
+#include "Graphics/ImageProcessing.h"
 #include "Graphics/Indexbuffer.h"
 #include "Graphics/MemoryBlockManager.h"
 #include "Graphics/Renderer.h"
