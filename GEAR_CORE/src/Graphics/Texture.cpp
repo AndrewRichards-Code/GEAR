@@ -32,15 +32,19 @@ Texture::Texture(CreateInfo* pCreateInfo)
 		m_CI.mipLevels = std::min(maxLevels, m_CI.mipLevels);
 	}
 	m_GenerateMipMaps = m_CI.mipLevels > 1 && m_CI.generateMipMaps;
+	m_CI.arrayLayers = m_Cubemap ? 6 : 1;
 
-	m_TextureUploadBufferCI.debugName = "GEAR_CORE_TextureUploadBuffer: " + m_CI.debugName;
-	m_TextureUploadBufferCI.device = m_CI.device;
-	m_TextureUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC;
-	m_TextureUploadBufferCI.imageDimension = { m_CI.width, m_CI.height, 4 };
-	m_TextureUploadBufferCI.size = imageData.size();
-	m_TextureUploadBufferCI.data = imageData.data();
-	m_TextureUploadBufferCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::CPU);// , MemoryBlock::BlockSize::BLOCK_SIZE_128MB);
-	m_TextureUploadBuffer = Buffer::Create(&m_TextureUploadBufferCI);
+	if (imageData.size())
+	{
+		m_TextureUploadBufferCI.debugName = "GEAR_CORE_TextureUploadBuffer: " + m_CI.debugName;
+		m_TextureUploadBufferCI.device = m_CI.device;
+		m_TextureUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC;
+		m_TextureUploadBufferCI.imageDimension = { m_CI.width, m_CI.height, 4 };
+		m_TextureUploadBufferCI.size = imageData.size();
+		m_TextureUploadBufferCI.data = imageData.data();
+		m_TextureUploadBufferCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::CPU);// , MemoryBlock::BlockSize::BLOCK_SIZE_128MB);
+		m_TextureUploadBuffer = Buffer::Create(&m_TextureUploadBufferCI);
+	}
 
 	m_TextureCI.debugName = "GEAR_CORE_Texture: " + m_CI.debugName;
 	m_TextureCI.device = m_CI.device;
@@ -50,7 +54,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_TextureCI.height = m_CI.height;
 	m_TextureCI.depth = m_CI.depth;
 	m_TextureCI.mipLevels = m_CI.mipLevels;
-	m_TextureCI.arrayLayers = m_Cubemap ? 6 : 1;
+	m_TextureCI.arrayLayers = m_CI.arrayLayers;
 	m_TextureCI.sampleCount = m_CI.samples;
 	m_TextureCI.usage = m_CI.usage | Image::UsageBit::SAMPLED_BIT | Image::UsageBit::TRANSFER_DST_BIT | (m_GenerateMipMaps ? Image::UsageBit::STORAGE_BIT : Image::UsageBit(0));
 	m_TextureCI.layout = Image::Layout::UNKNOWN;
@@ -70,6 +74,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_TextureImageViewCI.debugName = "GEAR_CORE_TextureImageView: " + m_CI.debugName;
 	m_TextureImageViewCI.device = m_CI.device;
 	m_TextureImageViewCI.pImage = m_Texture;
+	m_TextureImageViewCI.viewType = m_CI.type;
 	m_TextureImageViewCI.subresourceRange.aspect = m_DepthTexture ? Image::AspectBit::DEPTH_BIT : Image::AspectBit::COLOUR_BIT;
 	m_TextureImageViewCI.subresourceRange.baseMipLevel = 0;
 	m_TextureImageViewCI.subresourceRange.mipLevelCount = m_CI.mipLevels;
@@ -255,7 +260,10 @@ void Texture::LoadImageData(std::vector<uint8_t>& imageData)
 	}
 	else
 	{
-		imageData.resize(m_CI.size);
-		memcpy(imageData.data(), m_CI.data, m_CI.size);
+		if (m_CI.data && m_CI.size)
+		{
+			imageData.resize(m_CI.size);
+			memcpy(imageData.data(), m_CI.data, m_CI.size);
+		}
 	}
 }

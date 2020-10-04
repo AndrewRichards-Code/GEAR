@@ -21,6 +21,7 @@ namespace graphics
 			uint32_t									height;			//Option 2
 			uint32_t									depth;			//Option 2
 			uint32_t									mipLevels;
+			uint32_t									arrayLayers;
 			miru::crossplatform::Image::Type			type;
 			miru::crossplatform::Image::Format			format;
 			miru::crossplatform::Image::SampleCountBit	samples;
@@ -100,8 +101,6 @@ namespace graphics
 		inline std::string GetAnisotrophicValue() { return std::to_string(static_cast<int>(m_AnisotrophicValue)); }
 
 	private:
-		void AniostrophicFilting();
-		void MipMapping();
 		void CreateSampler();
 
 		//This populates the parameter imageData.

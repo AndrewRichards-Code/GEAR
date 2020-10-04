@@ -31,7 +31,7 @@ int main()
 	gear::Ref<Scene> activeScene = gear::CreateRef<Scene>(&sceneCI);
 
 	Window::CreateInfo windowCI;
-	windowCI.api = GraphicsAPI::API::D3D12;
+	windowCI.api = GraphicsAPI::API::VULKAN;
 	windowCI.title = "GEAR_TEST";
 	windowCI.width = 1920;
 	windowCI.height = 1080;
@@ -66,6 +66,7 @@ int main()
 	skyboxCI.debugName = "Skybox-HDR";
 	skyboxCI.device = window->GetDevice();
 	skyboxCI.filepaths = { "res/img/kloppenheim_06_2k.hdr" };
+	skyboxCI.generatedCubemapSize = 1024;
 	skyboxCI.transform.translation = Vec3(0, 0, 0);
 	skyboxCI.transform.orientation = Quat(1, 0, 0, 0);
 	skyboxCI.transform.scale = Vec3(500.0f, 500.0f, 500.0f);
@@ -280,6 +281,8 @@ int main()
 		m_Renderer->SubmitFramebuffer(window->GetFramebuffers());
 		m_Renderer->Upload(true, false, true, false);
 		m_Renderer->Flush();
+
+		skybox.GetComponent<SkyboxComponent>().skybox->GenerateCubemap();
 
 		m_Renderer->Present(window->GetSwapchain(), windowResize);
 		window->Update();

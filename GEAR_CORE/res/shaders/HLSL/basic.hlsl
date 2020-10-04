@@ -1,14 +1,17 @@
 #include "msc_common.h"
 #include "UniformBufferStructures.h"
 
-//To Post-Processing
-struct PS_OUT
+struct VS_IN
 {
-	MIRU_LOCATION(0, float4, colour, SV_TARGET0);
+	MIRU_LOCATION(0, float4, positions, POSITION0);
+	MIRU_LOCATION(1, float2, texCoords, TEXCOORD1);
+	MIRU_LOCATION(2, float4, normals, NORMAL2);
+	MIRU_LOCATION(3, float4, tangents, TANGENT3);
+	MIRU_LOCATION(4, float4, binormals, BINORMAL4);
+	MIRU_LOCATION(5, float4, colours, COLOR5);
 };
 
-//From Vertex Shader
-struct PS_IN
+struct VS_OUT
 {
 	MIRU_LOCATION(0, float4, position, SV_POSITION);
 	MIRU_LOCATION(1, float2, texCoord, TEXCOORD1);
@@ -17,8 +20,15 @@ struct PS_IN
 	MIRU_LOCATION(7, float4, vertexToCamera, POSITION7);
 	MIRU_LOCATION(8, float4, colour, COLOR8);
 };
+typedef VS_OUT PS_IN;
 
-//From Application
+struct PS_OUT
+{
+	MIRU_LOCATION(0, float4, colour, SV_TARGET0);
+};
+
+MIRU_UNIFORM_BUFFER(0, 0, Camera, camera);
+MIRU_UNIFORM_BUFFER(1, 0, Model, model);
 MIRU_UNIFORM_BUFFER(1, 1, PBRConstants, pbrConstants);
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 2, float4, normal);
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 3, float4, albedo);
@@ -29,6 +39,23 @@ MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 1, 7, float4, emissive);
 
 static const uint MAX_LIGHTS = 8;
 MIRU_UNIFORM_BUFFER(0, 1, Lights, lights);
+
+VS_OUT vs_main(VS_IN IN)
+{
+	VS_OUT OUT;
+	
+	OUT.position = mul(mul(mul(transpose(camera.proj), transpose(camera.view)), transpose(model.modl)), IN.positions);
+	OUT.texCoord = float2(model.texCoordScale0.x * IN.texCoords.x, model.texCoordScale0.y * IN.texCoords.y);
+	OUT.texCoord += float2(1, 1);
+	OUT.texCoord /= 2.0;
+	OUT.texCoord.y = 1.0 - OUT.texCoord.y;
+	OUT.tbn = float3x3(IN.tangents.xyz, IN.binormals.xyz, IN.normals.xyz);
+	OUT.worldSpace = mul(transpose(model.modl), IN.positions);	
+	OUT.vertexToCamera = normalize(camera.cameraPosition - OUT.worldSpace);
+	OUT.colour = IN.colours;
+	
+	return OUT;
+}
 
 //Helper Functions
 static const float PI = 3.1415926535897932384626433832795;
@@ -88,7 +115,7 @@ float SchlickGGX(float cosWiN, float cosWoN, float roughness)
 	return SchlickGGXSub(cosWiN, k) * SchlickGGXSub(cosWoN, k);
 }
 
-PS_OUT main(PS_IN IN)
+PS_OUT ps_main(PS_IN IN)
 {
 	PS_OUT OUT;
 	

@@ -218,6 +218,7 @@ int main(int argc, const char** argv)
 	imageViewCI.debugName = "GEAR_MIPMAP_ImageView";
 	imageViewCI.device = context->GetDevice();
 	imageViewCI.pImage = image;
+	imageViewCI.viewType = Image::Type::TYPE_2D;
 	for (uint32_t i = 0; i < levels; i++)
 	{
 		imageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, 1 };
@@ -277,13 +278,15 @@ int main(int argc, const char** argv)
 	shaderCI.recompileArguments.outputDirectory = "res/shaders/bin/";
 	shaderCI.recompileArguments.includeDirectories = { "../GEAR_CORE/dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" };
 	shaderCI.recompileArguments.entryPoint = "";
+	shaderCI.recompileArguments.shaderStage = "";
 	shaderCI.recompileArguments.shaderModel = "";
 	shaderCI.recompileArguments.macros = {};
 	shaderCI.recompileArguments.cso = true;
 	shaderCI.recompileArguments.spv = true;
 	shaderCI.recompileArguments.dxcLocation = "";
 	shaderCI.recompileArguments.glslangLocation = "";
-	shaderCI.recompileArguments.additioalArguments = "";
+	shaderCI.recompileArguments.dxcArguments = "";
+	shaderCI.recompileArguments.glslangArguments= "";
 	shaderCI.recompileArguments.nologo = false;
 	shaderCI.recompileArguments.nooutput = false;
 	Ref<Shader> shader = Shader::Create(&shaderCI);

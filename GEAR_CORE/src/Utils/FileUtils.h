@@ -191,5 +191,18 @@ namespace file_utils
 			input->stream->close();
 		}
 	}
+
+	static bool file_exist(const std::string& filepath)
+	{
+		return std::filesystem::exists(std::filesystem::path(filepath));
+	}
+
+	static std::filesystem::file_time_type get_file_last_write_time(const std::string& filepath)
+	{
+		if (file_exist(filepath))
+			return std::filesystem::last_write_time(std::filesystem::path(filepath));
+		else
+			std::filesystem::file_time_type();
+	}
 }
 }

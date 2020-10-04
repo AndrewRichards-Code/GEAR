@@ -1,0 +1,30 @@
+{
+  "fileType": "GEAR_RENDER_PIPELINE_FILE",
+  "debugName": "equirectangularToCube",
+  "shaders": [
+    {
+      "debugName": "equirectangularToCube_comp_main.spv",
+      "stage": "COMPUTE_BIT",
+      "entryPoint": "main",
+      "binaryFilepath": "res/shaders/bin/equirectangularToCube_comp_main.spv",
+      "recompileArguments": {
+        "mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
+        "hlslFilepath": "res/shaders/HLSL/equirectangularToCube.hlsl",
+        "outputDirectory": "res/shaders/bin/",
+        "includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
+        "entryPoint": "main",
+        "shaderStage": "comp",
+        "shaderModel": "6_4",
+        "macros": [],
+        "cso": true,
+        "spv": true,
+        "dxcLocation": "",
+        "glslangLocation": "",
+        "dxcArguments": "",
+        "glslangArguments": "",
+        "nologo": false,
+        "nooutput": false
+      }
+    }
+  ]
+}

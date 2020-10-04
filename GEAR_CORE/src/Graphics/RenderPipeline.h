@@ -9,6 +9,13 @@ namespace graphics
 	class RenderPipeline
 	{
 	public:
+		enum class ShaderBuildMode : uint32_t
+		{
+			NEVER,
+			INCREMENTAL,
+			ALWAYS
+		};
+
 		struct CreateInfo
 		{
 			std::string												debugName;

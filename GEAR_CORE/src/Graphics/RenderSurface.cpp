@@ -74,6 +74,7 @@ RenderSurface::RenderSurface(CreateInfo* pCreateInfo)
 	m_DepthImageViewCI.debugName = "GearBox_Swapchain: DepthImageView";
 	m_DepthImageViewCI.device = m_Context->GetDevice();
 	m_DepthImageViewCI.pImage = m_DepthImage;
+	m_DepthImageViewCI.viewType = Image::Type::TYPE_2D;
 	m_DepthImageViewCI.subresourceRange = { Image::AspectBit::DEPTH_BIT, 0, 1, 0, 1 };
 	m_DepthImageView = ImageView::Create(&m_DepthImageViewCI);
 

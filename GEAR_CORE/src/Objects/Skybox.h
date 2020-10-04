@@ -14,6 +14,7 @@ namespace objects
 			std::string					debugName;
 			void*						device;
 			std::vector<std::string>	filepaths;
+			uint32_t					generatedCubemapSize;
 			Transform					transform;
 			float						exposure = 1.0f;
 			float						gamma = 2.2f;
@@ -31,9 +32,13 @@ namespace objects
 
 		gear::Ref<graphics::Texture> m_Texture;
 		graphics::Texture::CreateInfo m_TextureCI;
+
+		gear::Ref<graphics::Texture> m_GeneratedCubemap;
+		graphics::Texture::CreateInfo m_GeneratedCubemapCI;
 		
 		bool m_Cubemap;
 		bool m_HDR;
+		bool m_Generated = false;
 
 		struct SkyboxInfo
 		{
@@ -52,10 +57,10 @@ namespace objects
 		//Update the skybox from the current state of Skybox::CreateInfo m_CI.
 		void Update();
 
+		void GenerateCubemap();
+
 		inline const gear::Ref<objects::Model>& GetModel() const { return m_Model; }
-
 		inline const gear::Ref<graphics::Uniformbuffer<SkyboxInfo>>& GetUB() const { return m_UB; }
-
 
 	private:
 		void InitialiseUBs();

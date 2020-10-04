@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
 #include "RenderPipeline.h"
+#include "Utils/FileUtils.h"
 #include "Utils/ModelLoader.h"
 
 #include "Core/EnumStringMaps.h"
@@ -11,6 +12,8 @@ using namespace graphics;
 using namespace miru;
 using namespace miru::crossplatform;
 
+RenderPipeline::ShaderBuildMode RenderPipeline::s_ShaderBuildMode = RenderPipeline::ShaderBuildMode::INCREMENTAL;
+
 RenderPipeline::RenderPipeline(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
@@ -18,6 +21,27 @@ RenderPipeline::RenderPipeline(CreateInfo* pCreateInfo)
 	for (auto& shaderCI : m_CI.shaderCreateInfo)
 	{
 		m_Shaders.emplace_back(Shader::Create(&shaderCI));
+
+		if (s_ShaderBuildMode == ShaderBuildMode::NEVER)
+		{
+			continue;
+		}
+		else if (s_ShaderBuildMode == ShaderBuildMode::INCREMENTAL)
+		{
+			if (file_utils::get_file_last_write_time(shaderCI.binaryFilepath)
+				< file_utils::get_file_last_write_time(shaderCI.recompileArguments.hlslFilepath))
+			{
+				m_Shaders.back()->Recompile();
+			}
+		}
+		else if (s_ShaderBuildMode == ShaderBuildMode::ALWAYS)
+		{
+			m_Shaders.back()->Recompile();
+		}
+		else
+		{
+			continue;
+		}
 	}
 	m_PipelineCI.shaders = m_Shaders;
 	m_Device = m_CI.shaderCreateInfo[0].device;
@@ -79,6 +103,7 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 		for (auto& includeDir : recompileArgs["includeDirectories"])
 			shaderCI.recompileArguments.includeDirectories.push_back(relativePathFromCwdToProjDir + std::string(includeDir));
 		shaderCI.recompileArguments.entryPoint = recompileArgs["entryPoint"];
+		shaderCI.recompileArguments.shaderStage = recompileArgs["shaderStage"];
 		shaderCI.recompileArguments.shaderModel = recompileArgs["shaderModel"];
 		for (auto& macro : recompileArgs["macros"])
 			shaderCI.recompileArguments.macros.push_back(macro);
@@ -314,7 +339,28 @@ void RenderPipeline::FinalisePipline()
 void RenderPipeline::RecompileShaders()
 {
 	for (auto& shader : m_Shaders)
-		shader->Recompile();
+	{
+		if (s_ShaderBuildMode == ShaderBuildMode::NEVER)
+		{
+			continue;
+		}
+		else if (s_ShaderBuildMode == ShaderBuildMode::INCREMENTAL)
+		{
+			if (file_utils::get_file_last_write_time(shader->GetCreateInfo().binaryFilepath)
+				< file_utils::get_file_last_write_time(shader->GetCreateInfo().recompileArguments.hlslFilepath))
+			{
+				shader->Recompile();
+			}
+		}
+		else if (s_ShaderBuildMode == ShaderBuildMode::ALWAYS)
+		{
+			shader->Recompile();
+		}
+		else
+		{
+			continue;
+		}
+	}
 
 	m_PipelineCI.shaders = m_Shaders;
 	Rebuild();

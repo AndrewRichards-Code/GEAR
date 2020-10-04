@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
 #include "Skybox.h"
+#include "Graphics/ImageProcessing.h"
 #include "stb_image.h"
 
 using namespace gear;
@@ -29,6 +30,22 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	m_TextureCI.usage = Image::UsageBit(0);
 	m_TextureCI.generateMipMaps = false;
 	m_Texture = gear::CreateRef<Texture>(&m_TextureCI);
+
+	m_GeneratedCubemapCI.debugName = "GEAR_CORE_Skybox_GeneratedCubemap: " + m_CI.debugName;
+	m_GeneratedCubemapCI.device = m_CI.device;
+	m_GeneratedCubemapCI.data = nullptr;
+	m_GeneratedCubemapCI.size = 0;
+	m_GeneratedCubemapCI.width = m_CI.generatedCubemapSize;
+	m_GeneratedCubemapCI.height = m_CI.generatedCubemapSize;
+	m_GeneratedCubemapCI.depth = 1;
+	m_GeneratedCubemapCI.mipLevels = 1;
+	m_GeneratedCubemapCI.arrayLayers = 6;
+	m_GeneratedCubemapCI.type = Image::Type::TYPE_CUBE;
+	m_GeneratedCubemapCI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
+	m_GeneratedCubemapCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	m_GeneratedCubemapCI.usage = Image::UsageBit::STORAGE_BIT;
+	m_GeneratedCubemapCI.generateMipMaps = false;
+	m_GeneratedCubemap = gear::CreateRef<Texture>(&m_GeneratedCubemapCI);
 
 	m_MaterialCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
 	m_MaterialCI.device = m_CI.device;
@@ -64,6 +81,15 @@ void Skybox::Update()
 
 	m_Model->GetUB()->modl = TransformToMat4(m_CI.transform);
 	m_Model->GetUB()->SubmitData();
+}
+
+void Skybox::GenerateCubemap()
+{
+	//if (!m_Generated)
+	{
+		ImageProcessing::EquirectangularToCube(m_GeneratedCubemap, m_Texture);
+		m_Generated = true;
+	}
 }
 
 void Skybox::InitialiseUBs()
