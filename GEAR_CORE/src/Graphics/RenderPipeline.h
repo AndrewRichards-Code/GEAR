@@ -49,6 +49,8 @@ namespace graphics
 		std::vector<miru::Ref<miru::crossplatform::Shader>> m_Shaders;
 		std::vector<std::vector<miru::crossplatform::Shader::ResourceBindingDescription>> m_RBDs;
 
+		static ShaderBuildMode s_ShaderBuildMode;
+
 	public:
 		CreateInfo m_CI;
 
@@ -62,6 +64,8 @@ namespace graphics
 		void FinalisePipline();
 		void RecompileShaders();
 		void Rebuild();
+
+		inline static void SetShaderBuildMode(ShaderBuildMode buildMode) { s_ShaderBuildMode = buildMode; }
 
 		inline const miru::Ref<miru::crossplatform::Pipeline>& GetPipeline() const { return m_Pipeline; };
 		inline const std::vector<miru::Ref<miru::crossplatform::DescriptorSetLayout>>& GetDescriptorSetLayouts() { return m_DescSetLayouts; };
