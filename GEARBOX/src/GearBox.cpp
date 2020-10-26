@@ -45,13 +45,24 @@ GearBox::GearBox(QWidget* parent)
 	m_RenderSurface = gear::CreateRef<RenderSurface>(&m_RenderSurfaceCI);
 	ui.scenePlayerDockWidgetContents->UpdateRenderingLabels(m_RenderSurface);
 
-	MemoryBlockManager::CreateInfo mbmCI;
+	AllocatorManager::CreateInfo mbmCI;
 	mbmCI.pContext = m_RenderSurface->GetContext();
-	mbmCI.defaultBlockSize = MemoryBlock::BlockSize::BLOCK_SIZE_128MB;
-	MemoryBlockManager::Initialise(&mbmCI);
+	mbmCI.defaultBlockSize = Allocator::BlockSize::BLOCK_SIZE_128MB;
+	AllocatorManager::Initialise(&mbmCI);
 
 	m_Renderer = gear::CreateRef<Renderer>(m_RenderSurface->GetContext());
 	m_Renderer->InitialiseRenderPipelines({ "res/pipelines/basic.grpf.json", "res/pipelines/cube.grpf.json" }, (float)m_RenderSurface->GetWidth(), (float)m_RenderSurface->GetHeight(), m_RenderSurface->GetRenderPass());
+
+	Skybox::CreateInfo skyboxCI;
+	skyboxCI.debugName = "Skybox-HDR";
+	skyboxCI.device = m_RenderSurface->GetDevice();
+	skyboxCI.filepaths = { "res/img/kloppenheim_06_2k.hdr" };
+	skyboxCI.generatedCubemapSize = 1024;
+	skyboxCI.transform.translation = Vec3(0, 0, 0);
+	skyboxCI.transform.orientation = Quat(1, 0, 0, 0);
+	skyboxCI.transform.scale = Vec3(500.0f, 500.0f, 500.0f);
+	Entity skybox = m_ActiveScene->CreateEntity();
+	skybox.AddComponent<SkyboxComponent>(std::move(gear::CreateRef<Skybox>(&skyboxCI)));
 
 	Camera::CreateInfo cameraCI;
 	cameraCI.debugName = "Main Camera";
@@ -78,13 +89,16 @@ GearBox::GearBox(QWidget* parent)
 	Entity light = m_ActiveScene->CreateEntity();
 	light.AddComponent<LightComponent>(std::move(gear::CreateRef<Light>(&lightCI)));
 
-	auto LoadTexture = [](void* device, std::string filepath, std::string debugName) -> gear::Ref<graphics::Texture>
+	auto LoadTexture = [](void* device, const std::string& filepath, const std::string& debugName) -> gear::Ref<graphics::Texture>
 	{
 		Texture::CreateInfo texCI;
 		texCI.debugName = debugName.c_str();
 		texCI.device = device;
-		texCI.filepaths = { filepath };
+		texCI.dataType = Texture::DataType::FILE;
+		texCI.file.filepaths = &filepath;
+		texCI.file.count = 1;
 		texCI.mipLevels = 1;
+		texCI.arrayLayers = 1;
 		texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
 		texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
 		texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
@@ -221,7 +235,7 @@ void GearBox::Render()
 	m_ActiveScene->OnUpdate(m_Renderer, m_GearTimer);
 
 	m_Renderer->SubmitFramebuffer(m_RenderSurface->GetFramebuffers());
-	m_Renderer->Upload(true, false, false);
+	m_Renderer->Upload(true, false, true, false);
 	m_Renderer->Flush();
 
 	m_Renderer->Present(m_RenderSurface->GetSwapchain(), windowResize);

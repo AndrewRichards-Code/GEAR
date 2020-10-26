@@ -9,17 +9,37 @@ namespace graphics
 	class Texture
 	{
 	public:
+		enum class DataType : uint32_t
+		{
+			DATA,
+			FILE
+		};
+
+		struct DataTypeDataParameters
+		{
+			const uint8_t*	data;
+			size_t			size;
+			uint32_t		width;
+			uint32_t		height;
+			uint32_t		depth;
+		};
+		struct DataTypeFileParameters
+		{
+			const std::string*	filepaths;
+			size_t				count;
+		};
+
 		//Provide either filepaths or data, size and image dimension details.
 		struct CreateInfo
 		{
 			std::string									debugName;
 			void*										device;
-			std::vector<std::string>					filepaths;		//Option 1
-			const uint8_t*								data;			//Option 2
-			size_t										size;			//Option 2
-			uint32_t									width;			//Option 2
-			uint32_t									height;			//Option 2
-			uint32_t									depth;			//Option 2
+			DataType									dataType;
+			union
+			{
+				DataTypeDataParameters		data;
+				DataTypeFileParameters		file;
+			};
 			uint32_t									mipLevels;
 			uint32_t									arrayLayers;
 			miru::crossplatform::Image::Type			type;
@@ -54,7 +74,11 @@ namespace graphics
 
 		CreateInfo m_CI;
 
-		int m_BPP = 0; //BPP = Bits per pixel
+		uint32_t m_Width = 0;
+		uint32_t m_Height = 0;
+		uint32_t m_Depth = 0;
+
+		uint32_t m_BPP = 0; //BPP = Bits per pixel
 		bool m_HDR = false;
 		bool m_Cubemap = false;
 		bool m_DepthTexture = false;
@@ -80,17 +104,21 @@ namespace graphics
 		const CreateInfo& GetCreateInfo() { return m_CI; }
 
 		void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
+		void Download(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
 		void TransitionSubResources(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers, const std::vector<SubresouresTransitionInfo>& transitionInfos);
 		void GenerateMipMaps();
 		void Reload();
 
-		inline int GetWidth() const { return m_CI.width; }
-		inline int GetHeight() const { return m_CI.height; }
-		inline int GetBPP() const { return m_BPP; }
+		void SubmitImageData(std::vector<uint8_t>& imageData);
+		void AccessImageData(std::vector<uint8_t>& imageData);
 
 		inline const miru::Ref<miru::crossplatform::Image>& GetTexture() const { return m_Texture; }
 		inline const miru::Ref<miru::crossplatform::ImageView>& GetTextureImageView() const { return m_TextureImageView; }
 		inline const miru::Ref<miru::crossplatform::Sampler>& GetTextureSampler() const { return m_Sampler; }
+		
+		inline const uint32_t& GetWidth() const { return m_Width; }
+		inline const uint32_t& GetHeight() const { return m_Height; }
+		inline const uint32_t& GetDepth() const { return m_Depth; }
 
 		inline bool IsCubemap() const { return m_Cubemap; }
 		inline bool IsDepthTexture() const { return m_DepthTexture; }
@@ -103,7 +131,7 @@ namespace graphics
 	private:
 		void CreateSampler();
 
-		//This populates the parameter imageData.
+		//This populates the parameter imageData. This should only be called in the constructor and Reload().
 		void LoadImageData(std::vector<uint8_t>& imageData);
 	};
 }

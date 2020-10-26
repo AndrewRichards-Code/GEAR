@@ -15,7 +15,7 @@ Renderer::Renderer(const miru::Ref<Context>& context)
 	m_CmdPoolCI.debugName = "GEAR_CORE_CommandPool_Renderer";
 	m_CmdPoolCI.pContext = context;
 	m_CmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
-	m_CmdPoolCI.queueFamilyIndex = 0;
+	m_CmdPoolCI.queueType = CommandPool::QueueType::GRAPHICS;
 	m_CmdPool = CommandPool::Create(&m_CmdPoolCI);
 
 	m_CmdBufferCI.debugName = "GEAR_CORE_CommandBuffer_Renderer";
@@ -28,7 +28,7 @@ Renderer::Renderer(const miru::Ref<Context>& context)
 	m_TransCmdPoolCI.debugName = "GEAR_CORE_CommandPool_Renderer_Transfer";
 	m_TransCmdPoolCI.pContext = context;
 	m_TransCmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
-	m_TransCmdPoolCI.queueFamilyIndex = 2;
+	m_TransCmdPoolCI.queueType = CommandPool::QueueType::TRANSFER;
 	m_TransCmdPool = CommandPool::Create(&m_TransCmdPoolCI);
 
 	m_TransCmdBufferCI.debugName = "GEAR_CORE_CommandBuffer_Renderer_Transfer";
@@ -243,9 +243,9 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 				{
 					for (auto& texture : material->GetTextures())
 					{
-						texture.second->GenerateMipMaps();
-						/*auto generateMipMaps_texture = [](gear::Ref<Texture> texture) { texture->GenerateMipMaps(); };
-						mipmapsDispatchs.push_back(std::async(std::launch::async, generateMipMaps_texture, texture.second));*/
+						//texture.second->GenerateMipMaps();
+						auto generateMipMaps_texture = [](gear::Ref<Texture> texture) { texture->GenerateMipMaps(); };
+						mipmapsDispatchs.push_back(std::async(std::launch::async, generateMipMaps_texture, texture.second));
 					}
 				}
 			}

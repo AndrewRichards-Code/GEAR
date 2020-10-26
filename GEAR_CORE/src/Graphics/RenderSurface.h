@@ -29,7 +29,7 @@ namespace graphics
 		miru::crossplatform::Swapchain::CreateInfo m_SwapchainCI;
 
 		//DepthImage
-		miru::Ref<miru::crossplatform::MemoryBlock> m_DepthMB;
+		miru::Ref<miru::crossplatform::Allocator> m_DepthAllocator;
 		miru::Ref<miru::crossplatform::Image> m_DepthImage;
 		miru::crossplatform::Image::CreateInfo m_DepthImageCI;
 		miru::Ref<miru::crossplatform::ImageView> m_DepthImageView;

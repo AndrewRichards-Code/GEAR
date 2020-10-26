@@ -117,14 +117,12 @@ ModelLoader::MeshData ModelLoader::ProcessMesh(aiMesh* mesh, aiNode* node, const
 				}
 
 				graphics::Texture::CreateInfo texCI;
-				texCI.device;
-				texCI.filepaths = { filepath };
-				texCI.data = nullptr;
-				texCI.size = 0;
-				texCI.width = 0;
-				texCI.height = 0 ;
-				texCI.depth = 0;
+				texCI.device = m_Device;
+				texCI.dataType = graphics::Texture::DataType::FILE;
+				texCI.file.filepaths = &filepath;
+				texCI.file.count = 1;
 				texCI.mipLevels = 1;
+				texCI.arrayLayers = 1;
 				texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
 				texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
 				texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;

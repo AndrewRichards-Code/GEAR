@@ -1,7 +1,7 @@
 #include "gear_core_common.h"
 #include "ImageProcessing.h"
 
-#include "MemoryBlockManager.h"
+#include "AllocatorManager.h"
 #include "RenderPipeline.h"
 #include "Texture.h"
 #include "directx12/D3D12CommandPoolBuffer.h"
@@ -30,7 +30,7 @@ void ImageProcessing::GenerateMipMaps(Texture* texture)
 	if(!s_PipelineMipMap)
 	{ 
 		RenderPipeline::LoadInfo s_PipelineLI;
-		s_PipelineLI.device = MemoryBlockManager::GetCreateInfo().pContext->GetDevice();
+		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
 		s_PipelineLI.filepath = "res/pipelines/mipmap.grpf.json";
 		s_PipelineLI.viewportWidth = 0.0f;
 		s_PipelineLI.viewportHeight = 0.0f;
@@ -41,7 +41,7 @@ void ImageProcessing::GenerateMipMaps(Texture* texture)
 	if (!s_PipelineMipMapArray)
 	{
 		RenderPipeline::LoadInfo s_PipelineLI;
-		s_PipelineLI.device = MemoryBlockManager::GetCreateInfo().pContext->GetDevice();
+		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
 		s_PipelineLI.filepath = "res/pipelines/mipmapArray.grpf.json";
 		s_PipelineLI.viewportWidth = 0.0f;
 		s_PipelineLI.viewportHeight = 0.0f;
@@ -52,9 +52,9 @@ void ImageProcessing::GenerateMipMaps(Texture* texture)
 
 	CommandPool::CreateInfo m_ComputeCmdPoolCI;
 	m_ComputeCmdPoolCI.debugName = "GEAR_CORE_CommandPool_MipMap_Compute";
-	m_ComputeCmdPoolCI.pContext = MemoryBlockManager::GetCreateInfo().pContext;
+	m_ComputeCmdPoolCI.pContext = AllocatorManager::GetCreateInfo().pContext;
 	m_ComputeCmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
-	m_ComputeCmdPoolCI.queueFamilyIndex = 1;
+	m_ComputeCmdPoolCI.queueType = CommandPool::QueueType::COMPUTE;
 	miru::Ref<CommandPool> m_ComputeCmdPool = CommandPool::Create(&m_ComputeCmdPoolCI);
 
 	CommandBuffer::CreateInfo m_ComputeCmdBufferCI;
@@ -150,8 +150,8 @@ void ImageProcessing::GenerateMipMaps(Texture* texture)
 			m_ComputeCmdBuffer->PipelineBarrier(0, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
 
 			m_ComputeCmdBuffer->BindDescriptorSets(0, { m_DescSets[i - 1] }, pipeline->GetPipeline());
-			uint32_t width = std::max((texture->GetCreateInfo().width >> i) / 8, uint32_t(1));
-			uint32_t height = std::max((texture->GetCreateInfo().height >> i) / 8, uint32_t(1));
+			uint32_t width = std::max((texture->GetWidth() >> i) / 8, uint32_t(1));
+			uint32_t height = std::max((texture->GetHeight() >> i) / 8, uint32_t(1));
 			m_ComputeCmdBuffer->Dispatch(0, width, height, 1);
 
 			Texture::SubresouresTransitionInfo postDispatch;
@@ -191,7 +191,7 @@ void ImageProcessing::EquirectangularToCube(gear::Ref<Texture>& cubemap, gear::R
 	if (!s_PipelineEquirectangularToCube)
 	{
 		RenderPipeline::LoadInfo s_PipelineLI;
-		s_PipelineLI.device = MemoryBlockManager::GetCreateInfo().pContext->GetDevice();
+		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
 		s_PipelineLI.filepath = "res/pipelines/equirectangularToCube.grpf.json";
 		s_PipelineLI.viewportWidth = 0.0f;
 		s_PipelineLI.viewportHeight = 0.0f;
@@ -202,9 +202,9 @@ void ImageProcessing::EquirectangularToCube(gear::Ref<Texture>& cubemap, gear::R
 
 	CommandPool::CreateInfo m_ComputeCmdPoolCI;
 	m_ComputeCmdPoolCI.debugName = "GEAR_CORE_CommandPool_EquirectangularToCube_Compute";
-	m_ComputeCmdPoolCI.pContext = MemoryBlockManager::GetCreateInfo().pContext;
+	m_ComputeCmdPoolCI.pContext = AllocatorManager::GetCreateInfo().pContext;
 	m_ComputeCmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
-	m_ComputeCmdPoolCI.queueFamilyIndex = 1;
+	m_ComputeCmdPoolCI.queueType = CommandPool::QueueType::COMPUTE;
 	miru::Ref<CommandPool> m_ComputeCmdPool = CommandPool::Create(&m_ComputeCmdPoolCI);
 
 	CommandBuffer::CreateInfo m_ComputeCmdBufferCI;
@@ -289,8 +289,8 @@ void ImageProcessing::EquirectangularToCube(gear::Ref<Texture>& cubemap, gear::R
 		m_ComputeCmdBuffer->PipelineBarrier(0, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
 
 		m_ComputeCmdBuffer->BindDescriptorSets(0, { m_DescSet }, s_PipelineEquirectangularToCube->GetPipeline());
-		uint32_t width = std::max(texture->GetCreateInfo().width / 32, uint32_t(1));
-		uint32_t height = std::max(texture->GetCreateInfo().height / 32, uint32_t(1));
+		uint32_t width = std::max(texture->GetWidth() / 32, uint32_t(1));
+		uint32_t height = std::max(texture->GetHeight() / 32, uint32_t(1));
 		uint32_t depth = 6;
 		m_ComputeCmdBuffer->Dispatch(0, width, height, depth);
 

@@ -22,8 +22,11 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 
 	m_TextureCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
 	m_TextureCI.device = m_CI.device;
-	m_TextureCI.filepaths = m_CI.filepaths;
+	m_TextureCI.dataType = Texture::DataType::FILE;
+	m_TextureCI.file.filepaths = m_CI.filepaths.data();
+	m_TextureCI.file.count = m_CI.filepaths.size();
 	m_TextureCI.mipLevels = 1;
+	m_TextureCI.arrayLayers = m_CI.filepaths.size() == 6 ? 6 : 1;
 	m_TextureCI.type = m_CI.filepaths.size() == 6 ? Image::Type::TYPE_CUBE : Image::Type::TYPE_2D;
 	m_TextureCI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
 	m_TextureCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
@@ -33,11 +36,12 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 
 	m_GeneratedCubemapCI.debugName = "GEAR_CORE_Skybox_GeneratedCubemap: " + m_CI.debugName;
 	m_GeneratedCubemapCI.device = m_CI.device;
-	m_GeneratedCubemapCI.data = nullptr;
-	m_GeneratedCubemapCI.size = 0;
-	m_GeneratedCubemapCI.width = m_CI.generatedCubemapSize;
-	m_GeneratedCubemapCI.height = m_CI.generatedCubemapSize;
-	m_GeneratedCubemapCI.depth = 1;
+	m_GeneratedCubemapCI.dataType = Texture::DataType::DATA;
+	m_GeneratedCubemapCI.data.data = nullptr;
+	m_GeneratedCubemapCI.data.size = 0;
+	m_GeneratedCubemapCI.data.width = m_CI.generatedCubemapSize;
+	m_GeneratedCubemapCI.data.height = m_CI.generatedCubemapSize;
+	m_GeneratedCubemapCI.data.depth = 1;
 	m_GeneratedCubemapCI.mipLevels = 1;
 	m_GeneratedCubemapCI.arrayLayers = 6;
 	m_GeneratedCubemapCI.type = Image::Type::TYPE_CUBE;

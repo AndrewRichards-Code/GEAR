@@ -202,7 +202,7 @@ namespace file_utils
 		if (file_exist(filepath))
 			return std::filesystem::last_write_time(std::filesystem::path(filepath));
 		else
-			std::filesystem::file_time_type();
+			return std::filesystem::file_time_type();
 	}
 }
 }

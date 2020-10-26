@@ -75,12 +75,14 @@ void Material::CreateDefaultColourTextures()
 	Texture::CreateInfo texCI;
 	texCI.debugName = "GEAR_CORE_Material: Blank Texture";
 	texCI.device = m_CI.device;
-	texCI.data = dataWhite;
-	texCI.size = 4;
-	texCI.width = 1;
-	texCI.height = 1;
-	texCI.depth = 1;
+	texCI.dataType = Texture::DataType::DATA;
+	texCI.data.data = dataWhite;
+	texCI.data.size = 4;
+	texCI.data.width = 1;
+	texCI.data.height = 1;
+	texCI.data.depth = 1;
 	texCI.mipLevels = 1;
+	texCI.arrayLayers = 1;
 	texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
 	texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
 	texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
@@ -89,10 +91,10 @@ void Material::CreateDefaultColourTextures()
 	s_WhiteTexture = gear::CreateRef<Texture>(&texCI);
 
 	uint8_t dataBlue[4] = { 0x00, 0x00, 0xFF, 0xFF };
-	texCI.data = dataBlue;
+	texCI.data.data = dataBlue;
 	s_BlueTexture = gear::CreateRef<Texture>(&texCI);
 
 	uint8_t dataBlack[4] = { 0x00, 0x00, 0x0, 0xFF };
-	texCI.data = dataBlack;
+	texCI.data.data = dataBlack;
 	s_BlackTexture = gear::CreateRef<Texture>(&texCI);
 }

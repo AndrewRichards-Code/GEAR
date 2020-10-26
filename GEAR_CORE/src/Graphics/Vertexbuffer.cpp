@@ -1,6 +1,6 @@
 #include "gear_core_common.h"
 #include "Vertexbuffer.h"
-#include "Graphics/MemoryBlockManager.h"
+#include "Graphics/AllocatorManager.h"
 
 using namespace gear;
 using namespace graphics;
@@ -14,18 +14,18 @@ Vertexbuffer::Vertexbuffer(CreateInfo* pCreateInfo)
 
 	m_VertexBufferUploadCI.debugName = "GEAR_CORE_VertexBufferUpload: " + m_CI.debugName;
 	m_VertexBufferUploadCI.device = m_CI.device;
-	m_VertexBufferUploadCI.usage = Buffer::UsageBit::TRANSFER_SRC;
+	m_VertexBufferUploadCI.usage = Buffer::UsageBit::TRANSFER_SRC_BIT;
 	m_VertexBufferUploadCI.size = m_CI.size;
 	m_VertexBufferUploadCI.data = m_CI.data;
-	m_VertexBufferUploadCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::CPU);
+	m_VertexBufferUploadCI.pAllocator = AllocatorManager::GetAllocator(AllocatorManager::AllocatorType::CPU);
 	m_VertexBufferUpload = Buffer::Create(&m_VertexBufferUploadCI);
 
 	m_VertexBufferCI.debugName = "GEAR_CORE_VertexBuffer: " + m_CI.debugName;
 	m_VertexBufferCI.device = m_CI.device;
-	m_VertexBufferCI.usage = Buffer::UsageBit::TRANSFER_DST | Buffer::UsageBit::VERTEX;
+	m_VertexBufferCI.usage = Buffer::UsageBit::TRANSFER_DST_BIT | Buffer::UsageBit::VERTEX_BIT;
 	m_VertexBufferCI.size = m_CI.size;
 	m_VertexBufferCI.data = nullptr;
-	m_VertexBufferCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::GPU);
+	m_VertexBufferCI.pAllocator = AllocatorManager::GetAllocator(AllocatorManager::AllocatorType::GPU);
 	m_VertexBuffer = Buffer::Create(&m_VertexBufferCI);
 
 	m_VertexBufferViewCI.debugName = "GEAR_CORE_VertexBufferViewUsage: " + m_CI.debugName;

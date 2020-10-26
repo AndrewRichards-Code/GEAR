@@ -41,10 +41,10 @@ int main()
 	windowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::RENDER_DOC;
 	gear::Ref<Window> window = gear::CreateRef<Window>(&windowCI);
 
-	MemoryBlockManager::CreateInfo mbmCI;
+	AllocatorManager::CreateInfo mbmCI;
 	mbmCI.pContext = window->GetContext();
-	mbmCI.defaultBlockSize = MemoryBlock::BlockSize::BLOCK_SIZE_128MB;
-	MemoryBlockManager::Initialise(&mbmCI);
+	mbmCI.defaultBlockSize = Allocator::BlockSize::BLOCK_SIZE_128MB;
+	AllocatorManager::Initialise(&mbmCI);
 	
 	/*Mesh::CreateInfo meshCI;
 	meshCI.device = window.GetDevice();
@@ -73,13 +73,16 @@ int main()
 	Entity skybox = activeScene->CreateEntity();
 	skybox.AddComponent<SkyboxComponent>(std::move(gear::CreateRef<Skybox>(&skyboxCI)));
 
-	auto LoadTexture = [](gear::Ref<Window> window, std::string filepath, std::string debugName) -> gear::Ref<graphics::Texture>
+	auto LoadTexture = [](gear::Ref<Window> window, const std::string& filepath, const std::string& debugName) -> gear::Ref<graphics::Texture>
 	{
 		Texture::CreateInfo texCI;
 		texCI.debugName = debugName.c_str();
 		texCI.device = window->GetDevice();
-		texCI.filepaths = { filepath };
+		texCI.dataType = Texture::DataType::FILE;
+		texCI.file.filepaths = &filepath;
+		texCI.file.count = 1;
 		texCI.mipLevels = GEAR_TEXTURE_MAX_MIP_LEVEL;
+		texCI.arrayLayers = 1;
 		texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
 		texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
 		texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
@@ -185,7 +188,7 @@ int main()
 	gear::Ref<Renderer> m_Renderer = gear::CreateRef<Renderer>(window->GetContext());
 	m_Renderer->InitialiseRenderPipelines({"res/pipelines/basic.grpf.json", "res/pipelines/cube.grpf.json" }, (float)window->GetWidth(), (float)window->GetHeight(), window->GetRenderPass());
 
-	MemoryBlockManager::PrintMemoryBlockStatus();
+	AllocatorManager::PrintMemoryBlockStatus();
 
 	double yaw = 0;
 	double pitch = 0;
@@ -282,7 +285,7 @@ int main()
 		m_Renderer->Upload(true, false, true, false);
 		m_Renderer->Flush();
 
-		skybox.GetComponent<SkyboxComponent>().skybox->GenerateCubemap();
+		//skybox.GetComponent<SkyboxComponent>().skybox->GenerateCubemap();
 
 		m_Renderer->Present(window->GetSwapchain(), windowResize);
 		window->Update();

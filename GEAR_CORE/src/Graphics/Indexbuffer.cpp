@@ -1,6 +1,6 @@
 #include "gear_core_common.h"
 #include "Indexbuffer.h"
-#include "Graphics/MemoryBlockManager.h"
+#include "Graphics/AllocatorManager.h"
 
 using namespace gear;
 using namespace graphics;
@@ -24,18 +24,18 @@ Indexbuffer::Indexbuffer(CreateInfo* pCreateInfo)
 
 	m_IndexBufferUploadCI.debugName = "GEAR_CORE_IndexBufferUpload: " + m_CI.debugName;
 	m_IndexBufferUploadCI.device = m_CI.device;
-	m_IndexBufferUploadCI.usage = Buffer::UsageBit::TRANSFER_SRC;
+	m_IndexBufferUploadCI.usage = Buffer::UsageBit::TRANSFER_SRC_BIT;
 	m_IndexBufferUploadCI.size = m_CI.size;
 	m_IndexBufferUploadCI.data = m_CI.data;
-	m_IndexBufferUploadCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::CPU);
+	m_IndexBufferUploadCI.pAllocator = AllocatorManager::GetAllocator(AllocatorManager::AllocatorType::CPU);
 	m_IndexBufferUpload = Buffer::Create(&m_IndexBufferUploadCI);
 
 	m_IndexBufferCI.debugName = "GEAR_CORE_IndexBuffer: " + m_CI.debugName;
 	m_IndexBufferCI.device = m_CI.device;
-	m_IndexBufferCI.usage = Buffer::UsageBit::TRANSFER_DST | Buffer::UsageBit::INDEX;
+	m_IndexBufferCI.usage = Buffer::UsageBit::TRANSFER_DST_BIT | Buffer::UsageBit::INDEX_BIT;
 	m_IndexBufferCI.size = m_CI.size;
 	m_IndexBufferCI.data = nullptr;
-	m_IndexBufferCI.pMemoryBlock =MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::GPU);
+	m_IndexBufferCI.pAllocator =AllocatorManager::GetAllocator(AllocatorManager::AllocatorType::GPU);
 	m_IndexBuffer = Buffer::Create(&m_IndexBufferCI);
 
 	m_IndexBufferViewCI.debugName = "GEAR_CORE_VertexBufferView: " + m_CI.debugName;

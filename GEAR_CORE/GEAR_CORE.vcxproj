@@ -96,6 +96,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="dep\STBI\stb_image_write.cpp" />
     <ClCompile Include="dep\STBI\stb_image.cpp" />
     <ClCompile Include="src\Graphics\RenderSurface.cpp" />
     <ClCompile Include="src\Audio\AudioInterfaces.cpp" />
@@ -111,7 +112,7 @@
     <ClCompile Include="src\Graphics\Framebuffer.cpp" />
     <ClCompile Include="src\Graphics\ImageProcessing.cpp" />
     <ClCompile Include="src\Graphics\Indexbuffer.cpp" />
-    <ClCompile Include="src\Graphics\MemoryBlockManager.cpp" />
+    <ClCompile Include="src\Graphics\AllocatorManager.cpp" />
     <ClCompile Include="src\Graphics\Renderer.cpp" />
     <ClCompile Include="src\Graphics\RenderPipeline.cpp" />
     <ClCompile Include="src\Graphics\Texture.cpp" />
@@ -131,6 +132,7 @@
   <ItemGroup>
     <ClInclude Include="dep\DATE\include\date.h" />
     <ClInclude Include="dep\STBI\stb_image.h" />
+    <ClInclude Include="dep\STBI\stb_image_write.h" />
     <ClInclude Include="src\Graphics\RenderSurface.h" />
     <ClInclude Include="src\Audio\AudioInterfaces.h" />
     <ClInclude Include="src\Audio\AudioSource.h" />
@@ -145,7 +147,7 @@
     <ClInclude Include="src\Graphics\ImageProcessing.h" />
     <ClInclude Include="src\Graphics\Indexbuffer.h" />
     <ClInclude Include="src\Graphics\MemoryBlockBanager.h" />
-    <ClInclude Include="src\Graphics\MemoryBlockManager.h" />
+    <ClInclude Include="src\Graphics\AllocatorManager.h" />
     <ClInclude Include="src\Graphics\Renderer.h" />
     <ClInclude Include="src\Graphics\RenderPipeline.h" />
     <ClInclude Include="src\Graphics\Storagebuffer.h" />

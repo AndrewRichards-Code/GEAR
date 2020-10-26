@@ -14,10 +14,10 @@
 #include "Core/TypeLibrary.h"
 
 //Graphics
+#include "Graphics/AllocatorManager.h"
 #include "Graphics/Framebuffer.h"
 #include "Graphics/ImageProcessing.h"
 #include "Graphics/Indexbuffer.h"
-#include "Graphics/MemoryBlockManager.h"
 #include "Graphics/Renderer.h"
 #include "Graphics/RenderPipeline.h"
 #include "Graphics/RenderSurface.h"

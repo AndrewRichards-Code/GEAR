@@ -204,10 +204,7 @@ void Scene::SaveToFile()
 				ordered_json& texture = textures[textureCI.debugName.c_str()];
 				texture["pbrType"] = pbrTexture.first;
 				texture["debugName"] = textureCI.debugName;
-				texture["filepaths"] = textureCI.filepaths;
-				texture["width"] = textureCI.width;
-				texture["height"] = textureCI.height;
-				texture["depth"] = textureCI.depth;
+				texture["arrayLayers"] = textureCI.arrayLayers;
 				texture["mipLevels"] = textureCI.mipLevels;
 				texture["type"] = textureCI.type;
 				texture["format"] = textureCI.format;

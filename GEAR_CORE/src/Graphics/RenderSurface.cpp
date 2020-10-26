@@ -35,10 +35,10 @@ RenderSurface::RenderSurface(CreateInfo* pCreateInfo)
 	m_ContextCI.deviceLayers = {};
 	m_ContextCI.deviceExtensions = { "VK_KHR_swapchain" };
 #endif
-	m_ContextCI.deviceDebugName = "GearBox_Context";
+	m_ContextCI.deviceDebugName = "GEAR_CORE_Context";
 	m_Context = Context::Create(&m_ContextCI);
 
-	m_SwapchainCI.debugName = "GearBox_Swapchain";
+	m_SwapchainCI.debugName = "GEAR_CORE_Swapchain";
 	m_SwapchainCI.pContext = m_Context;
 	m_SwapchainCI.pWindow = m_CI.window;
 	m_SwapchainCI.width = m_CurrentWidth;
@@ -47,14 +47,14 @@ RenderSurface::RenderSurface(CreateInfo* pCreateInfo)
 	m_SwapchainCI.vSync = m_CI.vSync;
 	m_Swapchain = Swapchain::Create(&m_SwapchainCI);
 
-	MemoryBlock::CreateInfo dpethMBCI;
-	dpethMBCI.debugName = "GearBox_MB_0_GPU_SwapchainDepthImage";
-	dpethMBCI.pContext = m_Context;
-	dpethMBCI.blockSize = MemoryBlock::BlockSize::BLOCK_SIZE_32MB;
-	dpethMBCI.properties = MemoryBlock::PropertiesBit::DEVICE_LOCAL_BIT;
-	m_DepthMB = MemoryBlock::Create(&dpethMBCI);
+	Allocator::CreateInfo depthAllocatorCI;
+	depthAllocatorCI.debugName = "GEAR_CORE_GPU_ALLOCATOR_SwapchainDepthImage";
+	depthAllocatorCI.pContext = m_Context;
+	depthAllocatorCI.blockSize = Allocator::BlockSize::BLOCK_SIZE_32MB;
+	depthAllocatorCI.properties = Allocator::PropertiesBit::DEVICE_LOCAL_BIT;
+	m_DepthAllocator = Allocator::Create(&depthAllocatorCI);
 
-	m_DepthImageCI.debugName = "GearBox_Swapchain: DepthImage";
+	m_DepthImageCI.debugName = "GEAR_CORE_Swapchain: DepthImage";
 	m_DepthImageCI.device = m_Context->GetDevice();
 	m_DepthImageCI.type = Image::Type::TYPE_2D;
 	m_DepthImageCI.format = Image::Format::D32_SFLOAT;
@@ -68,17 +68,17 @@ RenderSurface::RenderSurface(CreateInfo* pCreateInfo)
 	m_DepthImageCI.layout = GraphicsAPI::IsD3D12() ? Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL : Image::Layout::UNKNOWN;
 	m_DepthImageCI.size = 0;
 	m_DepthImageCI.data = nullptr;
-	m_DepthImageCI.pMemoryBlock = m_DepthMB;
+	m_DepthImageCI.pAllocator = m_DepthAllocator;
 	m_DepthImage = Image::Create(&m_DepthImageCI);
 
-	m_DepthImageViewCI.debugName = "GearBox_Swapchain: DepthImageView";
+	m_DepthImageViewCI.debugName = "GEAR_CORE_Swapchain: DepthImageView";
 	m_DepthImageViewCI.device = m_Context->GetDevice();
 	m_DepthImageViewCI.pImage = m_DepthImage;
 	m_DepthImageViewCI.viewType = Image::Type::TYPE_2D;
 	m_DepthImageViewCI.subresourceRange = { Image::AspectBit::DEPTH_BIT, 0, 1, 0, 1 };
 	m_DepthImageView = ImageView::Create(&m_DepthImageViewCI);
 
-	m_RenderPassCI.debugName = "GearBox_RenderPass_Default";
+	m_RenderPassCI.debugName = "GEAR_CORE_RenderPass_Default";
 	m_RenderPassCI.device = m_Context->GetDevice();
 	m_RenderPassCI.attachments =
 	{
@@ -158,7 +158,7 @@ std::string RenderSurface::GetDeviceName() const
 
 void RenderSurface::CreateFramebuffer()
 {
-	m_FramebufferCI.debugName = "GearBox_Framebuffer_Default";
+	m_FramebufferCI.debugName = "GEAR_CORE_Framebuffer_Default";
 	m_FramebufferCI.device = m_Context->GetDevice();
 	m_FramebufferCI.renderPass = m_RenderPass;
 	m_FramebufferCI.attachments = { m_Swapchain->m_SwapchainImageViews[0], m_DepthImageView };

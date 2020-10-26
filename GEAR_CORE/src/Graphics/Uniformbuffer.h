@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gear_core_common.h"
-#include "Graphics/MemoryBlockManager.h"
+#include "Graphics/AllocatorManager.h"
 #include "Graphics/UniformBufferStructures.h"
 
 namespace gear 
@@ -37,18 +37,18 @@ namespace graphics
 
 			m_UniformBufferUploadCI.debugName = "GEAR_CORE_UniformBufferUpload: " + m_CI.debugName;
 			m_UniformBufferUploadCI.device = m_CI.device;
-			m_UniformBufferUploadCI.usage = miru::crossplatform::Buffer::UsageBit::TRANSFER_SRC;
+			m_UniformBufferUploadCI.usage = miru::crossplatform::Buffer::UsageBit::TRANSFER_SRC_BIT;
 			m_UniformBufferUploadCI.size = GetSize();
 			m_UniformBufferUploadCI.data = m_CI.data;
-			m_UniformBufferUploadCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::CPU);
+			m_UniformBufferUploadCI.pAllocator = AllocatorManager::GetAllocator(AllocatorManager::AllocatorType::CPU);
 			m_UniformBufferUpload = miru::crossplatform::Buffer::Create(&m_UniformBufferUploadCI);
 
 			m_UniformBufferCI.debugName = "GEAR_CORE_UniformBuffer: " + m_CI.debugName;
 			m_UniformBufferCI.device = m_CI.device;
-			m_UniformBufferCI.usage = miru::crossplatform::Buffer::UsageBit::TRANSFER_DST | miru::crossplatform::Buffer::UsageBit::UNIFORM;
+			m_UniformBufferCI.usage = miru::crossplatform::Buffer::UsageBit::TRANSFER_DST_BIT | miru::crossplatform::Buffer::UsageBit::UNIFORM_BIT;
 			m_UniformBufferCI.size = GetSize();
 			m_UniformBufferCI.data = nullptr;
-			m_UniformBufferCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::GPU);
+			m_UniformBufferCI.pAllocator = AllocatorManager::GetAllocator(AllocatorManager::AllocatorType::GPU);
 			m_UniformBuffer = miru::crossplatform::Buffer::Create(&m_UniformBufferCI);
 
 			m_UniformBufferViewCI.debugName = "GEAR_CORE_UniformBufferViewUsage: " + m_CI.debugName;
@@ -66,7 +66,7 @@ namespace graphics
 
 		void SubmitData() const
 		{
-			m_UniformBufferUploadCI.pMemoryBlock->SubmitData(m_UniformBufferUpload->GetResource(), GetSize(), (void*)this);
+			m_UniformBufferUploadCI.pAllocator->SubmitData(m_UniformBufferUpload->GetAllocation(), GetSize(), (void*)this);
 		}
 		void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false)
 		{

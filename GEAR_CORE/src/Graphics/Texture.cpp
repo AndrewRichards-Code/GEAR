@@ -1,7 +1,7 @@
 #include "gear_core_common.h"
 #include "stb_image.h"
 #include "Texture.h"
-#include "MemoryBlockManager.h"
+#include "Graphics/AllocatorManager.h"
 #include "ImageProcessing.h"
 
 using namespace gear;
@@ -14,63 +14,60 @@ Texture::Texture(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
-	m_Cubemap = m_CI.type == Image::Type::TYPE_CUBE;
+	//Check cubemap and depth.
+	m_Cubemap = m_CI.type == Image::Type::TYPE_CUBE || m_CI.type == Image::Type::TYPE_CUBE_ARRAY;
 	m_DepthTexture = m_CI.format >= Image::Format::D16_UNORM;
+	if (m_Cubemap && m_CI.arrayLayers % 6 != 0)
+	{
+		GEAR_ASSERT(core::Log::Level::ERROR, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_VALUE, "For TYPE_CUBE or TYPE_CUBE_ARRAY, arrayLayers must be a multiple of 6");
+	}
 
+	//Load data
 	std::vector<uint8_t> imageData;
 	LoadImageData(imageData);
 
-	auto IsPowerOf2 = [](uint32_t x) -> bool { return !(x == 0) && !(x & (x - 1)); };
-	if (!(IsPowerOf2(m_CI.width) && IsPowerOf2(m_CI.height)))
+	//Calculate Mipmap details
+	if (!mars::Utility::IsPowerOf2(m_Width) && !mars::Utility::IsPowerOf2(m_Height))
 	{
 		m_CI.mipLevels = 1;
 		m_CI.generateMipMaps = false;
 	}
 	else
 	{
-		uint32_t maxLevels = static_cast<uint32_t>(log2(static_cast<double>(std::min(m_CI.width, m_CI.height)))) + 1;
+		uint32_t maxLevels = static_cast<uint32_t>(log2(static_cast<double>(std::min(m_Width, m_Height)))) + 1;
 		m_CI.mipLevels = std::min(maxLevels, m_CI.mipLevels);
 	}
 	m_GenerateMipMaps = m_CI.mipLevels > 1 && m_CI.generateMipMaps;
-	m_CI.arrayLayers = m_Cubemap ? 6 : 1;
 
-	if (imageData.size())
-	{
-		m_TextureUploadBufferCI.debugName = "GEAR_CORE_TextureUploadBuffer: " + m_CI.debugName;
-		m_TextureUploadBufferCI.device = m_CI.device;
-		m_TextureUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC;
-		m_TextureUploadBufferCI.imageDimension = { m_CI.width, m_CI.height, 4 };
-		m_TextureUploadBufferCI.size = imageData.size();
-		m_TextureUploadBufferCI.data = imageData.data();
-		m_TextureUploadBufferCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::CPU);// , MemoryBlock::BlockSize::BLOCK_SIZE_128MB);
-		m_TextureUploadBuffer = Buffer::Create(&m_TextureUploadBufferCI);
-	}
+	//Upload buffer
+	m_TextureUploadBufferCI.debugName = "GEAR_CORE_TextureUploadBuffer: " + m_CI.debugName;
+	m_TextureUploadBufferCI.device = m_CI.device;
+	m_TextureUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC_BIT | Buffer::UsageBit::TRANSFER_DST_BIT;
+	m_TextureUploadBufferCI.imageDimension = { m_Width, m_Height, 4 };
+	m_TextureUploadBufferCI.size = imageData.size();
+	m_TextureUploadBufferCI.data = imageData.data();
+	m_TextureUploadBufferCI.pAllocator = AllocatorManager::GetAllocator(AllocatorManager::AllocatorType::CPU);
+	m_TextureUploadBuffer = Buffer::Create(&m_TextureUploadBufferCI);
 
+	//Image
 	m_TextureCI.debugName = "GEAR_CORE_Texture: " + m_CI.debugName;
 	m_TextureCI.device = m_CI.device;
 	m_TextureCI.type = m_CI.type;
 	m_TextureCI.format = m_CI.format;
-	m_TextureCI.width = m_CI.width;
-	m_TextureCI.height = m_CI.height;
-	m_TextureCI.depth = m_CI.depth;
+	m_TextureCI.width = m_Width;
+	m_TextureCI.height = m_Height;
+	m_TextureCI.depth = m_Depth;
 	m_TextureCI.mipLevels = m_CI.mipLevels;
 	m_TextureCI.arrayLayers = m_CI.arrayLayers;
 	m_TextureCI.sampleCount = m_CI.samples;
-	m_TextureCI.usage = m_CI.usage | Image::UsageBit::SAMPLED_BIT | Image::UsageBit::TRANSFER_DST_BIT | (m_GenerateMipMaps ? Image::UsageBit::STORAGE_BIT : Image::UsageBit(0));
+	m_TextureCI.usage = m_CI.usage | Image::UsageBit::SAMPLED_BIT | Image::UsageBit::TRANSFER_DST_BIT | Image::UsageBit::TRANSFER_SRC_BIT | (m_GenerateMipMaps ? Image::UsageBit::STORAGE_BIT : Image::UsageBit(0));
 	m_TextureCI.layout = Image::Layout::UNKNOWN;
 	m_TextureCI.size = 0;
 	m_TextureCI.data = nullptr;
-	m_TextureCI.pMemoryBlock = MemoryBlockManager::GetMemoryBlock(MemoryBlockManager::MemoryBlockType::GPU);// , MemoryBlock::BlockSize::BLOCK_SIZE_128MB);
+	m_TextureCI.pAllocator = AllocatorManager::GetAllocator(AllocatorManager::AllocatorType::GPU);
 	m_Texture = Image::Create(&m_TextureCI);
 
-	for (uint32_t mipLevel = 0; mipLevel < m_TextureCI.mipLevels; mipLevel++)
-	{
-		for (uint32_t arrayLayers = 0; arrayLayers < m_TextureCI.arrayLayers; arrayLayers++)
-		{
-			m_SubresourceMap[mipLevel][arrayLayers] = Image::Layout::UNKNOWN;
-		}
-	}
-
+	//ImageView
 	m_TextureImageViewCI.debugName = "GEAR_CORE_TextureImageView: " + m_CI.debugName;
 	m_TextureImageViewCI.device = m_CI.device;
 	m_TextureImageViewCI.pImage = m_Texture;
@@ -79,10 +76,20 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_TextureImageViewCI.subresourceRange.baseMipLevel = 0;
 	m_TextureImageViewCI.subresourceRange.mipLevelCount = m_CI.mipLevels;
 	m_TextureImageViewCI.subresourceRange.baseArrayLayer = 0;
-	m_TextureImageViewCI.subresourceRange.arrayLayerCount = static_cast<uint32_t>(m_Cubemap ? 6 : 1);
+	m_TextureImageViewCI.subresourceRange.arrayLayerCount = m_CI.arrayLayers;
 	m_TextureImageView = ImageView::Create(&m_TextureImageViewCI);
 
+	//Default sampler
 	CreateSampler();
+
+	//Layouts
+	for (uint32_t mipLevel = 0; mipLevel < m_TextureCI.mipLevels; mipLevel++)
+	{
+		for (uint32_t arrayLayers = 0; arrayLayers < m_TextureCI.arrayLayers; arrayLayers++)
+		{
+			m_SubresourceMap[mipLevel][arrayLayers] = Image::Layout::UNKNOWN;
+		}
+	}
 }
 
 Texture::~Texture()
@@ -94,34 +101,48 @@ void Texture::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBuff
 	if (!m_Upload || force)
 	{
 		std::vector<Image::BufferImageCopy> bics;
-		if (m_Cubemap)
-		{
-			for (size_t i = 0; i < 6; i++)
-			{
-				Image::BufferImageCopy bic;
-				bic.bufferOffset = (i * m_CI.width * m_CI.height * 4);
-				bic.bufferRowLength = 0;
-				bic.bufferImageHeight = 0;
-				bic.imageSubresource = { Image::AspectBit::COLOUR_BIT, 0, (uint32_t)i, 1 };
-				bic.imageOffset = { 0, 0, 0 };
-				bic.imageExtent = { m_CI.width, m_CI.height, m_CI.depth };
-				bics.push_back(bic);
-			}
-		}
-		else
+		for (size_t level = 0; level < 1/*m_CI.mipLevels*/; level++)
 		{
 			Image::BufferImageCopy bic;
-			bic.bufferOffset = 0;
+			bic.bufferOffset = level == 0 ? 0 : (m_CI.arrayLayers * (m_Width >> (level - 1)) * (m_Height >> (level - 1)) * 4) + bics.back().bufferOffset;
 			bic.bufferRowLength = 0;
 			bic.bufferImageHeight = 0;
-			bic.imageSubresource = { Image::AspectBit::COLOUR_BIT, 0, 0, 1 };
+			bic.imageSubresource.aspectMask = m_DepthTexture ? Image::AspectBit::DEPTH_BIT : Image::AspectBit::COLOUR_BIT;
+			bic.imageSubresource.mipLevel = (uint32_t)level;
+			bic.imageSubresource.baseArrayLayer = 0;
+			bic.imageSubresource.arrayLayerCount = (uint32_t)m_CI.arrayLayers;
 			bic.imageOffset = { 0, 0, 0 };
-			bic.imageExtent = { m_CI.width, m_CI.height, m_CI.depth };
+			bic.imageExtent = { m_Width >> level, m_Height >> level, m_Depth };
 			bics.push_back(bic);
 		}
 
 		cmdBuffer->CopyBufferToImage(cmdBufferIndex, m_TextureUploadBuffer, m_Texture, Image::Layout::TRANSFER_DST_OPTIMAL, bics);
 		m_Upload = true;
+	}
+}
+
+void Texture::Download(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
+{
+	if (m_Upload || force)
+	{
+		std::vector<Image::BufferImageCopy> bics;
+		for (size_t level = 0; level < m_CI.mipLevels; level++)
+		{
+			Image::BufferImageCopy bic;
+			bic.bufferOffset = level == 0 ? 0 : (m_CI.arrayLayers * (m_Width >> (level - 1)) * (m_Height >> (level - 1)) * 4) + bics.back().bufferOffset;
+			bic.bufferRowLength = 0;
+			bic.bufferImageHeight = 0;
+			bic.imageSubresource.aspectMask = m_DepthTexture ? Image::AspectBit::DEPTH_BIT : Image::AspectBit::COLOUR_BIT;
+			bic.imageSubresource.mipLevel = (uint32_t)level;
+			bic.imageSubresource.baseArrayLayer = 0;
+			bic.imageSubresource.arrayLayerCount = (uint32_t)m_CI.arrayLayers;
+			bic.imageOffset = { 0, 0, 0 };
+			bic.imageExtent = { m_Width >> level, m_Height >> level , m_Depth };
+			bics.push_back(bic);
+		}
+		
+		cmdBuffer->CopyImageToBuffer(cmdBufferIndex, m_Texture, m_TextureUploadBuffer, Image::Layout::TRANSFER_SRC_OPTIMAL, bics);
+		m_Upload = false;
 	}
 }
 
@@ -176,10 +197,30 @@ void Texture::Reload()
 	std::vector<uint8_t> imageData;
 	LoadImageData(imageData);
 
-	m_TextureUploadBufferCI.pMemoryBlock->SubmitData(m_TextureUploadBuffer->GetResource(), imageData.size(), imageData.data());
+	m_TextureUploadBufferCI.pAllocator->SubmitData(m_TextureUploadBuffer->GetAllocation(), imageData.size(), imageData.data());
 
 	m_Upload = false;
 	m_Generated = false;
+}
+
+void Texture::SubmitImageData(std::vector<uint8_t>& imageData)
+{
+	m_TextureUploadBufferCI.pAllocator->SubmitData(m_TextureUploadBuffer->GetAllocation(), imageData.size(), imageData.data());
+}
+
+#include "directx12/D3D12Buffer.h"
+#include "vulkan/VKBuffer.h"
+
+void Texture::AccessImageData(std::vector<uint8_t>& imageData)
+{
+	imageData.clear();
+
+	if (GraphicsAPI::IsD3D12())
+		imageData.resize((size_t)miru::ref_cast<d3d12::Buffer>(m_TextureUploadBuffer)->m_D3D12MAllocation->GetSize());
+	else
+		imageData.resize((size_t)miru::ref_cast<vulkan::Buffer>(m_TextureUploadBuffer)->m_VmaAI.size);
+
+	m_TextureUploadBufferCI.pAllocator->AccessData(m_TextureUploadBuffer->GetAllocation(), imageData.size(), imageData.data());
 }
 
 void Texture::CreateSampler()
@@ -206,46 +247,46 @@ void Texture::CreateSampler()
 
 void Texture::LoadImageData(std::vector<uint8_t>& imageData)
 {
-	if (!m_CI.filepaths.empty())
+	if (m_CI.dataType == DataType::FILE && m_CI.file.filepaths && m_CI.file.count)
 	{
-		m_HDR = stbi_is_hdr(m_CI.filepaths[0].c_str());
+		m_HDR = stbi_is_hdr(m_CI.file.filepaths[0].c_str());
 		uint8_t* stbiBuffer = nullptr;
 		float* stbiBufferf = nullptr;
-		
+
 		if (!m_Cubemap)
 		{
 			if (m_HDR)
 			{
-				stbiBufferf = stbi_loadf(m_CI.filepaths[0].c_str(), (int*)&m_CI.width, (int*)&m_CI.height, &m_BPP, 4);
-				imageData.resize(m_CI.width * m_CI.height * 4 * sizeof(float));
+				stbiBufferf = stbi_loadf(m_CI.file.filepaths[0].c_str(), (int*)&m_Width, (int*)&m_Height, (int*)&m_BPP, 4);
+				imageData.resize(m_Width * m_Height * 4 * sizeof(float));
 				memcpy(imageData.data(), stbiBufferf, imageData.size());
 			}
 			else
 			{
-				stbiBuffer = stbi_load(m_CI.filepaths[0].c_str(), (int*)&m_CI.width, (int*)&m_CI.height, &m_BPP, 4);
-				imageData.resize(m_CI.width * m_CI.height * 4 * sizeof(uint8_t));
+				stbiBuffer = stbi_load(m_CI.file.filepaths[0].c_str(), (int*)&m_Width, (int*)&m_Height, (int*)&m_BPP, 4);
+				imageData.resize(m_Width * m_Height * 4 * sizeof(uint8_t));
 				memcpy(imageData.data(), stbiBuffer, imageData.size());
 			}
 		}
 		else
 		{
-			for (size_t i = 0; i < 6; i++)
+			for (size_t i = 0; i < m_CI.arrayLayers; i++)
 			{
 				if (m_HDR)
 				{
-					stbiBufferf = stbi_loadf(m_CI.filepaths[i].c_str(), (int*)&m_CI.width, (int*)&m_CI.height, &m_BPP, 4);
-					if (i == 0) 
-						imageData.resize(6 * m_CI.width * m_CI.height * 4 * sizeof(float));
+					stbiBufferf = stbi_loadf(m_CI.file.filepaths[i].c_str(), (int*)&m_Width, (int*)&m_Height, (int*)&m_BPP, 4);
+					if (i == 0)
+						imageData.resize(m_CI.arrayLayers * m_Width * m_Height * 4 * sizeof(float));
 
-					memcpy(imageData.data() + (i * (imageData.size() / 6)), stbiBufferf, (imageData.size() / 6));
+					memcpy(imageData.data() + (i * (imageData.size() / m_CI.arrayLayers)), stbiBufferf, (imageData.size() / 6));
 				}
 				else
 				{
-					stbiBuffer = stbi_load(m_CI.filepaths[i].c_str(), (int*)&m_CI.width, (int*)&m_CI.height, &m_BPP, 4);
+					stbiBuffer = stbi_load(m_CI.file.filepaths[i].c_str(), (int*)&m_Width, (int*)&m_Height, (int*)&m_BPP, 4);
 					if (i == 0)
-						imageData.resize(6 * m_CI.width * m_CI.height * 4 * sizeof(uint8_t));
+						imageData.resize(m_CI.arrayLayers * m_Width * m_Height * 4 * sizeof(uint8_t));
 
-					memcpy(imageData.data() + (i * (imageData.size() / 6)), stbiBuffer, (imageData.size() / 6));
+					memcpy(imageData.data() + (i * (imageData.size() / m_CI.arrayLayers)), stbiBuffer, (imageData.size() / 6));
 				}
 			}
 
@@ -256,14 +297,31 @@ void Texture::LoadImageData(std::vector<uint8_t>& imageData)
 		if (stbiBuffer)
 			stbi_image_free(stbiBuffer);
 
-		m_CI.depth = 1;
+		m_Depth = 1;
+	}
+	else if (m_CI.dataType == Texture::DataType::DATA)
+	{
+		m_Width = m_CI.data.width;
+		m_Height = m_CI.data.height;
+		m_Depth = m_CI.data.depth;
+		
+		if (m_CI.data.data && m_CI.data.size)
+		{
+			imageData.resize(m_CI.data.size);
+			memcpy(imageData.data(), m_CI.data.data, m_CI.data.size);
+		}
+		else
+		{
+			imageData.resize(m_CI.arrayLayers * m_Width * m_Height * 4 * sizeof(uint8_t)); //TODO: Channel and data type should based on the format.
+		}
 	}
 	else
 	{
-		if (m_CI.data && m_CI.size)
-		{
-			imageData.resize(m_CI.size);
-			memcpy(imageData.data(), m_CI.data, m_CI.size);
-		}
+		GEAR_ASSERT(core::Log::Level::ERROR, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_VALUE, "Unknown Texture::Create::DataType and/or invalid parameters.");
+	}
+
+	if (m_Width == 0 && m_Height == 0 && m_Depth == 0)
+	{
+		GEAR_ASSERT(core::Log::Level::ERROR, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_VALUE, "Invalid extent for Texture creation.");
 	}
 }
