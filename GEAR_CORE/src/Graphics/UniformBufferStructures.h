@@ -102,12 +102,6 @@ namespace gear
 				Light			lights[8];
 			};
 
-			struct SkyboxInfo
-			{
-				GEAR_FLOAT		exposure;
-				GEAR_FLOAT		gamma;
-			};
-
 			//Per model - Set 1
 
 			struct Model
@@ -115,6 +109,14 @@ namespace gear
 				GEAR_FLOAT4X4	modl;
 				GEAR_FLOAT2		texCoordScale0;
 				GEAR_FLOAT2		texCoordScale1;
+			};
+
+			//Per material - Set 2
+
+			struct SkyboxInfo
+			{
+				GEAR_FLOAT		exposure;
+				GEAR_FLOAT		gamma;
 			};
 
 			struct PBRConstants
@@ -148,16 +150,17 @@ namespace gear
 		{
 			PER_VIEW,
 			PER_MODEL,
+			PER_MATERIAL,
 			UNKNOWN
 		};
 
 		static std::map<std::string, SetUpdateType> SetUpdateTypeMap =
 		{
-			{ "CAMERA",			SetUpdateType::PER_VIEW  },
-			{ "LIGHTS",			SetUpdateType::PER_VIEW  },
-			{ "SKYBOXINFO",		SetUpdateType::PER_VIEW	 },
-			{ "MODEL",			SetUpdateType::PER_MODEL },
-			{ "PBRCONSTANTS",	SetUpdateType::PER_MODEL }
+			{ "CAMERA",			SetUpdateType::PER_VIEW		},
+			{ "LIGHTS",			SetUpdateType::PER_VIEW		},
+			{ "SKYBOXINFO",		SetUpdateType::PER_MATERIAL	},
+			{ "MODEL",			SetUpdateType::PER_MODEL	},
+			{ "PBRCONSTANTS",	SetUpdateType::PER_MATERIAL }
 		};
 	}
 }

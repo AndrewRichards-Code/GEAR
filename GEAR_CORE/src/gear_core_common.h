@@ -123,7 +123,7 @@ namespace gear
 #define GEAR_PRINTF(fmt, ...) __android_log_print(ANDROID_LOG_DEBUG, "GEAR_CORE", fmt, __VA_ARGS__)
 #endif
 #else
-#define GEAR_PRINTF(fmt, ...) printf_s("")
+#define GEAR_PRINTF(fmt, ...)
 #endif
 
 #if defined(_WIN64)

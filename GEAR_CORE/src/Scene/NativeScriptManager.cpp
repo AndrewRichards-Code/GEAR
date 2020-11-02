@@ -6,25 +6,26 @@ using namespace core;
 using namespace scene;
 
 #ifdef _DEBUG
-std::string NativeScriptManager::s_BuildScriptPath = std::filesystem::current_path().string() + "\\res\\scripts\\GEAR_NATIVE_SCRIPT\\dll\\x64\\Debug\\";
+std::string NativeScriptManager::s_BuildScriptPath = std::filesystem::current_path().string() + "\\..\\GEAR_CORE\\res\\scripting\\GEAR_NATIVE_SCRIPT\\dll\\x64\\Debug\\";
 #else
-std::string NativeScriptManager::s_BuildScriptPath = std::filesystem::current_path().string() + "\\res\\scripts\\GEAR_NATIVE_SCRIPT\\dll\\x64\\Release\\";
+std::string NativeScriptManager::s_BuildScriptPath = std::filesystem::current_path().string() + "\\..\\GEAR_CORE\\res\\scripting\\GEAR_NATIVE_SCRIPT\\dll\\x64\\Release\\";
 #endif
 
-void NativeScriptManager::Build()
+void NativeScriptManager::Build(const std::string& nativeScriptDir)
 {
 	std::string msBuildDir = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\MSBuild\\Current\\Bin";
-	std::string vcxprojDir = std::filesystem::current_path().string() + "\\res\\scripts\\GEAR_NATIVE_SCRIPT\\";
+	std::string vcxprojDir = std::filesystem::current_path().string() + "\\..\\GEAR_CORE\\res\\scripting\\GEAR_NATIVE_SCRIPT\\";
 	std::string solutionDir = std::filesystem::current_path().string() + "\\..\\";
+	std::string _nativeScriptDir = std::filesystem::current_path().string() + "\\" + nativeScriptDir;
 
-	if (!CheckPath(s_BuildScriptPath) && !CheckPath(msBuildDir) && !CheckPath(vcxprojDir))
+	if (!CheckPath(s_BuildScriptPath) && !CheckPath(msBuildDir) && !CheckPath(vcxprojDir) && !CheckPath(_nativeScriptDir))
 		return;
 	
 	//Build and Link Dynamic Library
 	#ifdef _DEBUG
-	std::string command = "MSBuild " + vcxprojDir + "GEAR_NATIVE_SCRIPT.vcxproj -t:build /p:Platform=x64 -p:Configuration=Debug -p:SolutionDir=" + solutionDir;
+	std::string command = "MSBuild " + vcxprojDir + "GEAR_NATIVE_SCRIPT.vcxproj -t:build -p:Platform=x64 -p:Configuration=Debug -p:SolutionDir=" + solutionDir + " -p:ApplicationNativeScriptsDir=" + _nativeScriptDir;
 	#else
-	std::string command = "MSBuild " + vcxprojDir + " GEAR_NATIVE_SCRIPT.vcxproj -t:build /p:Platform=x64 -p:Configuration=Release -p:SolutionDir=" + solutionDir;
+	std::string command = "MSBuild " + vcxprojDir + "GEAR_NATIVE_SCRIPT.vcxproj -t:build -p:Platform=x64 -p:Configuration=Release -p:SolutionDir=" + solutionDir  " -p:ApplicationNativeScriptsDir=" + _nativeScriptDir;
 	#endif
 
 	GEAR_PRINTF("GEAR_CORE: Build GEAR_NATIVE_SCRIPT.dll from GEAR_NATIVE_SCRIPT.vcxproj using MSBuild\n");
@@ -34,11 +35,7 @@ void NativeScriptManager::Build()
 	GEAR_PRINTF("GEAR_CORE: Build GEAR_NATIVE_SCRIPT.dll from GEAR_NATIVE_SCRIPT.vcxproj finished.\n\n");
 
 	if (!(errorCode == 0))
-	{
 		system("pause");
-		system("cls");
-		NativeScriptManager::Build();
-	}
 
 	system("cls");
 }

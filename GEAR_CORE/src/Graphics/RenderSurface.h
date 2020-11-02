@@ -28,8 +28,14 @@ namespace graphics
 		miru::Ref<miru::crossplatform::Swapchain> m_Swapchain;
 		miru::crossplatform::Swapchain::CreateInfo m_SwapchainCI;
 
+		//ColourImage
+		miru::Ref<miru::crossplatform::Allocator> m_AttachmentAllocator;
+		miru::Ref<miru::crossplatform::Image> m_ColourImage;
+		miru::crossplatform::Image::CreateInfo m_ColourImageCI;
+		miru::Ref<miru::crossplatform::ImageView> m_ColourImageView;
+		miru::crossplatform::ImageView::CreateInfo m_ColourImageViewCI;
+
 		//DepthImage
-		miru::Ref<miru::crossplatform::Allocator> m_DepthAllocator;
 		miru::Ref<miru::crossplatform::Image> m_DepthImage;
 		miru::crossplatform::Image::CreateInfo m_DepthImageCI;
 		miru::Ref<miru::crossplatform::ImageView> m_DepthImageView;

@@ -34,6 +34,7 @@ namespace graphics
 			std::string									filepath;
 			float										viewportWidth;
 			float										viewportHeight;
+			miru::crossplatform::Image::SampleCountBit	samples;
 			miru::Ref<miru::crossplatform::RenderPass>	renderPass;
 			uint32_t									subpassIndex;
 		};

@@ -25,8 +25,8 @@ struct PS_OUT
 
 MIRU_UNIFORM_BUFFER(0, 0, Camera, camera);
 MIRU_UNIFORM_BUFFER(1, 0, Model, model);
-MIRU_UNIFORM_BUFFER(0, 1, SkyboxInfo, skyboxInfo);
-MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 0, 2, float4, skybox);
+MIRU_UNIFORM_BUFFER(2, 0, SkyboxInfo, skyboxInfo);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 2, 1, float4, skybox);
 
 VS_OUT vs_main(VS_IN IN)
 {

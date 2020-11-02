@@ -22,6 +22,7 @@ namespace scene
 		{
 			std::string debugName;
 			std::string filepath;
+			std::string nativeScriptDir;
 		};
 	
 	public:

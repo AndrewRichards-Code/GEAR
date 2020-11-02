@@ -29,7 +29,7 @@ GearBox::GearBox(QWidget* parent)
 	timer->start(1);
 	connect(timer, SIGNAL(timeout()), this, SLOT(Render()));
 
-	m_ActiveSceneCI = { "GEAR_TEST_Main_Scene", "res/scenes/current_scene.gsf.json" };
+	m_ActiveSceneCI = { "GEAR_TEST_Main_Scene", "res/scenes/current_scene.gsf.json", "res/scripts/" };
 	m_ActiveScene = gear::CreateRef<Scene>(&m_ActiveSceneCI);
 	ui.scenePlayerDockWidgetContents->Initialise(m_ActiveScene);
 	ui.sceneHierarchyDockWidgetContents->Initialise(m_ActiveScene);
@@ -40,7 +40,7 @@ GearBox::GearBox(QWidget* parent)
 	m_RenderSurfaceCI.width = (uint32_t)ui.mainView->width();
 	m_RenderSurfaceCI.height = (uint32_t)ui.mainView->height();
 	m_RenderSurfaceCI.vSync = true;
-	m_RenderSurfaceCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	m_RenderSurfaceCI.samples = Image::SampleCountBit::SAMPLE_COUNT_8_BIT;
 	m_RenderSurfaceCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::NONE;
 	m_RenderSurface = gear::CreateRef<RenderSurface>(&m_RenderSurfaceCI);
 	ui.scenePlayerDockWidgetContents->UpdateRenderingLabels(m_RenderSurface);
@@ -51,7 +51,7 @@ GearBox::GearBox(QWidget* parent)
 	AllocatorManager::Initialise(&mbmCI);
 
 	m_Renderer = gear::CreateRef<Renderer>(m_RenderSurface->GetContext());
-	m_Renderer->InitialiseRenderPipelines({ "res/pipelines/basic.grpf.json", "res/pipelines/cube.grpf.json" }, (float)m_RenderSurface->GetWidth(), (float)m_RenderSurface->GetHeight(), m_RenderSurface->GetRenderPass());
+	m_Renderer->InitialiseRenderPipelines({ "res/pipelines/basic.grpf.json", "res/pipelines/cube.grpf.json" }, (float)m_RenderSurface->GetWidth(), (float)m_RenderSurface->GetHeight(), m_RenderSurface->GetCreateInfo().samples, m_RenderSurface->GetRenderPass());
 
 	Skybox::CreateInfo skyboxCI;
 	skyboxCI.debugName = "Skybox-HDR";

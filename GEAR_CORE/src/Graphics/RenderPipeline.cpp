@@ -165,7 +165,7 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 	rpCI.rasterisationState.lineWidth = pipeline_grpf_json["rasterisationState"]["lineWidth"];
 
 	//MultisampleState
-	rpCI.multisampleState.rasterisationSamples = SampleCountBitStrings[pipeline_grpf_json["multisampleState"]["rasterisationSamples"]];
+	rpCI.multisampleState.rasterisationSamples = pLoadInfo->samples; //SampleCountBitStrings[pipeline_grpf_json["multisampleState"]["rasterisationSamples"]];
 	rpCI.multisampleState.sampleShadingEnable = pipeline_grpf_json["multisampleState"]["sampleShadingEnable"];
 	rpCI.multisampleState.minSampleShading = pipeline_grpf_json["multisampleState"]["minSampleShading"];
 	rpCI.multisampleState.alphaToCoverageEnable = pipeline_grpf_json["multisampleState"]["alphaToCoverageEnable"];

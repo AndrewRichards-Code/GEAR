@@ -47,12 +47,39 @@ RenderSurface::RenderSurface(CreateInfo* pCreateInfo)
 	m_SwapchainCI.vSync = m_CI.vSync;
 	m_Swapchain = Swapchain::Create(&m_SwapchainCI);
 
-	Allocator::CreateInfo depthAllocatorCI;
-	depthAllocatorCI.debugName = "GEAR_CORE_GPU_ALLOCATOR_SwapchainDepthImage";
-	depthAllocatorCI.pContext = m_Context;
-	depthAllocatorCI.blockSize = Allocator::BlockSize::BLOCK_SIZE_32MB;
-	depthAllocatorCI.properties = Allocator::PropertiesBit::DEVICE_LOCAL_BIT;
-	m_DepthAllocator = Allocator::Create(&depthAllocatorCI);
+	Allocator::CreateInfo attachmentAllocatorCI;
+	attachmentAllocatorCI.debugName = "GEAR_CORE_GPU_ALLOCATOR_Attachments";
+	attachmentAllocatorCI.pContext = m_Context;
+	attachmentAllocatorCI.blockSize = Allocator::BlockSize::BLOCK_SIZE_64MB;
+	attachmentAllocatorCI.properties = Allocator::PropertiesBit::DEVICE_LOCAL_BIT;
+	m_AttachmentAllocator = Allocator::Create(&attachmentAllocatorCI);
+
+	if (m_CI.samples > Image::SampleCountBit::SAMPLE_COUNT_1_BIT)
+	{
+		m_ColourImageCI.debugName = "GEAR_CORE_Swapchain: ColourImage";
+		m_ColourImageCI.device = m_Context->GetDevice();
+		m_ColourImageCI.type = Image::Type::TYPE_2D;
+		m_ColourImageCI.format = m_Swapchain->m_SwapchainImages[0]->GetCreateInfo().format;
+		m_ColourImageCI.width = m_CurrentWidth;
+		m_ColourImageCI.height = m_CurrentHeight;
+		m_ColourImageCI.depth = 1;
+		m_ColourImageCI.mipLevels = 1;
+		m_ColourImageCI.arrayLayers = 1;
+		m_ColourImageCI.sampleCount = m_CI.samples;
+		m_ColourImageCI.usage = Image::UsageBit::COLOUR_ATTACHMENT_BIT;
+		m_ColourImageCI.layout = GraphicsAPI::IsD3D12() ? Image::Layout::COLOUR_ATTACHMENT_OPTIMAL : Image::Layout::UNKNOWN;
+		m_ColourImageCI.size = 0;
+		m_ColourImageCI.data = nullptr;
+		m_ColourImageCI.pAllocator = m_AttachmentAllocator;
+		m_ColourImage = Image::Create(&m_ColourImageCI);
+
+		m_ColourImageViewCI.debugName = "GEAR_CORE_Swapchain: ColourImageView";
+		m_ColourImageViewCI.device = m_Context->GetDevice();
+		m_ColourImageViewCI.pImage = m_ColourImage;
+		m_ColourImageViewCI.viewType = Image::Type::TYPE_2D;
+		m_ColourImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
+		m_ColourImageView = ImageView::Create(&m_ColourImageViewCI);
+	}
 
 	m_DepthImageCI.debugName = "GEAR_CORE_Swapchain: DepthImage";
 	m_DepthImageCI.device = m_Context->GetDevice();
@@ -63,12 +90,12 @@ RenderSurface::RenderSurface(CreateInfo* pCreateInfo)
 	m_DepthImageCI.depth = 1;
 	m_DepthImageCI.mipLevels = 1;
 	m_DepthImageCI.arrayLayers = 1;
-	m_DepthImageCI.sampleCount = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	m_DepthImageCI.sampleCount = m_CI.samples;
 	m_DepthImageCI.usage = Image::UsageBit::DEPTH_STENCIL_ATTACHMENT_BIT;
 	m_DepthImageCI.layout = GraphicsAPI::IsD3D12() ? Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL : Image::Layout::UNKNOWN;
 	m_DepthImageCI.size = 0;
 	m_DepthImageCI.data = nullptr;
-	m_DepthImageCI.pAllocator = m_DepthAllocator;
+	m_DepthImageCI.pAllocator = m_AttachmentAllocator;
 	m_DepthImage = Image::Create(&m_DepthImageCI);
 
 	m_DepthImageViewCI.debugName = "GEAR_CORE_Swapchain: DepthImageView";
@@ -80,15 +107,76 @@ RenderSurface::RenderSurface(CreateInfo* pCreateInfo)
 
 	m_RenderPassCI.debugName = "GEAR_CORE_RenderPass_Default";
 	m_RenderPassCI.device = m_Context->GetDevice();
-	m_RenderPassCI.attachments =
+	if (m_CI.samples > Image::SampleCountBit::SAMPLE_COUNT_1_BIT)
 	{
-		{m_Swapchain->m_SwapchainImages[0]->GetCreateInfo().format, Image::SampleCountBit::SAMPLE_COUNT_1_BIT, RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE,RenderPass::AttachmentLoadOp::DONT_CARE, RenderPass::AttachmentStoreOp::DONT_CARE, GraphicsAPI::IsD3D12() ? Image::Layout::PRESENT_SRC : Image::Layout::UNKNOWN, Image::Layout::PRESENT_SRC},
-		{m_DepthImageCI.format, Image::SampleCountBit::SAMPLE_COUNT_1_BIT, RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::DONT_CARE,RenderPass::AttachmentLoadOp::DONT_CARE, RenderPass::AttachmentStoreOp::DONT_CARE, Image::Layout::UNKNOWN, Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL}
-	};
-	m_RenderPassCI.subpassDescriptions =
+		m_RenderPassCI.attachments =
+		{
+			{
+				m_Swapchain->m_SwapchainImages[0]->GetCreateInfo().format,
+				m_CI.samples,
+				RenderPass::AttachmentLoadOp::CLEAR,
+				RenderPass::AttachmentStoreOp::STORE,
+				RenderPass::AttachmentLoadOp::DONT_CARE,
+				RenderPass::AttachmentStoreOp::DONT_CARE,
+				GraphicsAPI::IsD3D12() ? Image::Layout::PRESENT_SRC : Image::Layout::UNKNOWN,
+				Image::Layout::COLOUR_ATTACHMENT_OPTIMAL
+			},
+			{
+				m_DepthImageCI.format,
+				m_CI.samples,
+				RenderPass::AttachmentLoadOp::CLEAR,
+				RenderPass::AttachmentStoreOp::DONT_CARE,
+				RenderPass::AttachmentLoadOp::DONT_CARE,
+				RenderPass::AttachmentStoreOp::DONT_CARE,
+				Image::Layout::UNKNOWN,
+				Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+			},
+			{
+				m_Swapchain->m_SwapchainImages[0]->GetCreateInfo().format,
+				Image::SampleCountBit::SAMPLE_COUNT_1_BIT,
+				RenderPass::AttachmentLoadOp::DONT_CARE,
+				RenderPass::AttachmentStoreOp::STORE,
+				RenderPass::AttachmentLoadOp::DONT_CARE,
+				RenderPass::AttachmentStoreOp::DONT_CARE,
+				Image::Layout::UNKNOWN,
+				Image::Layout::PRESENT_SRC
+			}
+		};
+		m_RenderPassCI.subpassDescriptions =
+		{
+			{PipelineType::GRAPHICS, {}, {{0, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL}}, {{2, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL}}, {{1, Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL}}, {}}
+		};
+	}
+	else
 	{
-		{PipelineType::GRAPHICS, {}, {{0, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL}}, {}, {{1, Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL}}, {}}
-	};
+		m_RenderPassCI.attachments =
+		{
+			{
+				m_Swapchain->m_SwapchainImages[0]->GetCreateInfo().format,
+				m_CI.samples,
+				RenderPass::AttachmentLoadOp::CLEAR,
+				RenderPass::AttachmentStoreOp::STORE,
+				RenderPass::AttachmentLoadOp::DONT_CARE,
+				RenderPass::AttachmentStoreOp::DONT_CARE,
+				GraphicsAPI::IsD3D12() ? Image::Layout::PRESENT_SRC : Image::Layout::UNKNOWN,
+				Image::Layout::PRESENT_SRC
+			},
+			{
+				m_DepthImageCI.format,
+				m_CI.samples,
+				RenderPass::AttachmentLoadOp::CLEAR,
+				RenderPass::AttachmentStoreOp::DONT_CARE,
+				RenderPass::AttachmentLoadOp::DONT_CARE,
+				RenderPass::AttachmentStoreOp::DONT_CARE,
+				Image::Layout::UNKNOWN,
+				Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+			}
+		};
+		m_RenderPassCI.subpassDescriptions =
+		{
+			{PipelineType::GRAPHICS, {}, {{0, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL}}, {}, {{1, Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL}}, {}}
+		};
+	}
 	m_RenderPassCI.subpassDependencies =
 	{
 		{MIRU_SUBPASS_EXTERNAL, 0, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT,
@@ -158,16 +246,22 @@ std::string RenderSurface::GetDeviceName() const
 
 void RenderSurface::CreateFramebuffer()
 {
-	m_FramebufferCI.debugName = "GEAR_CORE_Framebuffer_Default";
-	m_FramebufferCI.device = m_Context->GetDevice();
-	m_FramebufferCI.renderPass = m_RenderPass;
-	m_FramebufferCI.attachments = { m_Swapchain->m_SwapchainImageViews[0], m_DepthImageView };
-	m_FramebufferCI.width = m_CurrentWidth;
-	m_FramebufferCI.height = m_CurrentHeight;
-	m_FramebufferCI.layers = 1;
-	m_Framebuffers[0] = Framebuffer::Create(&m_FramebufferCI);
-	m_FramebufferCI.attachments = { m_Swapchain->m_SwapchainImageViews[1], m_DepthImageView };
-	m_Framebuffers[1] = Framebuffer::Create(&m_FramebufferCI);
+	for (size_t i = 0; i < _countof(m_Framebuffers); i++)
+	{
+		m_FramebufferCI.debugName = "GEAR_CORE_Framebuffer_Default";
+		m_FramebufferCI.device = m_Context->GetDevice();
+		m_FramebufferCI.renderPass = m_RenderPass;
+
+		if (m_CI.samples > Image::SampleCountBit::SAMPLE_COUNT_1_BIT)
+			m_FramebufferCI.attachments = { m_ColourImageView, m_DepthImageView, m_Swapchain->m_SwapchainImageViews[i] };
+		else
+			m_FramebufferCI.attachments = { m_Swapchain->m_SwapchainImageViews[i], m_DepthImageView };
+
+		m_FramebufferCI.width = m_CurrentWidth;
+		m_FramebufferCI.height = m_CurrentHeight;
+		m_FramebufferCI.layers = 1;
+		m_Framebuffers[i] = Framebuffer::Create(&m_FramebufferCI);
+	}
 }
 
 void RenderSurface::Resize(int width, int height)
@@ -178,6 +272,15 @@ void RenderSurface::Resize(int width, int height)
 	m_Swapchain->Resize(static_cast<uint32_t>(m_CurrentWidth), static_cast<uint32_t>(m_CurrentHeight));
 	if (width <= 3840 && height <= 2160)
 	{
+		if (m_CI.samples > Image::SampleCountBit::SAMPLE_COUNT_1_BIT)
+		{
+			m_ColourImageCI.width = width;
+			m_ColourImageCI.height = height;
+			m_ColourImage = Image::Create(&m_ColourImageCI);
+			m_ColourImageViewCI.pImage = m_ColourImage;
+			m_ColourImageView = ImageView::Create(&m_ColourImageViewCI);
+		}
+
 		m_DepthImageCI.width = m_CurrentWidth;
 		m_DepthImageCI.height = m_CurrentHeight;
 		m_DepthImage = Image::Create(&m_DepthImageCI);

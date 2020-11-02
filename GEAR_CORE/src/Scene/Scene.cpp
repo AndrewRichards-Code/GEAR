@@ -98,7 +98,7 @@ void Scene::LoadNativeScriptLibrary()
 {
 	if (!s_NativeScriptLibrary)
 	{
-		NativeScriptManager::Build();
+		NativeScriptManager::Build(m_CI.nativeScriptDir);
 		s_NativeScriptLibrary = NativeScriptManager::Load();
 	}
 }

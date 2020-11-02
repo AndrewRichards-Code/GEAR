@@ -32,9 +32,9 @@ namespace objects
 		};
 	
 	private:
-		gear::Ref<graphics::Texture> s_WhiteTexture;
-		gear::Ref<graphics::Texture> s_BlueTexture;
-		gear::Ref<graphics::Texture> s_BlackTexture;
+		static gear::Ref<graphics::Texture> s_WhiteTexture;
+		static gear::Ref<graphics::Texture> s_BlueTexture;
+		static gear::Ref<graphics::Texture> s_BlackTexture;
 		static std::map<std::string, gear::Ref<Material>> s_LoadedMaterials;
 		
 		typedef graphics::UniformBufferStructures::PBRConstants PBRConstantsUB;
@@ -75,6 +75,8 @@ namespace objects
 		inline std::map<TextureType, gear::Ref<graphics::Texture>>& GetTextures() { return m_CI.pbrTextures; }
 		inline const std::map<TextureType, gear::Ref<graphics::Texture>>& GetTextures() const { return m_CI.pbrTextures; }
 		inline const gear::Ref<graphics::Uniformbuffer<PBRConstantsUB>>& GetUB() const { return m_UB; }
+
+		inline std::string GetDebugName() const { return "GEAR_CORE_Material: " + m_CI.debugName; }
 	
 		/*inline static void AddMaterial(std::string name, const gear::Ref<Material>& material) { s_LoadedMaterials.insert({ name, material }); }
 		inline static gear::Ref<Material> FindMaterial(const std::string& name) 

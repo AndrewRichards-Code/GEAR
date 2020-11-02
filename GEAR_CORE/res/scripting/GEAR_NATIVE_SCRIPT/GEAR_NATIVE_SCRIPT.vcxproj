@@ -98,8 +98,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\TestScript.cpp" />
     <ClCompile Include="DllMain.cpp" />
+    <ClCompile Include="$(ApplicationNativeScriptsDir)*.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

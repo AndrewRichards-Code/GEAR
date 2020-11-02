@@ -98,10 +98,10 @@ void Skybox::GenerateCubemap()
 
 void Skybox::InitialiseUBs()
 {
-	float zero[sizeof(SkyboxInfo)] = { 0 };
-	Uniformbuffer<SkyboxInfo>::CreateInfo ubCI;
+	float zero[sizeof(SkyboxInfoUB)] = { 0 };
+	Uniformbuffer<SkyboxInfoUB>::CreateInfo ubCI;
 	ubCI.debugName = "GEAR_CORE_Skybox_SkyboxInfo: " + m_CI.debugName;
 	ubCI.device = m_CI.device;
 	ubCI.data = zero;
-	m_UB = gear::CreateRef<Uniformbuffer<SkyboxInfo>>(&ubCI);
+	m_UB = gear::CreateRef<Uniformbuffer<SkyboxInfoUB>>(&ubCI);
 }

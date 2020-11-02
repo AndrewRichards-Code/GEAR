@@ -27,7 +27,10 @@ int main()
 	rainbowRoad->SetVolume(0.0f);
 	rainbowRoad->Stream();
 #endif
-	Scene::CreateInfo sceneCI = { "GEAR_TEST_Main_Scene", "res/scenes/current_scene.gsf.json" };
+	Scene::CreateInfo sceneCI;
+	sceneCI.debugName = "GEAR_TEST_Main_Scene";
+	sceneCI.filepath = "res/scenes/current_scene.gsf.json";
+	sceneCI.nativeScriptDir = "res/scripts/";
 	gear::Ref<Scene> activeScene = gear::CreateRef<Scene>(&sceneCI);
 
 	Window::CreateInfo windowCI;
@@ -46,21 +49,7 @@ int main()
 	mbmCI.defaultBlockSize = Allocator::BlockSize::BLOCK_SIZE_128MB;
 	AllocatorManager::Initialise(&mbmCI);
 	
-	/*Mesh::CreateInfo meshCI;
-	meshCI.device = window.GetDevice();
-	meshCI.debugName = "KagemitsuG4.fbx";
-	meshCI.filepath = "res/obj/KagemitsuG4.fbx";
-	gear::Ref<Mesh> kagemitsuG4Mesh = gear::CreateRef<Mesh>(&meshCI);
-
-	Model::CreateInfo modelCI;
-	modelCI.debugName = "KagemitsuG4";
-	modelCI.device = window.GetDevice();
-	modelCI.pMesh = kagemitsuG4Mesh;
-	modelCI.transform.translation = Vec3(0, 0.9, -0.25);
-	modelCI.transform.orientation = Quat(1, 0, 0, 0);
-	modelCI.transform.scale = Vec3(0.01f, 0.01f, 0.01f);
-	modelCI.renderPipelineName = "basic";
-	gear::Ref<Model> kagemitsuG4 = gear::CreateRef<Model>(&modelCI);*/
+	
 
 	Skybox::CreateInfo skyboxCI;
 	skyboxCI.debugName = "Skybox-HDR";
@@ -137,7 +126,11 @@ int main()
 	gear::Ref<Mesh> sphereMesh = gear::CreateRef<Mesh>(&meshCI);
 	sphereMesh->SetOverrideMaterial(0, rustIronMaterial);
 
-	Model::CreateInfo modelCI;
+	meshCI.debugName = "KagemitsuG4.fbx";
+	meshCI.device = window->GetDevice();
+	meshCI.filepath = "res/obj/KagemitsuG4.fbx";
+	gear::Ref<Mesh> kagemitsuG4Mesh = gear::CreateRef<Mesh>(&meshCI);
+
 	/*modelCI.debugName = "Quad";
 	modelCI.device = window->GetDevice();
 	modelCI.pMesh = quadMesh;
@@ -148,6 +141,17 @@ int main()
 	modelCI.renderPipelineName = "basic";
 	Entity quad = activeScene->CreateEntity();
 	quad.AddComponent<ModelComponent>(std::move(gear::CreateRef<Model>(&modelCI)));*/
+
+	Model::CreateInfo modelCI;
+	modelCI.debugName = "KagemitsuG4";
+	modelCI.device = window->GetDevice();
+	modelCI.pMesh = kagemitsuG4Mesh;
+	modelCI.transform.translation = Vec3(1.0, 1.0, -0.5);
+	modelCI.transform.orientation = Quat(1, 0, 0, 0);
+	modelCI.transform.scale = Vec3(0.1f, 0.1f, 0.1f);
+	modelCI.renderPipelineName = "basic";
+	Entity KagemitsuG4 = activeScene->CreateEntity();
+	KagemitsuG4.AddComponent<ModelComponent>(gear::CreateRef<Model>(&modelCI));
 
 	modelCI.debugName = "Sphere";
 	modelCI.device = window->GetDevice();
@@ -186,7 +190,7 @@ int main()
 	cameraEnitity.AddComponent<NativeScriptComponent>("TestScript");
 
 	gear::Ref<Renderer> m_Renderer = gear::CreateRef<Renderer>(window->GetContext());
-	m_Renderer->InitialiseRenderPipelines({"res/pipelines/basic.grpf.json", "res/pipelines/cube.grpf.json" }, (float)window->GetWidth(), (float)window->GetHeight(), window->GetRenderPass());
+	m_Renderer->InitialiseRenderPipelines({"res/pipelines/basic.grpf.json", "res/pipelines/cube.grpf.json" }, (float)window->GetWidth(), (float)window->GetHeight(), window->GetCreateInfo().samples, window->GetRenderPass());
 
 	AllocatorManager::PrintMemoryBlockStatus();
 
@@ -262,13 +266,13 @@ int main()
 		//Camera Update
 		auto& camera = cameraEnitity.GetComponent<CameraComponent>().camera;
 		if (window->IsKeyPressed(GLFW_KEY_D))
-			camera->m_CI.transform.translation += Vec3::Normalise(camera->m_Right) * 0.05f;// *timer;
+			camera->m_CI.transform.translation += Vec3::Normalise(camera->m_Right) * (float)timer;
 		if (window->IsKeyPressed(GLFW_KEY_A))
-			camera->m_CI.transform.translation -= Vec3::Normalise(camera->m_Right) * 0.05f;// * timer;
+			camera->m_CI.transform.translation -= Vec3::Normalise(camera->m_Right) * (float)timer;
 		if (window->IsKeyPressed(GLFW_KEY_W))
-			camera->m_CI.transform.translation += camera->m_Direction * 0.05f;// * timer;
+			camera->m_CI.transform.translation += camera->m_Direction * (float)timer;
 		if (window->IsKeyPressed(GLFW_KEY_S))
-			camera->m_CI.transform.translation -= camera->m_Direction * 0.05f;// * timer;
+			camera->m_CI.transform.translation -= camera->m_Direction * (float)timer;
 		
 		double fov = 0.0;
 		window->GetScrollPosition(fov);

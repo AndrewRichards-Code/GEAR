@@ -40,12 +40,8 @@ namespace objects
 		bool m_HDR;
 		bool m_Generated = false;
 
-		struct SkyboxInfo
-		{
-			float exposure;
-			float gamma;
-		};
-		gear::Ref<graphics::Uniformbuffer<SkyboxInfo>> m_UB;
+		typedef graphics::UniformBufferStructures::SkyboxInfo SkyboxInfoUB;
+		gear::Ref<graphics::Uniformbuffer<SkyboxInfoUB>> m_UB;
 
 	public:
 		CreateInfo m_CI;
@@ -60,7 +56,7 @@ namespace objects
 		void GenerateCubemap();
 
 		inline const gear::Ref<objects::Model>& GetModel() const { return m_Model; }
-		inline const gear::Ref<graphics::Uniformbuffer<SkyboxInfo>>& GetUB() const { return m_UB; }
+		inline const gear::Ref<graphics::Uniformbuffer<SkyboxInfoUB>>& GetUB() const { return m_UB; }
 
 	private:
 		void InitialiseUBs();

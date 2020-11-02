@@ -7,9 +7,9 @@ using namespace objects;
 using namespace mars;
 
 std::map<std::string, Ref<Material>> Material::s_LoadedMaterials;
-//gear::Ref<Texture> Material::s_WhiteTexture;
-//gear::Ref<Texture> Material::s_BlueTexture;
-//gear::Ref<Texture> Material::s_BlackTexture;
+gear::Ref<Texture> Material::s_WhiteTexture;
+gear::Ref<Texture> Material::s_BlueTexture;
+gear::Ref<Texture> Material::s_BlackTexture;
 
 Material::Material(CreateInfo* pCreateInfo)
 {
@@ -53,6 +53,13 @@ void Material::Update()
 void Material::AddProperties(const Properties& properties)
 {
 	m_Properties = properties;
+
+	m_CI.pbrConstants.fersnel = m_Properties.colourSpecular;
+	m_CI.pbrConstants.albedo = m_Properties.colourDiffuse;
+	m_CI.pbrConstants.metallic;
+	m_CI.pbrConstants.roughness = 1.0f - (m_Properties.shininess / 32.0f);
+	m_CI.pbrConstants.ambientOcclusion;
+	m_CI.pbrConstants.emissive = m_Properties.colourEmissive;
 }
 
 void Material::InitialiseUB()

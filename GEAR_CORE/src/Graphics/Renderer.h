@@ -36,6 +36,7 @@ namespace graphics
 
 		std::map<gear::Ref<graphics::RenderPipeline>, miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSetPerView;
 		std::map<gear::Ref<objects::Model>, miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSetPerModel;
+		std::map<gear::Ref<objects::Material>, miru::Ref<miru::crossplatform::DescriptorSet>> m_DescSetPerMaterial;
 
 		bool m_BuiltDescPoolsAndSets = false;
 		bool m_ReloadTextures = false;
@@ -63,7 +64,7 @@ namespace graphics
 		Renderer(const miru::Ref<miru::crossplatform::Context>& context);
 		virtual ~Renderer();
 
-		void InitialiseRenderPipelines(const std::vector<std::string>& filepaths, float viewportWidth, float viewportHeight, const miru::Ref<miru::crossplatform::RenderPass>& renderPass);
+		void InitialiseRenderPipelines(const std::vector<std::string>& filepaths, float viewportWidth, float viewportHeight, miru::crossplatform::Image::SampleCountBit samples, const miru::Ref<miru::crossplatform::RenderPass>& renderPass);
 		
 		void SubmitFramebuffer(const miru::Ref<miru::crossplatform::Framebuffer>* framebuffers);
 		void SubmitCamera(gear::Ref<objects::Camera>& camera);

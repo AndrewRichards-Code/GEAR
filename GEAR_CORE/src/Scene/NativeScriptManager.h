@@ -13,7 +13,7 @@ namespace scene
 	class NativeScriptManager
 	{
 	public:
-		static void Build();
+		static void Build(const std::string& nativeScriptDir);
 		static core::DynamicLibrary::LibraryHandle Load();
 		static void Unload(core::DynamicLibrary::LibraryHandle& libraryHandle);
 

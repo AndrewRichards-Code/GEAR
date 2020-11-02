@@ -226,4 +226,5 @@ void ModelLoader::AddMaterialProperties(aiMaterial* aiMaterial, Ref<objects::Mat
 		mars::Vec4(colourTransparent.r, colourTransparent.g, colourTransparent.b, 1),
 		mars::Vec4(colourReflective.r, colourReflective.g, colourReflective.b, 1)
 		});
+	material->Update();
 }
