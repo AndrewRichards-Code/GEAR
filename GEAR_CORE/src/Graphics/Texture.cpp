@@ -178,20 +178,6 @@ void Texture::TransitionSubResources(std::vector<Ref<Barrier>>& barriers, const 
 	}
 }
 
-void Texture::GenerateMipMaps()
-{
-	if (!m_Upload)
-	{
-		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_STATE, "Texture data has not been uploaded. Can not generate mipmaps.");
-		return;
-	}
-	if (m_GenerateMipMaps && !m_Generated)
-	{
-		ImageProcessing::GenerateMipMaps(this);;
-		m_Generated = true;
-	}
-}
-
 void Texture::Reload()
 {
 	std::vector<uint8_t> imageData;

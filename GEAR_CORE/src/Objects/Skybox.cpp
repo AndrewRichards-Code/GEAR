@@ -34,22 +34,29 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	m_TextureCI.generateMipMaps = false;
 	m_Texture = gear::CreateRef<Texture>(&m_TextureCI);
 
-	m_GeneratedCubemapCI.debugName = "GEAR_CORE_Skybox_GeneratedCubemap: " + m_CI.debugName;
-	m_GeneratedCubemapCI.device = m_CI.device;
-	m_GeneratedCubemapCI.dataType = Texture::DataType::DATA;
-	m_GeneratedCubemapCI.data.data = nullptr;
-	m_GeneratedCubemapCI.data.size = 0;
-	m_GeneratedCubemapCI.data.width = m_CI.generatedCubemapSize;
-	m_GeneratedCubemapCI.data.height = m_CI.generatedCubemapSize;
-	m_GeneratedCubemapCI.data.depth = 1;
-	m_GeneratedCubemapCI.mipLevels = 1;
-	m_GeneratedCubemapCI.arrayLayers = 6;
-	m_GeneratedCubemapCI.type = Image::Type::TYPE_CUBE;
-	m_GeneratedCubemapCI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
-	m_GeneratedCubemapCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-	m_GeneratedCubemapCI.usage = Image::UsageBit::STORAGE_BIT;
-	m_GeneratedCubemapCI.generateMipMaps = false;
-	m_GeneratedCubemap = gear::CreateRef<Texture>(&m_GeneratedCubemapCI);
+	if (!m_Cubemap)
+	{
+		m_GeneratedCubemapCI.debugName = "GEAR_CORE_Skybox_GeneratedCubemap: " + m_CI.debugName;
+		m_GeneratedCubemapCI.device = m_CI.device;
+		m_GeneratedCubemapCI.dataType = Texture::DataType::DATA;
+		m_GeneratedCubemapCI.data.data = nullptr;
+		m_GeneratedCubemapCI.data.size = 0;
+		m_GeneratedCubemapCI.data.width = m_CI.generatedCubemapSize;
+		m_GeneratedCubemapCI.data.height = m_CI.generatedCubemapSize;
+		m_GeneratedCubemapCI.data.depth = 1;
+		m_GeneratedCubemapCI.mipLevels = 1;
+		m_GeneratedCubemapCI.arrayLayers = 6;
+		m_GeneratedCubemapCI.type = Image::Type::TYPE_CUBE;
+		m_GeneratedCubemapCI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
+		m_GeneratedCubemapCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+		m_GeneratedCubemapCI.usage = Image::UsageBit::STORAGE_BIT;
+		m_GeneratedCubemapCI.generateMipMaps = false;
+		m_GeneratedCubemap = gear::CreateRef<Texture>(&m_GeneratedCubemapCI);
+	}
+	else
+	{
+		m_GeneratedCubemap = nullptr;
+	}
 
 	m_MaterialCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
 	m_MaterialCI.device = m_CI.device;
@@ -66,7 +73,7 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	m_ModelCI.device = m_CI.device;
 	m_ModelCI.pMesh = m_Mesh;
 	m_ModelCI.transform = m_CI.transform;
-	m_ModelCI.renderPipelineName = "cube";
+	m_ModelCI.renderPipelineName = "Cube";
 	m_Model = gear::CreateRef<Model>(&m_ModelCI);
 	
 	Update();
@@ -85,15 +92,6 @@ void Skybox::Update()
 
 	m_Model->GetUB()->modl = TransformToMat4(m_CI.transform);
 	m_Model->GetUB()->SubmitData();
-}
-
-void Skybox::GenerateCubemap()
-{
-	//if (!m_Generated)
-	{
-		ImageProcessing::EquirectangularToCube(m_GeneratedCubemap, m_Texture);
-		m_Generated = true;
-	}
 }
 
 void Skybox::InitialiseUBs()

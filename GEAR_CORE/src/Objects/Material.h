@@ -78,7 +78,7 @@ namespace objects
 
 		inline std::string GetDebugName() const { return "GEAR_CORE_Material: " + m_CI.debugName; }
 	
-		/*inline static void AddMaterial(std::string name, const gear::Ref<Material>& material) { s_LoadedMaterials.insert({ name, material }); }
+		inline static void AddMaterial(std::string name, const gear::Ref<Material>& material) { s_LoadedMaterials.insert({ name, material }); }
 		inline static gear::Ref<Material> FindMaterial(const std::string& name) 
 		{ 
 			std::map<std::string, gear::Ref<Material>>::iterator it = s_LoadedMaterials.find(name);
@@ -86,7 +86,7 @@ namespace objects
 				return it->second;
 			else
 				return nullptr;
-		}*/
+		}
 	
 	private:
 		void InitialiseUB();

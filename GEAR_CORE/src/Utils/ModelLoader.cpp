@@ -81,66 +81,68 @@ ModelLoader::MeshData ModelLoader::ProcessMesh(aiMesh* mesh, aiNode* node, const
 	aiString materialName;
 	material->Get(AI_MATKEY_NAME, materialName);
 
-	/*gear::Ref<objects::Material> mat = objects::Material::FindMaterial(materialName.C_Str());
+	gear::Ref<objects::Material> mat = objects::Material::FindMaterial(materialName.C_Str());
 	if (mat != nullptr)
 	{
 		meshData.pMaterial = mat;
-	}*/
-
-	std::map<objects::Material::TextureType, gear::Ref<graphics::Texture>> textures;
-	for (unsigned int i = 0; i < AI_TEXTURE_TYPE_MAX; i++)
+	}
+	else
 	{
-		std::vector<std::string> filepaths = GetMaterialFilePath(material, (aiTextureType)i);
-		if (!filepaths.empty())
+		std::map<objects::Material::TextureType, gear::Ref<graphics::Texture>> textures;
+		for (unsigned int i = 0; i < AI_TEXTURE_TYPE_MAX; i++)
 		{
-			objects::Material::TextureType type;
-			for (auto& filepath : filepaths)
+			std::vector<std::string> filepaths = GetMaterialFilePath(material, (aiTextureType)i);
+			if (!filepaths.empty())
 			{
-				switch(i)
+				objects::Material::TextureType type;
+				for (auto& filepath : filepaths)
 				{
-				case aiTextureType::aiTextureType_BASE_COLOR:
-					type = objects::Material::TextureType::ALBEDO; break;
-				case aiTextureType::aiTextureType_NORMAL_CAMERA:
-					type = objects::Material::TextureType::NORMAL; break;
-				case aiTextureType::aiTextureType_EMISSION_COLOR:
-					type = objects::Material::TextureType::EMISSIVE; break;
-				case aiTextureType::aiTextureType_METALNESS:
-					type = objects::Material::TextureType::METALLIC; break;
-				case aiTextureType::aiTextureType_DIFFUSE_ROUGHNESS:
-					type = objects::Material::TextureType::ROUGHNESS; break;
-				case aiTextureType::aiTextureType_AMBIENT_OCCLUSION:
-					type = objects::Material::TextureType::AMBIENT_OCCLUSION; break;
-				case aiTextureType::aiTextureType_NORMALS:
-					type = objects::Material::TextureType::NORMAL; break;
-				default:
-					type = objects::Material::TextureType::UNKNOWN; break;
-				}
+					switch (i)
+					{
+					case aiTextureType::aiTextureType_BASE_COLOR:
+						type = objects::Material::TextureType::ALBEDO; break;
+					case aiTextureType::aiTextureType_NORMAL_CAMERA:
+						type = objects::Material::TextureType::NORMAL; break;
+					case aiTextureType::aiTextureType_EMISSION_COLOR:
+						type = objects::Material::TextureType::EMISSIVE; break;
+					case aiTextureType::aiTextureType_METALNESS:
+						type = objects::Material::TextureType::METALLIC; break;
+					case aiTextureType::aiTextureType_DIFFUSE_ROUGHNESS:
+						type = objects::Material::TextureType::ROUGHNESS; break;
+					case aiTextureType::aiTextureType_AMBIENT_OCCLUSION:
+						type = objects::Material::TextureType::AMBIENT_OCCLUSION; break;
+					case aiTextureType::aiTextureType_NORMALS:
+						type = objects::Material::TextureType::NORMAL; break;
+					default:
+						type = objects::Material::TextureType::UNKNOWN; break;
+					}
 
-				graphics::Texture::CreateInfo texCI;
-				texCI.device = m_Device;
-				texCI.dataType = graphics::Texture::DataType::FILE;
-				texCI.file.filepaths = &filepath;
-				texCI.file.count = 1;
-				texCI.mipLevels = 1;
-				texCI.arrayLayers = 1;
-				texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
-				texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
-				texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-				texCI.usage = miru::crossplatform::Image::UsageBit(0);
-				texCI.generateMipMaps = false;
-				textures[type] = CreateRef<graphics::Texture>(&texCI);
+					graphics::Texture::CreateInfo texCI;
+					texCI.device = m_Device;
+					texCI.dataType = graphics::Texture::DataType::FILE;
+					texCI.file.filepaths = &filepath;
+					texCI.file.count = 1;
+					texCI.mipLevels = 1;
+					texCI.arrayLayers = 1;
+					texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
+					texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
+					texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+					texCI.usage = miru::crossplatform::Image::UsageBit(0);
+					texCI.generateMipMaps = false;
+					textures[type] = CreateRef<graphics::Texture>(&texCI);
+				}
 			}
 		}
+
+		objects::Material::CreateInfo materialCI;
+		materialCI.debugName = materialName.C_Str();
+		materialCI.device = m_Device;
+		materialCI.pbrTextures = textures;
+		meshData.pMaterial = gear::CreateRef<objects::Material>(&materialCI);
+		AddMaterialProperties(material, meshData.pMaterial);
+
+		objects::Material::AddMaterial(materialName.C_Str(), meshData.pMaterial);
 	}
-	
-	objects::Material::CreateInfo materialCI;
-	materialCI.debugName = materialName.C_Str();
-	materialCI.device = m_Device;
-	materialCI.pbrTextures = textures;
-	meshData.pMaterial = gear::CreateRef<objects::Material>(&materialCI);
-	AddMaterialProperties(material, meshData.pMaterial);
-	
-	//objects::Material::AddMaterial(materialName.C_Str(), meshData.pMaterial);
 
 	return meshData;
 }

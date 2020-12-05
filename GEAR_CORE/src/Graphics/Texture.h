@@ -78,7 +78,7 @@ namespace graphics
 		uint32_t m_Height = 0;
 		uint32_t m_Depth = 0;
 
-		uint32_t m_BPP = 0; //BPP = Bits per pixel
+		uint32_t m_BPP = 0; //BPP = Bytes per pixel
 		bool m_HDR = false;
 		bool m_Cubemap = false;
 		bool m_DepthTexture = false;
@@ -106,7 +106,6 @@ namespace graphics
 		void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
 		void Download(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
 		void TransitionSubResources(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers, const std::vector<SubresouresTransitionInfo>& transitionInfos);
-		void GenerateMipMaps();
 		void Reload();
 
 		void SubmitImageData(std::vector<uint8_t>& imageData);
@@ -122,6 +121,7 @@ namespace graphics
 
 		inline bool IsCubemap() const { return m_Cubemap; }
 		inline bool IsDepthTexture() const { return m_DepthTexture; }
+		inline bool IsUploaded() const { return m_Upload; }
 		inline const CreateInfo& GetCreateInfo() const { return m_CI; }
 
 		inline void SetAnisotrophicValue(float anisostrphicVal) { m_AnisotrophicValue = anisostrphicVal; CreateSampler(); };

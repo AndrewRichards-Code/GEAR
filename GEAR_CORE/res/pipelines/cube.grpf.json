@@ -1,16 +1,16 @@
 {
 	"fileType": "GEAR_RENDER_PIPELINE_FILE", 
-	"debugName": "cube",
+	"debugName": "Cube",
 	"shaders": [
 		{
-			"debugName": "cube_vert_vs_main.spv",
+			"debugName": "Cube_vert_vs_main.spv",
 			"stage": "VERTEX_BIT",
 			"entryPoint": "vs_main",
-			"binaryFilepath": "res/shaders/bin/cube_vert_vs_main.spv",
+			"binaryFilepath": "res/shaders/bin/Cube_vert_vs_main.spv",
 			"recompileArguments": {
 				"mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
-				"hlslFilepath": "res/shaders/HLSL/cube.hlsl",
-				"outputDirectory": "res/shaders/bin/",
+				"hlslFilepath": "res/shaders/HLSL/Cube.hlsl",
+				"outputDirectory": "res/shaders/bin",
 				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
 				"entryPoint": "vs_main",
 				"shaderStage": "vert",
@@ -27,14 +27,14 @@
 			}
 		},
 		{
-			"debugName": "cube_frag_ps_main.spv",
+			"debugName": "Cube_frag_ps_main.spv",
 			"stage": "FRAGMENT_BIT",
 			"entryPoint": "ps_main",
-			"binaryFilepath": "res/shaders/bin/cube_frag_ps_main.spv",
+			"binaryFilepath": "res/shaders/bin/Cube_frag_ps_main.spv",
 			"recompileArguments": {
 				"mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
-				"hlslFilepath": "res/shaders/HLSL/cube.hlsl",
-				"outputDirectory": "res/shaders/bin/",
+				"hlslFilepath": "res/shaders/HLSL/Cube.hlsl",
+				"outputDirectory": "res/shaders/bin",
 				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
 				"entryPoint": "ps_main",
 				"shaderStage": "frag",

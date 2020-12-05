@@ -1,5 +1,6 @@
 #include "msc_common.h"
 #include "UniformBufferStructures.h"
+#include "PBRFunctions.h"
 
 struct VS_IN
 {
@@ -28,7 +29,13 @@ struct PS_OUT
 };
 
 MIRU_UNIFORM_BUFFER(0, 0, Camera, camera);
+MIRU_UNIFORM_BUFFER(0, 1, Lights, lights);
+//MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 2, float4, diffuseIrradiance);
+//MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 3, float4, specularIrradiance);
+//MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 0, 4, float4, specularBRDF_LUT);
+
 MIRU_UNIFORM_BUFFER(1, 0, Model, model);
+
 MIRU_UNIFORM_BUFFER(2, 0, PBRConstants, pbrConstants);
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 2, 1, float4, normal);
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 2, 2, float4, albedo);
@@ -38,7 +45,6 @@ MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 2, 5, float4, ambientOcclusion);
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 2, 6, float4, emissive);
 
 static const uint MAX_LIGHTS = 8;
-MIRU_UNIFORM_BUFFER(0, 1, Lights, lights);
 
 VS_OUT vs_main(VS_IN IN)
 {
@@ -57,9 +63,7 @@ VS_OUT vs_main(VS_IN IN)
 	return OUT;
 }
 
-//Helper Functions
-static const float PI = 3.1415926535897932384626433832795;
-
+//Helper functions:
 float3 GetNormal(PS_IN IN)
 {
 	float3 N = normal_ImageCIS.Sample(normal_SamplerCIS, IN.texCoord).xyz;
@@ -68,7 +72,7 @@ float3 GetNormal(PS_IN IN)
 }
 float3 GetAlbedo(PS_IN IN) 
 { 
-	return pbrConstants.diffuse.rgb * albedo_ImageCIS.Sample(albedo_SamplerCIS, IN.texCoord).rgb; 
+	return pbrConstants.albedo.rgb * albedo_ImageCIS.Sample(albedo_SamplerCIS, IN.texCoord).rgb; 
 }
 float GetMetallic(PS_IN IN) 
 { 
@@ -87,34 +91,6 @@ float3 GetEmissive(PS_IN IN)
 	return pbrConstants.emissive.rgb * emissive_ImageCIS.Sample(emissive_SamplerCIS, IN.texCoord).rgb; 
 }
 
-float3 FresnelSchlick(float3 F0, float3 Wo, float3 N)
-{
-	return F0 + (1.0 - F0) * pow(1.0 - max(dot(Wo, N),0.0), 5);
-}
-
-//GGX/Towbridge-Reitz normal distribution function. Uses Disney's reparametrization of alpha = roughness^2.
-float GGXTR(float cosWhN, float roughness)
-{
-	float alpha = roughness * roughness;
-	float alphaSq = alpha * alpha;
-	float denom = (cosWhN * cosWhN) * (alphaSq - 1.0) + 1.0;
-	return alphaSq / (PI * denom * denom);
-}
-
-// Single term for separable Schlick-GGX
-float SchlickGGXSub(float cosWoN, float k)
-{
-	return cosWoN / ((cosWoN * (1 - k)) + k);
-}
-
-// Schlick-GGX approximation of geometric attenuation function using Smith's method.
-float SchlickGGX(float cosWiN, float cosWoN, float roughness)
-{
-	float r = roughness + 1.0;
-	float k = (r * r) / 8.0; // Epic suggests using this roughness remapping for analytic lights.
-	return SchlickGGXSub(cosWiN, k) * SchlickGGXSub(cosWoN, k);
-}
-
 PS_OUT ps_main(PS_IN IN)
 {
 	PS_OUT OUT;
@@ -127,13 +103,13 @@ PS_OUT ps_main(PS_IN IN)
 	float ambientOcclusion = GetAmbientOcclusion(IN);
 	float3 emissive = GetEmissive(IN);
 	
-	//Output light vector in the direction of the camera
+	//Output light vector in the direction of the camera.
 	float3 Wo = IN.vertexToCamera.xyz;
 	
-	//Cosine of the angle between Wo and N
+	//Cosine of the angle between Wo and N.
 	float cosWo = max(dot(Wo, N), 0.0);
 	
-	//Fresnel reflectance
+	//Fresnel reflectance.
 	const float3 Fdielectric = float3(0.04, 0.04, 0.04);
 	float3 F0 = lerp(Fdielectric, albedo, metallic);
 	
@@ -141,46 +117,76 @@ PS_OUT ps_main(PS_IN IN)
 	float3 Lo = 0.0;
 	for(uint i = 0; i < MAX_LIGHTS; i++)
 	{
-		//Light Properties
+		//Light Properties.
 		Light light = lights.lights[i];
-		//Input light vector(retro)
+		//Input light vector(retro).
 		float3 Wi = /*-light.direction.xyz;*/light.position.xyz -IN.worldSpace.xyz;
 		float WiDistance = length(light.position.xyz - IN.worldSpace.xyz);
 		float attenuation = 1.0 / (WiDistance * WiDistance);
 		float3 Li = light.colour.rgb * attenuation;
 		
-		//Half vector between input and output vector
+		//Half vector between input and output vector.
 		float3 Wh = normalize(Wo + Wi);
 		
-		//Cosine of the angle between Wi and N
+		//Cosine of the angle between Wi and N.
 		float cosWi = max(dot(Wi, N), 0.0);
-		//Cosine of the angle between Wh and N
+		//Cosine of the angle between Wh and N.
 		float cosWh = max(dot(Wh, N), 0.0);
 		
 		//Calculate Fresnel
 		float3 F = FresnelSchlick(F0, Wo, Wh);
-		//Calculate Normal Distrubtion of Spectral BRDF
+		//Calculate Normal Distrubtion of Spectral BRDF.
 		float3 D = GGXTR(cosWh, roughness);
 		//Calculate Geometry Factor of Spectral BRDF
 		float3 G = SchlickGGX(cosWi, cosWo, roughness);
 
-		//Calculat Diffuse component, kD + F0 = 1.0
+		//Calculat Diffuse component, kD + F0 = 1.0.
 		float3 kD = float3(1.0, 1.0, 1.0) - F0;
-		//Metal have no diffuse, so adjust for metallic
+		//Metal have no diffuse, so adjust for metallic.
 		kD *= 1.0 - metallic;
 		
-		//Final Diffuse and Specular BRDF
+		//Final Diffuse and Specular BRDF.
 		float3 diffuse = kD * albedo / PI;
 		float3 specular = (F * D * G) /max((4.0 * cosWi * cosWo), 0.000001);
 		float3 ambient = float3(0.03, 0.03, 0.03) * albedo * ambientOcclusion;
 		
-		//Final light contribution
+		//Final light contribution.
 		Lo += emissive + ambient + ((diffuse + specular) * Li * cosWi);
 	}
 	
-	// Ambient lighting (IBL).
+	/*// Ambient lighting (IBL).
 	{
-	}
+		//Diffuse:
+		//Get difuse irradiance.
+		float3 diffuseIrradiance = diffuseIrradiance_ImageCIS.Sample(diffuseIrradiance_SamplerCIS, N).rgb;
+		
+		//Get Fresnel term at the normal for diffuse contributions from ambient lighting.
+		float3 F = FresnelSchlick(F0, Wo, N);
+		
+		//Get diffuse co-efficient
+		float3 kD = lerp(1.0 - F, 0.0, metallic);
+		
+		//Calculate diffuse contribution using Lamberitian BRDF.
+		float3 diffuseIBL = kD * albedo * diffuseIrradiance;
+		
+		//Specular:
+		// Specular reflection vector.
+		float3 Wr = 2.0 * max(dot(N, Wo), 0.0) * N - Wo;
+		
+		//Get specular irradiance at correction mipmap level.
+		uint width, height, levels;
+		specularIrradiance_ImageCIS.GetDimensions(0, width, height, levels);
+		float3 specularIrradiance = specularIrradiance_ImageCIS.SampleLevel(specularIrradiance_SamplerCIS, Wr, roughness * levels).rgb;
+		
+		//Get specular BDRF.
+		float2 specularBRDF	= specularBRDF_LUT_ImageCIS.Sample(specularBRDF_LUT_SamplerCIS, float2(max(dot(N, Wo), 0.0), roughness)).rg;
+	
+		//Calculate specular contribution using Split-sum approximation for Cook-Torrance.
+		float3 specularIBL = (F0 * specularBRDF.x + specularBRDF.y) * specularIrradiance;
+		
+		//Final Light contribution.
+		Lo += diffuseIBL + specularIBL;
+	}*/
 	
 	OUT.colour = float4(Lo, 1.0);
 	return OUT;

@@ -102,6 +102,11 @@ namespace gear
 				Light			lights[8];
 			};
 
+			struct SpecularIrradianceInfo
+			{
+				GEAR_FLOAT		roughness;
+			};
+
 			//Per model - Set 1
 
 			struct Model
@@ -123,7 +128,6 @@ namespace gear
 			{
 				GEAR_FLOAT4		fersnel;
 				GEAR_FLOAT4		albedo;
-				GEAR_FLOAT4		diffuse;
 				GEAR_FLOAT		metallic;
 				GEAR_FLOAT		roughness;
 				GEAR_FLOAT		ambientOcclusion;
@@ -134,7 +138,6 @@ namespace gear
 				PBRConstants() :
 					fersnel(1, 1, 1, 1),
 					albedo(1, 1, 1, 1),
-					diffuse(1, 1, 1, 1),
 					metallic(1),
 					roughness(1),
 					ambientOcclusion(1),

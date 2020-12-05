@@ -34,6 +34,7 @@ int main()
 	gear::Ref<Scene> activeScene = gear::CreateRef<Scene>(&sceneCI);
 
 	Window::CreateInfo windowCI;
+	//windowCI.api = GraphicsAPI::API::D3D12;
 	windowCI.api = GraphicsAPI::API::VULKAN;
 	windowCI.title = "GEAR_TEST";
 	windowCI.width = 1920;
@@ -41,7 +42,7 @@ int main()
 	windowCI.fullscreen = false;
 	windowCI.vSync = true;
 	windowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-	windowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::RENDER_DOC;
+	windowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::NONE;
 	gear::Ref<Window> window = gear::CreateRef<Window>(&windowCI);
 
 	AllocatorManager::CreateInfo mbmCI;
@@ -49,8 +50,6 @@ int main()
 	mbmCI.defaultBlockSize = Allocator::BlockSize::BLOCK_SIZE_128MB;
 	AllocatorManager::Initialise(&mbmCI);
 	
-	
-
 	Skybox::CreateInfo skyboxCI;
 	skyboxCI.debugName = "Skybox-HDR";
 	skyboxCI.device = window->GetDevice();
@@ -126,10 +125,10 @@ int main()
 	gear::Ref<Mesh> sphereMesh = gear::CreateRef<Mesh>(&meshCI);
 	sphereMesh->SetOverrideMaterial(0, rustIronMaterial);
 
-	meshCI.debugName = "KagemitsuG4.fbx";
+	/*meshCI.debugName = "KagemitsuG4.fbx";
 	meshCI.device = window->GetDevice();
 	meshCI.filepath = "res/obj/KagemitsuG4.fbx";
-	gear::Ref<Mesh> kagemitsuG4Mesh = gear::CreateRef<Mesh>(&meshCI);
+	gear::Ref<Mesh> kagemitsuG4Mesh = gear::CreateRef<Mesh>(&meshCI);*/
 
 	/*modelCI.debugName = "Quad";
 	modelCI.device = window->GetDevice();
@@ -138,29 +137,29 @@ int main()
 	modelCI.transform.translation = Vec3(0, 0, 0);
 	modelCI.transform.orientation = Quat(sqrt(2)/2, -sqrt(2)/2, 0, 0);
 	modelCI.transform.scale = Vec3(100.0f, 100.0f, 100.0f);
-	modelCI.renderPipelineName = "basic";
+	modelCI.renderPipelineName = "PBROpaque";
 	Entity quad = activeScene->CreateEntity();
 	quad.AddComponent<ModelComponent>(std::move(gear::CreateRef<Model>(&modelCI)));*/
 
 	Model::CreateInfo modelCI;
-	modelCI.debugName = "KagemitsuG4";
+	/*modelCI.debugName = "KagemitsuG4";
 	modelCI.device = window->GetDevice();
 	modelCI.pMesh = kagemitsuG4Mesh;
-	modelCI.transform.translation = Vec3(1.0, 1.0, -0.5);
+	modelCI.transform.translation = Vec3(0.0, 0.9, -0.1);
 	modelCI.transform.orientation = Quat(1, 0, 0, 0);
-	modelCI.transform.scale = Vec3(0.1f, 0.1f, 0.1f);
-	modelCI.renderPipelineName = "basic";
+	modelCI.transform.scale = Vec3(0.01f, 0.01f, 0.01f);
+	modelCI.renderPipelineName = "PBROpaque";
 	Entity KagemitsuG4 = activeScene->CreateEntity();
-	KagemitsuG4.AddComponent<ModelComponent>(gear::CreateRef<Model>(&modelCI));
+	KagemitsuG4.AddComponent<ModelComponent>(gear::CreateRef<Model>(&modelCI));*/
 
 	modelCI.debugName = "Sphere";
 	modelCI.device = window->GetDevice();
 	modelCI.pMesh = sphereMesh;
 	modelCI.materialTextureScaling = Vec2(1.0f, 1.0f);
-	modelCI.transform.translation = Vec3(0, 1.0f, -1.5);
+	modelCI.transform.translation = Vec3(0.0, 1.0f, -1.5);
 	modelCI.transform.orientation = Quat(1, 0, 0, 0);
 	modelCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
-	modelCI.renderPipelineName = "basic";
+	modelCI.renderPipelineName = "PBROpaque";
 	Entity sphere = activeScene->CreateEntity();
 	sphere.AddComponent<ModelComponent>(std::move(gear::CreateRef<Model>(&modelCI)));
 
@@ -190,7 +189,7 @@ int main()
 	cameraEnitity.AddComponent<NativeScriptComponent>("TestScript");
 
 	gear::Ref<Renderer> m_Renderer = gear::CreateRef<Renderer>(window->GetContext());
-	m_Renderer->InitialiseRenderPipelines({"res/pipelines/basic.grpf.json", "res/pipelines/cube.grpf.json" }, (float)window->GetWidth(), (float)window->GetHeight(), window->GetCreateInfo().samples, window->GetRenderPass());
+	m_Renderer->InitialiseRenderPipelines({"res/pipelines/PBROpaque.grpf.json", "res/pipelines/Cube.grpf.json" }, (float)window->GetWidth(), (float)window->GetHeight(), window->GetCreateInfo().samples, window->GetRenderPass());
 
 	AllocatorManager::PrintMemoryBlockStatus();
 
@@ -220,6 +219,8 @@ int main()
 		if (window->IsKeyPressed(GLFW_KEY_R))
 		{
 			m_Renderer->RecompileRenderPipelineShaders();
+			ImageProcessing::RecompileRenderPipelineShaders();
+			skybox.GetComponent<SkyboxComponent>().skybox->m_Generated = false;
 		}
 
 		if (window->IsKeyPressed(GLFW_KEY_T))
@@ -288,8 +289,6 @@ int main()
 		m_Renderer->SubmitFramebuffer(window->GetFramebuffers());
 		m_Renderer->Upload(true, false, true, false);
 		m_Renderer->Flush();
-
-		//skybox.GetComponent<SkyboxComponent>().skybox->GenerateCubemap();
 
 		m_Renderer->Present(window->GetSwapchain(), windowResize);
 		window->Update();

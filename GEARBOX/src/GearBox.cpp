@@ -51,7 +51,7 @@ GearBox::GearBox(QWidget* parent)
 	AllocatorManager::Initialise(&mbmCI);
 
 	m_Renderer = gear::CreateRef<Renderer>(m_RenderSurface->GetContext());
-	m_Renderer->InitialiseRenderPipelines({ "res/pipelines/basic.grpf.json", "res/pipelines/cube.grpf.json" }, (float)m_RenderSurface->GetWidth(), (float)m_RenderSurface->GetHeight(), m_RenderSurface->GetCreateInfo().samples, m_RenderSurface->GetRenderPass());
+	m_Renderer->InitialiseRenderPipelines({ "res/pipelines/PBROpaque.grpf.json", "res/pipelines/Cube.grpf.json" }, (float)m_RenderSurface->GetWidth(), (float)m_RenderSurface->GetHeight(), m_RenderSurface->GetCreateInfo().samples, m_RenderSurface->GetRenderPass());
 
 	Skybox::CreateInfo skyboxCI;
 	skyboxCI.debugName = "Skybox-HDR";
@@ -161,7 +161,7 @@ GearBox::GearBox(QWidget* parent)
 	modelCI.transform.translation = Vec3(0, 0, 0);
 	modelCI.transform.orientation = Quat(sqrt(2) / 2, -sqrt(2) / 2, 0, 0);
 	modelCI.transform.scale = Vec3(100.0f, 100.0f, 100.0f);
-	modelCI.renderPipelineName = "basic";
+	modelCI.renderPipelineName = "PBROpaque";
 	Entity quad = m_ActiveScene->CreateEntity();
 	quad.AddComponent<ModelComponent>(std::move(gear::CreateRef<Model>(&modelCI)));
 
@@ -172,7 +172,7 @@ GearBox::GearBox(QWidget* parent)
 	modelCI.transform.translation = Vec3(0, 1.0f, -1.5);
 	modelCI.transform.orientation = Quat(1, 0, 0, 0);
 	modelCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
-	modelCI.renderPipelineName = "basic";
+	modelCI.renderPipelineName = "PBROpaque";
 	Entity sphere = m_ActiveScene->CreateEntity();
 	sphere.AddComponent<ModelComponent>(std::move(gear::CreateRef<Model>(&modelCI)));
 

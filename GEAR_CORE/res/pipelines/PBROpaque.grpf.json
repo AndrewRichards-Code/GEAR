@@ -1,16 +1,16 @@
 {
-	"fileType": "GEAR_RENDER_PIPELINE_FILE", 
-	"debugName": "basic",
+	"fileType": "GEAR_RENDER_PIPELINE_FILE",
+	"debugName": "PBROpaque",
 	"shaders": [
 		{
-			"debugName": "basic_vert_vs_main.spv",
+			"debugName": "PBROpaque_vert_vs_main.spv",
 			"stage": "VERTEX_BIT",
 			"entryPoint": "vs_main",
-			"binaryFilepath": "res/shaders/bin/basic_vert_vs_main.spv",
+			"binaryFilepath": "res/shaders/bin/PBROpaque_vert_vs_main.spv",
 			"recompileArguments": {
 				"mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
-				"hlslFilepath": "res/shaders/HLSL/basic.hlsl",
-				"outputDirectory": "res/shaders/bin/",
+				"hlslFilepath": "res/shaders/HLSL/PBR/PBROpaque.hlsl",
+				"outputDirectory": "res/shaders/bin",
 				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
 				"entryPoint": "vs_main",
 				"shaderStage": "vert",
@@ -27,14 +27,14 @@
 			}
 		},
 		{
-			"debugName": "basic_frag_ps_main.spv",
+			"debugName": "PBROpaque_frag_ps_main.spv",
 			"stage": "FRAGMENT_BIT",
 			"entryPoint": "ps_main",
-			"binaryFilepath": "res/shaders/bin/basic_frag_ps_main.spv",
+			"binaryFilepath": "res/shaders/bin/PBROpaque_frag_ps_main.spv",
 			"recompileArguments": {
 				"mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
-				"hlslFilepath": "res/shaders/HLSL/basic.hlsl",
-				"outputDirectory": "res/shaders/bin/",
+				"hlslFilepath": "res/shaders/HLSL/PBR/PBROpaque.hlsl",
+				"outputDirectory": "res/shaders/bin",
 				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
 				"entryPoint": "ps_main",
 				"shaderStage": "frag",

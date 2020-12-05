@@ -1,15 +1,15 @@
 {
   "fileType": "GEAR_RENDER_PIPELINE_FILE",
-  "debugName": "EquirectangularToCube",
+  "debugName": "DiffuseIrradiance",
   "shaders": [
     {
-      "debugName": "EquirectangularToCube_comp_main.spv",
+      "debugName": "DiffuseIrradiance_comp_main.spv",
       "stage": "COMPUTE_BIT",
       "entryPoint": "main",
-      "binaryFilepath": "res/shaders/bin/EquirectangularToCube_comp_main.spv",
+      "binaryFilepath": "res/shaders/bin/DiffuseIrradiance_comp_main.spv",
       "recompileArguments": {
         "mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
-        "hlslFilepath": "res/shaders/HLSL/EquirectangularToCube.hlsl",
+        "hlslFilepath": "res/shaders/HLSL/DiffuseIrradiance.hlsl",
         "outputDirectory": "res/shaders/bin",
         "includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
         "entryPoint": "main",

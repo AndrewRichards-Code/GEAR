@@ -1,15 +1,15 @@
 {
   "fileType": "GEAR_RENDER_PIPELINE_FILE",
-  "debugName": "EquirectangularToCube",
+  "debugName": "SpecularBRDF_LUT",
   "shaders": [
     {
-      "debugName": "EquirectangularToCube_comp_main.spv",
+      "debugName": "SpecularBRDF_LUT_comp_main.spv",
       "stage": "COMPUTE_BIT",
       "entryPoint": "main",
-      "binaryFilepath": "res/shaders/bin/EquirectangularToCube_comp_main.spv",
+      "binaryFilepath": "res/shaders/bin/SpecularBRDF_LUT_comp_main.spv",
       "recompileArguments": {
         "mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
-        "hlslFilepath": "res/shaders/HLSL/EquirectangularToCube.hlsl",
+        "hlslFilepath": "res/shaders/HLSL/SpecularBRDF_LUT.hlsl",
         "outputDirectory": "res/shaders/bin",
         "includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
         "entryPoint": "main",

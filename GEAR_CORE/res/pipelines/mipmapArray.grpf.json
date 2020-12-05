@@ -1,16 +1,16 @@
 {
 	"fileType": "GEAR_RENDER_PIPELINE_FILE",
-	"debugName": "mipmap_array",
+	"debugName": "Mipmap_array",
 	"shaders": [
 		{
-			"debugName": "mipmap_comp_mipmap_array.spv",
+			"debugName": "Mipmap_comp_mipmap_array.spv",
 			"stage": "COMPUTE_BIT",
 			"entryPoint": "mipmap_array",
-			"binaryFilepath": "res/shaders/bin/mipmap_comp_mipmap_array.spv",
+			"binaryFilepath": "res/shaders/bin/Mipmap_comp_mipmap_array.spv",
 			"recompileArguments": {
 				"mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
-				"hlslFilepath": "res/shaders/HLSL/mipmap.hlsl",
-				"outputDirectory": "res/shaders/bin/",
+				"hlslFilepath": "res/shaders/HLSL/Mipmap.hlsl",
+				"outputDirectory": "res/shaders/bin",
 				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
 				"entryPoint": "mipmap_array",
 				"shaderStage": "comp",

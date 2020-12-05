@@ -36,14 +36,14 @@ namespace objects
 		gear::Ref<graphics::Texture> m_GeneratedCubemap;
 		graphics::Texture::CreateInfo m_GeneratedCubemapCI;
 		
+		typedef graphics::UniformBufferStructures::SkyboxInfo SkyboxInfoUB;
+		gear::Ref<graphics::Uniformbuffer<SkyboxInfoUB>> m_UB;
+	
+	public:
 		bool m_Cubemap;
 		bool m_HDR;
 		bool m_Generated = false;
 
-		typedef graphics::UniformBufferStructures::SkyboxInfo SkyboxInfoUB;
-		gear::Ref<graphics::Uniformbuffer<SkyboxInfoUB>> m_UB;
-
-	public:
 		CreateInfo m_CI;
 
 	public:
@@ -53,7 +53,11 @@ namespace objects
 		//Update the skybox from the current state of Skybox::CreateInfo m_CI.
 		void Update();
 
-		void GenerateCubemap();
+		inline gear::Ref<graphics::Texture>& GetTexture() { return m_Texture; }
+		inline const gear::Ref<graphics::Texture>& GetTexture() const { return m_Texture; }
+
+		inline gear::Ref<graphics::Texture>& GetGeneratedCubemap() { return m_GeneratedCubemap; }
+		inline const gear::Ref<graphics::Texture>& GetGeneratedCubemap() const { return m_GeneratedCubemap; }
 
 		inline const gear::Ref<objects::Model>& GetModel() const { return m_Model; }
 		inline const gear::Ref<graphics::Uniformbuffer<SkyboxInfoUB>>& GetUB() const { return m_UB; }

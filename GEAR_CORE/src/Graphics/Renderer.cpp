@@ -1,6 +1,7 @@
 #include "gear_core_common.h"
 #include "Renderer.h"
 #include "Core/StringConversion.h"
+#include "ImageProcessing.h"
 
 using namespace gear;
 using namespace graphics;
@@ -119,7 +120,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 	Ref<Fence> postTransferGraphicsFence = Fence::Create(&fenceCI);
 
 	//Get Texture Barries and/or Reload Textures
-	bool generateMipmps = false;
+	bool generateMipmaps = false;
 	std::vector<Ref<Barrier>> textureUnknownToTransferDstBarrier;
 	std::vector<Ref<Barrier>> textureShaderReadOnlyBarrierToTransferDst;
 	std::vector<Ref<Barrier>> textureTransferDstToShaderReadOnlyBarrier;
@@ -137,7 +138,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 
 				if (texture.second->m_GenerateMipMaps && !texture.second->m_Generated)
 				{
-					generateMipmps = true;
+					generateMipmaps = true;
 				}
 
 				if (!texture.second->m_TransitionUnknownToTransferDst)
@@ -169,7 +170,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 
 	bool preTransferGraphicsCmdBuffer = textureShaderReadOnlyBarrierToTransferDst.size();
 	bool transferCmdBuffer = forceUploadCamera || forceUploadLights || forceUploadMeshes || forceUploadSkybox || textureUnknownToTransferDstBarrier.size();
-	bool asyncComputeCmdBufferMipMaps = generateMipmps;
+	bool asyncComputeCmdBufferMipMaps = generateMipmaps || !m_Skybox->m_Generated;
 	bool postTransferGraphicsCmdBuffer = textureTransferDstToShaderReadOnlyBarrier.size();
 
 	//Upload Pre-Transfer Graphics CmdBuffer
@@ -247,15 +248,44 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 				{
 					for (auto& texture : material->GetTextures())
 					{
-						//texture.second->GenerateMipMaps();
-						auto generateMipMaps_texture = [](gear::Ref<Texture> texture) { texture->GenerateMipMaps(); };
-						mipmapsDispatchs.push_back(std::async(std::launch::async, generateMipMaps_texture, texture.second));
+						ImageProcessing::GenerateMipMaps(
+							{
+								texture.second,
+								Barrier::AccessBit::TRANSFER_WRITE_BIT,
+								Barrier::AccessBit::TRANSFER_READ_BIT,
+								Image::Layout::TRANSFER_DST_OPTIMAL,
+								Image::Layout::TRANSFER_DST_OPTIMAL,
+							}
+						);
+						//auto generateMipMaps_texture = [](gear::Ref<Texture> texture) { texture->GenerateMipMaps(); };
+						//mipmapsDispatchs.push_back(std::async(std::launch::async, generateMipMaps_texture, texture.second));
 					}
 				}
 			}
 			for (auto& dispatch : mipmapsDispatchs)
 			{
-				dispatch.wait();
+				//dispatch.wait();
+			}
+
+			if (!m_Skybox->m_Cubemap && !m_Skybox->m_Generated)
+			{
+				ImageProcessing::EquirectangularToCube(
+					{
+						m_Skybox->GetGeneratedCubemap(),
+						Barrier::AccessBit::SHADER_WRITE_BIT,
+						Barrier::AccessBit::SHADER_READ_BIT,
+						Image::Layout::UNKNOWN,
+						Image::Layout::SHADER_READ_ONLY_OPTIMAL,
+					},
+					{
+						m_Skybox->GetTexture(),
+						Barrier::AccessBit::TRANSFER_WRITE_BIT,
+						Barrier::AccessBit::TRANSFER_READ_BIT,
+						Image::Layout::TRANSFER_DST_OPTIMAL,
+						Image::Layout::TRANSFER_DST_OPTIMAL,
+					}
+				);
+				m_Skybox->m_Generated = true;
 			}
 		}
 	}
@@ -429,7 +459,7 @@ void Renderer::Flush()
 					else if (name.find("SKYBOX") == 0)
 					{
 						const gear::Ref<Material>& material = m_Skybox->GetModel()->GetMesh()->GetMaterials()[0];
-						const gear::Ref<Texture>& skyboxTexture = material->GetTextures()[Material::TextureType::ALBEDO];
+						const gear::Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedCubemap(); //material->GetTextures()[Material::TextureType::ALBEDO];
 						m_DescSetPerMaterial[material]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 					}
 
