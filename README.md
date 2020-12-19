@@ -8,7 +8,7 @@ Inspired by Yan Chernikov's (aka TheCheno) videos on C++, OpenGL and Game Engine
 
 ## PBR Rendering Demo
 PBR and IBL Render
-![pbr_ibl_render](Branding/Screenshots/pbr_render_textured.png)
+![pbr_ibl_render](/Branding/Screenshots/pbr_render_textured.jpg)
 
 # Projects:
 ## GEAR_CORE: 
