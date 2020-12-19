@@ -91,11 +91,10 @@ namespace graphics
 		SubresourceMap m_SubresourceMap; //m_SubResourceMap[mipLevel][arrayLayer] = { currentLayout };
 
 	public:
-		bool m_TransitionUnknownToTransferDst = false;
-		bool m_TransitionTransferDstToShaderReadOnly = false;
-
+		bool m_PreUpload = true;
 		bool m_GenerateMipMaps = false;
 		bool m_Generated = false;
+		bool m_ShaderReadable = false;
 
 	public:
 		Texture(CreateInfo* pCreateInfo);

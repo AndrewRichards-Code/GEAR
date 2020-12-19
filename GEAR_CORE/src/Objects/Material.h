@@ -33,7 +33,7 @@ namespace objects
 	
 	private:
 		static gear::Ref<graphics::Texture> s_WhiteTexture;
-		static gear::Ref<graphics::Texture> s_BlueTexture;
+		static gear::Ref<graphics::Texture> s_BlueNormalTexture;
 		static gear::Ref<graphics::Texture> s_BlackTexture;
 		static std::map<std::string, gear::Ref<Material>> s_LoadedMaterials;
 		

@@ -77,7 +77,7 @@ bool Window::Init()
 		return false;
 	}
 
-	if (GraphicsAPI::IsVulkan())
+	if (m_CI.api == GraphicsAPI::API::VULKAN)
 	{
 		if (glfwVulkanSupported() == GLFW_FALSE)
 		{

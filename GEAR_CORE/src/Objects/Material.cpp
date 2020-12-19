@@ -8,7 +8,7 @@ using namespace mars;
 
 std::map<std::string, Ref<Material>> Material::s_LoadedMaterials;
 gear::Ref<Texture> Material::s_WhiteTexture;
-gear::Ref<Texture> Material::s_BlueTexture;
+gear::Ref<Texture> Material::s_BlueNormalTexture;
 gear::Ref<Texture> Material::s_BlackTexture;
 
 Material::Material(CreateInfo* pCreateInfo)
@@ -28,7 +28,7 @@ Material::~Material()
 void Material::Update()
 {
 	if (!m_CI.pbrTextures[TextureType::NORMAL])
-		m_CI.pbrTextures[TextureType::NORMAL] = s_BlueTexture;
+		m_CI.pbrTextures[TextureType::NORMAL] = s_BlueNormalTexture;
 	if (!m_CI.pbrTextures[TextureType::ALBEDO]) 
 		m_CI.pbrTextures[TextureType::ALBEDO] = s_WhiteTexture;
 	if (!m_CI.pbrTextures[TextureType::METALLIC]) 
@@ -40,7 +40,7 @@ void Material::Update()
 	if (!m_CI.pbrTextures[TextureType::EMISSIVE])
 		m_CI.pbrTextures[TextureType::EMISSIVE] = s_BlackTexture;
 
-	m_UB->fersnel			= m_CI.pbrConstants.fersnel;
+	m_UB->fresnel			= m_CI.pbrConstants.fresnel;
 	m_UB->albedo			= m_CI.pbrConstants.albedo;
 	m_UB->metallic			= m_CI.pbrConstants.metallic;
 	m_UB->roughness			= m_CI.pbrConstants.roughness;
@@ -54,7 +54,7 @@ void Material::AddProperties(const Properties& properties)
 {
 	m_Properties = properties;
 
-	m_CI.pbrConstants.fersnel = m_Properties.colourSpecular;
+	m_CI.pbrConstants.fresnel = m_Properties.colourSpecular;
 	m_CI.pbrConstants.albedo = m_Properties.colourDiffuse;
 	m_CI.pbrConstants.metallic;
 	m_CI.pbrConstants.roughness = 1.0f - (m_Properties.shininess / 32.0f);
@@ -75,12 +75,12 @@ void Material::InitialiseUB()
 
 void Material::CreateDefaultColourTextures()
 {
-	if (s_WhiteTexture && s_BlueTexture && s_BlackTexture)
+	if (s_WhiteTexture && s_BlueNormalTexture && s_BlackTexture)
 		return;
 	
 	uint8_t dataWhite[4] = { 0xFF, 0xFF, 0xFF, 0xFF };
 	Texture::CreateInfo texCI;
-	texCI.debugName = "GEAR_CORE_Material: Blank Texture";
+	texCI.debugName = "GEAR_CORE_Material: Blank White Texture";
 	texCI.device = m_CI.device;
 	texCI.dataType = Texture::DataType::DATA;
 	texCI.data.data = dataWhite;
@@ -97,11 +97,13 @@ void Material::CreateDefaultColourTextures()
 	texCI.generateMipMaps = false;
 	s_WhiteTexture = gear::CreateRef<Texture>(&texCI);
 
-	uint8_t dataBlue[4] = { 0x00, 0x00, 0xFF, 0xFF };
+	uint8_t dataBlue[4] = { 0x7F, 0x7F, 0xFF, 0xFF };
+	texCI.debugName = "GEAR_CORE_Material: Blank Blue-Normal Texture";
 	texCI.data.data = dataBlue;
-	s_BlueTexture = gear::CreateRef<Texture>(&texCI);
+	s_BlueNormalTexture = gear::CreateRef<Texture>(&texCI);
 
-	uint8_t dataBlack[4] = { 0x00, 0x00, 0x0, 0xFF };
+	uint8_t dataBlack[4] = { 0x00, 0x00, 0x00, 0xFF };
+	texCI.debugName = "GEAR_CORE_Material: Blank Black Texture";
 	texCI.data.data = dataBlack;
 	s_BlackTexture = gear::CreateRef<Texture>(&texCI);
 }

@@ -34,14 +34,14 @@ int main()
 	gear::Ref<Scene> activeScene = gear::CreateRef<Scene>(&sceneCI);
 
 	Window::CreateInfo windowCI;
-	//windowCI.api = GraphicsAPI::API::D3D12;
-	windowCI.api = GraphicsAPI::API::VULKAN;
+	windowCI.api = GraphicsAPI::API::D3D12;
+	//windowCI.api = GraphicsAPI::API::VULKAN;
 	windowCI.title = "GEAR_TEST";
 	windowCI.width = 1920;
 	windowCI.height = 1080;
 	windowCI.fullscreen = false;
 	windowCI.vSync = true;
-	windowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	windowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_2_BIT;
 	windowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::NONE;
 	gear::Ref<Window> window = gear::CreateRef<Window>(&windowCI);
 
@@ -53,7 +53,7 @@ int main()
 	Skybox::CreateInfo skyboxCI;
 	skyboxCI.debugName = "Skybox-HDR";
 	skyboxCI.device = window->GetDevice();
-	skyboxCI.filepaths = { "res/img/kloppenheim_06_2k.hdr" };
+	skyboxCI.filepaths = { "res/img/snowy_park_01_2k.hdr" };
 	skyboxCI.generatedCubemapSize = 1024;
 	skyboxCI.transform.translation = Vec3(0, 0, 0);
 	skyboxCI.transform.orientation = Quat(1, 0, 0, 0);
@@ -79,19 +79,19 @@ int main()
 		return std::move(gear::CreateRef<Texture>(&texCI));
 	};
 
-	std::future<gear::Ref<graphics::Texture>> rustIronAlbedo = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_basecolor.png"), std::string("UE4 Rust Iron: Albedo"));
-	std::future<gear::Ref<graphics::Texture>> rustIronMetallic = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_metallic.png"), std::string("UE4 Rust Iron: Metallic"));
-	std::future<gear::Ref<graphics::Texture>> rustIronNormal = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_normal.png"), std::string("UE4 Rust Iron: Normal"));
-	std::future<gear::Ref<graphics::Texture>> rustIronRoughness = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_roughness.png"), std::string("UE4 Rust Iron: Roughness"));
+	//std::future<gear::Ref<graphics::Texture>> rustIronAlbedo = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_basecolor.png"), std::string("UE4 Rust Iron: Albedo"));
+	//std::future<gear::Ref<graphics::Texture>> rustIronMetallic = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_metallic.png"), std::string("UE4 Rust Iron: Metallic"));
+	//std::future<gear::Ref<graphics::Texture>> rustIronNormal = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_normal.png"), std::string("UE4 Rust Iron: Normal"));
+	//std::future<gear::Ref<graphics::Texture>> rustIronRoughness = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_roughness.png"), std::string("UE4 Rust Iron: Roughness"));
 
-	std::future<gear::Ref<graphics::Texture>> slateAlbedo = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-albedo2.png"), std::string("UE4 Slate: Albedo"));
-	std::future<gear::Ref<graphics::Texture>> slateMetallic = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-metalness.png"), std::string("UE4 Slate: Metallic"));
-	std::future<gear::Ref<graphics::Texture>> slateNormal = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-normal3-UE4.png"), std::string("UE4 Slate: Normal"));
-	std::future<gear::Ref<graphics::Texture>> slateRoughness = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-rough.png"), std::string("UE4 Slate: Roughness"));
-	std::future<gear::Ref<graphics::Texture>> slateAO = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-ao.png"), std::string("UE4 Slate: AO"));
+	//std::future<gear::Ref<graphics::Texture>> slateAlbedo = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-albedo2.png"), std::string("UE4 Slate: Albedo"));
+	//std::future<gear::Ref<graphics::Texture>> slateMetallic = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-metalness.png"), std::string("UE4 Slate: Metallic"));
+	//std::future<gear::Ref<graphics::Texture>> slateNormal = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-normal3-UE4.png"), std::string("UE4 Slate: Normal"));
+	//std::future<gear::Ref<graphics::Texture>> slateRoughness = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-rough.png"), std::string("UE4 Slate: Roughness"));
+	//std::future<gear::Ref<graphics::Texture>> slateAO = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-ao.png"), std::string("UE4 Slate: AO"));
 	
 	Material::CreateInfo matCI;
-	matCI.debugName = "UE4 Rust Iron";
+	/*matCI.debugName = "UE4 Rust Iron";
 	matCI.device = window->GetDevice();
 	matCI.pbrTextures = {
 		{ Material::TextureType::NORMAL, rustIronNormal.get() },
@@ -99,9 +99,9 @@ int main()
 		{ Material::TextureType::METALLIC, rustIronMetallic.get() },
 		{ Material::TextureType::ROUGHNESS, rustIronRoughness.get() }
 	};
-	gear::Ref<Material> rustIronMaterial = gear::CreateRef<Material>(&matCI);
+	gear::Ref<Material> rustIronMaterial = gear::CreateRef<Material>(&matCI);*/
 	
-	matCI.debugName = "UE4 Slate";
+	/*matCI.debugName = "UE4 Slate";
 	matCI.device = window->GetDevice();
 	matCI.pbrTextures = {
 		{ Material::TextureType::NORMAL, slateNormal.get() },
@@ -110,20 +110,20 @@ int main()
 		{ Material::TextureType::ROUGHNESS, slateRoughness.get() },
 		{ Material::TextureType::AMBIENT_OCCLUSION, slateAO.get()}
 	};
-	gear::Ref<Material> slateMaterial = gear::CreateRef<Material>(&matCI);
+	gear::Ref<Material> slateMaterial = gear::CreateRef<Material>(&matCI);*/
 
 	Mesh::CreateInfo meshCI;
-	meshCI.debugName = "quad.fbx";
+	/*meshCI.debugName = "quad.fbx";
 	meshCI.device = window->GetDevice();
 	meshCI.filepath = "res/obj/quad.fbx";
 	gear::Ref<Mesh> quadMesh = gear::CreateRef<Mesh>(&meshCI);
-	quadMesh->SetOverrideMaterial(0, slateMaterial);
+	quadMesh->SetOverrideMaterial(0, slateMaterial);*/
 
-	meshCI.debugName = "sphere.fbx";
+	/*meshCI.debugName = "sphere.fbx";
 	meshCI.device = window->GetDevice();
 	meshCI.filepath = "res/obj/sphere.fbx";
 	gear::Ref<Mesh> sphereMesh = gear::CreateRef<Mesh>(&meshCI);
-	sphereMesh->SetOverrideMaterial(0, rustIronMaterial);
+	sphereMesh->SetOverrideMaterial(0, rustIronMaterial);*/
 
 	/*meshCI.debugName = "KagemitsuG4.fbx";
 	meshCI.device = window->GetDevice();
@@ -145,30 +145,56 @@ int main()
 	/*modelCI.debugName = "KagemitsuG4";
 	modelCI.device = window->GetDevice();
 	modelCI.pMesh = kagemitsuG4Mesh;
-	modelCI.transform.translation = Vec3(0.0, 0.9, -0.1);
-	modelCI.transform.orientation = Quat(1, 0, 0, 0);
-	modelCI.transform.scale = Vec3(0.01f, 0.01f, 0.01f);
+	modelCI.transform.translation = Vec3(0.0, 0.825, -0.1);
+	modelCI.transform.orientation = Quat(cos(DegToRad(45.0)), sin(DegToRad(45.0)), 0, 0);
+	modelCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
 	modelCI.renderPipelineName = "PBROpaque";
 	Entity KagemitsuG4 = activeScene->CreateEntity();
 	KagemitsuG4.AddComponent<ModelComponent>(gear::CreateRef<Model>(&modelCI));*/
 
-	modelCI.debugName = "Sphere";
-	modelCI.device = window->GetDevice();
-	modelCI.pMesh = sphereMesh;
-	modelCI.materialTextureScaling = Vec2(1.0f, 1.0f);
-	modelCI.transform.translation = Vec3(0.0, 1.0f, -1.5);
-	modelCI.transform.orientation = Quat(1, 0, 0, 0);
-	modelCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
-	modelCI.renderPipelineName = "PBROpaque";
-	Entity sphere = activeScene->CreateEntity();
-	sphere.AddComponent<ModelComponent>(std::move(gear::CreateRef<Model>(&modelCI)));
+	uint32_t gridSize = 5;
+	for (uint32_t i = 0; i < gridSize; i++)
+	{
+		for (uint32_t j = 0; j < gridSize; j++)
+		{
+			float pos_x =(2.0f / float(gridSize)) * float(int(i) - int(gridSize / 2));
+			float pos_y =(2.0f / float(gridSize)) * float(int(j) - int(gridSize / 2)) + 1.0f;
+
+			matCI.debugName = "Test Material_" + std::to_string(i) + "_" + std::to_string(j);
+			matCI.device = window->GetDevice();
+			matCI.pbrConstants.fresnel = Vec4(1, 1, 1, 1);
+			matCI.pbrConstants.albedo = Vec4(1, 0, 0, 1);
+			matCI.pbrConstants.metallic = (float(i) + 0.5f) / float(gridSize);
+			matCI.pbrConstants.roughness = (float(j) + 0.5f) / float(gridSize);
+			matCI.pbrConstants.ambientOcclusion = 0.0f;
+			matCI.pbrConstants.emissive = Vec4(0, 0, 0, 1);
+			gear::Ref<Material> testMaterial = gear::CreateRef<Material>(&matCI);
+
+			meshCI.debugName = "sphere.fbx";
+			meshCI.device = window->GetDevice();
+			meshCI.filepath = "res/obj/sphere.fbx";
+			gear::Ref<Mesh> sphereMesh = gear::CreateRef<Mesh>(&meshCI);
+			sphereMesh->SetOverrideMaterial(0, testMaterial);
+
+			modelCI.debugName = "Sphere";
+			modelCI.device = window->GetDevice();
+			modelCI.pMesh = sphereMesh;
+			modelCI.materialTextureScaling = Vec2(1.0f, 1.0f);
+			modelCI.transform.translation = Vec3(pos_x, pos_y, -2.0f);
+			modelCI.transform.orientation = Quat(cos(DegToRad(45.0)), -sin(DegToRad(45.0)), 0, 0);
+			modelCI.transform.scale = Vec3(1.0f / float(gridSize), 1.0f / float(gridSize), 1.0f / float(gridSize));
+			modelCI.renderPipelineName = "PBROpaque";
+			Entity sphere = activeScene->CreateEntity();
+			sphere.AddComponent<ModelComponent>(std::move(gear::CreateRef<Model>(&modelCI)));
+		}
+	}
 
 	Light::CreateInfo lightCI;
 	lightCI.debugName = "Main";
 	lightCI.device = window->GetDevice();
 	lightCI.type = Light::LightType::POINT;
 	lightCI.colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	lightCI.transform.translation = Vec3(0.0f, 1.0f, 0.0f);
+	lightCI.transform.translation = Vec3(0.0f, 2.0f, 0.0f);
 	lightCI.transform.orientation = Quat(1, 0, 0, 0);
 	lightCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
 	Entity light = activeScene->CreateEntity();
@@ -177,7 +203,7 @@ int main()
 	Camera::CreateInfo cameraCI;
 	cameraCI.debugName = "Main";
 	cameraCI.device = window->GetDevice();
-	cameraCI.transform.translation = Vec3(0, 0, 0);
+	cameraCI.transform.translation = Vec3(0, 1, 0);
 	cameraCI.transform.orientation = Quat(1, 0, 0, 0);
 	cameraCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
 	cameraCI.projectionType = Camera::ProjectionType::PERSPECTIVE;
@@ -242,7 +268,7 @@ int main()
 		{
 			activeScene->Play();
 		}
-
+		
 		//Keyboard and Mouse input
 		if(window->IsMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT))
 		{
@@ -274,7 +300,16 @@ int main()
 			camera->m_CI.transform.translation += camera->m_Direction * (float)timer;
 		if (window->IsKeyPressed(GLFW_KEY_S))
 			camera->m_CI.transform.translation -= camera->m_Direction * (float)timer;
-		
+
+		/*if (window->IsKeyPressed(GLFW_KEY_L))
+			yaw += DegToRad(10.0);
+		if (window->IsKeyPressed(GLFW_KEY_J))
+			yaw -= DegToRad(10.0);
+		if (window->IsKeyPressed(GLFW_KEY_I))
+			pitch += DegToRad(10.0);
+		if (window->IsKeyPressed(GLFW_KEY_K))
+			pitch -= DegToRad(10.0);*/
+
 		double fov = 0.0;
 		window->GetScrollPosition(fov);
 		camera->m_CI.transform.orientation = Quat(pitch, {1, 0, 0}) * Quat(yaw, { 0, 1, 0 });

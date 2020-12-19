@@ -5,15 +5,15 @@
             "debugName": "Main",
             "transform": {
                 "translation": [
-                    0.0,
+                    0.07261002063751221,
                     1.0,
-                    0.15000000596046448
+                    0.06554117798805237
                 ],
                 "orientation": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    0.0
+                    0.9988479932646149,
+                    0.007263955574982619,
+                    0.04743208108167267,
+                    0.00034494190520435584
                 ],
                 "scale": [
                     1.0,
@@ -53,7 +53,7 @@
             "transform": {
                 "translation": [
                     0.0,
-                    1.0,
+                    2.0,
                     0.0
                 ],
                 "orientation": [
@@ -84,60 +84,51 @@
                         "UE4 Rust Iron: Normal": {
                             "pbrType": 1,
                             "debugName": "UE4 Rust Iron: Normal",
-                            "filepaths": [
-                                "res/img/rustediron2-Unreal-Engine/rustediron2_normal.png"
-                            ],
-                            "width": 2048,
-                            "height": 2048,
-                            "depth": 1,
-                            "mipLevels": 1,
+                            "arrayLayers": 1,
+                            "mipLevels": 12,
                             "type": 1,
                             "format": 37,
                             "samples": 1,
                             "usage": 0,
-                            "generateMipMaps": false
+                            "generateMipMaps": true
                         },
                         "UE4 Rust Iron: Albedo": {
                             "pbrType": 2,
                             "debugName": "UE4 Rust Iron: Albedo",
-                            "filepaths": [
-                                "res/img/rustediron2-Unreal-Engine/rustediron2_basecolor.png"
-                            ],
-                            "width": 2048,
-                            "height": 2048,
-                            "depth": 1,
-                            "mipLevels": 1,
+                            "arrayLayers": 1,
+                            "mipLevels": 12,
                             "type": 1,
                             "format": 37,
                             "samples": 1,
                             "usage": 0,
-                            "generateMipMaps": false
+                            "generateMipMaps": true
                         },
                         "UE4 Rust Iron: Metallic": {
                             "pbrType": 3,
                             "debugName": "UE4 Rust Iron: Metallic",
-                            "filepaths": [
-                                "res/img/rustediron2-Unreal-Engine/rustediron2_metallic.png"
-                            ],
-                            "width": 2048,
-                            "height": 2048,
-                            "depth": 1,
-                            "mipLevels": 1,
+                            "arrayLayers": 1,
+                            "mipLevels": 12,
                             "type": 1,
                             "format": 37,
                             "samples": 1,
                             "usage": 0,
-                            "generateMipMaps": false
+                            "generateMipMaps": true
                         },
                         "UE4 Rust Iron: Roughness": {
                             "pbrType": 4,
                             "debugName": "UE4 Rust Iron: Roughness",
-                            "filepaths": [
-                                "res/img/rustediron2-Unreal-Engine/rustediron2_roughness.png"
-                            ],
-                            "width": 2048,
-                            "height": 2048,
-                            "depth": 1,
+                            "arrayLayers": 1,
+                            "mipLevels": 12,
+                            "type": 1,
+                            "format": 37,
+                            "samples": 1,
+                            "usage": 0,
+                            "generateMipMaps": true
+                        },
+                        "GEAR_CORE_Material: Blank White Texture": {
+                            "pbrType": 5,
+                            "debugName": "GEAR_CORE_Material: Blank White Texture",
+                            "arrayLayers": 1,
                             "mipLevels": 1,
                             "type": 1,
                             "format": 37,
@@ -145,13 +136,10 @@
                             "usage": 0,
                             "generateMipMaps": false
                         },
-                        "GEAR_CORE_Material: Blank Texture": {
+                        "GEAR_CORE_Material: Blank Black Texture": {
                             "pbrType": 6,
-                            "debugName": "GEAR_CORE_Material: Blank Texture",
-                            "filepaths": [],
-                            "width": 1,
-                            "height": 1,
-                            "depth": 1,
+                            "debugName": "GEAR_CORE_Material: Blank Black Texture",
+                            "arrayLayers": 1,
                             "mipLevels": 1,
                             "type": 1,
                             "format": 37,
@@ -160,7 +148,7 @@
                             "generateMipMaps": false
                         }
                     },
-                    "fersnel": [
+                    "fresnel": [
                         1.0,
                         1.0,
                         1.0,
@@ -191,11 +179,11 @@
                 "translation": [
                     0.0,
                     1.0,
-                    -1.5
+                    -2.0
                 ],
                 "orientation": [
-                    1.0,
-                    0.0,
+                    0.7071067811865476,
+                    -0.7071067811865476,
                     0.0,
                     0.0
                 ],
@@ -205,159 +193,7 @@
                     1.0
                 ]
             },
-            "renderPipelineName": "basic"
-        },
-        "Quad": {
-            "debugName": "Quad",
-            "mesh": {
-                "debugName": "quad.fbx",
-                "filepath": "res/obj/quad.fbx"
-            },
-            "materials": {
-                "UE4 Slate": {
-                    "debugName": "UE4 Slate",
-                    "textures": {
-                        "UE4 Slate: Normal": {
-                            "pbrType": 1,
-                            "debugName": "UE4 Slate: Normal",
-                            "filepaths": [
-                                "res/img/slate2-tiled-ue4/slate2-tiled-normal3-UE4.png"
-                            ],
-                            "width": 2048,
-                            "height": 2048,
-                            "depth": 1,
-                            "mipLevels": 1,
-                            "type": 1,
-                            "format": 37,
-                            "samples": 1,
-                            "usage": 0,
-                            "generateMipMaps": false
-                        },
-                        "UE4 Slate: Albedo": {
-                            "pbrType": 2,
-                            "debugName": "UE4 Slate: Albedo",
-                            "filepaths": [
-                                "res/img/slate2-tiled-ue4/slate2-tiled-albedo2.png"
-                            ],
-                            "width": 2048,
-                            "height": 2048,
-                            "depth": 1,
-                            "mipLevels": 1,
-                            "type": 1,
-                            "format": 37,
-                            "samples": 1,
-                            "usage": 0,
-                            "generateMipMaps": false
-                        },
-                        "UE4 Slate: Metallic": {
-                            "pbrType": 3,
-                            "debugName": "UE4 Slate: Metallic",
-                            "filepaths": [
-                                "res/img/slate2-tiled-ue4/slate2-tiled-metalness.png"
-                            ],
-                            "width": 2048,
-                            "height": 2048,
-                            "depth": 1,
-                            "mipLevels": 1,
-                            "type": 1,
-                            "format": 37,
-                            "samples": 1,
-                            "usage": 0,
-                            "generateMipMaps": false
-                        },
-                        "UE4 Slate: Roughness": {
-                            "pbrType": 4,
-                            "debugName": "UE4 Slate: Roughness",
-                            "filepaths": [
-                                "res/img/slate2-tiled-ue4/slate2-tiled-rough.png"
-                            ],
-                            "width": 2048,
-                            "height": 2048,
-                            "depth": 1,
-                            "mipLevels": 1,
-                            "type": 1,
-                            "format": 37,
-                            "samples": 1,
-                            "usage": 0,
-                            "generateMipMaps": false
-                        },
-                        "UE4 Slate: AO": {
-                            "pbrType": 5,
-                            "debugName": "UE4 Slate: AO",
-                            "filepaths": [
-                                "res/img/slate2-tiled-ue4/slate2-tiled-ao.png"
-                            ],
-                            "width": 2048,
-                            "height": 2048,
-                            "depth": 1,
-                            "mipLevels": 1,
-                            "type": 1,
-                            "format": 37,
-                            "samples": 1,
-                            "usage": 0,
-                            "generateMipMaps": false
-                        },
-                        "GEAR_CORE_Material: Blank Texture": {
-                            "pbrType": 6,
-                            "debugName": "GEAR_CORE_Material: Blank Texture",
-                            "filepaths": [],
-                            "width": 1,
-                            "height": 1,
-                            "depth": 1,
-                            "mipLevels": 1,
-                            "type": 1,
-                            "format": 37,
-                            "samples": 1,
-                            "usage": 0,
-                            "generateMipMaps": false
-                        }
-                    },
-                    "fersnel": [
-                        1.0,
-                        1.0,
-                        1.0,
-                        1.0
-                    ],
-                    "albedo": [
-                        1.0,
-                        1.0,
-                        1.0,
-                        1.0
-                    ],
-                    "metallic": 1.0,
-                    "roughness": 1.0,
-                    "ambientOcclusion": 1.0,
-                    "emissive": [
-                        1.0,
-                        1.0,
-                        1.0,
-                        1.0
-                    ]
-                }
-            },
-            "materialTextureScaling": [
-                100.0,
-                100.0
-            ],
-            "transform": {
-                "translation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "orientation": [
-                    0.7071067811865476,
-                    -0.7071067811865476,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    100.0,
-                    100.0,
-                    100.0
-                ]
-            },
-            "renderPipelineName": "basic"
+            "renderPipelineName": "PBROpaque"
         }
     }
 }

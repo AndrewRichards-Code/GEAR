@@ -213,7 +213,7 @@ void Scene::SaveToFile()
 				texture["generateMipMaps"] = textureCI.generateMipMaps;
 			}
 
-			material["fersnel"] = { materialCI.pbrConstants.fersnel.r, materialCI.pbrConstants.fersnel.g, materialCI.pbrConstants.fersnel.b, materialCI.pbrConstants.fersnel.a };
+			material["fresnel"] = { materialCI.pbrConstants.fresnel.r, materialCI.pbrConstants.fresnel.g, materialCI.pbrConstants.fresnel.b, materialCI.pbrConstants.fresnel.a };
 			material["albedo"] = { materialCI.pbrConstants.albedo.r, materialCI.pbrConstants.albedo.g, materialCI.pbrConstants.albedo.b, materialCI.pbrConstants.albedo.a };
 			material["metallic"] = materialCI.pbrConstants.metallic;
 			material["roughness"] = materialCI.pbrConstants.roughness;

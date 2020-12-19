@@ -44,19 +44,70 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 		m_GeneratedCubemapCI.data.width = m_CI.generatedCubemapSize;
 		m_GeneratedCubemapCI.data.height = m_CI.generatedCubemapSize;
 		m_GeneratedCubemapCI.data.depth = 1;
-		m_GeneratedCubemapCI.mipLevels = 1;
+		m_GeneratedCubemapCI.mipLevels = GEAR_TEXTURE_MAX_MIP_LEVEL;
 		m_GeneratedCubemapCI.arrayLayers = 6;
 		m_GeneratedCubemapCI.type = Image::Type::TYPE_CUBE;
 		m_GeneratedCubemapCI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
 		m_GeneratedCubemapCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 		m_GeneratedCubemapCI.usage = Image::UsageBit::STORAGE_BIT;
-		m_GeneratedCubemapCI.generateMipMaps = false;
+		m_GeneratedCubemapCI.generateMipMaps = true;
 		m_GeneratedCubemap = gear::CreateRef<Texture>(&m_GeneratedCubemapCI);
 	}
 	else
 	{
 		m_GeneratedCubemap = nullptr;
 	}
+
+	m_GeneratedDiffuseCubemapCI.debugName = "GEAR_CORE_Skybox_GeneratedDiffuseCubemap: " + m_CI.debugName;
+	m_GeneratedDiffuseCubemapCI.device = m_CI.device;
+	m_GeneratedDiffuseCubemapCI.dataType = Texture::DataType::DATA;
+	m_GeneratedDiffuseCubemapCI.data.data = nullptr;
+	m_GeneratedDiffuseCubemapCI.data.size = 0;
+	m_GeneratedDiffuseCubemapCI.data.width = m_CI.generatedCubemapSize/16;
+	m_GeneratedDiffuseCubemapCI.data.height = m_CI.generatedCubemapSize/16;
+	m_GeneratedDiffuseCubemapCI.data.depth = 1;
+	m_GeneratedDiffuseCubemapCI.mipLevels = 1;
+	m_GeneratedDiffuseCubemapCI.arrayLayers = 6;
+	m_GeneratedDiffuseCubemapCI.type = Image::Type::TYPE_CUBE;
+	m_GeneratedDiffuseCubemapCI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
+	m_GeneratedDiffuseCubemapCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	m_GeneratedDiffuseCubemapCI.usage = Image::UsageBit::STORAGE_BIT;
+	m_GeneratedDiffuseCubemapCI.generateMipMaps = false;
+	m_GeneratedDiffuseCubemap = gear::CreateRef<Texture>(&m_GeneratedDiffuseCubemapCI);
+
+	m_GeneratedSpecularCubemapCI.debugName = "GEAR_CORE_Skybox_GeneratedSpecularCubemap: " + m_CI.debugName;
+	m_GeneratedSpecularCubemapCI.device = m_CI.device;
+	m_GeneratedSpecularCubemapCI.dataType = Texture::DataType::DATA;
+	m_GeneratedSpecularCubemapCI.data.data = nullptr;
+	m_GeneratedSpecularCubemapCI.data.size = 0;
+	m_GeneratedSpecularCubemapCI.data.width = m_CI.generatedCubemapSize;
+	m_GeneratedSpecularCubemapCI.data.height = m_CI.generatedCubemapSize;
+	m_GeneratedSpecularCubemapCI.data.depth = 1;
+	m_GeneratedSpecularCubemapCI.mipLevels = GEAR_TEXTURE_MAX_MIP_LEVEL;
+	m_GeneratedSpecularCubemapCI.arrayLayers = 6;
+	m_GeneratedSpecularCubemapCI.type = Image::Type::TYPE_CUBE;
+	m_GeneratedSpecularCubemapCI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
+	m_GeneratedSpecularCubemapCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	m_GeneratedSpecularCubemapCI.usage = Image::UsageBit::STORAGE_BIT;
+	m_GeneratedSpecularCubemapCI.generateMipMaps = true;
+	m_GeneratedSpecularCubemap = gear::CreateRef<Texture>(&m_GeneratedSpecularCubemapCI);
+
+	m_GeneratedSpecularBRDF_LUT_CI.debugName = "GEAR_CORE_Skybox_GeneratedSpecularBRDF_LUT: " + m_CI.debugName;
+	m_GeneratedSpecularBRDF_LUT_CI.device = m_CI.device;
+	m_GeneratedSpecularBRDF_LUT_CI.dataType = Texture::DataType::DATA;
+	m_GeneratedSpecularBRDF_LUT_CI.data.data = nullptr;
+	m_GeneratedSpecularBRDF_LUT_CI.data.size = 0;
+	m_GeneratedSpecularBRDF_LUT_CI.data.width = m_CI.generatedCubemapSize;
+	m_GeneratedSpecularBRDF_LUT_CI.data.height = m_CI.generatedCubemapSize;
+	m_GeneratedSpecularBRDF_LUT_CI.data.depth = 1;
+	m_GeneratedSpecularBRDF_LUT_CI.mipLevels = 1;
+	m_GeneratedSpecularBRDF_LUT_CI.arrayLayers = 1;
+	m_GeneratedSpecularBRDF_LUT_CI.type = Image::Type::TYPE_2D;
+	m_GeneratedSpecularBRDF_LUT_CI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
+	m_GeneratedSpecularBRDF_LUT_CI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	m_GeneratedSpecularBRDF_LUT_CI.usage = Image::UsageBit::STORAGE_BIT;
+	m_GeneratedSpecularBRDF_LUT_CI.generateMipMaps = false;
+	m_GeneratedSpecularBRDF_LUT = gear::CreateRef<Texture>(&m_GeneratedSpecularBRDF_LUT_CI);
 
 	m_MaterialCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
 	m_MaterialCI.device = m_CI.device;

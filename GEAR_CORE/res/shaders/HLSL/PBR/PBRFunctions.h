@@ -6,7 +6,7 @@ static const float TAU = 2.0 * PI;
 ////////////////////////////////
 float3 FresnelSchlick(float3 F0, float3 Wo, float3 N)
 {
-	return F0 + (1.0 - F0) * pow(1.0 - max(dot(Wo, N), 0.0), 5);
+	return F0 + (1.0 - F0) * pow(max(1.0 - dot(Wo, N), 0.0), 5.0);
 }
 
 ////////////////////////////////
@@ -58,8 +58,8 @@ float SchlickGGX(float cosWiN, float cosWoN, float roughness)
 // Schlick-GGX approximation of geometric attenuation function using Smith's method.
 float SchlickGGX_IBL(float cosWiN, float cosWoN, float roughness)
 {
-	float r = roughness + 1.0;
-	float k = (r * r) / 2.0; //Epic suggests using this roughness remapping IBL analytic lights.
+	float r = roughness;
+	float k = (r * r) / 2.0; //Epic suggests using this roughness remapping IBL lights.
 	return SchlickGGXSub(cosWiN, k) * SchlickGGXSub(cosWoN, k);
 }
 

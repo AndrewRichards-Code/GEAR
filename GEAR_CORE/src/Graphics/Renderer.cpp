@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "Core/StringConversion.h"
 #include "ImageProcessing.h"
+#include "FrameGraph.h"
 
 using namespace gear;
 using namespace graphics;
@@ -110,212 +111,269 @@ void Renderer::SubmitModel(const gear::Ref<Model>& obj)
 
 void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool forceUploadSkybox, bool forceUploadMeshes)
 {
-	Semaphore::CreateInfo transSemaphoreCI = { "GEAR_CORE_Semaphore_RenderTransfer", m_TransCmdPoolCI.pContext->GetDevice() };
-	Ref<Semaphore> transfer0 = Semaphore::Create(&transSemaphoreCI);
-	Ref<Semaphore> transfer1 = Semaphore::Create(&transSemaphoreCI);
-
-	Fence::CreateInfo fenceCI = { "GEAR_CORE_Fence_RenderTransfer", m_TransCmdPoolCI.pContext->GetDevice(), false, UINT64_MAX };
-	Ref<Fence> preTransferGraphicsFence = Fence::Create(&fenceCI);
-	Ref<Fence> transferFence = Fence::Create(&fenceCI);
-	Ref<Fence> postTransferGraphicsFence = Fence::Create(&fenceCI);
-
 	//Get Texture Barries and/or Reload Textures
-	bool generateMipmaps = false;
-	std::vector<Ref<Barrier>> textureUnknownToTransferDstBarrier;
-	std::vector<Ref<Barrier>> textureShaderReadOnlyBarrierToTransferDst;
-	std::vector<Ref<Barrier>> textureTransferDstToShaderReadOnlyBarrier;
+	std::set<gear::Ref<Texture>> texturesToProcess;
+	std::vector<gear::Ref<Texture>> texturesToGenerateMipmaps;
+
+	std::vector<miru::Ref<Barrier>> textureShaderReadOnlyBarrierToTransferDst;
+	std::vector<miru::Ref<Barrier>> textureUnknownToTransferDstBarrier;
+	std::vector<miru::Ref<Barrier>> textureTransferDstToShaderReadOnlyBarrier;
+	std::vector<miru::Ref<Barrier>> textureGeneralToShaderReadOnlyBarrier;
+
+	//Get all unique textures
 	for (auto& model : m_RenderQueue)
 	{
 		for (auto& material : model->GetMesh()->GetMaterials())
 		{
 			for (auto& texture : material->GetTextures())
 			{
-				if (m_ReloadTextures)
-				{
-					auto reload_texture = [](gear::Ref<Texture> texture) { texture->Reload(); };
-					std::async(std::launch::async, reload_texture, texture.second);
-				}
-
-				if (texture.second->m_GenerateMipMaps && !texture.second->m_Generated)
-				{
-					generateMipmaps = true;
-				}
-
-				if (!texture.second->m_TransitionUnknownToTransferDst)
-				{
-					texture.second->TransitionSubResources(textureUnknownToTransferDstBarrier,
-						{ { Barrier::AccessBit::NONE_BIT, Barrier::AccessBit::TRANSFER_WRITE_BIT,
-						Image::Layout::UNKNOWN, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
-					texture.second->m_TransitionUnknownToTransferDst = true;
-				}
-
-				if (m_ReloadTextures && texture.second->m_TransitionTransferDstToShaderReadOnly)
-				{
-					texture.second->TransitionSubResources(textureShaderReadOnlyBarrierToTransferDst,
-						{ { Barrier::AccessBit::SHADER_READ_BIT, Barrier::AccessBit::TRANSFER_WRITE_BIT,
-						Image::Layout::SHADER_READ_ONLY_OPTIMAL, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
-					texture.second->m_TransitionTransferDstToShaderReadOnly = false;
-				}
-
-				if (!texture.second->m_TransitionTransferDstToShaderReadOnly)
-				{
-					texture.second->TransitionSubResources(textureTransferDstToShaderReadOnlyBarrier,
-						{ { Barrier::AccessBit::TRANSFER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT,
-						Image::Layout::TRANSFER_DST_OPTIMAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
-					texture.second->m_TransitionTransferDstToShaderReadOnly = true;
-				}
+				texturesToProcess.insert(texture.second);
 			}
 		}
 	}
 
-	bool preTransferGraphicsCmdBuffer = textureShaderReadOnlyBarrierToTransferDst.size();
-	bool transferCmdBuffer = forceUploadCamera || forceUploadLights || forceUploadMeshes || forceUploadSkybox || textureUnknownToTransferDstBarrier.size();
-	bool asyncComputeCmdBufferMipMaps = generateMipmaps || !m_Skybox->m_Generated;
-	bool postTransferGraphicsCmdBuffer = textureTransferDstToShaderReadOnlyBarrier.size();
-
-	//Upload Pre-Transfer Graphics CmdBuffer
+	//Deal with Skybox Textures first
 	{
-		if (preTransferGraphicsCmdBuffer)
+		if (!m_Skybox->m_Cubemap && !m_Skybox->m_Generated)
 		{
-			m_CmdBuffer->Reset(3, false);
-			m_CmdBuffer->Begin(3, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
+			m_Skybox->GetGeneratedSpecularBRDF_LUT()->TransitionSubResources(textureGeneralToShaderReadOnlyBarrier,
+				{ { Barrier::AccessBit::SHADER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT,
+				Image::Layout::GENERAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
 
-			if (textureShaderReadOnlyBarrierToTransferDst.size())
-				m_CmdBuffer->PipelineBarrier(3, PipelineStageBit::FRAGMENT_SHADER_BIT, PipelineStageBit::TRANSFER_BIT, DependencyBit::NONE_BIT, textureShaderReadOnlyBarrierToTransferDst);
-
-			m_CmdBuffer->End(3);
-			m_CmdBuffer->Submit({ 3 }, {}, {}, { transfer0 }, preTransferGraphicsFence);
+			m_Skybox->GetGeneratedSpecularCubemap()->TransitionSubResources(textureGeneralToShaderReadOnlyBarrier,
+				{ { Barrier::AccessBit::SHADER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT,
+				Image::Layout::GENERAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
+			
+			m_Skybox->GetGeneratedDiffuseCubemap()->TransitionSubResources(textureGeneralToShaderReadOnlyBarrier,
+				{ { Barrier::AccessBit::SHADER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT,
+				Image::Layout::GENERAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
+			
+			m_Skybox->GetGeneratedCubemap()->TransitionSubResources(textureGeneralToShaderReadOnlyBarrier,
+				{ { Barrier::AccessBit::SHADER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT,
+				Image::Layout::GENERAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
+	
+			m_Skybox->GetTexture()->TransitionSubResources(textureUnknownToTransferDstBarrier,
+				{ { Barrier::AccessBit::NONE_BIT, Barrier::AccessBit::TRANSFER_WRITE_BIT,
+				Image::Layout::UNKNOWN, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
+			m_Skybox->GetTexture()->m_PreUpload = false;
+	
+			m_Skybox->GetTexture()->TransitionSubResources(textureGeneralToShaderReadOnlyBarrier,
+				{ { Barrier::AccessBit::SHADER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT,
+				Image::Layout::GENERAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
 		}
+		texturesToProcess.erase(m_Skybox->GetGeneratedSpecularBRDF_LUT());
+		texturesToProcess.erase(m_Skybox->GetGeneratedSpecularCubemap());
+		texturesToProcess.erase(m_Skybox->GetGeneratedDiffuseCubemap());
+		texturesToProcess.erase(m_Skybox->GetGeneratedCubemap());
+		texturesToProcess.erase(m_Skybox->GetTexture());
 	}
 
-	//Upload Transfer CmdBuffer
+	//Process them
+	for (auto& texture : texturesToProcess)
 	{
-		if (transferCmdBuffer)
+		if (m_ReloadTextures)
 		{
-			m_TransCmdBuffer->Reset(0, false);
-			m_TransCmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
-			if (m_Camera)
-				m_Camera->GetUB()->Upload(m_TransCmdBuffer, 0, forceUploadCamera);
-			if (m_Lights[0])
-				m_Lights[0]->GetUB()->Upload(m_TransCmdBuffer, 0, forceUploadLights);
-			if (m_Skybox)
-				m_Skybox->GetUB()->Upload(m_TransCmdBuffer, 0, forceUploadSkybox);
+			texture->Reload();
+			texture->m_ShaderReadable = false;
+			texture->TransitionSubResources(textureShaderReadOnlyBarrierToTransferDst,
+				{ { Barrier::AccessBit::SHADER_READ_BIT, Barrier::AccessBit::TRANSFER_WRITE_BIT,
+				Image::Layout::SHADER_READ_ONLY_OPTIMAL, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
+		}
 
-			for (auto& model : m_RenderQueue)
+		if (texture->m_PreUpload)
+		{
+			texture->TransitionSubResources(textureUnknownToTransferDstBarrier,
+				{ { Barrier::AccessBit::NONE_BIT, Barrier::AccessBit::TRANSFER_WRITE_BIT,
+				Image::Layout::UNKNOWN, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
+			texture->m_PreUpload = false;
+		}
+
+		if (!texture->m_ShaderReadable)
+		{
+			if (texture->m_GenerateMipMaps && !texture->m_Generated)
 			{
-				for (auto& vb : model->GetMesh()->GetVertexBuffers())
-					vb->Upload(m_TransCmdBuffer, 0, forceUploadMeshes);
-				for (auto& ib : model->GetMesh()->GetIndexBuffers())
-					ib->Upload(m_TransCmdBuffer, 0, forceUploadMeshes);
-
-				model->GetUB()->Upload(m_TransCmdBuffer, 0);
-				model->GetMesh()->GetMaterials()[0]->GetUB()->Upload(m_TransCmdBuffer, 0);
+				texturesToGenerateMipmaps.push_back(texture);
+				texture->TransitionSubResources(textureGeneralToShaderReadOnlyBarrier,
+					{ { Barrier::AccessBit::SHADER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT,
+					Image::Layout::GENERAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
 			}
-
-			if (textureUnknownToTransferDstBarrier.size())
-				m_TransCmdBuffer->PipelineBarrier(0, PipelineStageBit::TOP_OF_PIPE_BIT, PipelineStageBit::TRANSFER_BIT, DependencyBit::NONE_BIT, textureUnknownToTransferDstBarrier);
-
-			for (auto& model : m_RenderQueue)
-			{
-				for (auto& material : model->GetMesh()->GetMaterials())
-				{
-					for (auto& texture : material->GetTextures())
-					{
-						texture.second->Upload(m_TransCmdBuffer, 0);
-					}
-				}
-			}
-			m_TransCmdBuffer->End(0);
-
-			if (preTransferGraphicsCmdBuffer)
-				m_TransCmdBuffer->Submit({ 0 }, { transfer0 }, { PipelineStageBit::TRANSFER_BIT }, { transfer1 }, transferFence);
 			else
-				m_TransCmdBuffer->Submit({ 0 }, {}, {}, { transfer1 }, transferFence);
+			{
+				texture->TransitionSubResources(textureTransferDstToShaderReadOnlyBarrier,
+					{ { Barrier::AccessBit::TRANSFER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT,
+					Image::Layout::TRANSFER_DST_OPTIMAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
+			}
+			texture->m_ShaderReadable = true;
 		}
 	}
+	m_ReloadTextures = false;
 
-	if (asyncComputeCmdBufferMipMaps && transferCmdBuffer)
-		transferFence->Wait();
+	bool preTransferGraphicsTask = textureShaderReadOnlyBarrierToTransferDst.size();
+	bool preUploadTransferTask = textureUnknownToTransferDstBarrier.size();
 
-	//Generate MipMaps on independent Compute Queue
+	bool transferTask = forceUploadCamera || forceUploadLights || forceUploadMeshes || forceUploadSkybox;
+	bool asyncComputeTask = texturesToGenerateMipmaps.size() || !m_Skybox->m_Generated;
+
+	bool postComputeGraphicsTask = textureGeneralToShaderReadOnlyBarrier.size();
+	bool postTransferGraphicsTask = textureTransferDstToShaderReadOnlyBarrier.size();
+
+	gear::Ref<Node> preTransferGraphicsNode, preUploadForTextrueTransferNode, uploadTransferNode, postComputeGraphicsNode, postTransferGraphicsNode;
+	Node::TransitionResourcesTaskInfo trti;
+
+	//Pre-Transfer Graphics Task
 	{
-		if (asyncComputeCmdBufferMipMaps)
-		{
-			std::vector<std::future<void>> mipmapsDispatchs;
-			for (auto& model : m_RenderQueue)
-			{
-				for (auto& material : model->GetMesh()->GetMaterials())
-				{
-					for (auto& texture : material->GetTextures())
-					{
-						ImageProcessing::GenerateMipMaps(
-							{
-								texture.second,
-								Barrier::AccessBit::TRANSFER_WRITE_BIT,
-								Barrier::AccessBit::TRANSFER_READ_BIT,
-								Image::Layout::TRANSFER_DST_OPTIMAL,
-								Image::Layout::TRANSFER_DST_OPTIMAL,
-							}
-						);
-						//auto generateMipMaps_texture = [](gear::Ref<Texture> texture) { texture->GenerateMipMaps(); };
-						//mipmapsDispatchs.push_back(std::async(std::launch::async, generateMipMaps_texture, texture.second));
-					}
-				}
-			}
-			for (auto& dispatch : mipmapsDispatchs)
-			{
-				//dispatch.wait();
-			}
+		trti.srcPipelineStage = PipelineStageBit::FRAGMENT_SHADER_BIT;
+		trti.dstPipelineStage = PipelineStageBit::TRANSFER_BIT;
+		trti.barriers = textureShaderReadOnlyBarrierToTransferDst;
 
+		Node::CreateInfo preTransferGraphicsNodeCI;
+		preTransferGraphicsNodeCI.debugName = "Pre-Transfer - Graphics";
+		preTransferGraphicsNodeCI.task = Node::Task::TRANSITION_RESOURCES;
+		preTransferGraphicsNodeCI.pTaskInfo = &trti;
+		preTransferGraphicsNodeCI.srcNodes = {};
+		preTransferGraphicsNodeCI.srcPipelineStages = {};
+		preTransferGraphicsNodeCI.cmdBuffer = m_CmdBuffer;
+		preTransferGraphicsNodeCI.cmdBufferIndex = 3;
+		preTransferGraphicsNodeCI.resetCmdBuffer = true;
+		preTransferGraphicsNodeCI.submitCmdBuffer = true;
+		preTransferGraphicsNodeCI.skipTask = !preTransferGraphicsTask;
+
+		preTransferGraphicsNode = gear::CreateRef<Node>(&preTransferGraphicsNodeCI);
+		preTransferGraphicsNode->Execute();
+	}
+
+	//Pre-Upload Transfer Task
+	{
+		trti.srcPipelineStage = PipelineStageBit::TOP_OF_PIPE_BIT;
+		trti.dstPipelineStage = PipelineStageBit::TRANSFER_BIT;
+		trti.barriers = textureUnknownToTransferDstBarrier;
+
+		Node::CreateInfo preUploadForTextrueTransferNodeCI;
+		preUploadForTextrueTransferNodeCI.debugName = "Pre-Upload - Transfer";
+		preUploadForTextrueTransferNodeCI.task = Node::Task::TRANSITION_RESOURCES;
+		preUploadForTextrueTransferNodeCI.pTaskInfo = &trti;
+		preUploadForTextrueTransferNodeCI.srcNodes = { preTransferGraphicsNode };
+		preUploadForTextrueTransferNodeCI.srcPipelineStages = { PipelineStageBit::TRANSFER_BIT };
+		preUploadForTextrueTransferNodeCI.cmdBuffer = m_TransCmdBuffer;
+		preUploadForTextrueTransferNodeCI.cmdBufferIndex = 0;
+		preUploadForTextrueTransferNodeCI.resetCmdBuffer = true;
+		preUploadForTextrueTransferNodeCI.submitCmdBuffer = false;
+		preUploadForTextrueTransferNodeCI.skipTask = !preUploadTransferTask;
+
+		preUploadForTextrueTransferNode = gear::CreateRef<Node>(&preUploadForTextrueTransferNodeCI);
+		preUploadForTextrueTransferNode->Execute();
+	}
+
+	//Upload Transfer Task
+	{
+		Node::UploadResourceTaskInfo urti;
+		urti.camera = m_Camera;
+		urti.skybox = m_Skybox;
+		urti.lights = m_Lights;
+		urti.models = m_RenderQueue;
+		urti.cameraForce = forceUploadCamera;
+		urti.skyboxForce = forceUploadSkybox;
+		urti.lightsForce = forceUploadLights;
+		urti.modelsForce = forceUploadMeshes;
+
+		Node::CreateInfo uploadTransferNodeCI;
+		uploadTransferNodeCI.debugName = "Upload - Transfer";
+		uploadTransferNodeCI.task = Node::Task::UPLOAD_RESOURCES;
+		uploadTransferNodeCI.pTaskInfo = &urti;
+		uploadTransferNodeCI.srcNodes = { preUploadForTextrueTransferNode };
+		uploadTransferNodeCI.srcPipelineStages = { (PipelineStageBit)0 };
+		uploadTransferNodeCI.cmdBuffer = m_TransCmdBuffer;
+		uploadTransferNodeCI.cmdBufferIndex = 0;
+		uploadTransferNodeCI.resetCmdBuffer = false;
+		uploadTransferNodeCI.submitCmdBuffer = true;
+		uploadTransferNodeCI.skipTask = !transferTask;
+
+		uploadTransferNode = gear::CreateRef<Node>(&uploadTransferNodeCI);
+		uploadTransferNode->Execute();
+	}
+
+	//Async Compute Task
+	{
+		if (asyncComputeTask && transferTask)
+			uploadTransferNode->GetFence()->Wait();
+
+		if (asyncComputeTask)
+		{
+			for (auto& texture : texturesToGenerateMipmaps)
+			{
+				ImageProcessing::GenerateMipMaps({ texture, Barrier::AccessBit::TRANSFER_WRITE_BIT, Image::Layout::TRANSFER_DST_OPTIMAL, PipelineStageBit::TRANSFER_BIT });
+			}
 			if (!m_Skybox->m_Cubemap && !m_Skybox->m_Generated)
 			{
 				ImageProcessing::EquirectangularToCube(
-					{
-						m_Skybox->GetGeneratedCubemap(),
-						Barrier::AccessBit::SHADER_WRITE_BIT,
-						Barrier::AccessBit::SHADER_READ_BIT,
-						Image::Layout::UNKNOWN,
-						Image::Layout::SHADER_READ_ONLY_OPTIMAL,
-					},
-					{
-						m_Skybox->GetTexture(),
-						Barrier::AccessBit::TRANSFER_WRITE_BIT,
-						Barrier::AccessBit::TRANSFER_READ_BIT,
-						Image::Layout::TRANSFER_DST_OPTIMAL,
-						Image::Layout::TRANSFER_DST_OPTIMAL,
-					}
-				);
+					{ m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT },
+					{ m_Skybox->GetTexture(), Barrier::AccessBit::TRANSFER_WRITE_BIT, Image::Layout::TRANSFER_DST_OPTIMAL, PipelineStageBit::TRANSFER_BIT });
 				m_Skybox->m_Generated = true;
+
+				ImageProcessing::GenerateMipMaps({ m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT });
+
+				ImageProcessing::DiffuseIrradiance(
+					{ m_Skybox->GetGeneratedDiffuseCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT },
+					{ m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT });
+
+				ImageProcessing::SpecularIrradiance(
+					{ m_Skybox->GetGeneratedSpecularCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT },
+					{ m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT });
+
+				ImageProcessing::SpecularBRDF_LUT(
+					{ m_Skybox->GetGeneratedSpecularBRDF_LUT(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT });
 			}
 		}
 	}
 
-	//Upload Post-Transfer Graphics CmdBuffer
+	//Post-Compute Graphics Task
 	{
-		if (postTransferGraphicsCmdBuffer)
-		{
-			m_CmdBuffer->Reset(2, false);
-			m_CmdBuffer->Begin(2, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
+		trti.srcPipelineStage = PipelineStageBit::COMPUTE_SHADER_BIT;
+		trti.dstPipelineStage = PipelineStageBit::FRAGMENT_SHADER_BIT;
+		trti.barriers = textureGeneralToShaderReadOnlyBarrier;
 
-			m_CmdBuffer->PipelineBarrier(2, PipelineStageBit::TRANSFER_BIT, PipelineStageBit::FRAGMENT_SHADER_BIT, DependencyBit::NONE_BIT, textureTransferDstToShaderReadOnlyBarrier);
+		Node::CreateInfo postComputeGraphicsNodeCI;
+		postComputeGraphicsNodeCI.debugName = "Post-Compute - Graphics";
+		postComputeGraphicsNodeCI.task = Node::Task::TRANSITION_RESOURCES;
+		postComputeGraphicsNodeCI.pTaskInfo = &trti;
+		postComputeGraphicsNodeCI.srcNodes = { uploadTransferNode };
+		postComputeGraphicsNodeCI.srcPipelineStages = { PipelineStageBit::COMPUTE_SHADER_BIT };
+		postComputeGraphicsNodeCI.cmdBuffer = m_CmdBuffer;
+		postComputeGraphicsNodeCI.cmdBufferIndex = 2;
+		postComputeGraphicsNodeCI.resetCmdBuffer = true;
+		postComputeGraphicsNodeCI.submitCmdBuffer = false;
+		postComputeGraphicsNodeCI.skipTask = !postComputeGraphicsTask;
 
-			m_CmdBuffer->End(2);
-
-			if (transferCmdBuffer)
-				m_CmdBuffer->Submit({ 2 }, { transfer1 }, { PipelineStageBit::TRANSFER_BIT }, {}, postTransferGraphicsFence);
-			else
-				m_CmdBuffer->Submit({ 2 }, {}, {}, {}, postTransferGraphicsFence);
-		}
+		postComputeGraphicsNode = gear::CreateRef<Node>(&postComputeGraphicsNodeCI);
+		postComputeGraphicsNode->Execute();
 	}
 
-	if (preTransferGraphicsCmdBuffer)
-		preTransferGraphicsFence->Wait();
-	if (!asyncComputeCmdBufferMipMaps && transferCmdBuffer)
-		transferFence->Wait();
-	if (postTransferGraphicsCmdBuffer)
-		postTransferGraphicsFence->Wait();
+	//Post-Transfer Graphics CmdBuffer
+	{
+		trti.srcPipelineStage = PipelineStageBit::TRANSFER_BIT;
+		trti.dstPipelineStage = PipelineStageBit::FRAGMENT_SHADER_BIT;
+		trti.barriers = textureTransferDstToShaderReadOnlyBarrier;
+	
+		Node::CreateInfo postTransferGraphicsNodeCI;
+		postTransferGraphicsNodeCI.debugName = "Post-Transfer - Graphics";
+		postTransferGraphicsNodeCI.task = Node::Task::TRANSITION_RESOURCES;
+		postTransferGraphicsNodeCI.pTaskInfo = &trti;
+		postTransferGraphicsNodeCI.srcNodes = { postComputeGraphicsNode };
+		postTransferGraphicsNodeCI.srcPipelineStages = { (PipelineStageBit)0 };
+		postTransferGraphicsNodeCI.cmdBuffer = m_CmdBuffer;
+		postTransferGraphicsNodeCI.cmdBufferIndex = 2;
+		postTransferGraphicsNodeCI.resetCmdBuffer = false;
+		postTransferGraphicsNodeCI.submitCmdBuffer = true;
+		postTransferGraphicsNodeCI.skipTask = !postTransferGraphicsTask;
+	
+		postTransferGraphicsNode = gear::CreateRef<Node>(&postTransferGraphicsNodeCI);
+		postTransferGraphicsNode->Execute();
+	}
 
-	m_ReloadTextures = false;
+	//Wait for all Task Fences
+	preTransferGraphicsNode->GetFence()->Wait();
+	uploadTransferNode->GetFence()->Wait();
+	postTransferGraphicsNode->GetFence()->Wait();
 }
 
 void Renderer::Flush()
@@ -383,6 +441,22 @@ void Renderer::Flush()
 				else if (name.compare("LIGHTS") == 0)
 				{
 					m_DescSetPerView[pipeline.second]->AddBuffer(0, binding, { { m_Lights[0]->GetUB()->GetBufferView() } });
+				}
+
+				else if (name.find("DIFFUSEIRRADIANCE") == 0)
+				{
+					const gear::Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedDiffuseCubemap();
+					m_DescSetPerView[pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
+				}
+				else if (name.find("SPECULARIRRADIANCE") == 0)
+				{
+					const gear::Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedCubemap();// m_Skybox->GetGeneratedSpecularCubemap();
+					m_DescSetPerView[pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
+				}
+				else if (name.find("SPECULARBRDF_LUT") == 0)
+				{
+					const gear::Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedSpecularBRDF_LUT();
+					m_DescSetPerView[pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 				}
 				
 				else
@@ -459,7 +533,7 @@ void Renderer::Flush()
 					else if (name.find("SKYBOX") == 0)
 					{
 						const gear::Ref<Material>& material = m_Skybox->GetModel()->GetMesh()->GetMaterials()[0];
-						const gear::Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedCubemap(); //material->GetTextures()[Material::TextureType::ALBEDO];
+						const gear::Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedCubemap();
 						m_DescSetPerMaterial[material]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 					}
 

@@ -9,7 +9,7 @@
       "binaryFilepath": "res/shaders/bin/SpecularBRDF_LUT_comp_main.spv",
       "recompileArguments": {
         "mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
-        "hlslFilepath": "res/shaders/HLSL/SpecularBRDF_LUT.hlsl",
+        "hlslFilepath": "res/shaders/HLSL/PBR/SpecularBRDF_LUT.hlsl",
         "outputDirectory": "res/shaders/bin",
         "includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
         "entryPoint": "main",

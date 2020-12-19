@@ -42,7 +42,7 @@ PS_OUT ps_main(PS_IN IN)
 {
 	PS_OUT OUT;
 	
-	float4 irradiance = skybox_ImageCIS.Sample(skybox_SamplerCIS, IN.v_TextCoord);
+	float4 irradiance = skybox_ImageCIS.SampleLevel(skybox_SamplerCIS, IN.v_TextCoord, 0.0);
 	float4 mapped = float4(1.0, 1.0, 1.0, 1.0) - exp(-irradiance * skyboxInfo.exposure);
 	OUT.colour = pow(mapped, float4(1.0/skyboxInfo.gamma, 1.0/skyboxInfo.gamma, 1.0/skyboxInfo.gamma, 1.0/skyboxInfo.gamma));
 	OUT.colour.a = 1.0;

@@ -249,7 +249,7 @@ void RenderPipeline::FinalisePipline()
 			uint32_t typeSize = (vsiad.vertexType > VertexType::VEC4 && vsiad.vertexType < VertexType::INT) ? 8 : 4;
 			stride += (((uint32_t)vsiad.vertexType % 4) + 1) * typeSize;
 
-			viads.push_back({ vsiad.location, vsiad.binding, vsiad.vertexType, 0, vsiad.semanticName.c_str() });
+			viads.push_back({ vsiad.location, vsiad.binding, vsiad.vertexType, vsiad.offset, vsiad.semanticName.c_str() });
 		}
 		std::vector<VertexInputBindingDescription> vibds;
 		vibds.push_back({ 0, stride, VertexInputRate::VERTEX });

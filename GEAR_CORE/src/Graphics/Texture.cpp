@@ -219,13 +219,13 @@ void Texture::CreateSampler()
 	m_SamplerCI.addressModeU = Sampler::AddressMode::REPEAT;
 	m_SamplerCI.addressModeV = Sampler::AddressMode::REPEAT;
 	m_SamplerCI.addressModeW = Sampler::AddressMode::REPEAT;
-	m_SamplerCI.mipLodBias = 1.0f;
+	m_SamplerCI.mipLodBias = 0.0f;
 	m_SamplerCI.anisotropyEnable = m_AnisotrophicValue > 1.0f;
 	m_SamplerCI.maxAnisotropy = m_AnisotrophicValue;
 	m_SamplerCI.compareEnable = false;
 	m_SamplerCI.compareOp = CompareOp::NEVER;
 	m_SamplerCI.minLod = 0.0f;
-	m_SamplerCI.maxLod = 1.0f;
+	m_SamplerCI.maxLod = m_CI.mipLevels;
 	m_SamplerCI.borderColour = Sampler::BorderColour::FLOAT_OPAQUE_BLACK;
 	m_SamplerCI.unnormalisedCoordinates = false;
 	m_Sampler = Sampler::Create(&m_SamplerCI);

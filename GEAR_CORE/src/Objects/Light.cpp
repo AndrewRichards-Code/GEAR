@@ -8,20 +8,20 @@ using namespace mars;
 
 int Light::s_NumOfLights = 0;
 
+typedef graphics::UniformBufferStructures::Lights LightUB;
+ gear::Ref<graphics::Uniformbuffer<LightUB>> Light::s_UB = nullptr;
+
 Light::Light(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
 	InitialiseUB();
-	s_NumOfLights++;
-	if (s_NumOfLights < GEAR_MAX_LIGHTS + 1)
+	if (s_NumOfLights < GEAR_MAX_LIGHTS)
 	{
-		m_LightID = s_NumOfLights - 1;
-		
-		m_UB->lights[m_LightID].colour = m_CI.colour;
-		m_UB->lights[m_LightID].position = Vec4(m_CI.transform.translation, 1.0f);
-		m_UB->lights[m_LightID].direction = m_CI.transform.orientation.ToMat4() * Vec4(0, 0, -1, 0);
-		m_UB->SubmitData();
+		m_LightID = s_NumOfLights;
+		s_NumOfLights++;
+
+		Update();
 	}
 	else
 	{
@@ -31,24 +31,29 @@ Light::Light(CreateInfo* pCreateInfo)
 
 Light::~Light()
 {
+	s_UB->lights[m_LightID].valid = Vec4(0, 0, 0, 0);
 	s_NumOfLights--;
 }
 
-void gear::objects::Light::Update()
+void Light::Update()
 {
-	m_UB->lights[m_LightID].colour = m_CI.colour;
-	m_UB->lights[m_LightID].position = Vec4(m_CI.transform.translation, 1.0f);
-	m_UB->lights[m_LightID].direction = Vec4(m_CI.transform.orientation.ToVec3(), 0.0f);
-	m_UB->SubmitData();
+	s_UB->lights[m_LightID].colour = m_CI.colour;
+	s_UB->lights[m_LightID].position = Vec4(m_CI.transform.translation, 1.0f);
+	s_UB->lights[m_LightID].direction = m_CI.transform.orientation.ToMat4() * Vec4(0, 0, -1, 0);
+	s_UB->lights[m_LightID].valid = Vec4(1, 1, 1, 1);
+	s_UB->SubmitData();
 }
 
 void Light::InitialiseUB()
 {
-	float zero0[sizeof(LightUB)] = { 0 };
-	
-	Uniformbuffer<LightUB>::CreateInfo ubCI;
-	ubCI.debugName = "GEAR_CORE_Light_LightUBType: " + m_CI.debugName;
-	ubCI.device = m_CI.device;
-	ubCI.data = zero0;
-	m_UB = gear::CreateRef<Uniformbuffer<LightUB>>(&ubCI);
+	if (!s_UB)
+	{
+		float zero0[sizeof(LightUB)] = { 0 };
+
+		Uniformbuffer<LightUB>::CreateInfo ubCI;
+		ubCI.debugName = "GEAR_CORE_Light_LightUBType: " + m_CI.debugName;
+		ubCI.device = m_CI.device;
+		ubCI.data = zero0;
+		s_UB = gear::CreateRef<Uniformbuffer<LightUB>>(&ubCI);
+	}
 }

@@ -47,7 +47,7 @@ namespace graphics
 		gear::Ref<objects::Camera> m_Camera;
 		std::vector<gear::Ref<objects::Light>> m_Lights;
 		gear::Ref<objects::Skybox> m_Skybox;
-		std::deque<gear::Ref<objects::Model>> m_RenderQueue;
+		std::vector<gear::Ref<objects::Model>> m_RenderQueue;
 
 		//Present Synchronisation Primitives
 		std::vector<miru::Ref<miru::crossplatform::Fence>> m_DrawFences;
@@ -80,7 +80,7 @@ namespace graphics
 		void RecompileRenderPipelineShaders();
 		void ReloadTextures();
 
-		inline std::deque<gear::Ref<objects::Model>>& GetRenderQueue() { return m_RenderQueue; };
+		inline std::vector<gear::Ref<objects::Model>>& GetRenderQueue() { return m_RenderQueue; };
 		inline const miru::Ref<miru::crossplatform::CommandBuffer>& GetCmdBuffer() { return m_CmdBuffer; };
 		inline const std::map<std::string, gear::Ref<graphics::RenderPipeline>>& GetRenderPipelines() const { return m_RenderPipelines; }
 	};

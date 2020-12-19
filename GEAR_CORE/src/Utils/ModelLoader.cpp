@@ -11,7 +11,8 @@ void* ModelLoader::m_Device = nullptr;
 ModelLoader::ModelData ModelLoader::LoadModelData(const std::string& filepath)
 {
 	Assimp::Importer importer;
-	const aiScene* scene = importer.ReadFile(filepath, aiProcess_CalcTangentSpace | aiProcess_JoinIdenticalVertices | aiProcess_Triangulate | aiProcess_FlipUVs);
+	const aiScene* scene = importer.ReadFile(filepath, 
+		/*aiProcess_CalcTangentSpace |*/ aiProcess_PreTransformVertices | aiProcess_Triangulate );
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
 		GEAR_ASSERT(core::Log::Level::WARN, core::Log::ErrorCode::UTILS | core::Log::ErrorCode::INIT_FAILED, "Assimp error: %s.", importer.GetErrorString());
@@ -38,7 +39,7 @@ void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene)
 ModelLoader::MeshData ModelLoader::ProcessMesh(aiMesh* mesh, aiNode* node, const aiScene* scene)
 {
 	MeshData meshData;
-	meshData.name = std::string(node->mParent->mName.C_Str()) + ": " + std::string(mesh->mName.C_Str());
+	//meshData.name = std::string(node->mParent->mName.C_Str()) + ": " + std::string(mesh->mName.C_Str());
 
 	//Vertices
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)

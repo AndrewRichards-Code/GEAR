@@ -22,8 +22,8 @@ RenderSurface::RenderSurface(CreateInfo* pCreateInfo)
 	GraphicsAPI::LoadGraphicsDebugger(m_CI.graphicsDebugger);
 
 	m_ContextCI.applicationName = m_CI.debugName.c_str();
-	m_ContextCI.api_version_major = GraphicsAPI::IsD3D12() ? 11 : 1;
-	m_ContextCI.api_version_minor = 1;
+	m_ContextCI.api_version_major = GraphicsAPI::IsD3D12() ? 12 : 1;
+	m_ContextCI.api_version_minor = GraphicsAPI::IsD3D12() ? 1 : 2;
 #ifdef _DEBUG
 	m_ContextCI.instanceLayers = { "VK_LAYER_KHRONOS_validation" };
 	m_ContextCI.instanceExtensions = { "VK_KHR_surface", "VK_KHR_win32_surface" };

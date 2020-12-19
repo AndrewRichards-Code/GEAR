@@ -1,6 +1,7 @@
 #include "msc_common.h"
 #include "UniformBufferStructures.h"
 #include "PBRFunctions.h"
+#include "../CubeFunctions.h"
 
 struct VS_IN
 {
@@ -30,9 +31,9 @@ struct PS_OUT
 
 MIRU_UNIFORM_BUFFER(0, 0, Camera, camera);
 MIRU_UNIFORM_BUFFER(0, 1, Lights, lights);
-//MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 2, float4, diffuseIrradiance);
-//MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 3, float4, specularIrradiance);
-//MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 0, 4, float4, specularBRDF_LUT);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 2, float4, diffuseIrradiance);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 3, float4, specularIrradiance);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 0, 4, float4, specularBRDF_LUT);
 
 MIRU_UNIFORM_BUFFER(1, 0, Model, model);
 
@@ -52,10 +53,7 @@ VS_OUT vs_main(VS_IN IN)
 	
 	OUT.position = mul(mul(mul(transpose(camera.proj), transpose(camera.view)), transpose(model.modl)), IN.positions);
 	OUT.texCoord = float2(model.texCoordScale0.x * IN.texCoords.x, model.texCoordScale0.y * IN.texCoords.y);
-	OUT.texCoord += float2(1, 1);
-	OUT.texCoord /= 2.0;
-	OUT.texCoord.y = 1.0 - OUT.texCoord.y;
-	OUT.tbn = float3x3(IN.tangents.xyz, IN.binormals.xyz, IN.normals.xyz);
+	OUT.tbn = transpose(float3x3(mul(transpose(model.modl), IN.tangents).xyz, mul(transpose(model.modl), IN.binormals).xyz, mul(transpose(model.modl), IN.normals).xyz));
 	OUT.worldSpace = mul(transpose(model.modl), IN.positions);	
 	OUT.vertexToCamera = normalize(camera.cameraPosition - OUT.worldSpace);
 	OUT.colour = IN.colours;
@@ -119,6 +117,10 @@ PS_OUT ps_main(PS_IN IN)
 	{
 		//Light Properties.
 		Light light = lights.lights[i];
+		
+		if(light.valid.x == 0.0)
+			continue;
+		
 		//Input light vector(retro).
 		float3 Wi = /*-light.direction.xyz;*/light.position.xyz -IN.worldSpace.xyz;
 		float WiDistance = length(light.position.xyz - IN.worldSpace.xyz);
@@ -136,11 +138,11 @@ PS_OUT ps_main(PS_IN IN)
 		//Calculate Fresnel
 		float3 F = FresnelSchlick(F0, Wo, Wh);
 		//Calculate Normal Distrubtion of Spectral BRDF.
-		float3 D = GGXTR(cosWh, roughness);
+		float D = GGXTR(cosWh, roughness);
 		//Calculate Geometry Factor of Spectral BRDF
-		float3 G = SchlickGGX(cosWi, cosWo, roughness);
+		float G = SchlickGGX(cosWi, cosWo, roughness);
 
-		//Calculat Diffuse component, kD + F0 = 1.0.
+		//Calculate Diffuse component, kD + F0 = 1.0.
 		float3 kD = float3(1.0, 1.0, 1.0) - F0;
 		//Metal have no diffuse, so adjust for metallic.
 		kD *= 1.0 - metallic;
@@ -154,7 +156,7 @@ PS_OUT ps_main(PS_IN IN)
 		Lo += emissive + ambient + ((diffuse + specular) * Li * cosWi);
 	}
 	
-	/*// Ambient lighting (IBL).
+	// Ambient lighting (IBL).
 	{
 		//Diffuse:
 		//Get difuse irradiance.
@@ -171,7 +173,7 @@ PS_OUT ps_main(PS_IN IN)
 		
 		//Specular:
 		// Specular reflection vector.
-		float3 Wr = 2.0 * max(dot(N, Wo), 0.0) * N - Wo;
+		float3 Wr = reflect(-Wo, N);//2.0 * max(dot(N, Wo), 0.0) * N - Wo;
 		
 		//Get specular irradiance at correction mipmap level.
 		uint width, height, levels;
@@ -186,7 +188,7 @@ PS_OUT ps_main(PS_IN IN)
 		
 		//Final Light contribution.
 		Lo += diffuseIBL + specularIBL;
-	}*/
+	}
 	
 	OUT.colour = float4(Lo, 1.0);
 	return OUT;

@@ -13,7 +13,7 @@ void main(uint3 threadID : MIRU_DISPATCH_THREAD_ID)
 	brdf_lut.GetDimensions(width, height);
 	
 	//Get integration parameters.
-	float cosWoN = max(threadID.x / width, 0.00001); //cosWoN must > 0.0.
+	float cosWoN = max(threadID.x / width, 0.001); //cosWoN must > 0.0.
 	float roughness = threadID.y / height;
 	
 	//Derive tangent-space viewing vector from angle to normal (pointing towards +Z in this reference frame).
@@ -38,7 +38,7 @@ void main(uint3 threadID : MIRU_DISPATCH_THREAD_ID)
 		if (cosWi > 0.0) 
 		{
 			float G  = SchlickGGX_IBL(cosWi, cosWoN, roughness);
-			float Gv = G * cosWoWh / (cosWoN * cosWoN);
+			float Gv = G * cosWoWh / (cosWh * cosWoN);
 			float Fc = pow(1.0 - cosWoWh, 5);
 
 			DFG1 += (1 - Fc) * Gv;
@@ -46,5 +46,5 @@ void main(uint3 threadID : MIRU_DISPATCH_THREAD_ID)
 		}
 	}
 	
-	brdf_lut[threadID.xy] = float2(DFG1, DFG2) / NumSamples;
+	brdf_lut[threadID.xy] = float4(DFG1, DFG2, 0.0, 0.0) / NumSamples;
 }

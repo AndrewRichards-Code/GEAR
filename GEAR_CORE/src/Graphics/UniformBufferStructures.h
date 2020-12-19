@@ -95,6 +95,7 @@ namespace gear
 				GEAR_FLOAT4		colour;
 				GEAR_FLOAT4		position;
 				GEAR_FLOAT4		direction;
+				GEAR_FLOAT4		valid;
 			};
 
 			struct Lights
@@ -126,7 +127,7 @@ namespace gear
 
 			struct PBRConstants
 			{
-				GEAR_FLOAT4		fersnel;
+				GEAR_FLOAT4		fresnel;
 				GEAR_FLOAT4		albedo;
 				GEAR_FLOAT		metallic;
 				GEAR_FLOAT		roughness;
@@ -136,7 +137,7 @@ namespace gear
 				
 			#ifdef __cplusplus
 				PBRConstants() :
-					fersnel(1, 1, 1, 1),
+					fresnel(1, 1, 1, 1),
 					albedo(1, 1, 1, 1),
 					metallic(1),
 					roughness(1),

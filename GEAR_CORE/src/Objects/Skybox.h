@@ -35,7 +35,16 @@ namespace objects
 
 		gear::Ref<graphics::Texture> m_GeneratedCubemap;
 		graphics::Texture::CreateInfo m_GeneratedCubemapCI;
+
+		gear::Ref<graphics::Texture> m_GeneratedDiffuseCubemap;
+		graphics::Texture::CreateInfo m_GeneratedDiffuseCubemapCI;
+
+		gear::Ref<graphics::Texture> m_GeneratedSpecularCubemap;
+		graphics::Texture::CreateInfo m_GeneratedSpecularCubemapCI;
 		
+		gear::Ref<graphics::Texture> m_GeneratedSpecularBRDF_LUT;
+		graphics::Texture::CreateInfo m_GeneratedSpecularBRDF_LUT_CI;
+
 		typedef graphics::UniformBufferStructures::SkyboxInfo SkyboxInfoUB;
 		gear::Ref<graphics::Uniformbuffer<SkyboxInfoUB>> m_UB;
 	
@@ -58,6 +67,15 @@ namespace objects
 
 		inline gear::Ref<graphics::Texture>& GetGeneratedCubemap() { return m_GeneratedCubemap; }
 		inline const gear::Ref<graphics::Texture>& GetGeneratedCubemap() const { return m_GeneratedCubemap; }
+
+		inline gear::Ref<graphics::Texture>& GetGeneratedDiffuseCubemap() { return m_GeneratedDiffuseCubemap; }
+		inline const gear::Ref<graphics::Texture>& GetGeneratedDiffuseCubemap() const { return m_GeneratedDiffuseCubemap; }
+
+		inline gear::Ref<graphics::Texture>& GetGeneratedSpecularCubemap() { return m_GeneratedSpecularCubemap; }
+		inline const gear::Ref<graphics::Texture>& GetGeneratedSpecularCubemap() const { return m_GeneratedSpecularCubemap; }
+
+		inline gear::Ref<graphics::Texture>& GetGeneratedSpecularBRDF_LUT() { return m_GeneratedSpecularBRDF_LUT; }
+		inline const gear::Ref<graphics::Texture>& GetGeneratedSpecularBRDF_LUT() const { return m_GeneratedSpecularBRDF_LUT; }
 
 		inline const gear::Ref<objects::Model>& GetModel() const { return m_Model; }
 		inline const gear::Ref<graphics::Uniformbuffer<SkyboxInfoUB>>& GetUB() const { return m_UB; }

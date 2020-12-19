@@ -9,7 +9,7 @@
       "binaryFilepath": "res/shaders/bin/DiffuseIrradiance_comp_main.spv",
       "recompileArguments": {
         "mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
-        "hlslFilepath": "res/shaders/HLSL/DiffuseIrradiance.hlsl",
+        "hlslFilepath": "res/shaders/HLSL/PBR/DiffuseIrradiance.hlsl",
         "outputDirectory": "res/shaders/bin",
         "includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
         "entryPoint": "main",

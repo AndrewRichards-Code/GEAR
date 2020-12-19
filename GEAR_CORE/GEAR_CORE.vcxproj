@@ -98,6 +98,7 @@
   <ItemGroup>
     <ClCompile Include="dep\STBI\stb_image_write.cpp" />
     <ClCompile Include="dep\STBI\stb_image.cpp" />
+    <ClCompile Include="src\Graphics\FrameGraph.cpp" />
     <ClCompile Include="src\Graphics\RenderSurface.cpp" />
     <ClCompile Include="src\Audio\AudioInterfaces.cpp" />
     <ClCompile Include="src\Audio\AudioSource.cpp" />
@@ -133,6 +134,7 @@
     <ClInclude Include="dep\DATE\include\date.h" />
     <ClInclude Include="dep\STBI\stb_image.h" />
     <ClInclude Include="dep\STBI\stb_image_write.h" />
+    <ClInclude Include="src\Graphics\FrameGraph.h" />
     <ClInclude Include="src\Graphics\RenderSurface.h" />
     <ClInclude Include="src\Audio\AudioInterfaces.h" />
     <ClInclude Include="src\Audio\AudioSource.h" />

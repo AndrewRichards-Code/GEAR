@@ -50,3 +50,7 @@ Greg Zaal
 https://hdrihaven.com/hdri/?h=kloppenheim_06
 Licence: CC0
 
+#snowy_park_01_2k.hdr
+Oliksiy Yakovlyev
+https://hdrihaven.com/hdri/?h=snowy_park_01
+Licence: CC0
