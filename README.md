@@ -7,17 +7,21 @@ GEAR (Game Engine Andrew Richards) is a 3D game engine, that I am developing to 
 Inspired by Yan Chernikov's (aka TheCheno) videos on C++, OpenGL and Game Engines. https://www.youtube.com/c/TheChernoProject
 
 ## PBR Rendering Demo
-D3D12
-![pbr_d3d12](/gear_test_pbr_d3d12.png)
-Vulkan
-![pbr_vulkan](/gear_test_pbr_vulkan.png)
+PBR and IBL Render
+![pbr_ibl_render](Branding/Screenshots/pbr_render_textured.png)
 
 # Projects:
 ## GEAR_CORE: 
-Contains the core functionality of the game engine. Build as static library; Dynamic Runtime Linking (MD).
+Contains the core functionality of the game engine. Build as a static library; Dynamic Runtime Linking (MD).
+
+## GEAR_MIPMAP:
+Offline GPU-accelerated Mipmap generator. Build as executable; Dynamic Runtime Linking (MD).
 
 ## GEAR_TEST: 
-Simple test application for development, test and demostration. Build as executable; Dynamic Runtime Linking (MD).
+Simple test application for development, test and demonstration. Build as executable; Dynamic Runtime Linking (MD).
+
+## GEARBOX: 
+A simple level editor using Qt5. Build as executable; Dynamic Runtime Linking (MD).
 
 # Build Tools with Visual Studio:
 ## Windows x64:
