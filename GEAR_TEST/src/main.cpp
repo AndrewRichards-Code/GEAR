@@ -34,8 +34,8 @@ int main()
 	gear::Ref<Scene> activeScene = gear::CreateRef<Scene>(&sceneCI);
 
 	Window::CreateInfo windowCI;
-	windowCI.api = GraphicsAPI::API::D3D12;
-	//windowCI.api = GraphicsAPI::API::VULKAN;
+	//windowCI.api = GraphicsAPI::API::D3D12;
+	windowCI.api = GraphicsAPI::API::VULKAN;
 	windowCI.title = "GEAR_TEST";
 	windowCI.width = 1920;
 	windowCI.height = 1080;
@@ -49,6 +49,28 @@ int main()
 	mbmCI.pContext = window->GetContext();
 	mbmCI.defaultBlockSize = Allocator::BlockSize::BLOCK_SIZE_128MB;
 	AllocatorManager::Initialise(&mbmCI);
+
+	gear::Ref<FontLibrary> fontLib = gear::CreateRef<FontLibrary>();
+	FontLibrary::LoadInfo fontLI;
+	fontLI.GI.filepath = "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf";
+	fontLI.GI.fontHeightPx = 16;
+	fontLI.GI.generatedTextureSize = 1024;
+	fontLI.GI.savePNGandBINfiles = true;
+	fontLI.regenerateTextureAtlas = true;
+	gear::Ref<FontLibrary::Font> font = fontLib->LoadFont(&fontLI);
+
+	Text::CreateInfo fontRendererCI;
+	fontRendererCI.device = window->GetDevice();
+	fontRendererCI.viewportWidth = window->GetWidth();
+	fontRendererCI.viewportHeight = window->GetHeight();
+	Entity textEntity = activeScene->CreateEntity();
+	textEntity.AddComponent<TextComponent>(std::move(gear::CreateRef<Text>(&fontRendererCI)));
+	uint32_t textRowHeight = 20, render_doc_offset = 40;
+	auto& text = textEntity.GetComponent<TextComponent>().text;
+	text->AddLine(font, window->GetDeviceName(),							{ 0, render_doc_offset + 0 * textRowHeight }, Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	text->AddLine(font, window->GetGraphicsAPIVersion(),					{ 0, render_doc_offset + 1 * textRowHeight }, GraphicsAPI::IsD3D12()?Vec4(0.0f, 1.0f, 0.0f, 1.0):Vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	text->AddLine(font, "FPS: " + window->GetFPSString<uint32_t>(),			{ 0, render_doc_offset + 2 * textRowHeight }, Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	text->AddLine(font, "MSAA: " + window->GetAntiAliasingValue() + "x",	{ 0, render_doc_offset + 3 * textRowHeight }, Vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	
 	Skybox::CreateInfo skyboxCI;
 	skyboxCI.debugName = "Skybox-HDR";
@@ -58,8 +80,8 @@ int main()
 	skyboxCI.transform.translation = Vec3(0, 0, 0);
 	skyboxCI.transform.orientation = Quat(1, 0, 0, 0);
 	skyboxCI.transform.scale = Vec3(500.0f, 500.0f, 500.0f);
-	Entity skybox = activeScene->CreateEntity();
-	skybox.AddComponent<SkyboxComponent>(std::move(gear::CreateRef<Skybox>(&skyboxCI)));
+	Entity skyboxEntity = activeScene->CreateEntity();
+	skyboxEntity.AddComponent<SkyboxComponent>(std::move(gear::CreateRef<Skybox>(&skyboxCI)));
 
 	auto LoadTexture = [](gear::Ref<Window> window, const std::string& filepath, const std::string& debugName) -> gear::Ref<graphics::Texture>
 	{
@@ -197,8 +219,8 @@ int main()
 	lightCI.transform.translation = Vec3(0.0f, 2.0f, 0.0f);
 	lightCI.transform.orientation = Quat(1, 0, 0, 0);
 	lightCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
-	Entity light = activeScene->CreateEntity();
-	light.AddComponent<LightComponent>(std::move(gear::CreateRef<Light>(&lightCI)));
+	Entity lightEntity = activeScene->CreateEntity();
+	lightEntity.AddComponent<LightComponent>(std::move(gear::CreateRef<Light>(&lightCI)));
 
 	Camera::CreateInfo cameraCI;
 	cameraCI.debugName = "Main";
@@ -210,12 +232,13 @@ int main()
 	cameraCI.perspectiveParams = { DegToRad(90.0), window->GetRatio(), 0.01f, 3000.0f };
 	cameraCI.flipX = false;
 	cameraCI.flipY = false;
-	Entity cameraEnitity = activeScene->CreateEntity();
-	cameraEnitity.AddComponent<CameraComponent>(std::move(gear::CreateRef<Camera>(&cameraCI)));
-	cameraEnitity.AddComponent<NativeScriptComponent>("TestScript");
+	Entity cameraEntity = activeScene->CreateEntity();
+	cameraEntity.AddComponent<CameraComponent>(std::move(gear::CreateRef<Camera>(&cameraCI)));
+	cameraEntity.AddComponent<NativeScriptComponent>("TestScript");
 
 	gear::Ref<Renderer> m_Renderer = gear::CreateRef<Renderer>(window->GetContext());
-	m_Renderer->InitialiseRenderPipelines({"res/pipelines/PBROpaque.grpf.json", "res/pipelines/Cube.grpf.json" }, (float)window->GetWidth(), (float)window->GetHeight(), window->GetCreateInfo().samples, window->GetRenderPass());
+	m_Renderer->InitialiseRenderPipelines({"res/pipelines/PBROpaque.grpf.json", "res/pipelines/Cube.grpf.json", "res/pipelines/Font.grpf.json" }, 
+		(float)window->GetWidth(), (float)window->GetHeight(), window->GetCreateInfo().samples, window->GetRenderPass());
 
 	AllocatorManager::PrintMemoryBlockStatus();
 
@@ -235,10 +258,17 @@ int main()
 		//Update Timer
 		timer.Update();
 
+		//Update Text
+		auto& text = textEntity.GetComponent<TextComponent>().text;
+		//text->UpdateLine("FPS: " + window->GetFPSString<uint32_t>(), 2, !(m_Renderer->GetFrameCount() % 60));
+
 		//Update from Window
 		if (window->Resized())
 		{
 			m_Renderer->ResizeRenderPipelineViewports((uint32_t)window->GetWidth(), (uint32_t)window->GetHeight());
+			//text->m_CI.viewportWidth = (uint32_t)window->GetWidth();
+			//text->m_CI.viewportHeight = (uint32_t)window->GetHeight();
+			//text->Update();
 			window->Resized() = false;
 		}
 
@@ -246,7 +276,7 @@ int main()
 		{
 			m_Renderer->RecompileRenderPipelineShaders();
 			ImageProcessing::RecompileRenderPipelineShaders();
-			skybox.GetComponent<SkyboxComponent>().skybox->m_Generated = false;
+			skyboxEntity.GetComponent<SkyboxComponent>().skybox->m_Generated = false;
 		}
 
 		if (window->IsKeyPressed(GLFW_KEY_T))
@@ -291,7 +321,7 @@ int main()
 		}
 
 		//Camera Update
-		auto& camera = cameraEnitity.GetComponent<CameraComponent>().camera;
+		auto& camera = cameraEntity.GetComponent<CameraComponent>().camera;
 		if (window->IsKeyPressed(GLFW_KEY_D))
 			camera->m_CI.transform.translation += Vec3::Normalise(camera->m_Right) * (float)timer;
 		if (window->IsKeyPressed(GLFW_KEY_A))
@@ -322,11 +352,12 @@ int main()
 		activeScene->OnUpdate(m_Renderer, timer);
 
 		m_Renderer->SubmitFramebuffer(window->GetFramebuffers());
-		m_Renderer->Upload(true, false, true, false);
+		m_Renderer->Upload(true, false, true, true);
 		m_Renderer->Flush();
 
 		m_Renderer->Present(window->GetSwapchain(), windowResize);
 		window->Update();
+		window->CalculateFPS();
 	}
 	window->GetContext()->DeviceWaitIdle();
 }

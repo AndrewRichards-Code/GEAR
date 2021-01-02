@@ -36,7 +36,7 @@ Entity Scene::CreateEntity()
 	return entity;
 }
 
-void Scene::OnUpdate(gear::Ref<graphics::Renderer>& m_Renderer, core::Timer& timer)
+void Scene::OnUpdate(gear::Ref<graphics::Renderer>& renderer, core::Timer& timer)
 {
 	if (m_Playing)
 	{
@@ -65,7 +65,7 @@ void Scene::OnUpdate(gear::Ref<graphics::Renderer>& m_Renderer, core::Timer& tim
 	auto& vCameraComponents = m_Registry.view<CameraComponent>();
 	for (auto& entity : vCameraComponents)
 	{
-		m_Renderer->SubmitCamera(vCameraComponents.get<CameraComponent>(entity));
+		renderer->SubmitCamera(vCameraComponents.get<CameraComponent>(entity));
 	}
 
 	std::vector<gear::Ref<Light>> lights;
@@ -74,18 +74,30 @@ void Scene::OnUpdate(gear::Ref<graphics::Renderer>& m_Renderer, core::Timer& tim
 	{
 		lights.push_back(vLightComponents.get<LightComponent>(entity));	
 	}
-	m_Renderer->SubmitLights(lights);
-
-	auto& vSkyboxComponent = m_Registry.view<SkyboxComponent>();
-	for (auto& entity : vSkyboxComponent)
-	{
-		m_Renderer->SubmitSkybox(vSkyboxComponent.get<SkyboxComponent>(entity));
-	}
+	renderer->SubmitLights(lights);
 
 	auto& vModelComponents = m_Registry.view<ModelComponent>();
 	for (auto& entity : vModelComponents)
 	{
-		m_Renderer->SubmitModel(vModelComponents.get<ModelComponent>(entity));
+		renderer->SubmitModel(vModelComponents.get<ModelComponent>(entity));
+	}
+
+	auto& vSkyboxComponent = m_Registry.view<SkyboxComponent>();
+	for (auto& entity : vSkyboxComponent)
+	{
+		renderer->SubmitSkybox(vSkyboxComponent.get<SkyboxComponent>(entity));
+	}
+
+	auto& vTextComponent = m_Registry.view<TextComponent>();
+	for (auto& entity : vTextComponent)
+	{
+		const gear::Ref<Text>& text = vTextComponent.get<TextComponent>(entity).text;
+		renderer->SubmitFontCamera(text->GetCamera());
+
+		for (auto& line : text->GetLines())
+		{
+			renderer->SubmitModel(line.model);
+		}
 	}
 }
 

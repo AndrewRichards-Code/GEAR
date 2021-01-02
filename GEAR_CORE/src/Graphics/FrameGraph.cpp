@@ -114,6 +114,9 @@ void Node::UploadResources()
 	if (uploadResourcesTI->camera)
 		uploadResourcesTI->camera->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->cameraForce);
 
+	if (uploadResourcesTI->fontCamera)
+		uploadResourcesTI->fontCamera->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->fontCameraForce);
+
 	if (uploadResourcesTI->skybox)
 		uploadResourcesTI->skybox->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->skyboxForce);
 
@@ -131,11 +134,11 @@ void Node::UploadResources()
 		
 		for (auto& material : model->GetMesh()->GetMaterials())
 		{
-			material->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->modelsForce);
+			material->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->materialsForce);
 			
 			for (auto& texture : material->GetTextures())
 			{
-				texture.second->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->modelsForce);
+				texture.second->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->materialsForce);
 			}
 		}
 	}

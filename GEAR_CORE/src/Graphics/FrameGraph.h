@@ -31,12 +31,15 @@ namespace gear
 			{
 				miru::Ref<objects::Camera>					camera;
 				bool										cameraForce;
+				miru::Ref<objects::Camera>					fontCamera;
+				bool										fontCameraForce;
 				miru::Ref<objects::Skybox>					skybox;
 				bool										skyboxForce;
 				std::vector<miru::Ref<objects::Light>>		lights;
 				bool										lightsForce;
 				std::vector<miru::Ref<objects::Model>>		models;
 				bool										modelsForce;
+				bool										materialsForce;
 			};
 			struct TransitionResourcesTaskInfo
 			{

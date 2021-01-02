@@ -88,17 +88,22 @@ void Renderer::SubmitFramebuffer(const miru::Ref<miru::crossplatform::Framebuffe
 	m_Framebuffers = framebuffers; 
 }
 
-void Renderer::SubmitCamera(gear::Ref<objects::Camera>& camera)
+void Renderer::SubmitCamera(const gear::Ref<objects::Camera>& camera)
 { 
 	m_Camera = camera; 
 }
 
-void Renderer::SubmitLights(std::vector<gear::Ref<objects::Light>>& lights)
+void Renderer::SubmitFontCamera(const gear::Ref<Camera>& fontCamera)
+{
+	m_FontCamera = fontCamera; 
+}
+
+void Renderer::SubmitLights(const std::vector<gear::Ref<Light>>& lights)
 { 
 	m_Lights = lights; 
 }
 
-void Renderer::SubmitSkybox(const gear::Ref<objects::Skybox>& skybox)
+void Renderer::SubmitSkybox(const gear::Ref<Skybox>& skybox)
 { 
 	m_Skybox = skybox; 
 	SubmitModel(skybox->GetModel()); 
@@ -268,13 +273,16 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 	{
 		Node::UploadResourceTaskInfo urti;
 		urti.camera = m_Camera;
-		urti.skybox = m_Skybox;
-		urti.lights = m_Lights;
-		urti.models = m_RenderQueue;
 		urti.cameraForce = forceUploadCamera;
+		urti.fontCamera = m_FontCamera;
+		urti.fontCameraForce = forceUploadCamera;
+		urti.skybox = m_Skybox;
 		urti.skyboxForce = forceUploadSkybox;
+		urti.lights = m_Lights;
 		urti.lightsForce = forceUploadLights;
+		urti.models = m_RenderQueue;
 		urti.modelsForce = forceUploadMeshes;
+		urti.materialsForce = false;
 
 		Node::CreateInfo uploadTransferNodeCI;
 		uploadTransferNodeCI.debugName = "Upload - Transfer";
@@ -438,6 +446,10 @@ void Renderer::Flush()
 				{
 					m_DescSetPerView[pipeline.second]->AddBuffer(0, binding, { { m_Camera->GetUB()->GetBufferView() } });
 				}
+				else if (name.compare("FONTCAMERA") == 0)
+				{
+					m_DescSetPerView[pipeline.second]->AddBuffer(0, binding, { { m_FontCamera->GetUB()->GetBufferView() } });
+				}
 				else if (name.compare("LIGHTS") == 0)
 				{
 					m_DescSetPerView[pipeline.second]->AddBuffer(0, binding, { { m_Lights[0]->GetUB()->GetBufferView() } });
@@ -450,7 +462,7 @@ void Renderer::Flush()
 				}
 				else if (name.find("SPECULARIRRADIANCE") == 0)
 				{
-					const gear::Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedCubemap();// m_Skybox->GetGeneratedSpecularCubemap();
+					const gear::Ref<Texture>& skyboxTexture = /*m_Skybox->GetGeneratedCubemap();*/ m_Skybox->GetGeneratedSpecularCubemap();
 					m_DescSetPerView[pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 				}
 				else if (name.find("SPECULARBRDF_LUT") == 0)
@@ -458,6 +470,7 @@ void Renderer::Flush()
 					const gear::Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedSpecularBRDF_LUT();
 					m_DescSetPerView[pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 				}
+			
 				
 				else
 					continue;
@@ -537,6 +550,12 @@ void Renderer::Flush()
 						m_DescSetPerMaterial[material]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 					}
 
+					else if (name.find("FONTATLAS") == 0)
+					{
+						const gear::Ref<Texture>& texture = material->GetTextures()[Material::TextureType::ALBEDO];
+						m_DescSetPerMaterial[material]->AddImage(0, binding, { { texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
+					}
+
 					else if (name.compare("PBRCONSTANTS") == 0)
 					{
 						m_DescSetPerMaterial[material]->AddBuffer(0, binding, { { material->GetUB()->GetBufferView() } });
@@ -548,27 +567,27 @@ void Renderer::Flush()
 					}
 					else if (name.find("ALBEDO") == 0)
 					{
-						const gear::Ref<Texture>& texture = model->GetMesh()->GetMaterials()[0]->GetTextures()[Material::TextureType::ALBEDO];
+						const gear::Ref<Texture>& texture = material->GetTextures()[Material::TextureType::ALBEDO];
 						m_DescSetPerMaterial[material]->AddImage(0, binding, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
 					}
 					else if (name.find("METALLIC") == 0)
 					{
-						const gear::Ref<Texture>& texture = model->GetMesh()->GetMaterials()[0]->GetTextures()[Material::TextureType::METALLIC];
+						const gear::Ref<Texture>& texture = material->GetTextures()[Material::TextureType::METALLIC];
 						m_DescSetPerMaterial[material]->AddImage(0, binding, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
 					}
 					else if (name.find("ROUGHNESS") == 0)
 					{
-						const gear::Ref<Texture>& texture = model->GetMesh()->GetMaterials()[0]->GetTextures()[Material::TextureType::ROUGHNESS];
+						const gear::Ref<Texture>& texture = material->GetTextures()[Material::TextureType::ROUGHNESS];
 						m_DescSetPerMaterial[material]->AddImage(0, binding, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
 					}
 					else if (name.find("AMBIENTOCCLUSION") == 0)
 					{
-						const gear::Ref<Texture>& texture = model->GetMesh()->GetMaterials()[0]->GetTextures()[Material::TextureType::AMBIENT_OCCLUSION];
+						const gear::Ref<Texture>& texture = material->GetTextures()[Material::TextureType::AMBIENT_OCCLUSION];
 						m_DescSetPerMaterial[material]->AddImage(0, binding, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
 					}
 					else if (name.find("EMISSIVE") == 0)
 					{
-						const gear::Ref<Texture>& texture = model->GetMesh()->GetMaterials()[0]->GetTextures()[Material::TextureType::EMISSIVE];
+						const gear::Ref<Texture>& texture = material->GetTextures()[Material::TextureType::EMISSIVE];
 						m_DescSetPerMaterial[material]->AddImage(0, binding, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
 					}
 					else

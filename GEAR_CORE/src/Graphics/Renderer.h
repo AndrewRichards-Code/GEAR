@@ -45,6 +45,7 @@ namespace graphics
 		std::map<std::string, gear::Ref<graphics::RenderPipeline>> m_RenderPipelines;
 		const miru::Ref<miru::crossplatform::Framebuffer>* m_Framebuffers;
 		gear::Ref<objects::Camera> m_Camera;
+		gear::Ref<objects::Camera> m_FontCamera;
 		std::vector<gear::Ref<objects::Light>> m_Lights;
 		gear::Ref<objects::Skybox> m_Skybox;
 		std::vector<gear::Ref<objects::Model>> m_RenderQueue;
@@ -67,8 +68,9 @@ namespace graphics
 		void InitialiseRenderPipelines(const std::vector<std::string>& filepaths, float viewportWidth, float viewportHeight, miru::crossplatform::Image::SampleCountBit samples, const miru::Ref<miru::crossplatform::RenderPass>& renderPass);
 		
 		void SubmitFramebuffer(const miru::Ref<miru::crossplatform::Framebuffer>* framebuffers);
-		void SubmitCamera(gear::Ref<objects::Camera>& camera);
-		void SubmitLights(std::vector<gear::Ref<objects::Light>>& lights);
+		void SubmitCamera(const gear::Ref<objects::Camera>& camera);
+		void SubmitFontCamera(const gear::Ref<objects::Camera>& fontCamera);
+		void SubmitLights(const std::vector<gear::Ref<objects::Light>>& lights);
 		void SubmitSkybox(const gear::Ref<objects::Skybox>& skybox);
 		void SubmitModel(const gear::Ref<objects::Model>& obj);
 
@@ -83,6 +85,9 @@ namespace graphics
 		inline std::vector<gear::Ref<objects::Model>>& GetRenderQueue() { return m_RenderQueue; };
 		inline const miru::Ref<miru::crossplatform::CommandBuffer>& GetCmdBuffer() { return m_CmdBuffer; };
 		inline const std::map<std::string, gear::Ref<graphics::RenderPipeline>>& GetRenderPipelines() const { return m_RenderPipelines; }
+
+		inline const uint32_t& GetFrameIndex() const { return m_FrameIndex; }
+		inline const uint32_t& GetFrameCount() const { return m_FrameCount; }
 	};
 }
 }

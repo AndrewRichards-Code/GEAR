@@ -11,8 +11,7 @@ namespace gear
 	
 	class ModelLoader
 	{
-	private:
-		static void* m_Device;
+	public:
 		struct Vertex
 		{
 			mars::Vec4 position;
@@ -24,11 +23,14 @@ namespace gear
 		};
 		struct MeshData
 		{
-			std::string name;
-			std::vector<Vertex>	vertices;
-			std::vector<uint32_t> indices;
-			Ref<objects::Material> pMaterial;
+			std::string				name;
+			std::vector<Vertex>		vertices;
+			std::vector<uint32_t>	indices;
+			Ref<objects::Material>	pMaterial;
 		};
+
+	private:
+		static void* m_Device;
 		static std::vector<MeshData> modelData;
 	
 	public:

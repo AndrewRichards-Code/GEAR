@@ -4,6 +4,7 @@
 #include "Objects/Light.h"
 #include "Objects/Model.h"
 #include "Objects/Skybox.h"
+#include "Objects/Text.h"
 #include "Objects/Transform.h"
 
 #define GEAR_SCENE_COMPONENTS_DEFAULTS(_struct) _struct() = default; _struct(const _struct&) = default; virtual ~##_struct() = default
@@ -89,6 +90,20 @@ namespace scene
 		Skybox::CreateInfo& GetCreateInfo() { return skybox->m_CI; }
 
 		operator gear::Ref<Skybox>& () { return skybox; }
+	};
+
+	struct TextComponent
+	{
+		gear::Ref<Text> text;
+
+		GEAR_SCENE_COMPONENTS_DEFAULTS(TextComponent);
+		TextComponent(gear::Ref<Text>& _model) : text(_model) {}
+		TextComponent(gear::Ref<Text>&& _model) : text(std::move(_model)) {}
+		TextComponent(Text::CreateInfo* pCreateInfo) : text(gear::CreateRef<Text>(pCreateInfo)) {}
+
+		//Text::CreateInfo& GetCreateInfo() { return text->m_CI; }
+
+		operator gear::Ref<Text>& () { return text; }
 	};
 
 	struct MeshComponent

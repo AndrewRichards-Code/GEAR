@@ -6,6 +6,7 @@
 #include "Texture.h"
 #include "UniformBuffer.h"
 #include "UniformBufferStructures.h"
+#include "directx12/D3D12Buffer.h"
 
 using namespace gear;
 using namespace graphics;
@@ -32,12 +33,6 @@ void ImageProcessing::GenerateMipMaps(const TextureResourceInfo& TRI)
 {
 	if (!TRI.texture->m_GenerateMipMaps || TRI.texture->m_Generated)
 		return;
-
-	/*if (!TRI.texture->IsUploaded())
-	{
-		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_STATE, "Texture data has not been uploaded. Can not generate mipmaps.");
-		return;
-	}*/
 
 	if(!s_PipelineMipMap)
 	{ 
@@ -165,7 +160,7 @@ void ImageProcessing::GenerateMipMaps(const TextureResourceInfo& TRI)
 			m_ComputeCmdBuffer->BindDescriptorSets(0, { m_DescSets[i - 1] }, pipeline->GetPipeline());
 			uint32_t width = std::max((TRI.texture->GetWidth() >> i) / 8, uint32_t(1));
 			uint32_t height = std::max((TRI.texture->GetHeight() >> i) / 8, uint32_t(1));
-			uint32_t depth = TRI.texture->GetCreateInfo().arrayLayers;
+			uint32_t depth = layers;
 			m_ComputeCmdBuffer->Dispatch(0, width, height, depth);
 
 			Texture::SubresouresTransitionInfo postDispatch;
@@ -549,15 +544,20 @@ void ImageProcessing::SpecularIrradiance(const TextureResourceInfo& specularIrra
 	}
 
 	typedef UniformBufferStructures::SpecularIrradianceInfo SpecularIrradianceInfoUB;
-	gear::Ref<Uniformbuffer<SpecularIrradianceInfoUB>> m_SpecularIrradianceInfoUB;
+	std::vector<gear::Ref<Uniformbuffer<SpecularIrradianceInfoUB>>> m_SpecularIrradianceInfoUBs;
+	m_SpecularIrradianceInfoUBs.resize(levels);
 
 	float zero[sizeof(SpecularIrradianceInfoUB)] = { 0 };
 	Uniformbuffer<SpecularIrradianceInfoUB>::CreateInfo ubCI;
 	ubCI.debugName = "GEAR_CORE_Buffer_SpecularIrradianceInfoUB";
 	ubCI.device = m_ComputeCmdPoolCI.pContext->GetDevice();
 	ubCI.data = zero;
-	m_SpecularIrradianceInfoUB = gear::CreateRef<Uniformbuffer<SpecularIrradianceInfoUB>>(&ubCI);
-	m_SpecularIrradianceInfoUB->roughness = 0.0f;
+	for (uint32_t i = 0; i < levels; i++)
+	{
+		m_SpecularIrradianceInfoUBs[i] = gear::CreateRef<Uniformbuffer<SpecularIrradianceInfoUB>>(&ubCI);
+		m_SpecularIrradianceInfoUBs[i]->roughness = float(i) / float(levels);
+		m_SpecularIrradianceInfoUBs[i]->SubmitData();
+	}
 
 	DescriptorPool::CreateInfo m_DescPoolCI;
 	m_DescPoolCI.debugName = "GEAR_CORE_DescriptorPool_SpecularIrradiance";
@@ -578,7 +578,7 @@ void ImageProcessing::SpecularIrradiance(const TextureResourceInfo& specularIrra
 		m_DescSets.emplace_back(DescriptorSet::Create(&m_DescSetCI));
 		m_DescSets[i]->AddImage(0, 0, { { environmentCubemapTRI.texture->GetTextureSampler(), m_EnvironmentImageView, m_EnvironmentImageLayout } });
 		m_DescSets[i]->AddImage(0, 1, { { nullptr, m_SpecularIrradianceImageViews[i], m_SpecularIrradianceImageLayout } });
-		m_DescSets[i]->AddBuffer(0, 2, { { m_SpecularIrradianceInfoUB->GetBufferView() } });
+		m_DescSets[i]->AddBuffer(0, 2, { { m_SpecularIrradianceInfoUBs[i]->GetBufferView() } });
 		m_DescSets[i]->Update();
 }
 
@@ -623,9 +623,20 @@ void ImageProcessing::SpecularIrradiance(const TextureResourceInfo& specularIrra
 		
 		for (uint32_t i = 0; i < levels; i++)
 		{
-			m_SpecularIrradianceInfoUB->roughness = float(i) / float(levels);
-			m_SpecularIrradianceInfoUB->SubmitData();
-			m_SpecularIrradianceInfoUB->Upload(m_ComputeCmdBuffer, 0, true);
+			m_SpecularIrradianceInfoUBs[i]->Upload(m_ComputeCmdBuffer, 0, true);
+			if (GraphicsAPI::IsD3D12())
+			{
+				Barrier::CreateInfo bCI;
+				bCI.type = Barrier::Type::BUFFER;
+				bCI.srcAccess = Barrier::AccessBit::TRANSFER_READ_BIT;
+				bCI.dstAccess = Barrier::AccessBit::UNIFORM_READ_BIT;
+				bCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
+				bCI.pBuffer = m_SpecularIrradianceInfoUBs[i]->GetBuffer();
+				bCI.offset = 0;
+				bCI.size = m_SpecularIrradianceInfoUBs[i]->GetSize();
+				miru::Ref<Barrier> b = Barrier::Create(&bCI);
+				m_ComputeCmdBuffer->PipelineBarrier(0, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, { b });
+			};
 
 			m_ComputeCmdBuffer->BindDescriptorSets(0, { m_DescSets[i] }, s_PipelineSpecularIrradiance->GetPipeline());
 			uint32_t width = std::max((specularIrradianceTRI.texture->GetWidth() >> i) / 32, uint32_t(1));

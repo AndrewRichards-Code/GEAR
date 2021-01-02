@@ -120,6 +120,8 @@
     <ClCompile Include="src\Graphics\Vertexbuffer.cpp" />
     <ClCompile Include="src\Graphics\Window.cpp" />
     <ClCompile Include="src\Objects\Camera.cpp" />
+    <ClCompile Include="src\Objects\FontLibrary.cpp" />
+    <ClCompile Include="src\Objects\Text.cpp" />
     <ClCompile Include="src\Objects\Light.cpp" />
     <ClCompile Include="src\Objects\Material.cpp" />
     <ClCompile Include="src\Objects\Mesh.cpp" />
@@ -160,6 +162,8 @@
     <ClInclude Include="src\Graphics\Window.h" />
     <ClInclude Include="src\Input\InputManager.h" />
     <ClInclude Include="src\Objects\Camera.h" />
+    <ClInclude Include="src\Objects\FontLibrary.h" />
+    <ClInclude Include="src\Objects\Text.h" />
     <ClInclude Include="src\Objects\Light.h" />
     <ClInclude Include="src\Objects\Material.h" />
     <ClInclude Include="src\Objects\Mesh.h" />

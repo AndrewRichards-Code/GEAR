@@ -18,7 +18,7 @@ void main(uint3 threadID : MIRU_DISPATCH_THREAD_ID)
 	if (threadID.x >= specularIrradianceDim.x || threadID.y >= specularIrradianceDim.y)
 		return;
 	
-	if (specularIrradianceInfo.roughness < 0.01) // Copy the top mip
+	if (specularIrradianceInfo.roughness == 0.0) // Copy the top mip
 	{
 		specularIrradiance_RWTextureCube[threadID] = environment_ImageCIS.SampleLevel(environment_SamplerCIS, GetLookupUVW(threadID, float2(specularIrradianceDim.xy)), 0.0);
 		return;

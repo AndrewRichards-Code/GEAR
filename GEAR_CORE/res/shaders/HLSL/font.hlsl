@@ -4,17 +4,21 @@
 struct VS_IN
 {
 	MIRU_LOCATION(0, float4, positions, POSITION0);
-	MIRU_LOCATION(1, float2, textCoords, TEXCOORD1);
-	MIRU_LOCATION(2, float, textIds, PSIZE);
-	MIRU_LOCATION(4, float4, colours, COLOR4);
+	MIRU_LOCATION(1, float2, texCoords, TEXCOORD1);
+	MIRU_LOCATION(2, float4, normals, NORMAL2);
+	MIRU_LOCATION(3, float4, tangents, TANGENT3);
+	MIRU_LOCATION(4, float4, binormals, BINORMAL4);
+	MIRU_LOCATION(5, float4, colours, COLOR5);
 };
 
 struct VS_OUT
 {
 	MIRU_LOCATION(0, float4, v_Position, SV_POSITION);
-	MIRU_LOCATION(1, float2, v_TextCoord, TEXCOORD1);
-	MIRU_LOCATION(2, float, v_TextIds, PSIZE2);
-	MIRU_LOCATION(3, float4, v_Colour, COLOR3);
+	MIRU_LOCATION(1, float2, v_TexCoord, TEXCOORD1);
+	MIRU_LOCATION(2, float4, v_Normal, NORMAL2);
+	MIRU_LOCATION(3, float4, v_Tangent, TANGENT3);
+	MIRU_LOCATION(4, float4, v_Binormal, BINORMAL4);
+	MIRU_LOCATION(5, float4, v_Colour, COLOR5);
 };
 typedef VS_OUT PS_IN;
 
@@ -23,17 +27,16 @@ struct PS_OUT
 	MIRU_LOCATION(0, float4, colour, SV_TARGET0);
 };
 
-MIRU_UNIFORM_BUFFER(0, 0, Camera, camera);
-MIRU_COMBINED_IMAGE_SAMPLER_ARRAY(MIRU_IMAGE_2D, 1, 0, float4, u_Textures, 32);
+MIRU_UNIFORM_BUFFER(0, 0, Camera, fontCamera);
+MIRU_UNIFORM_BUFFER(1, 0, Model, model);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 2, 0, float4, fontAtlas);
 
 VS_OUT vs_main(VS_IN IN)
 {
 	VS_OUT OUT;
 	
-	OUT.v_Position = mul(IN.positions, camera.proj);
-	OUT.v_TextCoord.x = IN.textCoords.x;
-	OUT.v_TextCoord.y = 1.0 - IN.textCoords.y;
-	OUT.v_TextIds = IN.textIds;
+	OUT.v_Position = mul(mul(mul(transpose(fontCamera.proj), transpose(fontCamera.view)), transpose(model.modl)), IN.positions);
+	OUT.v_TexCoord = IN.texCoords;
 	OUT.v_Colour = IN.colours;
 	
 	return OUT;
@@ -43,20 +46,16 @@ PS_OUT ps_main(PS_IN IN)
 {
 	PS_OUT OUT;
 	
-	float4 sampled = {0, 0, 0, 0};
-	if( IN.v_TextIds > 0)
+	if (IN.v_TexCoord.x == -1.0 && IN.v_TexCoord.x == -1.0)
 	{
-		for (int i = 0; i < 32; i++)
-		{
-			int tid = int(IN.v_TextIds - 0.5);
-			if(tid == i)
-			{
-				float alpha = u_Textures_ImageCIS[tid].Sample(u_Textures_SamplerCIS[tid], IN.v_TextCoord).r;
-				sampled = float4(1.0, 1.0, 1.0, alpha);
-			}
-		}
+		OUT.colour = IN.v_Colour;
 	}
-	OUT.colour = IN.v_Colour * sampled;
+	else
+	{
+		float alpha = fontAtlas_ImageCIS.Sample(fontAtlas_SamplerCIS, IN.v_TexCoord).r;
+		float4 sampled = float4(1.0, 1.0, 1.0, alpha);
+		OUT.colour = IN.v_Colour * sampled;
+	}
 	
 	return OUT;
 }

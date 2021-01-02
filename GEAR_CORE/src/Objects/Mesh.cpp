@@ -12,7 +12,9 @@ Mesh::Mesh(CreateInfo* pCreateInfo)
 	m_CI = *pCreateInfo;
 
 	ModelLoader::SetDevice(m_CI.device);
-	m_Data = ModelLoader::LoadModelData(m_CI.filepath.c_str());
+	
+	if(!m_CI.filepath.empty())
+		m_CI.data = ModelLoader::LoadModelData(m_CI.filepath);
 
 	graphics::Vertexbuffer::CreateInfo vbCI;
 	vbCI.debugName = "GEAR_CORE_Mesh: " + m_CI.debugName;
@@ -24,7 +26,7 @@ Mesh::Mesh(CreateInfo* pCreateInfo)
 	ibCI.device = m_CI.device;
 	ibCI.stride = ModelLoader::GetSizeOfIndex();
 	
-	for (auto& meshData : m_Data)
+	for (auto& meshData : m_CI.data)
 	{
 		vbCI.data = meshData.vertices.data();
 		vbCI.size = meshData.vertices.size() * ModelLoader::GetSizeOfVertex();

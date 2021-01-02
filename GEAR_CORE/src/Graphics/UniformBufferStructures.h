@@ -161,6 +161,7 @@ namespace gear
 		static std::map<std::string, SetUpdateType> SetUpdateTypeMap =
 		{
 			{ "CAMERA",			SetUpdateType::PER_VIEW		},
+			{ "FONTCAMERA",		SetUpdateType::PER_VIEW		},
 			{ "LIGHTS",			SetUpdateType::PER_VIEW		},
 			{ "SKYBOXINFO",		SetUpdateType::PER_MATERIAL	},
 			{ "MODEL",			SetUpdateType::PER_MODEL	},

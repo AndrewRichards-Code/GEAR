@@ -210,9 +210,12 @@ std::string RenderSurface::GetGraphicsAPIVersion() const
 	}
 	case GraphicsAPI::API::VULKAN:
 	{
+		uint32_t version = ref_cast<vulkan::Context>(m_Context)->m_PhysicalDevices.m_PhysicalDeviceProperties[0].apiVersion;
+
 		result += "VULKAN: ";
 		result += std::to_string(m_ContextCI.api_version_major)
-			+ "." + std::to_string(m_ContextCI.api_version_minor);
+			+ "." + std::to_string(m_ContextCI.api_version_minor)
+			+ "." + std::to_string(VK_VERSION_PATCH(version));
 		break;
 	}
 	}
