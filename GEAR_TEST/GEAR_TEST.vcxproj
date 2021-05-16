@@ -57,7 +57,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\DATE;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\DATE;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -78,7 +78,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\DATE;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\DATE;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>

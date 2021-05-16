@@ -18,10 +18,10 @@ namespace graphics
 		};
 
 	private:
-		miru::Ref<miru::crossplatform::Buffer> m_ShaderStorageBuffer, m_ShaderStorageBufferUpload;
+		Ref<miru::crossplatform::Buffer> m_ShaderStorageBuffer, m_ShaderStorageBufferUpload;
 		miru::crossplatform::Buffer::CreateInfo m_ShaderStorageBufferCI, m_ShaderStorageBufferUploadCI;
 
-		miru::Ref<miru::crossplatform::BufferView> m_ShaderStorageBufferView;
+		Ref<miru::crossplatform::BufferView> m_ShaderStorageBufferView;
 		miru::crossplatform::BufferView::CreateInfo m_ShaderStorageBufferViewCI;
 
 		CreateInfo m_CI;
@@ -68,17 +68,17 @@ namespace graphics
 		{
 			m_ShaderStorageBufferUploadCI.pAllocator->AccessData(m_ShaderStorageBufferUpload->GetAllocation(), size, data);
 		}
-		void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0)
+		void Upload(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0)
 		{
 			cmdBuffer->CopyBuffer(cmdBufferIndex, m_ShaderStorageBufferUpload, m_ShaderStorageBuffer, { {0, 0, GetSize()} });
 		}
-		void Download(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0)
+		void Download(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0)
 		{
 			cmdBuffer->CopyBuffer(cmdBufferIndex, m_ShaderStorageBuffer, m_ShaderStorageBufferUpload, { {0, 0, GetSize()} });
 		}
 
-		inline const miru::Ref<miru::crossplatform::Buffer>& GetBuffer() const { return m_ShaderStorageBuffer; };
-		inline const miru::Ref<miru::crossplatform::BufferView>& GetBufferView() const { return m_ShaderStorageBufferView; };
+		inline const Ref<miru::crossplatform::Buffer>& GetBuffer() const { return m_ShaderStorageBuffer; };
+		inline const Ref<miru::crossplatform::BufferView>& GetBufferView() const { return m_ShaderStorageBufferView; };
 
 		inline size_t GetSize() { return sizeof(T); }
 	};

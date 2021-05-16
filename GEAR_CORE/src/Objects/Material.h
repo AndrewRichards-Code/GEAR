@@ -27,18 +27,18 @@ namespace objects
 		{
 			std::string											debugName;
 			void*												device;
-			std::map<TextureType, gear::Ref<graphics::Texture>> pbrTextures;
+			std::map<TextureType, Ref<graphics::Texture>> pbrTextures;
 			graphics::UniformBufferStructures::PBRConstants		pbrConstants;
 		};
 	
 	private:
-		static gear::Ref<graphics::Texture> s_WhiteTexture;
-		static gear::Ref<graphics::Texture> s_BlueNormalTexture;
-		static gear::Ref<graphics::Texture> s_BlackTexture;
-		static std::map<std::string, gear::Ref<Material>> s_LoadedMaterials;
+		static Ref<graphics::Texture> s_WhiteTexture;
+		static Ref<graphics::Texture> s_BlueNormalTexture;
+		static Ref<graphics::Texture> s_BlackTexture;
+		static std::map<std::string, Ref<Material>> s_LoadedMaterials;
 		
 		typedef graphics::UniformBufferStructures::PBRConstants PBRConstantsUB;
-		gear::Ref<graphics::Uniformbuffer<PBRConstantsUB>> m_UB;
+		Ref<graphics::Uniformbuffer<PBRConstantsUB>> m_UB;
 	
 		struct Properties
 		{
@@ -72,16 +72,16 @@ namespace objects
 
 		void AddProperties(const Properties& properties);
 		
-		inline std::map<TextureType, gear::Ref<graphics::Texture>>& GetTextures() { return m_CI.pbrTextures; }
-		inline const std::map<TextureType, gear::Ref<graphics::Texture>>& GetTextures() const { return m_CI.pbrTextures; }
-		inline const gear::Ref<graphics::Uniformbuffer<PBRConstantsUB>>& GetUB() const { return m_UB; }
+		inline std::map<TextureType, Ref<graphics::Texture>>& GetTextures() { return m_CI.pbrTextures; }
+		inline const std::map<TextureType, Ref<graphics::Texture>>& GetTextures() const { return m_CI.pbrTextures; }
+		inline const Ref<graphics::Uniformbuffer<PBRConstantsUB>>& GetUB() const { return m_UB; }
 
 		inline std::string GetDebugName() const { return "GEAR_CORE_Material: " + m_CI.debugName; }
 	
-		inline static void AddMaterial(std::string name, const gear::Ref<Material>& material) { s_LoadedMaterials.insert({ name, material }); }
-		inline static gear::Ref<Material> FindMaterial(const std::string& name) 
+		inline static void AddMaterial(std::string name, const Ref<Material>& material) { s_LoadedMaterials.insert({ name, material }); }
+		inline static Ref<Material> FindMaterial(const std::string& name) 
 		{ 
-			std::map<std::string, gear::Ref<Material>>::iterator it = s_LoadedMaterials.find(name);
+			std::map<std::string, Ref<Material>>::iterator it = s_LoadedMaterials.find(name);
 			if (it != s_LoadedMaterials.end())
 				return it->second;
 			else

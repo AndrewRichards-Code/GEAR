@@ -10,6 +10,9 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DllMain.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -62,7 +65,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\DATE;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -84,7 +87,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\DATE;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -97,10 +100,6 @@
       <AdditionalLibraryDirectories>$(SolutionDir)GEAR_CORE\lib\x64\$(Configuration);$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep;$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="DllMain.cpp" />
-    <ClCompile Include="$(ApplicationNativeScriptsDir)*.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

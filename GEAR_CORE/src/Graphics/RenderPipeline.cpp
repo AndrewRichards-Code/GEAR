@@ -1,6 +1,6 @@
 #include "gear_core_common.h"
 #include "RenderPipeline.h"
-#include "Utils/FileUtils.h"
+#include "ARC/src/FileSystemHelpers.h"
 #include "Utils/ModelLoader.h"
 
 #include "Core/EnumStringMaps.h"
@@ -28,8 +28,7 @@ RenderPipeline::RenderPipeline(CreateInfo* pCreateInfo)
 		}
 		else if (s_ShaderBuildMode == ShaderBuildMode::INCREMENTAL)
 		{
-			if (file_utils::get_file_last_write_time(shaderCI.binaryFilepath)
-				< file_utils::get_file_last_write_time(shaderCI.recompileArguments.hlslFilepath))
+			if (arc::FileLastWriteTime(shaderCI.binaryFilepath) < arc::FileLastWriteTime(shaderCI.recompileArguments.hlslFilepath))
 			{
 				m_Shaders.back()->Recompile();
 			}
@@ -65,20 +64,20 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 	}
 	else
 	{
-		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::NO_FILE, "Unable to open %s.", finalFilePath.c_str());
+		GEAR_WARN(ErrorCode::GRAPHICS | ErrorCode::NO_FILE, "Unable to open %s.", finalFilePath.c_str());
 		return;
 	}
 
 	if (pipeline_grpf_json.empty())
 	{
-		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::LOAD_FAILED, "%s is not valid.", finalFilePath.c_str());
+		GEAR_WARN(ErrorCode::GRAPHICS | ErrorCode::LOAD_FAILED, "%s is not valid.", finalFilePath.c_str());
 		return;
 	}
 
 	std::string fileType = pipeline_grpf_json["fileType"];
 	if (fileType.compare("GEAR_RENDER_PIPELINE_FILE") != 0)
 	{
-		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::NOT_SUPPORTED, "%s is not valid.", finalFilePath.c_str());
+		GEAR_WARN(ErrorCode::GRAPHICS | ErrorCode::NOT_SUPPORTED, "%s is not valid.", finalFilePath.c_str());
 		return;
 	}
 
@@ -125,6 +124,10 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 		*this = graphics::RenderPipeline(&rpCI);
 		return;
 	}
+
+	//InputAssembly
+	rpCI.inputAssemblyState.topology = PrimitiveTopologyStrings[pipeline_grpf_json["inputAssemblyState"]["topology"]];
+	rpCI.inputAssemblyState.primitiveRestartEnable = pipeline_grpf_json["inputAssemblyState"]["primitiveRestartEnable"];
 
 	//ViewportState
 	for (auto& viewport : pipeline_grpf_json["viewportState"]["viewports"])
@@ -286,7 +289,7 @@ void RenderPipeline::FinalisePipline()
 		m_PipelineCI.type = PipelineType::GRAPHICS;
 		m_PipelineCI.vertexInputState.vertexInputBindingDescriptions = vibds;
 		m_PipelineCI.vertexInputState.vertexInputAttributeDescriptions = viads;
-		m_PipelineCI.inputAssemblyState = { PrimitiveTopology::TRIANGLE_LIST, false };
+		m_PipelineCI.inputAssemblyState = m_CI.inputAssemblyState;
 		m_PipelineCI.tessellationState = {};
 		m_PipelineCI.viewportState = m_CI.viewportState;
 		m_PipelineCI.rasterisationState = m_CI.rasterisationState;
@@ -346,8 +349,7 @@ void RenderPipeline::RecompileShaders()
 		}
 		else if (s_ShaderBuildMode == ShaderBuildMode::INCREMENTAL)
 		{
-			if (file_utils::get_file_last_write_time(shader->GetCreateInfo().binaryFilepath)
-				< file_utils::get_file_last_write_time(shader->GetCreateInfo().recompileArguments.hlslFilepath))
+			if (arc::FileLastWriteTime(shader->GetCreateInfo().binaryFilepath) < arc::FileLastWriteTime(shader->GetCreateInfo().recompileArguments.hlslFilepath))
 			{
 				shader->Recompile();
 			}

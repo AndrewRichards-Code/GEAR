@@ -42,7 +42,7 @@ Vertexbuffer::~Vertexbuffer()
 {
 }
 
-void Vertexbuffer::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
+void Vertexbuffer::Upload(const Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
 {
 	if (!m_Upload || force)
 	{

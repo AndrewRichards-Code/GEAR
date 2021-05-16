@@ -37,5 +37,5 @@ void Model::InitialiseUB()
 	ubCI.debugName = "GEAR_CORE_Model: " + m_CI.debugName;
 	ubCI.device = m_CI.device;
 	ubCI.data = zero;
-	m_UB = gear::CreateRef<Uniformbuffer<ModelUB>>(&ubCI);
+	m_UB = CreateRef<Uniformbuffer<ModelUB>>(&ubCI);
 }

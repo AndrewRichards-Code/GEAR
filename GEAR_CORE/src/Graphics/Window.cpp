@@ -73,7 +73,7 @@ bool Window::Init()
 {
 	if (!glfwInit())
 	{
-		GEAR_ASSERT(core::Log::Level::FATAL, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INIT_FAILED, "Failed to initialise GLFW.");
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INIT_FAILED, "Failed to initialise GLFW.");
 		return false;
 	}
 
@@ -81,7 +81,7 @@ bool Window::Init()
 	{
 		if (glfwVulkanSupported() == GLFW_FALSE)
 		{
-			GEAR_ASSERT(core::Log::Level::FATAL, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::NOT_SUPPORTED, "GLFW does not support Vulkan.");
+			GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::NOT_SUPPORTED, "GLFW does not support Vulkan.");
 			return false;
 		}
 
@@ -102,7 +102,7 @@ bool Window::Init()
 	{
 		glfwDestroyWindow(m_Window);
 		glfwTerminate();
-		GEAR_ASSERT(core::Log::Level::FATAL, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::FUNC_FAILED, "Failed to create GLFW window.");
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::FUNC_FAILED, "Failed to create GLFW window.");
 		return false;
 	}
 
@@ -114,7 +114,7 @@ bool Window::Init()
 	m_RenderSurfaceCI.vSync = m_CI.vSync;
 	m_RenderSurfaceCI.samples = m_CI.samples;
 	m_RenderSurfaceCI.graphicsDebugger = m_CI.graphicsDebugger;
-	m_RenderSurface = gear::CreateRef<RenderSurface>(&m_RenderSurfaceCI);
+	m_RenderSurface = CreateRef<RenderSurface>(&m_RenderSurfaceCI);
 	
 	GLFWimage icon[1];
 	std::string iconFilepath = !m_CI.iconFilepath.empty() ? m_CI.iconFilepath : "../Branding/GEAR_logo_dark.png";

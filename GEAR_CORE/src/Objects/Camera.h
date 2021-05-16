@@ -54,7 +54,7 @@ namespace objects
 
 	private:
 		typedef graphics::UniformBufferStructures::Camera CameraUB;
-		gear::Ref<graphics::Uniformbuffer<CameraUB>> m_UB;
+		Ref<graphics::Uniformbuffer<CameraUB>> m_UB;
 
 	public:
 		CreateInfo m_CI;
@@ -70,7 +70,7 @@ namespace objects
 		//Update the camera from the current state of Camera::CreateInfo m_CI.
 		void Update();
 
-		const gear::Ref<graphics::Uniformbuffer<CameraUB>>& GetUB() const { return m_UB; };
+		const Ref<graphics::Uniformbuffer<CameraUB>>& GetUB() const { return m_UB; };
 
 	private:
 		void DefineProjection();

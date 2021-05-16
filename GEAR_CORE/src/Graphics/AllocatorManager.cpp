@@ -8,8 +8,8 @@ using namespace graphics;
 using namespace miru;
 using namespace miru::crossplatform;
 
-miru::Ref<miru::crossplatform::Allocator> AllocatorManager::s_CPUAllocator = nullptr;
-miru::Ref<miru::crossplatform::Allocator> AllocatorManager::s_GPUAllocator = nullptr;
+Ref<miru::crossplatform::Allocator> AllocatorManager::s_CPUAllocator = nullptr;
+Ref<miru::crossplatform::Allocator> AllocatorManager::s_GPUAllocator = nullptr;
 AllocatorManager::CreateInfo AllocatorManager::s_CI;
 bool AllocatorManager::s_Initialised = false;
 
@@ -36,11 +36,11 @@ void AllocatorManager::Initialise(CreateInfo* pCreateInfo)
 	s_Initialised = true;
 }
 
-miru::Ref<Allocator> AllocatorManager::GetAllocator(AllocatorType type)
+Ref<Allocator> AllocatorManager::GetAllocator(AllocatorType type)
 {
 	if (!s_Initialised)
 	{
-		GEAR_ASSERT(core::Log::Level::FATAL, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INIT_FAILED, "AllocatorManager has not been initialised.");
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INIT_FAILED, "AllocatorManager has not been initialised.");
 	}
 	
 	switch (type)
@@ -52,7 +52,7 @@ miru::Ref<Allocator> AllocatorManager::GetAllocator(AllocatorType type)
 	case AllocatorManager::AllocatorType::UNKNOWN:
 	default:
 	{
-		GEAR_ASSERT(core::Log::Level::FATAL, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_VALUE, "AllocatorManager: Unknown AllocatorType.");
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "AllocatorManager: Unknown AllocatorType.");
 		return nullptr;
 	}
 	}
@@ -76,7 +76,7 @@ void AllocatorManager::PrintMemoryBlockStatus()
 	}
 	else
 	{
-		GEAR_ASSERT(core::Log::Level::FATAL, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_VALUE, "AllocatorManager: Unknown GraphicsAPI.");
+		GEAR_ASSERT(Level::FATAL, ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "AllocatorManager: Unknown GraphicsAPI.");
 	}*/
 
 	/*for(auto& memoryBlock : MemoryBlock::GetMemoryBlocks())
@@ -91,6 +91,6 @@ void AllocatorManager::PrintMemoryBlockStatus()
 		}
 		float loadPercent = 100.0f * (float)currentAllocatedSize / (float)(memoryBlock->GetCreateInfo().blockSize);
 
-		GEAR_PRINT_MESSAGE(core::Log::Level::INFO, core::Log::ErrorCode::OK, "%-48s(0x%x): - Usage(Bytes): %zu - %.3f%%.", name.c_str(), ptrVal, currentAllocatedSize, loadPercent);
+		GEAR_PRINT_MESSAGE(Level::INFO, ErrorCode::OK, "%-48s(0x%x): - Usage(Bytes): %zu - %.3f%%.", name.c_str(), ptrVal, currentAllocatedSize, loadPercent);
 	}*/
 }

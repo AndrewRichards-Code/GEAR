@@ -54,7 +54,7 @@ void Framebuffer::AddColourTextureAttachment(size_t attachment)
 	colourTextureCI.samples = m_CI.samples;
 	colourTextureCI.usage = miru::crossplatform::Image::UsageBit::COLOUR_ATTACHMENT_BIT;
 	colourTextureCI.generateMipMaps = false;
-	m_ColourTextures[attachment] = gear::CreateRef<Texture>(&colourTextureCI);
+	m_ColourTextures[attachment] = CreateRef<Texture>(&colourTextureCI);
 	
 	m_FramebufferCI.attachments[attachment] = m_ColourTextures[attachment]->GetTextureImageView();
 }
@@ -94,13 +94,13 @@ void Framebuffer::CheckColourTextureAttachments(size_t attachment)
 {
 	if (attachment > m_ColourTextures.size())
 	{
-		GEAR_LOG(core::Log::Level::ERROR, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_VALUE, "Attachment slot unavailable! Only 8 available slots.");
+		GEAR_ERROR(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Attachment slot unavailable! Only 8 available slots.");
 		return;
 	}
 
 	if (m_ColourTextures[attachment] != nullptr)
 	{
-		GEAR_LOG(core::Log::Level::ERROR, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_VALUE, "Attachment slot is already taken.");
+		GEAR_ERROR(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Attachment slot is already taken.");
 		return;
 	}
 }

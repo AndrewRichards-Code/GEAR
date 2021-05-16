@@ -41,7 +41,7 @@ namespace objects
 
 		struct Font
 		{
-			miru::Ref<graphics::Texture>			textureAtlas;
+			Ref<graphics::Texture>			textureAtlas;
 			std::array<GlyphInfo, s_NumCaracters>	glyphInfos;
 			uint32_t								fontHeightPx;
 		};
@@ -53,13 +53,13 @@ namespace objects
 		FontLibrary();
 		~FontLibrary();
 
-		miru::Ref<Font> LoadFont(LoadInfo* pLoadInfo);
+		Ref<Font> LoadFont(LoadInfo* pLoadInfo);
 
 	private:
-		miru::Ref<Font> GenerateFont(const GenerateInfo& GI);
-		miru::Ref<Font> LoadGeneratedFont(const GenerateInfo& GI);
+		Ref<Font> GenerateFont(const GenerateInfo& GI);
+		Ref<Font> LoadGeneratedFont(const GenerateInfo& GI);
 		void SaveGeneratedFont(const std::vector<uint8_t>& img_data, const std::array<GlyphInfo, s_NumCaracters>& glyphInfos, const GenerateInfo& GI);
-		miru::Ref<graphics::Texture> GenerateTextureAtlas(const GenerateInfo& GI, const graphics::Texture::DataTypeDataParameters& data);
+		Ref<graphics::Texture> GenerateTextureAtlas(const GenerateInfo& GI, const graphics::Texture::DataTypeDataParameters& data);
 	};
 }
 }

@@ -9,7 +9,7 @@ AudioListener::AudioListener(CreateInfo* pCreateInfo)
 	m_CI = *pCreateInfo;
 
 	m_ALICI.audioAPI = m_CI.audioAPI;
-	m_ALI = gear::CreateRef<AudioListenerInterface>(&m_ALICI);
+	m_ALI = CreateRef<AudioListenerInterface>(&m_ALICI);
 }
 
 

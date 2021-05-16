@@ -23,28 +23,28 @@ namespace graphics
 
 	private:
 		//Context and Swapchain
-		miru::Ref<miru::crossplatform::Context> m_Context;
+		Ref<miru::crossplatform::Context> m_Context;
 		miru::crossplatform::Context::CreateInfo m_ContextCI;
-		miru::Ref<miru::crossplatform::Swapchain> m_Swapchain;
+		Ref<miru::crossplatform::Swapchain> m_Swapchain;
 		miru::crossplatform::Swapchain::CreateInfo m_SwapchainCI;
 
 		//ColourImage
-		miru::Ref<miru::crossplatform::Allocator> m_AttachmentAllocator;
-		miru::Ref<miru::crossplatform::Image> m_ColourImage;
+		Ref<miru::crossplatform::Allocator> m_AttachmentAllocator;
+		Ref<miru::crossplatform::Image> m_ColourImage;
 		miru::crossplatform::Image::CreateInfo m_ColourImageCI;
-		miru::Ref<miru::crossplatform::ImageView> m_ColourImageView;
+		Ref<miru::crossplatform::ImageView> m_ColourImageView;
 		miru::crossplatform::ImageView::CreateInfo m_ColourImageViewCI;
 
 		//DepthImage
-		miru::Ref<miru::crossplatform::Image> m_DepthImage;
+		Ref<miru::crossplatform::Image> m_DepthImage;
 		miru::crossplatform::Image::CreateInfo m_DepthImageCI;
-		miru::Ref<miru::crossplatform::ImageView> m_DepthImageView;
+		Ref<miru::crossplatform::ImageView> m_DepthImageView;
 		miru::crossplatform::ImageView::CreateInfo m_DepthImageViewCI;
 
 		//RenderPass and Framebuffer
-		miru::Ref<miru::crossplatform::RenderPass> m_RenderPass;
+		Ref<miru::crossplatform::RenderPass> m_RenderPass;
 		miru::crossplatform::RenderPass::CreateInfo m_RenderPassCI;
-		miru::Ref<miru::crossplatform::Framebuffer> m_Framebuffers[2];
+		Ref<miru::crossplatform::Framebuffer> m_Framebuffers[2];
 		miru::crossplatform::Framebuffer::CreateInfo m_FramebufferCI;
 
 		CreateInfo m_CI;
@@ -58,13 +58,13 @@ namespace graphics
 		
 		void Resize(int width, int height);
 
-		inline const miru::Ref<miru::crossplatform::Context> GetContext() const { return m_Context; };
-		inline const miru::Ref<miru::crossplatform::Swapchain>& GetSwapchain() const { return m_Swapchain; };
+		inline const Ref<miru::crossplatform::Context> GetContext() const { return m_Context; };
+		inline const Ref<miru::crossplatform::Swapchain>& GetSwapchain() const { return m_Swapchain; };
 		inline void* GetDevice() const { return m_Context->GetDevice(); }
-		inline const miru::Ref<miru::crossplatform::RenderPass>& GetRenderPass() const { return m_RenderPass; }
-		inline const miru::Ref<miru::crossplatform::ImageView>& GetSwapchainImageView(size_t index) const { return m_Swapchain->m_SwapchainImageViews[index]; }
-		inline const miru::Ref<miru::crossplatform::ImageView>& GetSwapchainDepthImageView() const { return m_DepthImageView; }
-		inline const miru::Ref<miru::crossplatform::Framebuffer>* GetFramebuffers() { return m_Framebuffers; }
+		inline const Ref<miru::crossplatform::RenderPass>& GetRenderPass() const { return m_RenderPass; }
+		inline const Ref<miru::crossplatform::ImageView>& GetSwapchainImageView(size_t index) const { return m_Swapchain->m_SwapchainImageViews[index]; }
+		inline const Ref<miru::crossplatform::ImageView>& GetSwapchainDepthImageView() const { return m_DepthImageView; }
+		inline const Ref<miru::crossplatform::Framebuffer>* GetFramebuffers() { return m_Framebuffers; }
 
 		inline const miru::crossplatform::GraphicsAPI::API& GetGraphicsAPI() const { return m_CI.api; }
 		inline bool IsD3D12() const { return miru::crossplatform::GraphicsAPI::IsD3D12(); }

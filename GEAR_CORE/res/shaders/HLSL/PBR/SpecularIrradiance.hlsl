@@ -4,7 +4,7 @@
 #include "../CubeFunctions.h"
 
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 0, float4, environment);
-MIRU_RW_IMAGE_CUBE(0, 1, float4, specularIrradiance);
+MIRU_RW_IMAGE_2D_ARRAY(0, 1, float4, specularIrradiance);
 MIRU_UNIFORM_BUFFER(0, 2, SpecularIrradianceInfo, specularIrradianceInfo);
 
 static const uint NumSamples = 1024;
@@ -14,13 +14,13 @@ void main(uint3 threadID : MIRU_DISPATCH_THREAD_ID)
 {
 	//Ensure output is bounded when computing higher mipmap levels.
 	uint3 specularIrradianceDim;
-	MIRU_RW_IMAGE_CUBE_GET_DIMENSIONS(specularIrradiance, specularIrradianceDim);
+	specularIrradiance.GetDimensions(specularIrradianceDim.x, specularIrradianceDim.y, specularIrradianceDim.z);
 	if (threadID.x >= specularIrradianceDim.x || threadID.y >= specularIrradianceDim.y)
 		return;
 	
 	if (specularIrradianceInfo.roughness == 0.0) // Copy the top mip
 	{
-		specularIrradiance_RWTextureCube[threadID] = environment_ImageCIS.SampleLevel(environment_SamplerCIS, GetLookupUVW(threadID, float2(specularIrradianceDim.xy)), 0.0);
+		specularIrradiance[threadID] = environment_ImageCIS.SampleLevel(environment_SamplerCIS, GetLookupUVW(threadID, float2(specularIrradianceDim.xy)), 0.0);
 		return;
 	}
 	
@@ -76,5 +76,5 @@ void main(uint3 threadID : MIRU_DISPATCH_THREAD_ID)
 	}
 	colour /= weight;
 
-	specularIrradiance_RWTextureCube[threadID] = float4(colour, 1.0);
+	specularIrradiance[threadID] = float4(colour, 1.0);
 }

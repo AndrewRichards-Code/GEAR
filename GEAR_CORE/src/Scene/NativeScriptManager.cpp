@@ -1,8 +1,8 @@
 #include "gear_core_common.h"
 #include "NativeScriptManager.h"
 
+using namespace arc;
 using namespace gear;
-using namespace core;
 using namespace scene;
 
 #ifdef _DEBUG
@@ -55,7 +55,7 @@ void NativeScriptManager::Unload(DynamicLibrary::LibraryHandle& libraryHandle)
 	libraryHandle = 0;
 }
 
-INativeScript* NativeScriptManager::LoadScript(core::DynamicLibrary::LibraryHandle& libraryHandle, const std::string& nativeScriptName)
+INativeScript* NativeScriptManager::LoadScript(DynamicLibrary::LibraryHandle& libraryHandle, const std::string& nativeScriptName)
 {
 	typedef INativeScript* (*PFN_LoadScript)();
 	
@@ -67,7 +67,7 @@ INativeScript* NativeScriptManager::LoadScript(core::DynamicLibrary::LibraryHand
 	return ns;
 }
 
-void NativeScriptManager::UnloadScript(core::DynamicLibrary::LibraryHandle& libraryHandle, const std::string& nativeScriptName, INativeScript*& nativeScript)
+void NativeScriptManager::UnloadScript(DynamicLibrary::LibraryHandle& libraryHandle, const std::string& nativeScriptName, INativeScript*& nativeScript)
 {
 	typedef void (*PFN_UnloadScript)(INativeScript*);
 
@@ -84,7 +84,7 @@ bool NativeScriptManager::CheckPath(const std::string& directory)
 {
 	if (!std::filesystem::exists(directory))
 	{
-		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::SCENE | core::Log::ErrorCode::INVALID_PATH, "%s does not exist.", s_BuildScriptPath.c_str());
+		GEAR_WARN(ErrorCode::SCENE | ErrorCode::INVALID_PATH, "%s does not exist.", s_BuildScriptPath.c_str());
 		return false;
 	}
 	return true;

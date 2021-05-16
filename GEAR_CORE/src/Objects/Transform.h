@@ -12,7 +12,7 @@ namespace objects
 		mars::Vec3 scale;
 
 		Transform()
-			:translation(1.0f, 1.0f, 1.0f), orientation(1.0, 0.0, 0.0, 0.0), scale(1.0f, 1.0f, 1.0f) 
+			:translation(0.0f, 0.0f, 0.0f), orientation(1.0, 0.0, 0.0, 0.0), scale(1.0f, 1.0f, 1.0f) 
 		{};
 	};
 

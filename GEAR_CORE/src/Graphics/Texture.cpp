@@ -19,7 +19,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_DepthTexture = m_CI.format >= Image::Format::D16_UNORM;
 	if (m_Cubemap && m_CI.arrayLayers % 6 != 0)
 	{
-		GEAR_ASSERT(core::Log::Level::ERROR, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_VALUE, "For TYPE_CUBE or TYPE_CUBE_ARRAY, arrayLayers must be a multiple of 6");
+		GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "For TYPE_CUBE or TYPE_CUBE_ARRAY, arrayLayers must be a multiple of 6");
 	}
 
 	//Load data
@@ -96,7 +96,7 @@ Texture::~Texture()
 {
 }
 
-void Texture::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
+void Texture::Upload(const Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
 {
 	if (!m_Upload || force)
 	{
@@ -121,7 +121,7 @@ void Texture::Upload(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBuff
 	}
 }
 
-void Texture::Download(const miru::Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
+void Texture::Download(const Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
 {
 	if (m_Upload || force)
 	{
@@ -202,9 +202,9 @@ void Texture::AccessImageData(std::vector<uint8_t>& imageData)
 	imageData.clear();
 
 	if (GraphicsAPI::IsD3D12())
-		imageData.resize((size_t)miru::ref_cast<d3d12::Buffer>(m_TextureUploadBuffer)->m_D3D12MAllocation->GetSize());
+		imageData.resize((size_t)ref_cast<d3d12::Buffer>(m_TextureUploadBuffer)->m_D3D12MAllocation->GetSize());
 	else
-		imageData.resize((size_t)miru::ref_cast<vulkan::Buffer>(m_TextureUploadBuffer)->m_VmaAI.size);
+		imageData.resize((size_t)ref_cast<vulkan::Buffer>(m_TextureUploadBuffer)->m_VmaAI.size);
 
 	m_TextureUploadBufferCI.pAllocator->AccessData(m_TextureUploadBuffer->GetAllocation(), imageData.size(), imageData.data());
 }
@@ -225,7 +225,7 @@ void Texture::CreateSampler()
 	m_SamplerCI.compareEnable = false;
 	m_SamplerCI.compareOp = CompareOp::NEVER;
 	m_SamplerCI.minLod = 0.0f;
-	m_SamplerCI.maxLod = m_CI.mipLevels;
+	m_SamplerCI.maxLod = static_cast<float>(m_CI.mipLevels);
 	m_SamplerCI.borderColour = Sampler::BorderColour::FLOAT_OPAQUE_BLACK;
 	m_SamplerCI.unnormalisedCoordinates = false;
 	m_Sampler = Sampler::Create(&m_SamplerCI);
@@ -303,11 +303,11 @@ void Texture::LoadImageData(std::vector<uint8_t>& imageData)
 	}
 	else
 	{
-		GEAR_ASSERT(core::Log::Level::ERROR, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_VALUE, "Unknown Texture::Create::DataType and/or invalid parameters.");
+		GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Unknown Texture::Create::DataType and/or invalid parameters.");
 	}
 
 	if (m_Width == 0 && m_Height == 0 && m_Depth == 0)
 	{
-		GEAR_ASSERT(core::Log::Level::ERROR, core::Log::ErrorCode::GRAPHICS | core::Log::ErrorCode::INVALID_VALUE, "Invalid extent for Texture creation.");
+		GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Invalid extent for Texture creation.");
 	}
 }

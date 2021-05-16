@@ -67,12 +67,12 @@ namespace audio
 		struct CreateInfo
 		{
 			std::string							filepath;
-			gear::Ref<AudioListenerInterface>	pAudioListener;
+			Ref<AudioListenerInterface>	pAudioListener;
 		};
 
 	private:
 		CreateInfo m_CI;
-		gear::Ref<file_utils::WavData>m_WavData;
+		Ref<file_utils::WavData>m_WavData;
 		bool m_Ended = false;
 
 		AudioListenerInterface::API m_API;
@@ -97,7 +97,7 @@ namespace audio
 		inline void Unloop() { m_WavData->loopBufferQueue = false; };
 
 		inline const AudioListenerInterface::API& GetAPI() const { return m_API; }
-		inline const gear::Ref<file_utils::WavData>& GetWavData() const { return m_WavData; }
+		inline const Ref<file_utils::WavData>& GetWavData() const { return m_WavData; }
 
 		//OpenAL
 	private:

@@ -5,7 +5,7 @@
 #include "FontLibrary.h"
 #include "Graphics/AllocatorManager.h"
 #include "Graphics/Texture.h"
-#include "Utils/FileUtils.h"
+#include "ARC/src/FileSystemHelpers.h"
 
 using namespace gear;
 using namespace graphics;
@@ -19,7 +19,7 @@ FontLibrary::FontLibrary()
 {
 	if (FT_Init_FreeType(&m_FT_Lib))
 	{
-		GEAR_ASSERT(core::Log::Level::ERROR, core::Log::ErrorCode::OBJECTS | core::Log::ErrorCode::INIT_FAILED, "Failed to initialise freetype.lib.");
+		GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::OBJECTS | ErrorCode::INIT_FAILED, "Failed to initialise freetype.lib.");
 	}
 }
 FontLibrary::~FontLibrary()
@@ -27,7 +27,7 @@ FontLibrary::~FontLibrary()
 	FT_Done_FreeType(m_FT_Lib);
 }
 
-miru::Ref<FontLibrary::Font> FontLibrary::LoadFont(LoadInfo* pLoadInfo)
+Ref<FontLibrary::Font> FontLibrary::LoadFont(LoadInfo* pLoadInfo)
 {
 	if (pLoadInfo->regenerateTextureAtlas)
 	{
@@ -36,12 +36,12 @@ miru::Ref<FontLibrary::Font> FontLibrary::LoadFont(LoadInfo* pLoadInfo)
 	return std::move(LoadGeneratedFont(pLoadInfo->GI));
 }
 
-miru::Ref<FontLibrary::Font> FontLibrary::GenerateFont(const GenerateInfo& GI)
+Ref<FontLibrary::Font> FontLibrary::GenerateFont(const GenerateInfo& GI)
 {
 	FT_Face face;
 	if (FT_New_Face(m_FT_Lib, GI.filepath.c_str(), 0, &face))
 	{
-		GEAR_ASSERT(core::Log::Level::ERROR, core::Log::ErrorCode::OBJECTS | core::Log::ErrorCode::LOAD_FAILED, "Failed to load font.");
+		GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::OBJECTS | ErrorCode::LOAD_FAILED, "Failed to load font.");
 	}
 	FT_Set_Pixel_Sizes(face, 0, GI.fontHeightPx);
 
@@ -58,7 +58,7 @@ miru::Ref<FontLibrary::Font> FontLibrary::GenerateFont(const GenerateInfo& GI)
 	{
 		if (FT_Error error = FT_Load_Char(face, i, FT_LOAD_RENDER))
 		{
-			GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::OBJECTS | core::Log::ErrorCode::LOAD_FAILED, ("Failed to load character: " + std::to_string(i) + ". Error Code: " + std::to_string(error) + ".").c_str());
+			GEAR_WARN(ErrorCode::OBJECTS | ErrorCode::LOAD_FAILED, ("Failed to load character: " + std::to_string(i) + ". Error Code: " + std::to_string(error) + ".").c_str());
 			continue;
 		}
 		const FT_Bitmap& bitmap = face->glyph->bitmap;
@@ -112,24 +112,24 @@ miru::Ref<FontLibrary::Font> FontLibrary::GenerateFont(const GenerateInfo& GI)
 	data.height = GI.generatedTextureSize;
 	data.depth = 1;
 
-	miru::Ref<Font>result = gear::CreateRef<Font>();
+	Ref<Font>result = CreateRef<Font>();
 	result->textureAtlas = GenerateTextureAtlas(GI, data);
 	result->glyphInfos = glyphInfos;
 	result->fontHeightPx = GI.fontHeightPx;
 	return std::move(result);
 }
 
-miru::Ref<FontLibrary::Font> FontLibrary::LoadGeneratedFont(const GenerateInfo& GI)
+Ref<FontLibrary::Font> FontLibrary::LoadGeneratedFont(const GenerateInfo& GI)
 {
-	miru::Ref<Font>result = nullptr;
+	Ref<Font>result = nullptr;
 
 	std::string filepath = GI.filepath.substr(0, GI.filepath.find_last_of('.'));
 	std::string filepathPNG = filepath + ".png";
 	std::string filepathBIN = filepath + ".bin";
 
-	if (file_utils::file_exist(filepathPNG) && file_utils::file_exist(filepathBIN))
+	if (arc::FileExist(filepathPNG) && arc::FileExist(filepathBIN))
 	{
-		result = gear::CreateRef<Font>();
+		result = CreateRef<Font>();
 		Texture::DataTypeDataParameters data;
 
 		std::ifstream stream(filepathBIN, std::ios::binary);
@@ -228,7 +228,7 @@ void FontLibrary::SaveGeneratedFont(const std::vector<uint8_t>& img_data, const 
 	}
 }
 
-miru::Ref<Texture> FontLibrary::GenerateTextureAtlas(const GenerateInfo& GI, const Texture::DataTypeDataParameters& data)
+Ref<Texture> FontLibrary::GenerateTextureAtlas(const GenerateInfo& GI, const Texture::DataTypeDataParameters& data)
 {
 	Texture::CreateInfo texCI;
 	texCI.debugName = "GEAR_CORE_FontLibrary_Font_TextureAtlas: " + GI.filepath;
@@ -243,5 +243,5 @@ miru::Ref<Texture> FontLibrary::GenerateTextureAtlas(const GenerateInfo& GI, con
 	texCI.usage = miru::crossplatform::Image::UsageBit(0);
 	texCI.generateMipMaps = false;
 
-	return std::move(gear::CreateRef<Texture>(&texCI));
+	return std::move(CreateRef<Texture>(&texCI));
 }

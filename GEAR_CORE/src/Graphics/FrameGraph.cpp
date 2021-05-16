@@ -66,7 +66,7 @@ void Node::Execute()
 
 	if (m_CI.submitCmdBuffer)
 	{
-		std::vector<miru::Ref<Semaphore>> waitSrcSemaphores;
+		std::vector<Ref<Semaphore>> waitSrcSemaphores;
 		std::vector<PipelineStageBit> waitSrcPipelineStages;
 		
 		for (const auto& lastSubmitNodes : LastSubmitNodes(m_CI.srcPipelineStages, m_CI.srcNodes))
@@ -80,12 +80,12 @@ void Node::Execute()
 	}
 }
 
-std::vector<std::pair<PipelineStageBit, gear::Ref<Node>>> Node::LastSubmitNodes(std::vector<PipelineStageBit>& srcPipelineStages, std::vector<gear::Ref<Node>>& srcNodes)
+std::vector<std::pair<PipelineStageBit, Ref<Node>>> Node::LastSubmitNodes(std::vector<PipelineStageBit>& srcPipelineStages, std::vector<Ref<Node>>& srcNodes)
 {
-	std::vector<std::pair<PipelineStageBit, gear::Ref<Node>>> nodes;
+	std::vector<std::pair<PipelineStageBit, Ref<Node>>> nodes;
 	for (size_t i = 0; i < srcNodes.size(); i++)
 	{
-		gear::Ref<Node>& node = srcNodes[i];
+		Ref<Node>& node = srcNodes[i];
 		PipelineStageBit pipelineStage = srcPipelineStages[i];
 
 		if (node->m_CI.submitCmdBuffer)

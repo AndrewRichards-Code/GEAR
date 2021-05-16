@@ -9,7 +9,7 @@ using namespace mars;
 int Light::s_NumOfLights = 0;
 
 typedef graphics::UniformBufferStructures::Lights LightUB;
- gear::Ref<graphics::Uniformbuffer<LightUB>> Light::s_UB = nullptr;
+ Ref<graphics::Uniformbuffer<LightUB>> Light::s_UB = nullptr;
 
 Light::Light(CreateInfo* pCreateInfo)
 {
@@ -25,7 +25,7 @@ Light::Light(CreateInfo* pCreateInfo)
 	}
 	else
 	{
-		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::OBJECTS | core::Log::ErrorCode::INIT_FAILED, "Too many lights declared.");
+		GEAR_WARN(ErrorCode::OBJECTS | ErrorCode::INIT_FAILED, "Too many lights declared.");
 	}
 }
 
@@ -54,6 +54,6 @@ void Light::InitialiseUB()
 		ubCI.debugName = "GEAR_CORE_Light_LightUBType: " + m_CI.debugName;
 		ubCI.device = m_CI.device;
 		ubCI.data = zero0;
-		s_UB = gear::CreateRef<Uniformbuffer<LightUB>>(&ubCI);
+		s_UB = CreateRef<Uniformbuffer<LightUB>>(&ubCI);
 	}
 }

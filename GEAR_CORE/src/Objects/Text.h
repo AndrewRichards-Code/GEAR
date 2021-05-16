@@ -24,17 +24,17 @@ namespace objects
 	private:
 		struct Line
 		{
-			gear::Ref<FontLibrary::Font>		font;
-			std::string							text;
-			mars::Uint2							initPosition;
-			mars::Uint2							position;
-			mars::Vec4							colour;
-			mars::Vec4							backgroundColour;
-			gear::Ref<Model>					model;
+			Ref<FontLibrary::Font>	font;
+			std::string						text;
+			mars::Uint2						initPosition;
+			mars::Uint2						position;
+			mars::Vec4						colour;
+			mars::Vec4						backgroundColour;
+			Ref<Model>				model;
 		};
 		std::vector<Line> m_Lines;
 		
-		gear::Ref<Camera> m_Camera;
+		Ref<Camera> m_Camera;
 		Camera::CreateInfo m_CameraCI;
 		
 	public:
@@ -43,12 +43,12 @@ namespace objects
 	public:
 		Text(CreateInfo* pCreateInfo);
 		~Text();
-		void AddLine(const gear::Ref<FontLibrary::Font>& font, const std::string& text, const mars::Uint2& position, const mars::Vec4& colour, 
+		void AddLine(const Ref<FontLibrary::Font>& font, const std::string& text, const mars::Uint2& position, const mars::Vec4& colour, 
 			const mars::Vec4& backgroudColour = mars::Vec4(0.0f, 0.0f, 0.0f, 0.5f));
 		void UpdateLine(const std::string& text, size_t lineIndex, bool force = true);
 
 		inline const std::vector<Line>& GetLines() const { return m_Lines; }
-		inline const gear::Ref<Camera>& GetCamera() const { return m_Camera; }
+		inline const Ref<Camera>& GetCamera() const { return m_Camera; }
 
 		//Update the text from the current state of Text::CreateInfo m_CI.
 		void Update();

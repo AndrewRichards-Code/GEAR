@@ -5,13 +5,13 @@
 #include "INativeScript.h"
 
 #include "Core/Timer.h"
-#include "Core/DynamicLibrary.h"
 #include "Graphics/Renderer.h"
 
+using namespace arc;
 using namespace gear;
 using namespace scene;
 
-static core::DynamicLibrary::LibraryHandle s_NativeScriptLibrary = 0;
+static DynamicLibrary::LibraryHandle s_NativeScriptLibrary = 0;
 
 Scene::Scene(CreateInfo* pCreateInfo)
 {
@@ -36,7 +36,7 @@ Entity Scene::CreateEntity()
 	return entity;
 }
 
-void Scene::OnUpdate(gear::Ref<graphics::Renderer>& renderer, core::Timer& timer)
+void Scene::OnUpdate(Ref<graphics::Renderer>& renderer, core::Timer& timer)
 {
 	if (m_Playing)
 	{
@@ -68,7 +68,7 @@ void Scene::OnUpdate(gear::Ref<graphics::Renderer>& renderer, core::Timer& timer
 		renderer->SubmitCamera(vCameraComponents.get<CameraComponent>(entity));
 	}
 
-	std::vector<gear::Ref<Light>> lights;
+	std::vector<Ref<Light>> lights;
 	auto& vLightComponents = m_Registry.view<LightComponent>();
 	for (auto& entity : vLightComponents)
 	{
@@ -91,7 +91,7 @@ void Scene::OnUpdate(gear::Ref<graphics::Renderer>& renderer, core::Timer& timer
 	auto& vTextComponent = m_Registry.view<TextComponent>();
 	for (auto& entity : vTextComponent)
 	{
-		const gear::Ref<Text>& text = vTextComponent.get<TextComponent>(entity).text;
+		const Ref<Text>& text = vTextComponent.get<TextComponent>(entity).text;
 		renderer->SubmitFontCamera(text->GetCamera());
 
 		for (auto& line : text->GetLines())
@@ -251,7 +251,7 @@ void Scene::SaveToFile()
 	std::ofstream saveFile(fullSaveFilepath.string(), std::ios::binary);
 	if (!saveFile.is_open())
 	{
-		GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::SCENE | core::Log::ErrorCode::NO_FILE, "Can not save to file: %s", fullSaveFilepath.string().c_str());
+		GEAR_WARN(ErrorCode::SCENE | ErrorCode::NO_FILE, "Can not save to file: %s", fullSaveFilepath.string().c_str());
 		return;
 	}
 	else

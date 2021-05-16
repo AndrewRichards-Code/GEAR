@@ -3,7 +3,7 @@
 #include "../CubeFunctions.h"
 
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 0, float4, environment);
-MIRU_RW_IMAGE_CUBE(0, 1, float4, diffuseIrradiance);
+MIRU_RW_IMAGE_2D_ARRAY(0, 1, float4, diffuseIrradiance);
 
 static const uint NumSamples = 64 * 1024;
 
@@ -12,7 +12,7 @@ void main(uint3 threadID : MIRU_DISPATCH_THREAD_ID)
 {
 	//Get Normal vector.
 	float3 diffuseIrradianceDim;
-	MIRU_RW_IMAGE_CUBE_GET_DIMENSIONS(diffuseIrradiance, diffuseIrradianceDim);
+	diffuseIrradiance.GetDimensions(diffuseIrradianceDim.x, diffuseIrradianceDim.y, diffuseIrradianceDim.z);
 	
 	//Calculate TBN vectors.
 	float3 N = GetLookupUVW(threadID, diffuseIrradianceDim.xy);
@@ -33,5 +33,5 @@ void main(uint3 threadID : MIRU_DISPATCH_THREAD_ID)
 	}
 	irradiance /= float(NumSamples);
 	
-	diffuseIrradiance_RWTextureCube[threadID] = float4(irradiance, 1.0);
+	diffuseIrradiance[threadID] = float4(irradiance, 1.0);
 }

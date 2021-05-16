@@ -21,32 +21,32 @@ namespace objects
 		};
 
 	private:
-		gear::Ref<Model> m_Model;
+		Ref<Model> m_Model;
 		Model::CreateInfo m_ModelCI;
 
-		gear::Ref<Mesh> m_Mesh;
+		Ref<Mesh> m_Mesh;
 		Mesh::CreateInfo m_MeshCI;
 
-		gear::Ref<Material> m_Material;
+		Ref<Material> m_Material;
 		Material::CreateInfo m_MaterialCI;
 
-		gear::Ref<graphics::Texture> m_Texture;
+		Ref<graphics::Texture> m_Texture;
 		graphics::Texture::CreateInfo m_TextureCI;
 
-		gear::Ref<graphics::Texture> m_GeneratedCubemap;
+		Ref<graphics::Texture> m_GeneratedCubemap;
 		graphics::Texture::CreateInfo m_GeneratedCubemapCI;
 
-		gear::Ref<graphics::Texture> m_GeneratedDiffuseCubemap;
+		Ref<graphics::Texture> m_GeneratedDiffuseCubemap;
 		graphics::Texture::CreateInfo m_GeneratedDiffuseCubemapCI;
 
-		gear::Ref<graphics::Texture> m_GeneratedSpecularCubemap;
+		Ref<graphics::Texture> m_GeneratedSpecularCubemap;
 		graphics::Texture::CreateInfo m_GeneratedSpecularCubemapCI;
 		
-		gear::Ref<graphics::Texture> m_GeneratedSpecularBRDF_LUT;
+		Ref<graphics::Texture> m_GeneratedSpecularBRDF_LUT;
 		graphics::Texture::CreateInfo m_GeneratedSpecularBRDF_LUT_CI;
 
 		typedef graphics::UniformBufferStructures::SkyboxInfo SkyboxInfoUB;
-		gear::Ref<graphics::Uniformbuffer<SkyboxInfoUB>> m_UB;
+		Ref<graphics::Uniformbuffer<SkyboxInfoUB>> m_UB;
 	
 	public:
 		bool m_Cubemap;
@@ -62,23 +62,23 @@ namespace objects
 		//Update the skybox from the current state of Skybox::CreateInfo m_CI.
 		void Update();
 
-		inline gear::Ref<graphics::Texture>& GetTexture() { return m_Texture; }
-		inline const gear::Ref<graphics::Texture>& GetTexture() const { return m_Texture; }
+		inline Ref<graphics::Texture>& GetTexture() { return m_Texture; }
+		inline const Ref<graphics::Texture>& GetTexture() const { return m_Texture; }
 
-		inline gear::Ref<graphics::Texture>& GetGeneratedCubemap() { return m_GeneratedCubemap; }
-		inline const gear::Ref<graphics::Texture>& GetGeneratedCubemap() const { return m_GeneratedCubemap; }
+		inline Ref<graphics::Texture>& GetGeneratedCubemap() { return m_GeneratedCubemap; }
+		inline const Ref<graphics::Texture>& GetGeneratedCubemap() const { return m_GeneratedCubemap; }
 
-		inline gear::Ref<graphics::Texture>& GetGeneratedDiffuseCubemap() { return m_GeneratedDiffuseCubemap; }
-		inline const gear::Ref<graphics::Texture>& GetGeneratedDiffuseCubemap() const { return m_GeneratedDiffuseCubemap; }
+		inline Ref<graphics::Texture>& GetGeneratedDiffuseCubemap() { return m_GeneratedDiffuseCubemap; }
+		inline const Ref<graphics::Texture>& GetGeneratedDiffuseCubemap() const { return m_GeneratedDiffuseCubemap; }
 
-		inline gear::Ref<graphics::Texture>& GetGeneratedSpecularCubemap() { return m_GeneratedSpecularCubemap; }
-		inline const gear::Ref<graphics::Texture>& GetGeneratedSpecularCubemap() const { return m_GeneratedSpecularCubemap; }
+		inline Ref<graphics::Texture>& GetGeneratedSpecularCubemap() { return m_GeneratedSpecularCubemap; }
+		inline const Ref<graphics::Texture>& GetGeneratedSpecularCubemap() const { return m_GeneratedSpecularCubemap; }
 
-		inline gear::Ref<graphics::Texture>& GetGeneratedSpecularBRDF_LUT() { return m_GeneratedSpecularBRDF_LUT; }
-		inline const gear::Ref<graphics::Texture>& GetGeneratedSpecularBRDF_LUT() const { return m_GeneratedSpecularBRDF_LUT; }
+		inline Ref<graphics::Texture>& GetGeneratedSpecularBRDF_LUT() { return m_GeneratedSpecularBRDF_LUT; }
+		inline const Ref<graphics::Texture>& GetGeneratedSpecularBRDF_LUT() const { return m_GeneratedSpecularBRDF_LUT; }
 
-		inline const gear::Ref<objects::Model>& GetModel() const { return m_Model; }
-		inline const gear::Ref<graphics::Uniformbuffer<SkyboxInfoUB>>& GetUB() const { return m_UB; }
+		inline const Ref<objects::Model>& GetModel() const { return m_Model; }
+		inline const Ref<graphics::Uniformbuffer<SkyboxInfoUB>>& GetUB() const { return m_UB; }
 
 	private:
 		void InitialiseUBs();

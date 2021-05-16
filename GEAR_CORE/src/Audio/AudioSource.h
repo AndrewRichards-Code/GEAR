@@ -13,13 +13,13 @@ namespace audio
 		struct CreateInfo
 		{
 			std::string					filepath;
-			gear::Ref<AudioListener>	pAudioListener;
+			Ref<AudioListener>	pAudioListener;
 		};
 
 	private:
 		CreateInfo m_CI;
 
-		gear::Ref<AudioSourceInterface> m_ASI;
+		Ref<AudioSourceInterface> m_ASI;
 		AudioSourceInterface::CreateInfo m_ASICI;
 	
 		std::thread m_AudioStreamThread;

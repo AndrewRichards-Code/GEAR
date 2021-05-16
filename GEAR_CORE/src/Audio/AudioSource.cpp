@@ -10,7 +10,7 @@ AudioSource::AudioSource(CreateInfo* pCreateInfo)
 
 	m_ASICI.filepath = m_CI.filepath;
 	m_ASICI.pAudioListener = m_CI.pAudioListener->GetAudioListenerInterface();
-	m_ASI = gear::CreateRef<AudioSourceInterface>(&m_ASICI);
+	m_ASI = CreateRef<AudioSourceInterface>(&m_ASICI);
 }
 
 AudioSource::~AudioSource()

@@ -18,19 +18,19 @@ namespace graphics
 
 		struct CreateInfo
 		{
-			miru::Ref<miru::crossplatform::Context>		pContext;
+			Ref<miru::crossplatform::Context>		pContext;
 			miru::crossplatform::Allocator::BlockSize	defaultBlockSize;
 		};
 
 	private:
-		static miru::Ref<miru::crossplatform::Allocator> s_CPUAllocator;
-		static miru::Ref<miru::crossplatform::Allocator> s_GPUAllocator;
+		static Ref<miru::crossplatform::Allocator> s_CPUAllocator;
+		static Ref<miru::crossplatform::Allocator> s_GPUAllocator;
 		static CreateInfo s_CI;
 		static bool s_Initialised;
 
 	public:
 		static void Initialise(CreateInfo* pCreateInfo);
-		static miru::Ref<miru::crossplatform::Allocator> GetAllocator(AllocatorType type);
+		static Ref<miru::crossplatform::Allocator> GetAllocator(AllocatorType type);
 		static void PrintMemoryBlockStatus();
 		static const CreateInfo& GetCreateInfo() { return s_CI; }
 	};

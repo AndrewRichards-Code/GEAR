@@ -18,6 +18,21 @@ namespace core
 		{ "HULL_BIT", miru::crossplatform::Shader::StageBit::HULL_BIT },
 		{ "DOMAIN_BIT", miru::crossplatform::Shader::StageBit::DOMAIN_BIT }
 	};
+
+	static std::map<std::string, miru::crossplatform::PrimitiveTopology> PrimitiveTopologyStrings =
+	{
+		{ "POINT_LIST", miru::crossplatform::PrimitiveTopology::POINT_LIST },
+		{ "LINE_LIST", miru::crossplatform::PrimitiveTopology::LINE_LIST },
+		{ "LINE_STRIP", miru::crossplatform::PrimitiveTopology::LINE_STRIP },
+		{ "TRIANGLE_LIST", miru::crossplatform::PrimitiveTopology::TRIANGLE_LIST },
+		{ "TRIANGLE_STRIP", miru::crossplatform::PrimitiveTopology::TRIANGLE_STRIP },
+		{ "TRIANGLE_FAN", miru::crossplatform::PrimitiveTopology::TRIANGLE_FAN },
+		{ "LINE_LIST_WITH_ADJACENCY", miru::crossplatform::PrimitiveTopology::LINE_LIST_WITH_ADJACENCY },
+		{ "LINE_STRIP_WITH_ADJACENCY", miru::crossplatform::PrimitiveTopology::LINE_STRIP_WITH_ADJACENCY },
+		{ "TRIANGLE_LIST_WITH_ADJACENCY", miru::crossplatform::PrimitiveTopology::TRIANGLE_LIST_WITH_ADJACENCY },
+		{ "TRIANGLE_STRIP_WITH_ADJACENCY", miru::crossplatform::PrimitiveTopology::TRIANGLE_STRIP_WITH_ADJACENCY },
+		{ "PATCH_LIST", miru::crossplatform::PrimitiveTopology::PATCH_LIST }
+	};
 	
 	static std::map<std::string, miru::crossplatform::PolygonMode> PolygonModeStrings =
 	{

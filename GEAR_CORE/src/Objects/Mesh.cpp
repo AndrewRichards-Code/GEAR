@@ -30,11 +30,11 @@ Mesh::Mesh(CreateInfo* pCreateInfo)
 	{
 		vbCI.data = meshData.vertices.data();
 		vbCI.size = meshData.vertices.size() * ModelLoader::GetSizeOfVertex();
-		m_VBs.emplace_back(gear::CreateRef<graphics::Vertexbuffer>(&vbCI));
+		m_VBs.emplace_back(CreateRef<graphics::Vertexbuffer>(&vbCI));
 
 		ibCI.data = meshData.indices.data();
 		ibCI.size = meshData.indices.size() * ModelLoader::GetSizeOfIndex();
-		m_IBs.emplace_back(gear::CreateRef<graphics::Indexbuffer>(&ibCI));
+		m_IBs.emplace_back(CreateRef<graphics::Indexbuffer>(&ibCI));
 
 		m_Materials.push_back(meshData.pMaterial);
 	}

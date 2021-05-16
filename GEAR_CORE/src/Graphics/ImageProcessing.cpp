@@ -14,12 +14,12 @@ using namespace graphics;
 using namespace miru;
 using namespace miru::crossplatform;
 
-gear::Ref<RenderPipeline> ImageProcessing::s_PipelineMipMap;
-gear::Ref<RenderPipeline> ImageProcessing::s_PipelineMipMapArray;
-gear::Ref<RenderPipeline> ImageProcessing::s_PipelineEquirectangularToCube;
-gear::Ref<RenderPipeline> ImageProcessing::s_PipelineDiffuseIrradiance;
-gear::Ref<RenderPipeline> ImageProcessing::s_PipelineSpecularIrradiance;
-gear::Ref<RenderPipeline> ImageProcessing::s_PipelineSpecularBRDF_LUT;
+Ref<RenderPipeline> ImageProcessing::s_PipelineMipMap;
+Ref<RenderPipeline> ImageProcessing::s_PipelineMipMapArray;
+Ref<RenderPipeline> ImageProcessing::s_PipelineEquirectangularToCube;
+Ref<RenderPipeline> ImageProcessing::s_PipelineDiffuseIrradiance;
+Ref<RenderPipeline> ImageProcessing::s_PipelineSpecularIrradiance;
+Ref<RenderPipeline> ImageProcessing::s_PipelineSpecularBRDF_LUT;
 
 ImageProcessing::ImageProcessing()
 {
@@ -62,7 +62,7 @@ void ImageProcessing::GenerateMipMaps(const TextureResourceInfo& TRI)
 	m_ComputeCmdPoolCI.pContext = AllocatorManager::GetCreateInfo().pContext;
 	m_ComputeCmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
 	m_ComputeCmdPoolCI.queueType = CommandPool::QueueType::COMPUTE;
-	miru::Ref<CommandPool> m_ComputeCmdPool = CommandPool::Create(&m_ComputeCmdPoolCI);
+	Ref<CommandPool> m_ComputeCmdPool = CommandPool::Create(&m_ComputeCmdPoolCI);
 
 	CommandBuffer::CreateInfo m_ComputeCmdBufferCI;
 	m_ComputeCmdBufferCI.debugName = "GEAR_CORE_CommandBuffer_MipMap_Compute";
@@ -70,16 +70,16 @@ void ImageProcessing::GenerateMipMaps(const TextureResourceInfo& TRI)
 	m_ComputeCmdBufferCI.level = CommandBuffer::Level::PRIMARY;
 	m_ComputeCmdBufferCI.commandBufferCount = 1;
 	m_ComputeCmdBufferCI.allocateNewCommandPoolPerBuffer = false;
-	miru::Ref<CommandBuffer> m_ComputeCmdBuffer = CommandBuffer::Create(&m_ComputeCmdBufferCI);
+	Ref<CommandBuffer> m_ComputeCmdBuffer = CommandBuffer::Create(&m_ComputeCmdBufferCI);
 
 	const uint32_t& levels = TRI.texture->GetCreateInfo().mipLevels;
 	const uint32_t& layers = TRI.texture->GetCreateInfo().arrayLayers;
 
-	miru::Ref<RenderPipeline>& pipeline = s_PipelineMipMap;
+	Ref<RenderPipeline>& pipeline = s_PipelineMipMap;
 	if (layers > 1)
 		pipeline = s_PipelineMipMapArray;
 
-	std::vector<miru::Ref<ImageView>> m_ImageViews;
+	std::vector<Ref<ImageView>> m_ImageViews;
 	m_ImageViews.reserve(levels);
 
 	ImageView::CreateInfo m_ImageViewCI;
@@ -98,9 +98,9 @@ void ImageProcessing::GenerateMipMaps(const TextureResourceInfo& TRI)
 	m_DescPoolCI.device = m_ComputeCmdPoolCI.pContext->GetDevice();
 	m_DescPoolCI.poolSizes = { {DescriptorType::SAMPLED_IMAGE, (levels - 1)}, {DescriptorType::STORAGE_IMAGE, (levels - 1)} };
 	m_DescPoolCI.maxSets = levels - 1;
-	miru::Ref<DescriptorPool> m_DescPool = DescriptorPool::Create(&m_DescPoolCI);
+	Ref<DescriptorPool> m_DescPool = DescriptorPool::Create(&m_DescPoolCI);
 
-	std::vector<miru::Ref<DescriptorSet>> m_DescSets;
+	std::vector<Ref<DescriptorSet>> m_DescSets;
 	m_DescSets.reserve(levels);
 
 	DescriptorSet::CreateInfo m_DescSetCI;
@@ -121,7 +121,7 @@ void ImageProcessing::GenerateMipMaps(const TextureResourceInfo& TRI)
 	m_FenceCI.device = m_ComputeCmdPoolCI.pContext->GetDevice();
 	m_FenceCI.signaled = false;
 	m_FenceCI.timeout = UINT64_MAX;
-	miru::Ref<Fence> m_Fence = Fence::Create(&m_FenceCI);
+	Ref<Fence> m_Fence = Fence::Create(&m_FenceCI);
 
 	//Record Compute CommandBuffer
 	{
@@ -216,7 +216,7 @@ void ImageProcessing::EquirectangularToCube(const TextureResourceInfo& environme
 	m_ComputeCmdPoolCI.pContext = AllocatorManager::GetCreateInfo().pContext;
 	m_ComputeCmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
 	m_ComputeCmdPoolCI.queueType = CommandPool::QueueType::COMPUTE;
-	miru::Ref<CommandPool> m_ComputeCmdPool = CommandPool::Create(&m_ComputeCmdPoolCI);
+	Ref<CommandPool> m_ComputeCmdPool = CommandPool::Create(&m_ComputeCmdPoolCI);
 
 	CommandBuffer::CreateInfo m_ComputeCmdBufferCI;
 	m_ComputeCmdBufferCI.debugName = "GEAR_CORE_CommandBuffer_EquirectangularToCube_Compute";
@@ -224,10 +224,10 @@ void ImageProcessing::EquirectangularToCube(const TextureResourceInfo& environme
 	m_ComputeCmdBufferCI.level = CommandBuffer::Level::PRIMARY;
 	m_ComputeCmdBufferCI.commandBufferCount = 1;
 	m_ComputeCmdBufferCI.allocateNewCommandPoolPerBuffer = false;
-	miru::Ref<CommandBuffer> m_ComputeCmdBuffer = CommandBuffer::Create(&m_ComputeCmdBufferCI);
+	Ref<CommandBuffer> m_ComputeCmdBuffer = CommandBuffer::Create(&m_ComputeCmdBufferCI);
 
-	miru::Ref<ImageView> m_EquirectangularImageView;
-	miru::Ref<ImageView> m_CubeImageView;
+	Ref<ImageView> m_EquirectangularImageView;
+	Ref<ImageView> m_CubeImageView;
 
 	ImageView::CreateInfo m_ImageViewCI;
 	m_ImageViewCI.debugName = "GEAR_CORE_ImageView_Equirectangular";
@@ -239,7 +239,7 @@ void ImageProcessing::EquirectangularToCube(const TextureResourceInfo& environme
 
 	m_ImageViewCI.debugName = "GEAR_CORE_ImageView_Cube";
 	m_ImageViewCI.pImage = environmentCubemapTRI.texture->GetTexture();
-	m_ImageViewCI.viewType = Image::Type::TYPE_CUBE;
+	m_ImageViewCI.viewType = Image::Type::TYPE_2D_ARRAY;
 	m_ImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 6 };
 	m_CubeImageView = ImageView::Create(&m_ImageViewCI);
 
@@ -248,9 +248,9 @@ void ImageProcessing::EquirectangularToCube(const TextureResourceInfo& environme
 	m_DescPoolCI.device = m_ComputeCmdPoolCI.pContext->GetDevice();
 	m_DescPoolCI.poolSizes = { {DescriptorType::COMBINED_IMAGE_SAMPLER, 1 }, {DescriptorType::STORAGE_IMAGE, 1 } };
 	m_DescPoolCI.maxSets = 1;
-	miru::Ref<DescriptorPool> m_DescPool = DescriptorPool::Create(&m_DescPoolCI);
+	Ref<DescriptorPool> m_DescPool = DescriptorPool::Create(&m_DescPoolCI);
 
-	miru::Ref<DescriptorSet> m_DescSet;
+	Ref<DescriptorSet> m_DescSet;
 	DescriptorSet::CreateInfo m_DescSetCI;
 	m_DescSetCI.debugName = "GEAR_CORE_DescriptorSet_EquirectangularToCube";
 	m_DescSetCI.pDescriptorPool = m_DescPool;
@@ -267,7 +267,7 @@ void ImageProcessing::EquirectangularToCube(const TextureResourceInfo& environme
 	m_FenceCI.device = m_ComputeCmdPoolCI.pContext->GetDevice();
 	m_FenceCI.signaled = false;
 	m_FenceCI.timeout = UINT64_MAX;
-	miru::Ref<Fence> m_Fence = Fence::Create(&m_FenceCI);
+	Ref<Fence> m_Fence = Fence::Create(&m_FenceCI);
 
 	//Record Compute CommandBuffer
 	{
@@ -369,7 +369,7 @@ void ImageProcessing::DiffuseIrradiance(const TextureResourceInfo& diffuseIrradi
 	m_ComputeCmdPoolCI.pContext = AllocatorManager::GetCreateInfo().pContext;
 	m_ComputeCmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
 	m_ComputeCmdPoolCI.queueType = CommandPool::QueueType::COMPUTE;
-	miru::Ref<CommandPool> m_ComputeCmdPool = CommandPool::Create(&m_ComputeCmdPoolCI);
+	Ref<CommandPool> m_ComputeCmdPool = CommandPool::Create(&m_ComputeCmdPoolCI);
 
 	CommandBuffer::CreateInfo m_ComputeCmdBufferCI;
 	m_ComputeCmdBufferCI.debugName = "GEAR_CORE_CommandBuffer_DiffuseIrradiance_Compute";
@@ -377,10 +377,10 @@ void ImageProcessing::DiffuseIrradiance(const TextureResourceInfo& diffuseIrradi
 	m_ComputeCmdBufferCI.level = CommandBuffer::Level::PRIMARY;
 	m_ComputeCmdBufferCI.commandBufferCount = 1;
 	m_ComputeCmdBufferCI.allocateNewCommandPoolPerBuffer = false;
-	miru::Ref<CommandBuffer> m_ComputeCmdBuffer = CommandBuffer::Create(&m_ComputeCmdBufferCI);
+	Ref<CommandBuffer> m_ComputeCmdBuffer = CommandBuffer::Create(&m_ComputeCmdBufferCI);
 
-	miru::Ref<ImageView> m_EnvironmentImageView;
-	miru::Ref<ImageView> m_DiffuseIrradianceImageView;
+	Ref<ImageView> m_EnvironmentImageView;
+	Ref<ImageView> m_DiffuseIrradianceImageView;
 
 	ImageView::CreateInfo m_ImageViewCI;
 	m_ImageViewCI.debugName = "GEAR_CORE_ImageView_Cubemap";
@@ -392,7 +392,7 @@ void ImageProcessing::DiffuseIrradiance(const TextureResourceInfo& diffuseIrradi
 
 	m_ImageViewCI.debugName = "GEAR_CORE_ImageView_DiffuseIrradiance";
 	m_ImageViewCI.pImage = diffuseIrradianceTRI.texture->GetTexture();
-	m_ImageViewCI.viewType = Image::Type::TYPE_CUBE;
+	m_ImageViewCI.viewType = Image::Type::TYPE_2D_ARRAY;
 	m_ImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 6 };
 	m_DiffuseIrradianceImageView = ImageView::Create(&m_ImageViewCI);
 
@@ -401,9 +401,9 @@ void ImageProcessing::DiffuseIrradiance(const TextureResourceInfo& diffuseIrradi
 	m_DescPoolCI.device = m_ComputeCmdPoolCI.pContext->GetDevice();
 	m_DescPoolCI.poolSizes = { {DescriptorType::COMBINED_IMAGE_SAMPLER, 1 }, {DescriptorType::STORAGE_IMAGE, 1 } };
 	m_DescPoolCI.maxSets = 1;
-	miru::Ref<DescriptorPool> m_DescPool = DescriptorPool::Create(&m_DescPoolCI);
+	Ref<DescriptorPool> m_DescPool = DescriptorPool::Create(&m_DescPoolCI);
 
-	miru::Ref<DescriptorSet> m_DescSet;
+	Ref<DescriptorSet> m_DescSet;
 	DescriptorSet::CreateInfo m_DescSetCI;
 	m_DescSetCI.debugName = "GEAR_CORE_DescriptorSet_DiffuseIrradiance";
 	m_DescSetCI.pDescriptorPool = m_DescPool;
@@ -420,7 +420,7 @@ void ImageProcessing::DiffuseIrradiance(const TextureResourceInfo& diffuseIrradi
 	m_FenceCI.device = m_ComputeCmdPoolCI.pContext->GetDevice();
 	m_FenceCI.signaled = false;
 	m_FenceCI.timeout = UINT64_MAX;
-	miru::Ref<Fence> m_Fence = Fence::Create(&m_FenceCI);
+	Ref<Fence> m_Fence = Fence::Create(&m_FenceCI);
 
 	//Record Compute CommandBuffer
 	{
@@ -510,7 +510,7 @@ void ImageProcessing::SpecularIrradiance(const TextureResourceInfo& specularIrra
 	m_ComputeCmdPoolCI.pContext = AllocatorManager::GetCreateInfo().pContext;
 	m_ComputeCmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
 	m_ComputeCmdPoolCI.queueType = CommandPool::QueueType::COMPUTE;
-	miru::Ref<CommandPool> m_ComputeCmdPool = CommandPool::Create(&m_ComputeCmdPoolCI);
+	Ref<CommandPool> m_ComputeCmdPool = CommandPool::Create(&m_ComputeCmdPoolCI);
 
 	CommandBuffer::CreateInfo m_ComputeCmdBufferCI;
 	m_ComputeCmdBufferCI.debugName = "GEAR_CORE_CommandBuffer_SpecularIrradiance_Compute";
@@ -518,12 +518,12 @@ void ImageProcessing::SpecularIrradiance(const TextureResourceInfo& specularIrra
 	m_ComputeCmdBufferCI.level = CommandBuffer::Level::PRIMARY;
 	m_ComputeCmdBufferCI.commandBufferCount = 1;
 	m_ComputeCmdBufferCI.allocateNewCommandPoolPerBuffer = false;
-	miru::Ref<CommandBuffer> m_ComputeCmdBuffer = CommandBuffer::Create(&m_ComputeCmdBufferCI);
+	Ref<CommandBuffer> m_ComputeCmdBuffer = CommandBuffer::Create(&m_ComputeCmdBufferCI);
 
 	const uint32_t& levels = specularIrradianceTRI.texture->GetCreateInfo().mipLevels;
 
-	miru::Ref<ImageView> m_EnvironmentImageView;
-	std::vector<miru::Ref<ImageView>> m_SpecularIrradianceImageViews;
+	Ref<ImageView> m_EnvironmentImageView;
+	std::vector<Ref<ImageView>> m_SpecularIrradianceImageViews;
 	m_SpecularIrradianceImageViews.reserve(levels);
 
 	ImageView::CreateInfo m_ImageViewCI;
@@ -538,13 +538,13 @@ void ImageProcessing::SpecularIrradiance(const TextureResourceInfo& specularIrra
 	{
 		m_ImageViewCI.debugName = "GEAR_CORE_ImageView_SpecularIrradiance";
 		m_ImageViewCI.pImage = specularIrradianceTRI.texture->GetTexture();
-		m_ImageViewCI.viewType = Image::Type::TYPE_CUBE;
+		m_ImageViewCI.viewType = Image::Type::TYPE_2D_ARRAY;
 		m_ImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, 6 };
 		m_SpecularIrradianceImageViews.push_back(ImageView::Create(&m_ImageViewCI));
 	}
 
 	typedef UniformBufferStructures::SpecularIrradianceInfo SpecularIrradianceInfoUB;
-	std::vector<gear::Ref<Uniformbuffer<SpecularIrradianceInfoUB>>> m_SpecularIrradianceInfoUBs;
+	std::vector<Ref<Uniformbuffer<SpecularIrradianceInfoUB>>> m_SpecularIrradianceInfoUBs;
 	m_SpecularIrradianceInfoUBs.resize(levels);
 
 	float zero[sizeof(SpecularIrradianceInfoUB)] = { 0 };
@@ -554,7 +554,7 @@ void ImageProcessing::SpecularIrradiance(const TextureResourceInfo& specularIrra
 	ubCI.data = zero;
 	for (uint32_t i = 0; i < levels; i++)
 	{
-		m_SpecularIrradianceInfoUBs[i] = gear::CreateRef<Uniformbuffer<SpecularIrradianceInfoUB>>(&ubCI);
+		m_SpecularIrradianceInfoUBs[i] = CreateRef<Uniformbuffer<SpecularIrradianceInfoUB>>(&ubCI);
 		m_SpecularIrradianceInfoUBs[i]->roughness = float(i) / float(levels);
 		m_SpecularIrradianceInfoUBs[i]->SubmitData();
 	}
@@ -564,9 +564,9 @@ void ImageProcessing::SpecularIrradiance(const TextureResourceInfo& specularIrra
 	m_DescPoolCI.device = m_ComputeCmdPoolCI.pContext->GetDevice();
 	m_DescPoolCI.poolSizes = { {DescriptorType::COMBINED_IMAGE_SAMPLER, 1 }, {DescriptorType::STORAGE_IMAGE, 1 },  { DescriptorType::UNIFORM_BUFFER, 1 } };
 	m_DescPoolCI.maxSets = levels;
-	miru::Ref<DescriptorPool> m_DescPool = DescriptorPool::Create(&m_DescPoolCI);
+	Ref<DescriptorPool> m_DescPool = DescriptorPool::Create(&m_DescPoolCI);
 
-	std::vector<miru::Ref<DescriptorSet>> m_DescSets;
+	std::vector<Ref<DescriptorSet>> m_DescSets;
 	DescriptorSet::CreateInfo m_DescSetCI;
 	m_DescSetCI.debugName = "GEAR_CORE_DescriptorSet_SpecularIrradiance";
 	m_DescSetCI.pDescriptorPool = m_DescPool;
@@ -587,7 +587,7 @@ void ImageProcessing::SpecularIrradiance(const TextureResourceInfo& specularIrra
 	m_FenceCI.device = m_ComputeCmdPoolCI.pContext->GetDevice();
 	m_FenceCI.signaled = false;
 	m_FenceCI.timeout = UINT64_MAX;
-	miru::Ref<Fence> m_Fence = Fence::Create(&m_FenceCI);
+	Ref<Fence> m_Fence = Fence::Create(&m_FenceCI);
 
 	//Record Compute CommandBuffer
 	{
@@ -634,7 +634,7 @@ void ImageProcessing::SpecularIrradiance(const TextureResourceInfo& specularIrra
 				bCI.pBuffer = m_SpecularIrradianceInfoUBs[i]->GetBuffer();
 				bCI.offset = 0;
 				bCI.size = m_SpecularIrradianceInfoUBs[i]->GetSize();
-				miru::Ref<Barrier> b = Barrier::Create(&bCI);
+				Ref<Barrier> b = Barrier::Create(&bCI);
 				m_ComputeCmdBuffer->PipelineBarrier(0, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, { b });
 			};
 
@@ -695,7 +695,7 @@ void ImageProcessing::SpecularBRDF_LUT(const TextureResourceInfo& TRI)
 	m_ComputeCmdPoolCI.pContext = AllocatorManager::GetCreateInfo().pContext;
 	m_ComputeCmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
 	m_ComputeCmdPoolCI.queueType = CommandPool::QueueType::COMPUTE;
-	miru::Ref<CommandPool> m_ComputeCmdPool = CommandPool::Create(&m_ComputeCmdPoolCI);
+	Ref<CommandPool> m_ComputeCmdPool = CommandPool::Create(&m_ComputeCmdPoolCI);
 
 	CommandBuffer::CreateInfo m_ComputeCmdBufferCI;
 	m_ComputeCmdBufferCI.debugName = "GEAR_CORE_CommandBuffer_SpecularBRDF_LUT_Compute";
@@ -703,9 +703,9 @@ void ImageProcessing::SpecularBRDF_LUT(const TextureResourceInfo& TRI)
 	m_ComputeCmdBufferCI.level = CommandBuffer::Level::PRIMARY;
 	m_ComputeCmdBufferCI.commandBufferCount = 1;
 	m_ComputeCmdBufferCI.allocateNewCommandPoolPerBuffer = false;
-	miru::Ref<CommandBuffer> m_ComputeCmdBuffer = CommandBuffer::Create(&m_ComputeCmdBufferCI);
+	Ref<CommandBuffer> m_ComputeCmdBuffer = CommandBuffer::Create(&m_ComputeCmdBufferCI);
 
-	miru::Ref<ImageView> m_SpecularBRDF_LUTImageView;
+	Ref<ImageView> m_SpecularBRDF_LUTImageView;
 
 	ImageView::CreateInfo m_ImageViewCI;
 	m_ImageViewCI.debugName = "GEAR_CORE_ImageView_SpecularBRDF_LUT";
@@ -720,9 +720,9 @@ void ImageProcessing::SpecularBRDF_LUT(const TextureResourceInfo& TRI)
 	m_DescPoolCI.device = m_ComputeCmdPoolCI.pContext->GetDevice();
 	m_DescPoolCI.poolSizes = { { DescriptorType::STORAGE_IMAGE, 1 } };
 	m_DescPoolCI.maxSets = 1;
-	miru::Ref<DescriptorPool> m_DescPool = DescriptorPool::Create(&m_DescPoolCI);
+	Ref<DescriptorPool> m_DescPool = DescriptorPool::Create(&m_DescPoolCI);
 
-	miru::Ref<DescriptorSet> m_DescSet;
+	Ref<DescriptorSet> m_DescSet;
 	DescriptorSet::CreateInfo m_DescSetCI;
 	m_DescSetCI.debugName = "GEAR_CORE_DescriptorSet_SpecularBRDF_LUT";
 	m_DescSetCI.pDescriptorPool = m_DescPool;
@@ -737,7 +737,7 @@ void ImageProcessing::SpecularBRDF_LUT(const TextureResourceInfo& TRI)
 	m_FenceCI.device = m_ComputeCmdPoolCI.pContext->GetDevice();
 	m_FenceCI.signaled = false;
 	m_FenceCI.timeout = UINT64_MAX;
-	miru::Ref<Fence> m_Fence = Fence::Create(&m_FenceCI);
+	Ref<Fence> m_Fence = Fence::Create(&m_FenceCI);
 
 	//Record Compute CommandBuffer
 	{

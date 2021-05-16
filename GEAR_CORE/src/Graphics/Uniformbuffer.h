@@ -20,10 +20,10 @@ namespace graphics
 		};
 
 	private:
-		miru::Ref<miru::crossplatform::Buffer> m_UniformBuffer, m_UniformBufferUpload;
+		Ref<miru::crossplatform::Buffer> m_UniformBuffer, m_UniformBufferUpload;
 		miru::crossplatform::Buffer::CreateInfo m_UniformBufferCI, m_UniformBufferUploadCI;
 
-		miru::Ref<miru::crossplatform::BufferView> m_UniformBufferView;
+		Ref<miru::crossplatform::BufferView> m_UniformBufferView;
 		miru::crossplatform::BufferView::CreateInfo m_UniformBufferViewCI;
 
 		CreateInfo m_CI;
@@ -68,7 +68,7 @@ namespace graphics
 		{
 			m_UniformBufferUploadCI.pAllocator->SubmitData(m_UniformBufferUpload->GetAllocation(), GetSize(), (void*)this);
 		}
-		void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false)
+		void Upload(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false)
 		{
 			if (!m_Upload || force)
 			{
@@ -77,8 +77,8 @@ namespace graphics
 			}
 		}
 
-		inline const miru::Ref<miru::crossplatform::Buffer>& GetBuffer() const { return m_UniformBuffer; };
-		inline const miru::Ref<miru::crossplatform::BufferView>& GetBufferView() const { return m_UniformBufferView; };
+		inline const Ref<miru::crossplatform::Buffer>& GetBuffer() const { return m_UniformBuffer; };
+		inline const Ref<miru::crossplatform::BufferView>& GetBufferView() const { return m_UniformBufferView; };
 
 		inline constexpr size_t GetSize() const { return sizeof(T); }
 	};

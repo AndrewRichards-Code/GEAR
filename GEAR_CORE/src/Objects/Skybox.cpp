@@ -32,7 +32,7 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	m_TextureCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	m_TextureCI.usage = Image::UsageBit(0);
 	m_TextureCI.generateMipMaps = false;
-	m_Texture = gear::CreateRef<Texture>(&m_TextureCI);
+	m_Texture = CreateRef<Texture>(&m_TextureCI);
 
 	if (!m_Cubemap)
 	{
@@ -51,7 +51,7 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 		m_GeneratedCubemapCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 		m_GeneratedCubemapCI.usage = Image::UsageBit::STORAGE_BIT;
 		m_GeneratedCubemapCI.generateMipMaps = true;
-		m_GeneratedCubemap = gear::CreateRef<Texture>(&m_GeneratedCubemapCI);
+		m_GeneratedCubemap = CreateRef<Texture>(&m_GeneratedCubemapCI);
 	}
 	else
 	{
@@ -73,7 +73,7 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	m_GeneratedDiffuseCubemapCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	m_GeneratedDiffuseCubemapCI.usage = Image::UsageBit::STORAGE_BIT;
 	m_GeneratedDiffuseCubemapCI.generateMipMaps = false;
-	m_GeneratedDiffuseCubemap = gear::CreateRef<Texture>(&m_GeneratedDiffuseCubemapCI);
+	m_GeneratedDiffuseCubemap = CreateRef<Texture>(&m_GeneratedDiffuseCubemapCI);
 
 	m_GeneratedSpecularCubemapCI.debugName = "GEAR_CORE_Skybox_GeneratedSpecularCubemap: " + m_CI.debugName;
 	m_GeneratedSpecularCubemapCI.device = m_CI.device;
@@ -90,7 +90,7 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	m_GeneratedSpecularCubemapCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	m_GeneratedSpecularCubemapCI.usage = Image::UsageBit::STORAGE_BIT;
 	m_GeneratedSpecularCubemapCI.generateMipMaps = true;
-	m_GeneratedSpecularCubemap = gear::CreateRef<Texture>(&m_GeneratedSpecularCubemapCI);
+	m_GeneratedSpecularCubemap = CreateRef<Texture>(&m_GeneratedSpecularCubemapCI);
 
 	m_GeneratedSpecularBRDF_LUT_CI.debugName = "GEAR_CORE_Skybox_GeneratedSpecularBRDF_LUT: " + m_CI.debugName;
 	m_GeneratedSpecularBRDF_LUT_CI.device = m_CI.device;
@@ -107,17 +107,17 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	m_GeneratedSpecularBRDF_LUT_CI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	m_GeneratedSpecularBRDF_LUT_CI.usage = Image::UsageBit::STORAGE_BIT;
 	m_GeneratedSpecularBRDF_LUT_CI.generateMipMaps = false;
-	m_GeneratedSpecularBRDF_LUT = gear::CreateRef<Texture>(&m_GeneratedSpecularBRDF_LUT_CI);
+	m_GeneratedSpecularBRDF_LUT = CreateRef<Texture>(&m_GeneratedSpecularBRDF_LUT_CI);
 
 	m_MaterialCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
 	m_MaterialCI.device = m_CI.device;
 	m_MaterialCI.pbrTextures = { {Material::TextureType::ALBEDO, m_Texture} };
-	m_Material = gear::CreateRef<Material>(&m_MaterialCI);
+	m_Material = CreateRef<Material>(&m_MaterialCI);
 
 	m_MeshCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
 	m_MeshCI.device = m_CI.device;
 	m_MeshCI.filepath = "res/obj/cube.fbx";
-	m_Mesh = gear::CreateRef<Mesh>(&m_MeshCI);
+	m_Mesh = CreateRef<Mesh>(&m_MeshCI);
 	m_Mesh->SetOverrideMaterial(0, m_Material);
 
 	m_ModelCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
@@ -125,7 +125,7 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	m_ModelCI.pMesh = m_Mesh;
 	m_ModelCI.transform = m_CI.transform;
 	m_ModelCI.renderPipelineName = "Cube";
-	m_Model = gear::CreateRef<Model>(&m_ModelCI);
+	m_Model = CreateRef<Model>(&m_ModelCI);
 	
 	Update();
 }
@@ -152,5 +152,5 @@ void Skybox::InitialiseUBs()
 	ubCI.debugName = "GEAR_CORE_Skybox_SkyboxInfo: " + m_CI.debugName;
 	ubCI.device = m_CI.device;
 	ubCI.data = zero;
-	m_UB = gear::CreateRef<Uniformbuffer<SkyboxInfoUB>>(&ubCI);
+	m_UB = CreateRef<Uniformbuffer<SkyboxInfoUB>>(&ubCI);
 }

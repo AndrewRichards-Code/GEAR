@@ -29,15 +29,15 @@ namespace gear
 			
 			struct UploadResourceTaskInfo
 			{
-				miru::Ref<objects::Camera>					camera;
+				Ref<objects::Camera>					camera;
 				bool										cameraForce;
-				miru::Ref<objects::Camera>					fontCamera;
+				Ref<objects::Camera>					fontCamera;
 				bool										fontCameraForce;
-				miru::Ref<objects::Skybox>					skybox;
+				Ref<objects::Skybox>					skybox;
 				bool										skyboxForce;
-				std::vector<miru::Ref<objects::Light>>		lights;
+				std::vector<Ref<objects::Light>>		lights;
 				bool										lightsForce;
-				std::vector<miru::Ref<objects::Model>>		models;
+				std::vector<Ref<objects::Model>>		models;
 				bool										modelsForce;
 				bool										materialsForce;
 			};
@@ -45,7 +45,7 @@ namespace gear
 			{
 				miru::crossplatform::PipelineStageBit					srcPipelineStage;
 				miru::crossplatform::PipelineStageBit					dstPipelineStage;
-				std::vector<miru::Ref<miru::crossplatform::Barrier>>	barriers;
+				std::vector<Ref<miru::crossplatform::Barrier>>	barriers;
 			};
 
 			struct CreateInfo
@@ -53,9 +53,9 @@ namespace gear
 				std::string											debugName;
 				Task												task;
 				void*												pTaskInfo;
-				std::vector<gear::Ref<Node>>						srcNodes;
+				std::vector<Ref<Node>>						srcNodes;
 				std::vector<miru::crossplatform::PipelineStageBit>	srcPipelineStages;
-				miru::Ref<miru::crossplatform::CommandBuffer>		cmdBuffer;
+				Ref<miru::crossplatform::CommandBuffer>		cmdBuffer;
 				uint32_t											cmdBufferIndex;
 				bool												resetCmdBuffer;
 				bool												submitCmdBuffer;
@@ -65,10 +65,10 @@ namespace gear
 		private:
 			CreateInfo m_CI;
 
-			miru::Ref<miru::crossplatform::Fence> m_CmdBufferFence;
+			Ref<miru::crossplatform::Fence> m_CmdBufferFence;
 			miru::crossplatform::Fence::CreateInfo m_CmdBufferFenceCI;
 
-			miru::Ref<miru::crossplatform::Semaphore> m_SignalSemaphore;
+			Ref<miru::crossplatform::Semaphore> m_SignalSemaphore;
 			miru::crossplatform::Semaphore::CreateInfo m_SignalSemaphoreCI;
 
 
@@ -80,12 +80,12 @@ namespace gear
 
 			inline const CreateInfo& GetCreateInfo() const { return m_CI; }
 
-			inline const miru::Ref<miru::crossplatform::Fence>& GetFence() const { return m_CmdBufferFence; }
-			inline const miru::Ref<miru::crossplatform::Semaphore>& GetSemaphore() const { return m_SignalSemaphore; }
+			inline const Ref<miru::crossplatform::Fence>& GetFence() const { return m_CmdBufferFence; }
+			inline const Ref<miru::crossplatform::Semaphore>& GetSemaphore() const { return m_SignalSemaphore; }
 
 		private:
-			std::vector<std::pair<miru::crossplatform::PipelineStageBit, gear::Ref<Node>>> LastSubmitNodes(
-				std::vector<miru::crossplatform::PipelineStageBit>& srcPipelineStages, std::vector<gear::Ref<Node>>& srcNodes);
+			std::vector<std::pair<miru::crossplatform::PipelineStageBit, Ref<Node>>> LastSubmitNodes(
+				std::vector<miru::crossplatform::PipelineStageBit>& srcPipelineStages, std::vector<Ref<Node>>& srcNodes);
 			void TransitionResources();
 			void UploadResources();
 

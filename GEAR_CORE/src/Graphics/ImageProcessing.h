@@ -13,19 +13,19 @@ namespace graphics
 	public:
 		struct TextureResourceInfo
 		{
-			gear::Ref<Texture>&						texture;
+			Ref<Texture>&						texture;
 			miru::crossplatform::Barrier::AccessBit srcAccess;
 			miru::crossplatform::Image::Layout		oldLayout;
 			miru::crossplatform::PipelineStageBit	srcStage;
 		};
 
 	private:
-		static gear::Ref<RenderPipeline> s_PipelineMipMap;
-		static gear::Ref<RenderPipeline> s_PipelineMipMapArray;
-		static gear::Ref<RenderPipeline> s_PipelineEquirectangularToCube;
-		static gear::Ref<RenderPipeline> s_PipelineDiffuseIrradiance;
-		static gear::Ref<RenderPipeline> s_PipelineSpecularIrradiance;
-		static gear::Ref<RenderPipeline> s_PipelineSpecularBRDF_LUT;
+		static Ref<RenderPipeline> s_PipelineMipMap;
+		static Ref<RenderPipeline> s_PipelineMipMapArray;
+		static Ref<RenderPipeline> s_PipelineEquirectangularToCube;
+		static Ref<RenderPipeline> s_PipelineDiffuseIrradiance;
+		static Ref<RenderPipeline> s_PipelineSpecularIrradiance;
+		static Ref<RenderPipeline> s_PipelineSpecularBRDF_LUT;
 
 	public:
 		ImageProcessing();

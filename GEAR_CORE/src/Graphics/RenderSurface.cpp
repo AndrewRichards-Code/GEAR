@@ -1,6 +1,6 @@
 #include "gear_core_common.h"
 #include "RenderSurface.h"
-#include "Core/StringConversion.h"
+#include "ARC/src/StringConversion.h"
 #include "directx12/D3D12Context.h"
 #include "vulkan/VKContext.h"
 
@@ -234,7 +234,7 @@ std::string RenderSurface::GetDeviceName() const
 	}
 	case GraphicsAPI::API::D3D12:
 	{
-		result = core::to_string(&ref_cast<d3d12::Context>(m_Context)->m_PhysicalDevices.m_AdapterDescs[0].Description[0]);
+		result = arc::ToString(&ref_cast<d3d12::Context>(m_Context)->m_PhysicalDevices.m_AdapterDescs[0].Description[0]);
 		break;
 	}
 	case GraphicsAPI::API::VULKAN:

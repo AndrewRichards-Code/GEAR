@@ -17,16 +17,16 @@ namespace graphics
 			uint32_t									width;
 			uint32_t									height;
 			miru::crossplatform::Image::SampleCountBit	samples;
-			miru::Ref<miru::crossplatform::RenderPass>	renderPass;
+			Ref<miru::crossplatform::RenderPass>	renderPass;
 			bool										cubemap;
 		};
 
 	private:
-		miru::Ref<miru::crossplatform::Framebuffer> m_Framebuffer;
+		Ref<miru::crossplatform::Framebuffer> m_Framebuffer;
 		miru::crossplatform::Framebuffer::CreateInfo m_FramebufferCI;
 
-		std::array<gear::Ref<Texture>, 8> m_ColourTextures;
-		gear::Ref<Texture> m_DepthTexture;
+		std::array<Ref<Texture>, 8> m_ColourTextures;
+		Ref<Texture> m_DepthTexture;
 
 		CreateInfo m_CI;
 
@@ -43,16 +43,16 @@ namespace graphics
 
 		void FinaliseFramebuffer();
 
-		inline gear::Ref<Texture> GetColourTexture(size_t slot = 0, bool getResolvedFBO = true) const
+		inline Ref<Texture> GetColourTexture(size_t slot = 0, bool getResolvedFBO = true) const
 		{
 			return m_ColourTextures[slot]; 
 		}
-		inline gear::Ref<Texture> GetDepthTexture(bool getResolvedFBO = true) const
+		inline Ref<Texture> GetDepthTexture(bool getResolvedFBO = true) const
 		{
 			return m_DepthTexture; 
 		}
 		inline miru::crossplatform::Image::SampleCountBit GetMultisampleValue() const { return m_CI.samples; }
-		inline const miru::Ref<miru::crossplatform::Framebuffer>& GetFramebuffer() { return m_Framebuffer; }
+		inline const Ref<miru::crossplatform::Framebuffer>& GetFramebuffer() { return m_Framebuffer; }
 
 	private:
 		void CheckColourTextureAttachments(size_t attachment);

@@ -19,7 +19,7 @@ namespace audio
 	private:
 		CreateInfo m_CI;
 		
-		gear::Ref<AudioListenerInterface> m_ALI;
+		Ref<AudioListenerInterface> m_ALI;
 		AudioListenerInterface::CreateInfo m_ALICI;
 
 		float m_ListenerPosition[3];
@@ -31,7 +31,7 @@ namespace audio
 		~AudioListener();
 
 		const CreateInfo& GetCreateInfo() { return m_CI; }
-		const gear::Ref<AudioListenerInterface>& GetAudioListenerInterface() { return m_ALI; }
+		const Ref<AudioListenerInterface>& GetAudioListenerInterface() { return m_ALI; }
 
 		//void UpdateListener(const objects::Transform& transform);
 	};

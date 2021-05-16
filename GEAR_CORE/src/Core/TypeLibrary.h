@@ -9,14 +9,14 @@ namespace core
     class TypeLibrary
     {
     private:
-        static std::map<std::string, gear::Ref<T>> s_Entries;
+        static std::map<std::string, Ref<T>> s_Entries;
     
     public:
-        static void Insert(const std::string& name, const gear::Ref<T>& component)
+        static void Insert(const std::string& name, const Ref<T>& component)
         {
             s_Entries[name] = component;
         }
-        static void Insert(const std::string& name, gear::Ref<T>&& component)
+        static void Insert(const std::string& name, Ref<T>&& component)
         {
             s_Entries[name] = std::move(component);
         }
@@ -34,11 +34,11 @@ namespace core
             }
             return false;
         }
-        static const gear::Ref<T>& CFind(const std::string& name)
+        static const Ref<T>& CFind(const std::string& name)
         {
             return s_Entries[name];
         }
-        static gear::Ref<T>& Find(const std::string& name)
+        static Ref<T>& Find(const std::string& name)
         {
             return s_Entries[name];
         }
@@ -58,14 +58,14 @@ namespace core
         {
             return s_Entries.size();
         }
-        static std::map<std::string, gear::Ref<T>>& GetMap()
+        static std::map<std::string, Ref<T>>& GetMap()
         {
             return s_Entries;
         }
     };
 
     template<class T>
-    std::map<std::string, gear::Ref<T>> TypeLibrary<T>::s_Entries;
+    std::map<std::string, Ref<T>> TypeLibrary<T>::s_Entries;
 
 }
 }

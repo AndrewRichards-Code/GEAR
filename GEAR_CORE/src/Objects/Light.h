@@ -31,7 +31,7 @@ namespace objects
 
 	private:
 		typedef graphics::UniformBufferStructures::Lights LightUB;
-		static gear::Ref<graphics::Uniformbuffer<LightUB>> s_UB;
+		static Ref<graphics::Uniformbuffer<LightUB>> s_UB;
 
 		static int s_NumOfLights;
 		size_t m_LightID;
@@ -47,7 +47,7 @@ namespace objects
 		//Update the light from the current state of Light::CreateInfo m_CI.
 		void Update();
 
-		const gear::Ref<graphics::Uniformbuffer<LightUB>>& GetUB() const { return s_UB; };
+		const Ref<graphics::Uniformbuffer<LightUB>>& GetUB() const { return s_UB; };
 
 	private:
 		void InitialiseUB();

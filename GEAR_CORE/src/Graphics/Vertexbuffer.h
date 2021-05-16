@@ -19,10 +19,10 @@ namespace graphics
 		};
 	
 	private:
-		miru::Ref<miru::crossplatform::Buffer> m_VertexBuffer, m_VertexBufferUpload;
+		Ref<miru::crossplatform::Buffer> m_VertexBuffer, m_VertexBufferUpload;
 		miru::crossplatform::Buffer::CreateInfo m_VertexBufferCI, m_VertexBufferUploadCI;
 		
-		miru::Ref<miru::crossplatform::BufferView> m_VertexBufferView;
+		Ref<miru::crossplatform::BufferView> m_VertexBufferView;
 		miru::crossplatform::BufferView::CreateInfo m_VertexBufferViewCI;
 
 		CreateInfo m_CI;
@@ -34,8 +34,8 @@ namespace graphics
 
 		const CreateInfo& GetCreateInfo() { return m_CI; }
 
-		void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
-		inline const miru::Ref<miru::crossplatform::BufferView>& GetVertexBufferView() { return m_VertexBufferView; };
+		void Upload(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
+		inline const Ref<miru::crossplatform::BufferView>& GetVertexBufferView() { return m_VertexBufferView; };
 	};
 }
 }

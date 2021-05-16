@@ -61,15 +61,15 @@ namespace graphics
 		};
 
 	private:
-		miru::Ref<miru::crossplatform::Image> m_Texture;
+		Ref<miru::crossplatform::Image> m_Texture;
 		miru::crossplatform::Image::CreateInfo m_TextureCI;
-		miru::Ref<miru::crossplatform::Buffer> m_TextureUploadBuffer;
+		Ref<miru::crossplatform::Buffer> m_TextureUploadBuffer;
 		miru::crossplatform::Buffer::CreateInfo m_TextureUploadBufferCI;
 
-		miru::Ref<miru::crossplatform::ImageView> m_TextureImageView;
+		Ref<miru::crossplatform::ImageView> m_TextureImageView;
 		miru::crossplatform::ImageView::CreateInfo m_TextureImageViewCI;
 
-		miru::Ref<miru::crossplatform::Sampler> m_Sampler;
+		Ref<miru::crossplatform::Sampler> m_Sampler;
 		miru::crossplatform::Sampler::CreateInfo m_SamplerCI;
 
 		CreateInfo m_CI;
@@ -102,17 +102,17 @@ namespace graphics
 
 		const CreateInfo& GetCreateInfo() { return m_CI; }
 
-		void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
-		void Download(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
-		void TransitionSubResources(std::vector<miru::Ref<miru::crossplatform::Barrier>>& barriers, const std::vector<SubresouresTransitionInfo>& transitionInfos);
+		void Upload(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
+		void Download(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
+		void TransitionSubResources(std::vector<Ref<miru::crossplatform::Barrier>>& barriers, const std::vector<SubresouresTransitionInfo>& transitionInfos);
 		void Reload();
 
 		void SubmitImageData(std::vector<uint8_t>& imageData);
 		void AccessImageData(std::vector<uint8_t>& imageData);
 
-		inline const miru::Ref<miru::crossplatform::Image>& GetTexture() const { return m_Texture; }
-		inline const miru::Ref<miru::crossplatform::ImageView>& GetTextureImageView() const { return m_TextureImageView; }
-		inline const miru::Ref<miru::crossplatform::Sampler>& GetTextureSampler() const { return m_Sampler; }
+		inline const Ref<miru::crossplatform::Image>& GetTexture() const { return m_Texture; }
+		inline const Ref<miru::crossplatform::ImageView>& GetTextureImageView() const { return m_TextureImageView; }
+		inline const Ref<miru::crossplatform::Sampler>& GetTextureSampler() const { return m_Sampler; }
 		
 		inline const uint32_t& GetWidth() const { return m_Width; }
 		inline const uint32_t& GetHeight() const { return m_Height; }

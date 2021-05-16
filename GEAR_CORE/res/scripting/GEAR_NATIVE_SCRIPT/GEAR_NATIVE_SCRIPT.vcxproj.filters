@@ -15,10 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\TestScript.cpp">
+    <ClCompile Include="DllMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

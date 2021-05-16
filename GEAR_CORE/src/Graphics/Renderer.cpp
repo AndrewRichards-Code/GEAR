@@ -1,6 +1,6 @@
 #include "gear_core_common.h"
 #include "Renderer.h"
-#include "Core/StringConversion.h"
+#include "ARC/src/StringConversion.h"
 #include "ImageProcessing.h"
 #include "FrameGraph.h"
 
@@ -11,7 +11,7 @@ using namespace objects;
 using namespace miru;
 using namespace miru::crossplatform;
 
-Renderer::Renderer(const miru::Ref<Context>& context)
+Renderer::Renderer(const Ref<Context>& context)
 {
 	//Renderer and Transfer CmdPools and CmdBuffers
 	m_CmdPoolCI.debugName = "GEAR_CORE_CommandPool_Renderer";
@@ -65,7 +65,7 @@ Renderer::~Renderer()
 	m_Context->DeviceWaitIdle();
 }
 
-void Renderer::InitialiseRenderPipelines(const std::vector<std::string>& filepaths, float viewportWidth, float viewportHeight, Image::SampleCountBit samples, const miru::Ref<RenderPass>& renderPass)
+void Renderer::InitialiseRenderPipelines(const std::vector<std::string>& filepaths, float viewportWidth, float viewportHeight, Image::SampleCountBit samples, const Ref<RenderPass>& renderPass)
 {
 	RenderPipeline::LoadInfo renderPipelineLI;
 	for (auto& filepath : filepaths)
@@ -83,33 +83,33 @@ void Renderer::InitialiseRenderPipelines(const std::vector<std::string>& filepat
 	}
 }
 
-void Renderer::SubmitFramebuffer(const miru::Ref<miru::crossplatform::Framebuffer>* framebuffers)
+void Renderer::SubmitFramebuffer(const Ref<miru::crossplatform::Framebuffer>* framebuffers)
 { 
 	m_Framebuffers = framebuffers; 
 }
 
-void Renderer::SubmitCamera(const gear::Ref<objects::Camera>& camera)
+void Renderer::SubmitCamera(const Ref<objects::Camera>& camera)
 { 
 	m_Camera = camera; 
 }
 
-void Renderer::SubmitFontCamera(const gear::Ref<Camera>& fontCamera)
+void Renderer::SubmitFontCamera(const Ref<Camera>& fontCamera)
 {
 	m_FontCamera = fontCamera; 
 }
 
-void Renderer::SubmitLights(const std::vector<gear::Ref<Light>>& lights)
+void Renderer::SubmitLights(const std::vector<Ref<Light>>& lights)
 { 
 	m_Lights = lights; 
 }
 
-void Renderer::SubmitSkybox(const gear::Ref<Skybox>& skybox)
+void Renderer::SubmitSkybox(const Ref<Skybox>& skybox)
 { 
 	m_Skybox = skybox; 
 	SubmitModel(skybox->GetModel()); 
 }
 
-void Renderer::SubmitModel(const gear::Ref<Model>& obj)
+void Renderer::SubmitModel(const Ref<Model>& obj)
 {
 	m_RenderQueue.push_back(obj);
 }
@@ -117,13 +117,13 @@ void Renderer::SubmitModel(const gear::Ref<Model>& obj)
 void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool forceUploadSkybox, bool forceUploadMeshes)
 {
 	//Get Texture Barries and/or Reload Textures
-	std::set<gear::Ref<Texture>> texturesToProcess;
-	std::vector<gear::Ref<Texture>> texturesToGenerateMipmaps;
+	std::set<Ref<Texture>> texturesToProcess;
+	std::vector<Ref<Texture>> texturesToGenerateMipmaps;
 
-	std::vector<miru::Ref<Barrier>> textureShaderReadOnlyBarrierToTransferDst;
-	std::vector<miru::Ref<Barrier>> textureUnknownToTransferDstBarrier;
-	std::vector<miru::Ref<Barrier>> textureTransferDstToShaderReadOnlyBarrier;
-	std::vector<miru::Ref<Barrier>> textureGeneralToShaderReadOnlyBarrier;
+	std::vector<Ref<Barrier>> textureShaderReadOnlyBarrierToTransferDst;
+	std::vector<Ref<Barrier>> textureUnknownToTransferDstBarrier;
+	std::vector<Ref<Barrier>> textureTransferDstToShaderReadOnlyBarrier;
+	std::vector<Ref<Barrier>> textureGeneralToShaderReadOnlyBarrier;
 
 	//Get all unique textures
 	for (auto& model : m_RenderQueue)
@@ -222,7 +222,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 	bool postComputeGraphicsTask = textureGeneralToShaderReadOnlyBarrier.size();
 	bool postTransferGraphicsTask = textureTransferDstToShaderReadOnlyBarrier.size();
 
-	gear::Ref<Node> preTransferGraphicsNode, preUploadForTextrueTransferNode, uploadTransferNode, postComputeGraphicsNode, postTransferGraphicsNode;
+	Ref<Node> preTransferGraphicsNode, preUploadForTextrueTransferNode, uploadTransferNode, postComputeGraphicsNode, postTransferGraphicsNode;
 	Node::TransitionResourcesTaskInfo trti;
 
 	//Pre-Transfer Graphics Task
@@ -243,7 +243,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 		preTransferGraphicsNodeCI.submitCmdBuffer = true;
 		preTransferGraphicsNodeCI.skipTask = !preTransferGraphicsTask;
 
-		preTransferGraphicsNode = gear::CreateRef<Node>(&preTransferGraphicsNodeCI);
+		preTransferGraphicsNode = CreateRef<Node>(&preTransferGraphicsNodeCI);
 		preTransferGraphicsNode->Execute();
 	}
 
@@ -265,7 +265,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 		preUploadForTextrueTransferNodeCI.submitCmdBuffer = false;
 		preUploadForTextrueTransferNodeCI.skipTask = !preUploadTransferTask;
 
-		preUploadForTextrueTransferNode = gear::CreateRef<Node>(&preUploadForTextrueTransferNodeCI);
+		preUploadForTextrueTransferNode = CreateRef<Node>(&preUploadForTextrueTransferNodeCI);
 		preUploadForTextrueTransferNode->Execute();
 	}
 
@@ -296,7 +296,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 		uploadTransferNodeCI.submitCmdBuffer = true;
 		uploadTransferNodeCI.skipTask = !transferTask;
 
-		uploadTransferNode = gear::CreateRef<Node>(&uploadTransferNodeCI);
+		uploadTransferNode = CreateRef<Node>(&uploadTransferNodeCI);
 		uploadTransferNode->Execute();
 	}
 
@@ -352,7 +352,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 		postComputeGraphicsNodeCI.submitCmdBuffer = false;
 		postComputeGraphicsNodeCI.skipTask = !postComputeGraphicsTask;
 
-		postComputeGraphicsNode = gear::CreateRef<Node>(&postComputeGraphicsNodeCI);
+		postComputeGraphicsNode = CreateRef<Node>(&postComputeGraphicsNodeCI);
 		postComputeGraphicsNode->Execute();
 	}
 
@@ -374,7 +374,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 		postTransferGraphicsNodeCI.submitCmdBuffer = true;
 		postTransferGraphicsNodeCI.skipTask = !postTransferGraphicsTask;
 	
-		postTransferGraphicsNode = gear::CreateRef<Node>(&postTransferGraphicsNodeCI);
+		postTransferGraphicsNode = CreateRef<Node>(&postTransferGraphicsNodeCI);
 		postTransferGraphicsNode->Execute();
 	}
 
@@ -393,7 +393,7 @@ void Renderer::Flush()
 		size_t m_RenderQueueMaterialCount = 0;
 		for (auto& model : m_RenderQueue)
 		{
-			const miru::Ref<Pipeline>& pipeline = m_RenderPipelines[model->GetPipelineName()]->GetPipeline();
+			const Ref<Pipeline>& pipeline = m_RenderPipelines[model->GetPipelineName()]->GetPipeline();
 			const std::vector<std::vector<Shader::ResourceBindingDescription>> rbds = m_RenderPipelines[model->GetPipelineName()]->GetRBDs();
 			size_t materialCount = model->GetMesh()->GetMaterials().size();
 			m_RenderQueueMaterialCount += materialCount;
@@ -421,8 +421,11 @@ void Renderer::Flush()
 		//Per view Descriptor Set
 		for (auto& pipeline : m_RenderPipelines)
 		{
-			const std::vector<miru::Ref<DescriptorSetLayout>>& descriptorSetLayouts = pipeline.second->GetDescriptorSetLayouts();
+			const std::vector<Ref<DescriptorSetLayout>>& descriptorSetLayouts = pipeline.second->GetDescriptorSetLayouts();
 			const std::vector<std::vector<Shader::ResourceBindingDescription>> rbds = pipeline.second->GetRBDs();
+
+			if (descriptorSetLayouts.empty() || rbds.empty())
+				continue;
 
 			DescriptorSet::CreateInfo descSetPerViewCI;
 			descSetPerViewCI.debugName = "GEAR_CORE_DescriptorSet_PerView: " + pipeline.second->GetPipeline()->GetCreateInfo().debugName;
@@ -433,7 +436,7 @@ void Renderer::Flush()
 			for (auto& rbd : rbds[0])
 			{
 				const uint32_t& binding = rbd.binding;
-				const std::string& name = core::toupper(rbd.name);
+				const std::string& name = arc::ToUpper(rbd.name);
 				if (rbd.structSize > 0)
 				{
 					if (SetUpdateTypeMap.find(name) == SetUpdateTypeMap.end())
@@ -457,17 +460,17 @@ void Renderer::Flush()
 
 				else if (name.find("DIFFUSEIRRADIANCE") == 0)
 				{
-					const gear::Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedDiffuseCubemap();
+					const Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedDiffuseCubemap();
 					m_DescSetPerView[pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 				}
 				else if (name.find("SPECULARIRRADIANCE") == 0)
 				{
-					const gear::Ref<Texture>& skyboxTexture = /*m_Skybox->GetGeneratedCubemap();*/ m_Skybox->GetGeneratedSpecularCubemap();
+					const Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedSpecularCubemap();
 					m_DescSetPerView[pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 				}
 				else if (name.find("SPECULARBRDF_LUT") == 0)
 				{
-					const gear::Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedSpecularBRDF_LUT();
+					const Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedSpecularBRDF_LUT();
 					m_DescSetPerView[pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 				}
 			
@@ -481,8 +484,11 @@ void Renderer::Flush()
 		//Per model Descriptor Sets
 		for (auto& model : m_RenderQueue)
 		{
-			const std::vector<miru::Ref<DescriptorSetLayout>>& descriptorSetLayouts = m_RenderPipelines[model->GetPipelineName()]->GetDescriptorSetLayouts();
+			const std::vector<Ref<DescriptorSetLayout>>& descriptorSetLayouts = m_RenderPipelines[model->GetPipelineName()]->GetDescriptorSetLayouts();
 			const std::vector<std::vector<Shader::ResourceBindingDescription>> rbds = m_RenderPipelines[model->GetPipelineName()]->GetRBDs();
+
+			if (descriptorSetLayouts.empty() || rbds.empty())
+				continue;
 
 			DescriptorSet::CreateInfo descSetPerModelCI;
 			descSetPerModelCI.debugName = "GEAR_CORE_DescriptorSet_PerModel: " + model->GetDebugName();
@@ -493,7 +499,7 @@ void Renderer::Flush()
 			for (auto& rbd : rbds[1])
 			{
 				const uint32_t& binding = rbd.binding;
-				const std::string& name = core::toupper(rbd.name);
+				const std::string& name = arc::ToUpper(rbd.name);
 				if (rbd.structSize > 0)
 				{
 					if (SetUpdateTypeMap.find(name) == SetUpdateTypeMap.end())
@@ -515,9 +521,12 @@ void Renderer::Flush()
 		//Per material Descriptor Sets
 		for (auto& model : m_RenderQueue)
 		{
-			const std::vector<miru::Ref<DescriptorSetLayout>>& descriptorSetLayouts = m_RenderPipelines[model->GetPipelineName()]->GetDescriptorSetLayouts();
+			const std::vector<Ref<DescriptorSetLayout>>& descriptorSetLayouts = m_RenderPipelines[model->GetPipelineName()]->GetDescriptorSetLayouts();
 			const std::vector<std::vector<Shader::ResourceBindingDescription>> rbds = m_RenderPipelines[model->GetPipelineName()]->GetRBDs();
 			
+			if (descriptorSetLayouts.empty() || rbds.empty())
+				continue;
+
 			for (auto& material : model->GetMesh()->GetMaterials())
 			{
 				DescriptorSet::CreateInfo descSetPerMaterialCI;
@@ -529,7 +538,7 @@ void Renderer::Flush()
 				for (auto& rbd : rbds[2])
 				{
 					const uint32_t& binding = rbd.binding;
-					const std::string& name = core::toupper(rbd.name);
+					const std::string& name = arc::ToUpper(rbd.name);
 					if (rbd.structSize > 0)
 					{
 						if (SetUpdateTypeMap.find(name) == SetUpdateTypeMap.end())
@@ -540,19 +549,19 @@ void Renderer::Flush()
 					
 					if (name.compare("SKYBOXINFO") == 0)
 					{
-						const gear::Ref<Material>& material = m_Skybox->GetModel()->GetMesh()->GetMaterials()[0];
+						const Ref<Material>& material = m_Skybox->GetModel()->GetMesh()->GetMaterials()[0];
 						m_DescSetPerMaterial[material]->AddBuffer(0, binding, { { m_Skybox->GetUB()->GetBufferView() } });
 					}
 					else if (name.find("SKYBOX") == 0)
 					{
-						const gear::Ref<Material>& material = m_Skybox->GetModel()->GetMesh()->GetMaterials()[0];
-						const gear::Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedCubemap();
+						const Ref<Material>& material = m_Skybox->GetModel()->GetMesh()->GetMaterials()[0];
+						const Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedCubemap();
 						m_DescSetPerMaterial[material]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 					}
 
 					else if (name.find("FONTATLAS") == 0)
 					{
-						const gear::Ref<Texture>& texture = material->GetTextures()[Material::TextureType::ALBEDO];
+						const Ref<Texture>& texture = material->GetTextures()[Material::TextureType::ALBEDO];
 						m_DescSetPerMaterial[material]->AddImage(0, binding, { { texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 					}
 
@@ -562,32 +571,32 @@ void Renderer::Flush()
 					}
 					else if (name.find("NORMAL") == 0)
 					{
-						const gear::Ref<Texture>& texture = material->GetTextures()[Material::TextureType::NORMAL];
+						const Ref<Texture>& texture = material->GetTextures()[Material::TextureType::NORMAL];
 						m_DescSetPerMaterial[material]->AddImage(0, binding, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
 					}
 					else if (name.find("ALBEDO") == 0)
 					{
-						const gear::Ref<Texture>& texture = material->GetTextures()[Material::TextureType::ALBEDO];
+						const Ref<Texture>& texture = material->GetTextures()[Material::TextureType::ALBEDO];
 						m_DescSetPerMaterial[material]->AddImage(0, binding, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
 					}
 					else if (name.find("METALLIC") == 0)
 					{
-						const gear::Ref<Texture>& texture = material->GetTextures()[Material::TextureType::METALLIC];
+						const Ref<Texture>& texture = material->GetTextures()[Material::TextureType::METALLIC];
 						m_DescSetPerMaterial[material]->AddImage(0, binding, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
 					}
 					else if (name.find("ROUGHNESS") == 0)
 					{
-						const gear::Ref<Texture>& texture = material->GetTextures()[Material::TextureType::ROUGHNESS];
+						const Ref<Texture>& texture = material->GetTextures()[Material::TextureType::ROUGHNESS];
 						m_DescSetPerMaterial[material]->AddImage(0, binding, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
 					}
 					else if (name.find("AMBIENTOCCLUSION") == 0)
 					{
-						const gear::Ref<Texture>& texture = material->GetTextures()[Material::TextureType::AMBIENT_OCCLUSION];
+						const Ref<Texture>& texture = material->GetTextures()[Material::TextureType::AMBIENT_OCCLUSION];
 						m_DescSetPerMaterial[material]->AddImage(0, binding, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
 					}
 					else if (name.find("EMISSIVE") == 0)
 					{
-						const gear::Ref<Texture>& texture = material->GetTextures()[Material::TextureType::EMISSIVE];
+						const Ref<Texture>& texture = material->GetTextures()[Material::TextureType::EMISSIVE];
 						m_DescSetPerMaterial[material]->AddImage(0, binding, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
 					}
 					else
@@ -610,14 +619,14 @@ void Renderer::Flush()
 
 		for (auto& model : m_RenderQueue)
 		{
-			const gear::Ref<graphics::RenderPipeline>& renderPipeline = m_RenderPipelines[model->GetPipelineName()];
-			const miru::Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
+			const Ref<graphics::RenderPipeline>& renderPipeline = m_RenderPipelines[model->GetPipelineName()];
+			const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
 
 			m_CmdBuffer->BindPipeline(m_FrameIndex, pipeline);
 
 			for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
 			{
-				gear::Ref<objects::Material> material = model->GetMesh()->GetMaterials()[i];
+				Ref<objects::Material> material = model->GetMesh()->GetMaterials()[i];
 				m_CmdBuffer->BindDescriptorSets(m_FrameIndex, { m_DescSetPerView[renderPipeline], m_DescSetPerModel[model], m_DescSetPerMaterial[material] }, pipeline);
 				
 				m_CmdBuffer->BindVertexBuffers(m_FrameIndex, { model->GetMesh()->GetVertexBuffers()[i]->GetVertexBufferView() });
@@ -626,17 +635,30 @@ void Renderer::Flush()
 				m_CmdBuffer->DrawIndexed(m_FrameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetCount());
 			}
 		}
+
+		DrawCoordinateAxes();
+
 		m_CmdBuffer->EndRenderPass(m_FrameIndex);
 		m_CmdBuffer->End(m_FrameIndex);
 	}
 	m_RenderQueue.clear();
 }
 
-void Renderer::Present(const miru::Ref<Swapchain>& swapchain, bool& windowResize)
+void Renderer::Present(const Ref<Swapchain>& swapchain, bool& windowResize)
 {
 	m_CmdBuffer->Present({ 0, 1 }, swapchain, m_DrawFences, m_AcquireSemaphores, m_SubmitSemaphores, windowResize);
 	m_FrameIndex = (m_FrameIndex + 1) % swapchain->GetCreateInfo().swapchainCount;
 	m_FrameCount++;
+}
+
+void Renderer::DrawCoordinateAxes()
+{
+	const Ref<graphics::RenderPipeline>& renderPipeline = m_RenderPipelines["DebugCoordinateAxes"];
+	const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
+
+	m_CmdBuffer->BindPipeline(m_FrameIndex, pipeline);
+	m_CmdBuffer->BindDescriptorSets(m_FrameIndex, { m_DescSetPerView[renderPipeline] }, pipeline);
+	m_CmdBuffer->Draw(m_FrameIndex, 6);
 }
 
 void Renderer::ResizeRenderPipelineViewports(uint32_t width, uint32_t height)

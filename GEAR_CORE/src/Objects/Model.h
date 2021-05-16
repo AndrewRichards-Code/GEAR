@@ -18,7 +18,7 @@ namespace objects
 		{
 			std::string			debugName;
 			void*				device;
-			gear::Ref<Mesh>		pMesh;
+			Ref<Mesh>		pMesh;
 			mars::Vec2			materialTextureScaling = mars::Vec2(1.0f, 1.0f);
 			Transform			transform;
 			std::string			renderPipelineName;
@@ -26,7 +26,7 @@ namespace objects
 	
 	private:
 		typedef graphics::UniformBufferStructures::Model ModelUB;
-		gear::Ref<graphics::Uniformbuffer<ModelUB>> m_UB;
+		Ref<graphics::Uniformbuffer<ModelUB>> m_UB;
 	
 	public:
 		CreateInfo m_CI;
@@ -38,11 +38,11 @@ namespace objects
 		//Update the skybox from the current state of Model::CreateInfo m_CI.
 		void Update();
 	
-		inline const gear::Ref<objects::Mesh>& GetMesh() const { return m_CI.pMesh; }
+		inline const Ref<objects::Mesh>& GetMesh() const { return m_CI.pMesh; }
 		inline const std::string& GetPipelineName() const { return m_CI.renderPipelineName; }
 	
-		inline gear::Ref<graphics::Uniformbuffer<ModelUB>>& GetUB() { return m_UB; }
-		inline const gear::Ref<graphics::Uniformbuffer<ModelUB>>& GetUB() const { return m_UB; }
+		inline Ref<graphics::Uniformbuffer<ModelUB>>& GetUB() { return m_UB; }
+		inline const Ref<graphics::Uniformbuffer<ModelUB>>& GetUB() const { return m_UB; }
 		inline const mars::Mat4& GetModlMatrix() const { return m_UB->modl; }
 	
 		inline std::string GetDebugName() const { return "GEAR_CORE_Model: " + m_CI.debugName; }

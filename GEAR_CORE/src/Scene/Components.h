@@ -38,100 +38,100 @@ namespace scene
 
 	struct CameraComponent
 	{
-		gear::Ref<Camera> camera;
+		Ref<Camera> camera;
 
 		GEAR_SCENE_COMPONENTS_DEFAULTS(CameraComponent);
-		CameraComponent(gear::Ref<Camera>& _camera) : camera(_camera) {}
-		CameraComponent(gear::Ref<Camera>&& _camera) : camera(std::move(_camera)) {}
-		CameraComponent(Camera::CreateInfo* pCreateInfo) : camera(gear::CreateRef<Camera>(pCreateInfo)) {}
+		CameraComponent(Ref<Camera>& _camera) : camera(_camera) {}
+		CameraComponent(Ref<Camera>&& _camera) : camera(std::move(_camera)) {}
+		CameraComponent(Camera::CreateInfo* pCreateInfo) : camera(CreateRef<Camera>(pCreateInfo)) {}
 
 		Camera::CreateInfo& GetCreateInfo() { return camera->m_CI; }
 
-		operator gear::Ref<Camera>&() { return camera; }
+		operator Ref<Camera>&() { return camera; }
 	};
 
 	struct LightComponent
 	{
-		gear::Ref<Light> light;
+		Ref<Light> light;
 
 		GEAR_SCENE_COMPONENTS_DEFAULTS(LightComponent);
-		LightComponent(gear::Ref<Light>& _light) : light(_light) {}
-		LightComponent(gear::Ref<Light>&& _light) : light(std::move(_light)) {}
-		LightComponent(Light::CreateInfo* pCreateInfo) : light(gear::CreateRef<Light>(pCreateInfo)) {}
+		LightComponent(Ref<Light>& _light) : light(_light) {}
+		LightComponent(Ref<Light>&& _light) : light(std::move(_light)) {}
+		LightComponent(Light::CreateInfo* pCreateInfo) : light(CreateRef<Light>(pCreateInfo)) {}
 
 		Light::CreateInfo& GetCreateInfo() { return light->m_CI; }
 
-		operator gear::Ref<Light>&() { return light; }
+		operator Ref<Light>&() { return light; }
 	};
 
 	struct ModelComponent
 	{
-		gear::Ref<Model> model;
+		Ref<Model> model;
 
 		GEAR_SCENE_COMPONENTS_DEFAULTS(ModelComponent);
-		ModelComponent(gear::Ref<Model>& _model) : model(_model) {}
-		ModelComponent(gear::Ref<Model>&& _model) : model(std::move(_model)) {}
-		ModelComponent(Model::CreateInfo* pCreateInfo) : model(gear::CreateRef<Model>(pCreateInfo)) {}
+		ModelComponent(Ref<Model>& _model) : model(_model) {}
+		ModelComponent(Ref<Model>&& _model) : model(std::move(_model)) {}
+		ModelComponent(Model::CreateInfo* pCreateInfo) : model(CreateRef<Model>(pCreateInfo)) {}
 
 		Model::CreateInfo& GetCreateInfo() { return model->m_CI; }
 
-		operator gear::Ref<Model>&() { return model; }
+		operator Ref<Model>&() { return model; }
 	};
 
 	struct SkyboxComponent
 	{
-		gear::Ref<Skybox> skybox;
+		Ref<Skybox> skybox;
 
 		GEAR_SCENE_COMPONENTS_DEFAULTS(SkyboxComponent);
-		SkyboxComponent(gear::Ref<Skybox>& _skybox) : skybox(_skybox) {}
-		SkyboxComponent(gear::Ref<Skybox>&& _skybox) : skybox(std::move(_skybox)) {}
-		SkyboxComponent(Skybox::CreateInfo* pCreateInfo) : skybox(gear::CreateRef<Skybox>(pCreateInfo)) {}
+		SkyboxComponent(Ref<Skybox>& _skybox) : skybox(_skybox) {}
+		SkyboxComponent(Ref<Skybox>&& _skybox) : skybox(std::move(_skybox)) {}
+		SkyboxComponent(Skybox::CreateInfo* pCreateInfo) : skybox(CreateRef<Skybox>(pCreateInfo)) {}
 
 		Skybox::CreateInfo& GetCreateInfo() { return skybox->m_CI; }
 
-		operator gear::Ref<Skybox>& () { return skybox; }
+		operator Ref<Skybox>& () { return skybox; }
 	};
 
 	struct TextComponent
 	{
-		gear::Ref<Text> text;
+		Ref<Text> text;
 
 		GEAR_SCENE_COMPONENTS_DEFAULTS(TextComponent);
-		TextComponent(gear::Ref<Text>& _model) : text(_model) {}
-		TextComponent(gear::Ref<Text>&& _model) : text(std::move(_model)) {}
-		TextComponent(Text::CreateInfo* pCreateInfo) : text(gear::CreateRef<Text>(pCreateInfo)) {}
+		TextComponent(Ref<Text>& _model) : text(_model) {}
+		TextComponent(Ref<Text>&& _model) : text(std::move(_model)) {}
+		TextComponent(Text::CreateInfo* pCreateInfo) : text(CreateRef<Text>(pCreateInfo)) {}
 
 		//Text::CreateInfo& GetCreateInfo() { return text->m_CI; }
 
-		operator gear::Ref<Text>& () { return text; }
+		operator Ref<Text>& () { return text; }
 	};
 
 	struct MeshComponent
 	{
-		gear::Ref<Mesh> mesh;
+		Ref<Mesh> mesh;
 
 		GEAR_SCENE_COMPONENTS_DEFAULTS(MeshComponent);
-		MeshComponent(gear::Ref<Mesh>& _mesh) : mesh(_mesh) {}
-		MeshComponent(gear::Ref<Mesh>&& _mesh) : mesh(std::move(_mesh)) {}
-		MeshComponent(Mesh::CreateInfo* pCreateInfo) : mesh(gear::CreateRef<Mesh>(pCreateInfo)) {}
+		MeshComponent(Ref<Mesh>& _mesh) : mesh(_mesh) {}
+		MeshComponent(Ref<Mesh>&& _mesh) : mesh(std::move(_mesh)) {}
+		MeshComponent(Mesh::CreateInfo* pCreateInfo) : mesh(CreateRef<Mesh>(pCreateInfo)) {}
 
 		Mesh::CreateInfo& GetCreateInfo() { return mesh->m_CI; }
 
-		operator gear::Ref<Mesh>&() { return mesh; }
+		operator Ref<Mesh>&() { return mesh; }
 	};
 
 	struct MaterialComponent
 	{
-		gear::Ref<Material> material;
+		Ref<Material> material;
 
 		GEAR_SCENE_COMPONENTS_DEFAULTS(MaterialComponent);
-		MaterialComponent(gear::Ref<Material>& _material) : material(_material) {}
-		MaterialComponent(gear::Ref<Material>&& _material) : material(std::move(_material)) {}
-		MaterialComponent(Material::CreateInfo* pCreateInfo) : material(gear::CreateRef<Material>(pCreateInfo)) {}
+		MaterialComponent(Ref<Material>& _material) : material(_material) {}
+		MaterialComponent(Ref<Material>&& _material) : material(std::move(_material)) {}
+		MaterialComponent(Material::CreateInfo* pCreateInfo) : material(CreateRef<Material>(pCreateInfo)) {}
 
 		Material::CreateInfo& GetCreateInfo() { return material->m_CI; }
 
-		operator gear::Ref<Material>&() { return material; }
+		operator Ref<Material>&() { return material; }
 	};
 
 	class Entity;

@@ -7,9 +7,9 @@ using namespace objects;
 using namespace mars;
 
 std::map<std::string, Ref<Material>> Material::s_LoadedMaterials;
-gear::Ref<Texture> Material::s_WhiteTexture;
-gear::Ref<Texture> Material::s_BlueNormalTexture;
-gear::Ref<Texture> Material::s_BlackTexture;
+Ref<Texture> Material::s_WhiteTexture;
+Ref<Texture> Material::s_BlueNormalTexture;
+Ref<Texture> Material::s_BlackTexture;
 
 Material::Material(CreateInfo* pCreateInfo)
 {
@@ -70,7 +70,7 @@ void Material::InitialiseUB()
 	ubCI.device = m_CI.device;
 	ubCI.data = zero;
 
-	m_UB = gear::CreateRef<Uniformbuffer<PBRConstantsUB>>(&ubCI);
+	m_UB = CreateRef<Uniformbuffer<PBRConstantsUB>>(&ubCI);
 }
 
 void Material::CreateDefaultColourTextures()
@@ -95,15 +95,15 @@ void Material::CreateDefaultColourTextures()
 	texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	texCI.usage = miru::crossplatform::Image::UsageBit(0);
 	texCI.generateMipMaps = false;
-	s_WhiteTexture = gear::CreateRef<Texture>(&texCI);
+	s_WhiteTexture = CreateRef<Texture>(&texCI);
 
 	uint8_t dataBlue[4] = { 0x7F, 0x7F, 0xFF, 0xFF };
 	texCI.debugName = "GEAR_CORE_Material: Blank Blue-Normal Texture";
 	texCI.data.data = dataBlue;
-	s_BlueNormalTexture = gear::CreateRef<Texture>(&texCI);
+	s_BlueNormalTexture = CreateRef<Texture>(&texCI);
 
 	uint8_t dataBlack[4] = { 0x00, 0x00, 0x00, 0xFF };
 	texCI.debugName = "GEAR_CORE_Material: Blank Black Texture";
 	texCI.data.data = dataBlack;
-	s_BlackTexture = gear::CreateRef<Texture>(&texCI);
+	s_BlackTexture = CreateRef<Texture>(&texCI);
 }

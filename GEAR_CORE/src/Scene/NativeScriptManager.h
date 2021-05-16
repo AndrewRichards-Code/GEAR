@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/DynamicLibrary.h"
+#include "ARC/src/DynamicLibrary.h"
 
 namespace gear
 {
@@ -14,11 +14,11 @@ namespace scene
 	{
 	public:
 		static void Build(const std::string& nativeScriptDir);
-		static core::DynamicLibrary::LibraryHandle Load();
-		static void Unload(core::DynamicLibrary::LibraryHandle& libraryHandle);
+		static arc::DynamicLibrary::LibraryHandle Load();
+		static void Unload(arc::DynamicLibrary::LibraryHandle& libraryHandle);
 
-		static INativeScript* LoadScript(core::DynamicLibrary::LibraryHandle& libraryHandle, const std::string& nativeScriptName);
-		static void UnloadScript(core::DynamicLibrary::LibraryHandle& libraryHandle, const std::string& nativeScriptName, INativeScript*& nativeScript);
+		static INativeScript* LoadScript(arc::DynamicLibrary::LibraryHandle& libraryHandle, const std::string& nativeScriptName);
+		static void UnloadScript(arc::DynamicLibrary::LibraryHandle& libraryHandle, const std::string& nativeScriptName, INativeScript*& nativeScript);
 
 
 	private:

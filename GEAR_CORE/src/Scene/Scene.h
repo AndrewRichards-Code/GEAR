@@ -33,7 +33,7 @@ namespace scene
 		~Scene();
 	
 		Entity CreateEntity();
-		void OnUpdate(gear::Ref<graphics::Renderer>& m_Renderer, core::Timer& timer);
+		void OnUpdate(Ref<graphics::Renderer>& m_Renderer, core::Timer& timer);
 
 		entt::registry& GetRegistry();
 

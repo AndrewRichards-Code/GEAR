@@ -60,12 +60,23 @@ void ray_generation_main()
 
 }
 
-//Intersection
-
 //Any-Hit
+[shader("anyhit")]
+void any_hit_main(inout Payload payload, in BuiltInTriangleIntersectionAttributes  attr)
+{
+    payload.colour = float4(1.0, 0.0, 0.0, 1.0);
+}
 
 //Closest-Hit
+[shader("closesthit")]
+void closest_hit_main(inout Payload payload, in BuiltInTriangleIntersectionAttributes  attr)
+{
+    payload.colour = float4(0.0, 1.0, 0.0, 1.0);
+}
 
 //Miss
-
-//Callable
+[shader("miss")]
+void miss_main(inout Payload payload)
+{
+    payload.colour = float4(0.0, 0.0, 0.0, 1.0);
+}

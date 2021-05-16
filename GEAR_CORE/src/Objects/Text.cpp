@@ -19,7 +19,7 @@ Text::~Text()
 {
 }
 
-void Text::AddLine(const gear::Ref<FontLibrary::Font>& font, const std::string& text, const Uint2& position, const Vec4& colour, const Vec4& backgroundColour)
+void Text::AddLine(const Ref<FontLibrary::Font>& font, const std::string& text, const Uint2& position, const Vec4& colour, const Vec4& backgroundColour)
 {
 	Uint2 _position = position;
 	_position.y += font->fontHeightPx;
@@ -49,14 +49,14 @@ void Text::Update()
 	m_CameraCI.orthographicsParams = { 0.0f, static_cast<float>(m_CI.viewportWidth), 0.0f, static_cast<float>(m_CI.viewportHeight), 1.0f, -1.0f }; //TODO: Account for reverse depth.
 	m_CameraCI.flipX = false;
 	m_CameraCI.flipY = false;
-	m_Camera = gear::CreateRef<Camera>(&m_CameraCI);
+	m_Camera = CreateRef<Camera>(&m_CameraCI);
 }
 
 void Text::GenerateLine(size_t lineIndex, bool update)
 {
 	Line& line = m_Lines[lineIndex];
 	float viewportRatio = static_cast<float>(m_CI.viewportWidth) / static_cast<float>(m_CI.viewportHeight);
-	const gear::Ref<FontLibrary::Font>& font = line.font;
+	const Ref<FontLibrary::Font>& font = line.font;
 	uint32_t background_height = font->fontHeightPx + 4;
 
 	Material::CreateInfo fontMaterialCI;
@@ -76,7 +76,7 @@ void Text::GenerateLine(size_t lineIndex, bool update)
 	meshData.name = line.text;
 
 	if (!update)
-		meshData.pMaterial = gear::CreateRef<Material>(&fontMaterialCI);
+		meshData.pMaterial = CreateRef<Material>(&fontMaterialCI);
 	else
 		meshData.pMaterial = line.model->m_CI.pMesh->m_CI.data.back().pMaterial; //Grab old one!
 
@@ -220,12 +220,12 @@ void Text::GenerateLine(size_t lineIndex, bool update)
 		Model::CreateInfo textModelCI;
 		textModelCI.debugName = "GEAR_CORE_FontRenderer: " + line.text;
 		textModelCI.device = m_CI.device;
-		textModelCI.pMesh = gear::CreateRef<Mesh>(&textMeshCI);
+		textModelCI.pMesh = CreateRef<Mesh>(&textMeshCI);
 		textModelCI.renderPipelineName = "Font";
-		line.model = gear::CreateRef<Model>(&textModelCI);
+		line.model = CreateRef<Model>(&textModelCI);
 	}
 	else
 	{
-		line.model->m_CI.pMesh = gear::CreateRef<Mesh>(&textMeshCI);
+		line.model->m_CI.pMesh = CreateRef<Mesh>(&textMeshCI);
 	}
 }

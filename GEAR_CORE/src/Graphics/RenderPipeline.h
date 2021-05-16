@@ -20,12 +20,13 @@ namespace graphics
 		{
 			std::string												debugName;
 			std::vector<miru::crossplatform::Shader::CreateInfo>	shaderCreateInfo;
+			miru::crossplatform::Pipeline::InputAssemblyState		inputAssemblyState;
 			miru::crossplatform::Pipeline::ViewportState			viewportState;
 			miru::crossplatform::Pipeline::RasterisationState		rasterisationState;
 			miru::crossplatform::Pipeline::MultisampleState			multisampleState;
 			miru::crossplatform::Pipeline::DepthStencilState		depthStencilState;
 			miru::crossplatform::Pipeline::ColourBlendState			colourBlendState;
-			miru::Ref<miru::crossplatform::RenderPass>				renderPass;
+			Ref<miru::crossplatform::RenderPass>				renderPass;
 			uint32_t												subpassIndex;
 		};
 		struct LoadInfo
@@ -35,19 +36,19 @@ namespace graphics
 			float										viewportWidth;
 			float										viewportHeight;
 			miru::crossplatform::Image::SampleCountBit	samples;
-			miru::Ref<miru::crossplatform::RenderPass>	renderPass;
+			Ref<miru::crossplatform::RenderPass>	renderPass;
 			uint32_t									subpassIndex;
 		};
 
 	private:
 		void* m_Device;
-		miru::Ref<miru::crossplatform::Pipeline> m_Pipeline;
+		Ref<miru::crossplatform::Pipeline> m_Pipeline;
 		miru::crossplatform::Pipeline::CreateInfo m_PipelineCI;
 
-		std::vector<miru::Ref<miru::crossplatform::DescriptorSetLayout>> m_DescSetLayouts;
+		std::vector<Ref<miru::crossplatform::DescriptorSetLayout>> m_DescSetLayouts;
 		std::vector<miru::crossplatform::DescriptorSetLayout::CreateInfo> m_DescSetLayoutCIs;
 
-		std::vector<miru::Ref<miru::crossplatform::Shader>> m_Shaders;
+		std::vector<Ref<miru::crossplatform::Shader>> m_Shaders;
 		std::vector<std::vector<miru::crossplatform::Shader::ResourceBindingDescription>> m_RBDs;
 
 		static ShaderBuildMode s_ShaderBuildMode;
@@ -68,8 +69,8 @@ namespace graphics
 
 		inline static void SetShaderBuildMode(ShaderBuildMode buildMode) { s_ShaderBuildMode = buildMode; }
 
-		inline const miru::Ref<miru::crossplatform::Pipeline>& GetPipeline() const { return m_Pipeline; };
-		inline const std::vector<miru::Ref<miru::crossplatform::DescriptorSetLayout>>& GetDescriptorSetLayouts() { return m_DescSetLayouts; };
+		inline const Ref<miru::crossplatform::Pipeline>& GetPipeline() const { return m_Pipeline; };
+		inline const std::vector<Ref<miru::crossplatform::DescriptorSetLayout>>& GetDescriptorSetLayouts() { return m_DescSetLayouts; };
 		inline const std::vector<std::vector<miru::crossplatform::Shader::ResourceBindingDescription>>& GetRBDs() { return m_RBDs; };
 	};
 }

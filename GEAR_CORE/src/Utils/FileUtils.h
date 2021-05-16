@@ -6,50 +6,10 @@ namespace gear
 {
 namespace file_utils
 {
-	static std::string read_file(const std::string& filepath)
-	{
-		std::ifstream stream(filepath, std::fstream::in);
-		std::string output;
-
-		if (!stream.is_open())
-		{
-			GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::UTILS | core::Log::ErrorCode::NO_FILE, "Could not read file %s. File does not exist.", filepath);
-			return "";
-		}
-
-		std::string line;
-		while (!stream.eof())
-		{
-			std::getline(stream, line);
-			output.append(line + "\n");
-		}
-		stream.close();
-		return output;
-	}
-
-	static std::vector<char> read_binary(const std::string& filepath)
-	{
-		std::ifstream stream(filepath, std::fstream::in | std::fstream::binary | std::fstream::ate);
-		if (!stream.is_open())
-		{
-			GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::UTILS | core::Log::ErrorCode::NO_FILE, "Could not read file %s. File does not exist.", filepath);
-			return {};
-		}
-
-		std::streamoff size = stream.tellg();
-		stream.seekg(0, std::fstream::beg);
-		std::vector<char> output(static_cast<unsigned int>(size));
-		stream.read(output.data(), size);
-
-		stream.close();
-		return output;
-	}
-
-
 	struct WavData
 	{
 		std::string						filepath;
-		gear::Scope<std::ifstream>		stream;
+		Scope<std::ifstream>			stream;
 
 		std::array<char, 8192>			buffer1;
 		std::array<char, 8192>			buffer2;
@@ -71,13 +31,13 @@ namespace file_utils
 			formatTag(0), channels(0), sampleRate(0), byteRate(0), blockAlign(0), bitsPerSample(0), size(0) {};
 	};
 
-	static gear::Ref<WavData> stream_wav(const std::string& filepath)
+	static Ref<WavData> stream_wav(const std::string& filepath)
 	{
-		gear::Ref<WavData> result = gear::CreateRef<WavData>();
+		Ref<WavData> result = CreateRef<WavData>();
 		result->filepath = filepath;
 		result->nextBuffer = 1;
 
-		result->stream = gear::CreateScope<std::ifstream>(filepath, std::ios::binary);
+		result->stream = CreateScope<std::ifstream>(filepath, std::ios::binary);
 		std::ifstream& stream = *(result->stream);
 
 		auto ConvertToUint32_t = [](char* buffer, int len) -> uint32_t
@@ -101,7 +61,7 @@ namespace file_utils
 		stream.read(buffer, 4);									//RIFF
 		if (strncmp(buffer, "RIFF", 4) != 0)
 		{
-			GEAR_LOG(core::Log::Level::WARN, core::Log::ErrorCode::UTILS | core::Log::ErrorCode::NO_FILE, "Could not read file %s. File does not exist.", filepath);
+			GEAR_WARN(ErrorCode::UTILS | ErrorCode::NO_FILE, "Could not read file %s. File does not exist.", filepath);
 			return result;
 		}
 
@@ -151,7 +111,7 @@ namespace file_utils
 		return std::move(result);
 	}
 
-	static void get_next_wav_block(gear::Ref<WavData>& input)
+	static void get_next_wav_block(Ref<WavData>& input)
 	{
 		if (!input->bufferQueue.empty())
 		{
@@ -190,19 +150,6 @@ namespace file_utils
 			input->nextBuffer = 0;
 			input->stream->close();
 		}
-	}
-
-	static bool file_exist(const std::string& filepath)
-	{
-		return std::filesystem::exists(std::filesystem::path(filepath));
-	}
-
-	static std::filesystem::file_time_type get_file_last_write_time(const std::string& filepath)
-	{
-		if (file_exist(filepath))
-			return std::filesystem::last_write_time(std::filesystem::path(filepath));
-		else
-			return std::filesystem::file_time_type();
 	}
 }
 }

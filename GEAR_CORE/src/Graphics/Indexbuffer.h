@@ -19,10 +19,10 @@ namespace graphics
 		};
 
 	private:
-		miru::Ref<miru::crossplatform::Buffer> m_IndexBuffer, m_IndexBufferUpload;
+		Ref<miru::crossplatform::Buffer> m_IndexBuffer, m_IndexBufferUpload;
 		miru::crossplatform::Buffer::CreateInfo m_IndexBufferCI, m_IndexBufferUploadCI;
 
-		miru::Ref<miru::crossplatform::BufferView> m_IndexBufferView;
+		Ref<miru::crossplatform::BufferView> m_IndexBufferView;
 		miru::crossplatform::BufferView::CreateInfo m_IndexBufferViewCI;
 
 		CreateInfo m_CI;
@@ -36,8 +36,8 @@ namespace graphics
 
 		const CreateInfo& GetCreateInfo() { return m_CI; }
 
-		void Upload(const miru::Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
-		inline miru::Ref<miru::crossplatform::BufferView> GetIndexBufferView() { return m_IndexBufferView; };
+		void Upload(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
+		inline Ref<miru::crossplatform::BufferView> GetIndexBufferView() { return m_IndexBufferView; };
 
 		inline uint32_t GetCount() const { return m_Count; }
 	};

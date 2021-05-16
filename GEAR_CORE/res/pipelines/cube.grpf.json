@@ -1,5 +1,5 @@
 {
-	"fileType": "GEAR_RENDER_PIPELINE_FILE", 
+	"fileType": "GEAR_RENDER_PIPELINE_FILE",
 	"debugName": "Cube",
 	"shaders": [
 		{
@@ -51,6 +51,10 @@
 			}
 		}
 	],
+	"inputAssemblyState": {
+		"topology": "TRIANGLE_LIST",
+		"primitiveRestartEnable": false
+	},
 	"viewportState": {
 		"viewports": [
 			{
