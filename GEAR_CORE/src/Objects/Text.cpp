@@ -70,15 +70,16 @@ void Text::GenerateLine(size_t lineIndex, bool update)
 	textMeshCI.filepath = "";
 
 	ModelLoader::ModelData& modelData = textMeshCI.data;
-	modelData.push_back({});
+	modelData.meshes.push_back({});
 
-	ModelLoader::MeshData& meshData = modelData.back();
-	meshData.name = line.text;
+	ModelLoader::MeshData& meshData = modelData.meshes.back();
+	meshData.nodeName = line.text;
+	meshData.meshName = line.text;
 
 	if (!update)
 		meshData.pMaterial = CreateRef<Material>(&fontMaterialCI);
 	else
-		meshData.pMaterial = line.model->m_CI.pMesh->m_CI.data.back().pMaterial; //Grab old one!
+		meshData.pMaterial = line.model->m_CI.pMesh->m_CI.data.meshes.back().pMaterial; //Grab old one!
 
 	//Make space for background quad
 	meshData.vertices.push_back({});

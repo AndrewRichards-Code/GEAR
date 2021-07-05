@@ -26,17 +26,17 @@ Mesh::Mesh(CreateInfo* pCreateInfo)
 	ibCI.device = m_CI.device;
 	ibCI.stride = ModelLoader::GetSizeOfIndex();
 	
-	for (auto& meshData : m_CI.data)
+	for (auto& mesh : m_CI.data.meshes)
 	{
-		vbCI.data = meshData.vertices.data();
-		vbCI.size = meshData.vertices.size() * ModelLoader::GetSizeOfVertex();
+		vbCI.data = mesh.vertices.data();
+		vbCI.size = mesh.vertices.size() * ModelLoader::GetSizeOfVertex();
 		m_VBs.emplace_back(CreateRef<graphics::Vertexbuffer>(&vbCI));
 
-		ibCI.data = meshData.indices.data();
-		ibCI.size = meshData.indices.size() * ModelLoader::GetSizeOfIndex();
+		ibCI.data = mesh.indices.data();
+		ibCI.size = mesh.indices.size() * ModelLoader::GetSizeOfIndex();
 		m_IBs.emplace_back(CreateRef<graphics::Indexbuffer>(&ibCI));
 
-		m_Materials.push_back(meshData.pMaterial);
+		m_Materials.push_back(mesh.pMaterial);
 	}
 }
 

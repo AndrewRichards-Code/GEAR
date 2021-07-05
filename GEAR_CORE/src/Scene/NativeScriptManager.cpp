@@ -25,7 +25,7 @@ void NativeScriptManager::Build(const std::string& nativeScriptDir)
 	#ifdef _DEBUG
 	std::string command = "MSBuild " + vcxprojDir + "GEAR_NATIVE_SCRIPT.vcxproj -t:build -p:Platform=x64 -p:Configuration=Debug -p:SolutionDir=" + solutionDir + " -p:ApplicationNativeScriptsDir=" + _nativeScriptDir;
 	#else
-	std::string command = "MSBuild " + vcxprojDir + "GEAR_NATIVE_SCRIPT.vcxproj -t:build -p:Platform=x64 -p:Configuration=Release -p:SolutionDir=" + solutionDir  " -p:ApplicationNativeScriptsDir=" + _nativeScriptDir;
+	std::string command = "MSBuild " + vcxprojDir + "GEAR_NATIVE_SCRIPT.vcxproj -t:build -p:Platform=x64 -p:Configuration=Release -p:SolutionDir=" + solutionDir + " -p:ApplicationNativeScriptsDir=" + _nativeScriptDir;
 	#endif
 
 	GEAR_PRINTF("GEAR_CORE: Build GEAR_NATIVE_SCRIPT.dll from GEAR_NATIVE_SCRIPT.vcxproj using MSBuild\n");
