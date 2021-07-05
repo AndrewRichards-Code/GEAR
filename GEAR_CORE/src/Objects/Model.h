@@ -18,7 +18,7 @@ namespace objects
 		{
 			std::string			debugName;
 			void*				device;
-			Ref<Mesh>		pMesh;
+			Ref<Mesh>			pMesh;
 			mars::Vec2			materialTextureScaling = mars::Vec2(1.0f, 1.0f);
 			Transform			transform;
 			std::string			renderPipelineName;

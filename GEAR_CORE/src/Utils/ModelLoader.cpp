@@ -3,12 +3,12 @@
 #include "ModelLoader.h"
 #include "Objects/Material.h"
 #include "Objects/Transform.h"
+#include "Animation/Animation.h"
 #include "ARC/src/FileSystemHelpers.h"
 
 using namespace gear;
+using namespace animation;
 
-ModelLoader::ModelData ModelLoader::modelData;
-std::vector<ModelLoader::Animation> ModelLoader::animationData;
 void* ModelLoader::m_Device = nullptr;
 
 ModelLoader::ModelData ModelLoader::LoadModelData(const std::string& filepath)
@@ -27,158 +27,301 @@ ModelLoader::ModelData ModelLoader::LoadModelData(const std::string& filepath)
 	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
 	{
 		GEAR_WARN(ErrorCode::UTILS | ErrorCode::INIT_FAILED, "Assimp error: %s.", importer.GetErrorString());
-		return ModelData(0);
+		return ModelData();
 	}
-	modelData.clear();
-	ProcessNode(scene->mRootNode, scene);
-	ProcessAnimations(scene);
+
+	double scale = 1.0;
+	scene->mMetaData->Get("UnitScaleFactor", scale);
+
+	ModelData modelData;
+	BuildNodeGraph(scene, scene->mRootNode, modelData.nodeGraph, modelData);
+
 	return std::move(modelData);
 }
 
-void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene)
+void ModelLoader::BuildNodeGraph(const aiScene* scene, aiNode* node, Node& thisNode, ModelData& modelData)
 {
-	for (unsigned int i = 0; i < node->mNumMeshes; i++)
+	if (scene && node && modelData.animations.empty())
 	{
-		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-		modelData.push_back(ProcessMesh(mesh, node, scene));
-	}
-	for (unsigned int i = 0; i < node->mNumChildren; i++)
-	{
-		ProcessNode(node->mChildren[i], scene);
-	}
-}
-
-ModelLoader::MeshData ModelLoader::ProcessMesh(aiMesh* mesh, aiNode* node, const aiScene* scene)
-{
-	MeshData meshData;
-	//meshData.name = std::string(node->mParent->mName.C_Str()) + ": " + std::string(mesh->mName.C_Str());
-
-	//Vertices
-	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
-	{
-		Vertex vertex = {};
-		if (mesh->HasPositions())
+		if (node == scene->mRootNode) //Only process animations at the root node.
 		{
-			vertex.position= mars::Vec4(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, 1.0f);
+			modelData.animations = ProcessAnimations(scene);
 		}
-		if (mesh->HasTextureCoords(0))
-		{
-			vertex.texCoord = mars::Vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
-		}
-		if (mesh->HasNormals())
-		{
-			vertex.normal = mars::Vec4(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z, 0.0f);
-		}
-		if (mesh->HasTangentsAndBitangents())
-		{
-			vertex.tangent = mars::Vec4(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z, 0.0f);
-			vertex.binormal = mars::Vec4(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z, 0.0f);
-		}
-		if (mesh->HasVertexColors(0))
-		{
-			vertex.colour = mars::Vec4(mesh->mColors[0][i].r, mesh->mColors[0][i].g, mesh->mColors[0][i].b, mesh->mColors[0][i].a);
-		}
-		meshData.vertices.push_back(vertex);
 	}
 
-	//Indices
-	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+	if (node)
 	{
-		aiFace face = mesh->mFaces[i];
-		for (unsigned int j = 0; j < face.mNumIndices; j++)
-			meshData.indices.push_back(face.mIndices[j]);
-	}
+		thisNode.name = node->mName.C_Str();
+		Convert_aiMatrix4x4ToMat4(node->mTransformation, thisNode.transform);
 
-	//Bones
-	for (unsigned int i = 0; i < mesh->mNumBones; i++)
-	{
-		mars::Mat4 transform;
-		aiMatrix4x4 aiTransform = mesh->mBones[i]->mOffsetMatrix;
-		memcpy_s((void* const)transform.GetData(), transform.GetSize(), &aiTransform.a1, sizeof(aiMatrix4x4));
-
-		std::vector<std::pair<uint32_t, float>> vertexIDsAndWeights;
-		for (unsigned int j = 0; j < mesh->mBones[i]->mNumWeights; j++)
+		if(node->mNumMeshes > 0)
 		{
-			const aiVertexWeight& weight = mesh->mBones[i]->mWeights[j];
-			vertexIDsAndWeights.push_back({ weight.mVertexId, weight.mWeight });
+			for (auto& mesh : ProcessMeshes(node, scene))
+				modelData.meshes.push_back(mesh);
 		}
-		meshData.bones.push_back({});
-		meshData.bones.back().transform = std::move(transform);
-		meshData.bones.back().vertexIDsAndWeights = std::move(vertexIDsAndWeights);
-	}
 
-	//Materials
-	aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-	aiString materialName;
-	material->Get(AI_MATKEY_NAME, materialName);
-
-	Ref<objects::Material> mat = objects::Material::FindMaterial(materialName.C_Str());
-	if (mat != nullptr)
-	{
-		meshData.pMaterial = mat;
-	}
-	else
-	{
-		std::map<objects::Material::TextureType, Ref<graphics::Texture>> textures;
-		for (unsigned int i = 0; i < AI_TEXTURE_TYPE_MAX; i++)
+		for (size_t i = 0; i < modelData.meshes.size(); i++)
 		{
-			std::vector<std::string> filepaths = GetMaterialFilePath(material, (aiTextureType)i);
-			if (!filepaths.empty())
+			const auto& mesh = modelData.meshes[i];
+			if (mesh.nodeName.compare(thisNode.name) == 0)
+				thisNode.meshIndex = i;
+		}
+		for (size_t i = 0; i < modelData.animations.size(); i++)
+		{
+			const auto& animation = modelData.animations[i];
+			for (size_t j = 0; j < animation.nodeAnimations.size(); j++)
 			{
-				objects::Material::TextureType type;
-				for (auto& filepath : filepaths)
+				const auto& nodeAnimation = animation.nodeAnimations[i];
+				if (nodeAnimation.name.compare(thisNode.name) == 0)
 				{
-					switch (i)
-					{
-					case aiTextureType::aiTextureType_BASE_COLOR:
-						type = objects::Material::TextureType::ALBEDO; break;
-					case aiTextureType::aiTextureType_NORMAL_CAMERA:
-						type = objects::Material::TextureType::NORMAL; break;
-					case aiTextureType::aiTextureType_EMISSION_COLOR:
-						type = objects::Material::TextureType::EMISSIVE; break;
-					case aiTextureType::aiTextureType_METALNESS:
-						type = objects::Material::TextureType::METALLIC; break;
-					case aiTextureType::aiTextureType_DIFFUSE_ROUGHNESS:
-						type = objects::Material::TextureType::ROUGHNESS; break;
-					case aiTextureType::aiTextureType_AMBIENT_OCCLUSION:
-						type = objects::Material::TextureType::AMBIENT_OCCLUSION; break;
-					case aiTextureType::aiTextureType_NORMALS:
-						type = objects::Material::TextureType::NORMAL; break;
-					default:
-						type = objects::Material::TextureType::UNKNOWN; break;
-					}
-
-					if (arc::FileExist(filepath))
-					{
-						graphics::Texture::CreateInfo texCI;
-						texCI.device = m_Device;
-						texCI.dataType = graphics::Texture::DataType::FILE;
-						texCI.file.filepaths = &filepath;
-						texCI.file.count = 1;
-						texCI.mipLevels = 1;
-						texCI.arrayLayers = 1;
-						texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
-						texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
-						texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-						texCI.usage = miru::crossplatform::Image::UsageBit(0);
-						texCI.generateMipMaps = false;
-						textures[type] = CreateRef<graphics::Texture>(&texCI);
-					}
+					thisNode.animationIndex = i;
+					thisNode.nodeAnimationIndex = j;
 				}
 			}
 		}
 
-		objects::Material::CreateInfo materialCI;
-		materialCI.debugName = materialName.C_Str();
-		materialCI.device = m_Device;
-		materialCI.pbrTextures = textures;
-		meshData.pMaterial = CreateRef<objects::Material>(&materialCI);
-		AddMaterialProperties(material, meshData.pMaterial);
-
-		objects::Material::AddMaterial(materialName.C_Str(), meshData.pMaterial);
+		//Index children
+		aiNode** children = node->mChildren;
+		const unsigned int& childrenCount = node->mNumChildren;
+		thisNode.children.resize((size_t)childrenCount);
+		for (size_t i = 0; i < static_cast<size_t>(childrenCount); i++)
+		{
+			BuildNodeGraph(scene, children[i],  thisNode.children[i], modelData);
+		}
 	}
+}
 
-	return meshData;
+std::vector<ModelLoader::MeshData> ModelLoader::ProcessMeshes(aiNode* node, const aiScene* scene)
+{
+	std::vector<MeshData> meshes;
+	meshes.reserve(node->mNumMeshes);
+
+	for (unsigned int i = 0; i < node->mNumMeshes; i++)
+	{
+		aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
+
+		MeshData meshData;
+		meshData.meshName = std::string(mesh->mName.C_Str());
+		meshData.nodeName = std::string(node->mName.C_Str());
+
+		//Vertices
+		meshData.vertices.reserve(mesh->mNumVertices);
+		for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+		{
+			Vertex vertex = {};
+			if (mesh->HasPositions())
+			{
+				vertex.position = mars::Vec4(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, 1.0f);
+			}
+			if (mesh->HasTextureCoords(0))
+			{
+				vertex.texCoord = mars::Vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+			}
+			if (mesh->HasNormals())
+			{
+				vertex.normal = mars::Vec4(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z, 0.0f);
+			}
+			if (mesh->HasTangentsAndBitangents())
+			{
+				vertex.tangent = mars::Vec4(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z, 0.0f);
+				vertex.binormal = mars::Vec4(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z, 0.0f);
+			}
+			if (mesh->HasVertexColors(0))
+			{
+				vertex.colour = mars::Vec4(mesh->mColors[0][i].r, mesh->mColors[0][i].g, mesh->mColors[0][i].b, mesh->mColors[0][i].a);
+			}
+			meshData.vertices.push_back(vertex);
+		}
+
+		//Indices
+		meshData.indices.reserve(mesh->mNumFaces * 3);
+		for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+		{
+			aiFace face = mesh->mFaces[i];
+			for (unsigned int j = 0; j < face.mNumIndices; j++)
+				meshData.indices.push_back(face.mIndices[j]);
+		}
+
+		//Bones
+		meshData.bones.reserve(mesh->mNumBones);
+		for (unsigned int i = 0; i < mesh->mNumBones; i++)
+		{
+			mars::Mat4 transform;
+			aiMatrix4x4 aiTransform = mesh->mBones[i]->mOffsetMatrix;
+			Convert_aiMatrix4x4ToMat4(aiTransform, transform);
+
+			std::vector<std::pair<uint32_t, float>> vertexIDsAndWeights;
+			for (unsigned int j = 0; j < mesh->mBones[i]->mNumWeights; j++)
+			{
+				const aiVertexWeight& weight = mesh->mBones[i]->mWeights[j];
+				vertexIDsAndWeights.push_back({ weight.mVertexId, weight.mWeight });
+			}
+			meshData.bones.push_back({});
+			meshData.bones.back().transform = std::move(transform);
+			meshData.bones.back().vertexIDsAndWeights = std::move(vertexIDsAndWeights);
+		}
+
+		//Materials
+		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+		aiString materialName;
+		material->Get(AI_MATKEY_NAME, materialName);
+
+		Ref<objects::Material> mat = objects::Material::FindMaterial(materialName.C_Str());
+		if (mat != nullptr)
+		{
+			meshData.pMaterial = mat;
+		}
+		else
+		{
+			std::map<objects::Material::TextureType, Ref<graphics::Texture>> textures;
+			for (unsigned int i = 0; i < AI_TEXTURE_TYPE_MAX; i++)
+			{
+				std::vector<std::string> filepaths = GetMaterialFilePath(material, (aiTextureType)i);
+				if (!filepaths.empty())
+				{
+					objects::Material::TextureType type;
+					for (auto& filepath : filepaths)
+					{
+						switch (i)
+						{
+						case aiTextureType::aiTextureType_BASE_COLOR:
+							type = objects::Material::TextureType::ALBEDO; break;
+						case aiTextureType::aiTextureType_NORMAL_CAMERA:
+							type = objects::Material::TextureType::NORMAL; break;
+						case aiTextureType::aiTextureType_EMISSION_COLOR:
+							type = objects::Material::TextureType::EMISSIVE; break;
+						case aiTextureType::aiTextureType_METALNESS:
+							type = objects::Material::TextureType::METALLIC; break;
+						case aiTextureType::aiTextureType_DIFFUSE_ROUGHNESS:
+							type = objects::Material::TextureType::ROUGHNESS; break;
+						case aiTextureType::aiTextureType_AMBIENT_OCCLUSION:
+							type = objects::Material::TextureType::AMBIENT_OCCLUSION; break;
+						case aiTextureType::aiTextureType_NORMALS:
+							type = objects::Material::TextureType::NORMAL; break;
+						default:
+							type = objects::Material::TextureType::UNKNOWN; break;
+						}
+
+						if (arc::FileExist(filepath))
+						{
+							graphics::Texture::CreateInfo texCI;
+							texCI.device = m_Device;
+							texCI.dataType = graphics::Texture::DataType::FILE;
+							texCI.file.filepaths = &filepath;
+							texCI.file.count = 1;
+							texCI.mipLevels = 1;
+							texCI.arrayLayers = 1;
+							texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
+							texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
+							texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+							texCI.usage = miru::crossplatform::Image::UsageBit(0);
+							texCI.generateMipMaps = false;
+							textures[type] = CreateRef<graphics::Texture>(&texCI);
+						}
+					}
+				}
+			}
+
+			objects::Material::CreateInfo materialCI;
+			materialCI.debugName = materialName.C_Str();
+			materialCI.device = m_Device;
+			materialCI.pbrTextures = textures;
+			meshData.pMaterial = CreateRef<objects::Material>(&materialCI);
+			AddMaterialProperties(material, meshData.pMaterial);
+
+			objects::Material::AddMaterial(materialName.C_Str(), meshData.pMaterial);
+		}
+		meshes.push_back(meshData);
+	}
+	return std::move(meshes);
+}
+std::vector<animation::Animation> ModelLoader::ProcessAnimations(const aiScene* scene)
+{
+	std::vector<animation::Animation> animations;
+	animations.reserve(scene->mNumAnimations);
+
+	for (unsigned int i = 0; i < scene->mNumAnimations; i++)
+	{
+		Animation animation;
+		aiAnimation*& _animation = scene->mAnimations[i];
+
+		animation.sequenceType = core::Sequence::Type::ANIMATION;
+		animation.duration = _animation->mDuration;
+		animation.framesPerSecond = static_cast<uint32_t>(_animation->mTicksPerSecond);
+		animation.nodeAnimations.reserve(_animation->mNumChannels);
+
+		for (unsigned int j = 0; j < _animation->mNumChannels; j++)
+		{
+			aiNodeAnim*& nodeAnim = _animation->mChannels[j];
+
+			animation.nodeAnimations.push_back({});
+			NodeAnimation& node = animation.nodeAnimations.back();
+			node.name = std::string(nodeAnim->mNodeName.C_Str());
+			NodeAnimation::Keyframes& keyframes = node.keyframes;
+
+			if (node.name.find("Translation") != std::string::npos)
+			{
+				node.type = NodeAnimation::Type::TRANSLATION;
+				keyframes.reserve(nodeAnim->mNumPositionKeys);
+				for (unsigned int k = 0; k < nodeAnim->mNumPositionKeys; k++)
+				{
+					double timepoint = nodeAnim->mPositionKeys[k].mTime;
+					mars::Vec3 translation = mars::Vec3(
+						nodeAnim->mPositionKeys[k].mValue.x,
+						nodeAnim->mPositionKeys[k].mValue.y,
+						nodeAnim->mPositionKeys[k].mValue.z);
+
+					objects::Transform transform;
+					transform.translation = translation;
+					NodeAnimation::Keyframe kf = { timepoint , transform };
+					keyframes.push_back(kf);
+				}
+			}
+			else if (node.name.find("Rotation") != std::string::npos)
+			{
+				node.type = NodeAnimation::Type::ROTATION;
+				keyframes.reserve(nodeAnim->mNumRotationKeys);
+				for (unsigned int k = 0; k < nodeAnim->mNumRotationKeys; k++)
+				{
+					double timepoint = nodeAnim->mRotationKeys[k].mTime;
+					mars::Quat orientation = mars::Quat(
+						nodeAnim->mRotationKeys[k].mValue.w,
+						nodeAnim->mRotationKeys[k].mValue.x,
+						nodeAnim->mRotationKeys[k].mValue.y,
+						nodeAnim->mRotationKeys[k].mValue.z);
+
+					objects::Transform transform;
+					transform.orientation = orientation;
+					NodeAnimation::Keyframe kf = { timepoint , transform };
+					keyframes.push_back(kf);
+				}
+			}
+			else if (node.name.find("Scaling") != std::string::npos)
+			{
+				node.type = NodeAnimation::Type::SCALE;
+				keyframes.reserve(nodeAnim->mNumScalingKeys);
+				for (unsigned int k = 0; k < nodeAnim->mNumScalingKeys; k++)
+				{
+					double timepoint = nodeAnim->mScalingKeys[k].mTime;
+					mars::Vec3 scale = mars::Vec3(
+						nodeAnim->mScalingKeys[k].mValue.x,
+						nodeAnim->mScalingKeys[k].mValue.y,
+						nodeAnim->mScalingKeys[k].mValue.z);
+
+					objects::Transform transform;
+					transform.scale = scale;
+					NodeAnimation::Keyframe kf = { timepoint , transform };
+					keyframes.push_back(kf);
+				}
+			}
+			else
+			{
+				continue;
+			}
+			animations.push_back(animation);
+		}
+	}
+	return std::move(animations);
 }
 
 std::vector<std::string> ModelLoader::GetMaterialFilePath(aiMaterial* material, aiTextureType type)
@@ -204,7 +347,6 @@ std::vector<std::string> ModelLoader::GetMaterialFilePath(aiMaterial* material, 
 	}
 	return result;
 }
-
 void ModelLoader::AddMaterialProperties(aiMaterial* aiMaterial, Ref<objects::Material> material)
 {
 	aiString name;
@@ -262,82 +404,4 @@ void ModelLoader::AddMaterialProperties(aiMaterial* aiMaterial, Ref<objects::Mat
 		mars::Vec4(colourReflective.r, colourReflective.g, colourReflective.b, 1)
 		});
 	material->Update();
-}
-
-void ModelLoader::ProcessAnimations(const aiScene* scene)
-{
-	for (unsigned int i = 0; i < scene->mNumAnimations; i++)
-	{
-		Animation animation;
-		aiAnimation*& _animation = scene->mAnimations[i];
-
-		animation.duration = _animation->mDuration;
-		animation.framesPerSecond = static_cast<uint32_t>(_animation->mTicksPerSecond);
-		
-		for (unsigned int j = 0; j < _animation->mNumChannels; j++)
-		{
-			aiNodeAnim*& nodeAnim = _animation->mChannels[j];
-
-			animation.nodeAnimations.push_back({});
-			NodeAnimation& node = animation.nodeAnimations.back();
-			node.name = std::string(nodeAnim->mNodeName.C_Str());
-			NodeAnimation::Keyframes& keyframes = node.keyframes;
-
-			if (node.name.find("Translation") != std::string::npos) 
-			{
-				for (unsigned int k = 0; k < nodeAnim->mNumPositionKeys; k++)
-				{
-					double timepoint = nodeAnim->mPositionKeys[k].mTime;
-					mars::Vec3 translation = mars::Vec3(
-						nodeAnim->mPositionKeys[k].mValue.x,
-						nodeAnim->mPositionKeys[k].mValue.y,
-						nodeAnim->mPositionKeys[k].mValue.z);
-
-					objects::Transform transform;
-					transform.translation = translation;
-					NodeAnimation::Keyframe kf = { timepoint , transform };
-					keyframes.push_back(kf);
-				}
-			}
-			else if (node.name.find("Rotation") != std::string::npos) 
-			{
-				for (unsigned int k = 0; k < nodeAnim->mNumRotationKeys; k++)
-				{
-					double timepoint = nodeAnim->mRotationKeys[k].mTime;
-					mars::Quat orientation = mars::Quat(
-						nodeAnim->mRotationKeys[k].mValue.w,
-						nodeAnim->mRotationKeys[k].mValue.x,
-						nodeAnim->mRotationKeys[k].mValue.y,
-						nodeAnim->mRotationKeys[k].mValue.z);
-
-					objects::Transform transform;
-					transform.orientation = orientation;
-					NodeAnimation::Keyframe kf = { timepoint , transform };
-					keyframes.push_back(kf);
-				}
-			}
-			else if (node.name.find("Scale") != std::string::npos) 
-			{
-				for (unsigned int k = 0; k < nodeAnim->mNumScalingKeys; k++)
-				{
-					double timepoint = nodeAnim->mScalingKeys[k].mTime;
-					mars::Vec3 scale = mars::Vec3(
-						nodeAnim->mScalingKeys[k].mValue.x,
-						nodeAnim->mScalingKeys[k].mValue.y,
-						nodeAnim->mScalingKeys[k].mValue.z);
-
-					objects::Transform transform;
-					transform.scale = scale;
-					NodeAnimation::Keyframe kf = { timepoint , transform };
-					keyframes.push_back(kf);
-				}
-			}
-			else
-			{
-				continue;
-			}
-
-		}
-		animationData.push_back(std::move(animation));
-	}
 }

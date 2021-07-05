@@ -25,10 +25,10 @@ namespace objects
 	
 		struct CreateInfo
 		{
-			std::string											debugName;
-			void*												device;
-			std::map<TextureType, Ref<graphics::Texture>> pbrTextures;
-			graphics::UniformBufferStructures::PBRConstants		pbrConstants;
+			std::string										debugName;
+			void*											device;
+			std::map<TextureType, Ref<graphics::Texture>>	pbrTextures;
+			graphics::UniformBufferStructures::PBRConstants	pbrConstants;
 		};
 	
 	private:

@@ -1,5 +1,6 @@
 #pragma once
 #include "gear_core_common.h"
+#include "Animation/Animation.h"
 
 namespace gear 
 {
@@ -7,9 +8,8 @@ namespace gear
 	namespace objects
 	{
 		class Material;
-		struct Transform;
 	}
-	
+		
 	class ModelLoader
 	{
 	public:
@@ -27,48 +27,55 @@ namespace gear
 			mars::Mat4								transform;
 			std::vector<std::pair<uint32_t, float>> vertexIDsAndWeights;
 		};
-		struct NodeAnimation
-		{
-			typedef std::pair<double, objects::Transform> Keyframe;
-			typedef std::vector<Keyframe> Keyframes;
 
-			std::string		name;
-			Keyframes		keyframes;
-
-		};
-		struct Animation 
-		{
-			double						duration;
-			uint32_t					framesPerSecond;
-			std::vector<NodeAnimation>	nodeAnimations;
-		};
 		struct MeshData
 		{
-			std::string				name;
+			std::string				meshName;
+			std::string				nodeName;
 			std::vector<Vertex>		vertices;
 			std::vector<uint32_t>	indices;
 			std::vector<Bone>		bones;
 			Ref<objects::Material>	pMaterial;
 		};
+		struct Node
+		{
+			std::string			name;
+			mars::Mat4			transform;
+			size_t				meshIndex = ~0;
+			size_t				animationIndex = ~0;
+			size_t				nodeAnimationIndex = ~0;
+			std::vector<Node>	children;
+		};
 
-	private:
-		static void* m_Device;
-		static std::vector<MeshData> modelData;
-		static std::vector<Animation> animationData;
+		struct ModelData
+		{
+			std::vector<MeshData>				meshes;
+			std::vector<animation::Animation>	animations;
+			Node								nodeGraph;
+		};
 	
 	public:
+		static ModelData LoadModelData(const std::string& filepath);
+	
 		inline static void SetDevice(void* device) { m_Device = device; }
 		inline constexpr static size_t GetSizeOfVertex() { return sizeof(Vertex); }
 		inline constexpr static size_t GetSizeOfIndex() { return sizeof(uint32_t); }
 	
-		typedef std::vector<MeshData> ModelData;
-		static ModelData LoadModelData(const std::string& filepath);
-	
 	private:
-		static void ProcessNode(aiNode* node, const aiScene* scene);
-		static MeshData ProcessMesh(aiMesh* mesh, aiNode* node, const aiScene* scene);
+		static void BuildNodeGraph(const aiScene* scene, aiNode* node, Node& thisNode, ModelData& modelData);
+
+		static std::vector<MeshData> ProcessMeshes(aiNode* node, const aiScene* scene);
+		static std::vector<animation::Animation> ProcessAnimations(const aiScene* scene);
+
 		static std::vector<std::string> GetMaterialFilePath(aiMaterial* material, aiTextureType type);
 		static void AddMaterialProperties(aiMaterial* aiMaterial, Ref<objects::Material> material);
-		static void ProcessAnimations(const aiScene* scene);
+
+		inline static void Convert_aiMatrix4x4ToMat4(const aiMatrix4x4& in, mars::Mat4& out)
+		{
+			memcpy_s((void* const)out.GetData(), out.GetSize(), &in.a1, sizeof(aiMatrix4x4));
+		}
+
+	private:
+		static void* m_Device;
 	};
 }
