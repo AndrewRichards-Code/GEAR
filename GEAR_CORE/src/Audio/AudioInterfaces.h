@@ -18,10 +18,17 @@ namespace audio
 			OPENAL,
 			XAUDIO2
 		};
+		enum class EndPointDevice : uint32_t
+		{
+			DEFAULT,
+			HEADPHONES_XBOX_CONTROLLER,
+			//HEADSET_MICROPHONE_XBOX_CONTROLLER
+		};
 
 		struct CreateInfo
 		{
-			API audioAPI;
+			API				audioAPI;
+			EndPointDevice	endPointDevice;
 		};
 
 	private:
@@ -49,7 +56,7 @@ namespace audio
 		void OpenAL_DestroyDeviceAndContext();
 
 	//XAudio2
-	#if defined(_WIN64)
+	#if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
 	public:
 		IXAudio2* m_IXAudio2;
 		IXAudio2MasteringVoice* m_IXAudio2MasteringVoice;
@@ -66,7 +73,7 @@ namespace audio
 	public:
 		struct CreateInfo
 		{
-			std::string							filepath;
+			std::string					filepath;
 			Ref<AudioListenerInterface>	pAudioListener;
 		};
 
@@ -118,7 +125,7 @@ namespace audio
 		void OpenAL_SetVolume(float value);
 
 		//XAudio2
-#if defined(_WIN64)
+#if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
 	private:
 		IXAudio2SourceVoice* m_IXAudio2SourceVoice;
 

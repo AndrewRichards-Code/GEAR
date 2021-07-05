@@ -9,6 +9,7 @@ AudioListener::AudioListener(CreateInfo* pCreateInfo)
 	m_CI = *pCreateInfo;
 
 	m_ALICI.audioAPI = m_CI.audioAPI;
+	m_ALICI.endPointDevice = m_CI.endPointDevice;
 	m_ALI = CreateRef<AudioListenerInterface>(&m_ALICI);
 }
 

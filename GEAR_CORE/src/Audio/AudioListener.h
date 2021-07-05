@@ -13,7 +13,8 @@ namespace audio
 	public:
 		struct CreateInfo
 		{
-			AudioListenerInterface::API audioAPI;
+			AudioListenerInterface::API				audioAPI;
+			AudioListenerInterface::EndPointDevice	endPointDevice;
 		};
 
 	private:

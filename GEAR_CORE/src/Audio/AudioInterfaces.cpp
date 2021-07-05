@@ -16,7 +16,7 @@ AudioListenerInterface::AudioListenerInterface(CreateInfo* pCreateInfo)
 
 	if(s_API == API::UNKNOWN)
 	{
-		#if !defined(_WIN64)
+		#if !defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
 		s_API = API::OPENAL;
 		#else
 		s_API = m_CI.audioAPI;
@@ -38,9 +38,7 @@ AudioListenerInterface::AudioListenerInterface(CreateInfo* pCreateInfo)
 	}
 	case AudioListenerInterface::API::XAUDIO2:
 	{
-		#if defined(_WIN64)
 		XAudio2_CreateXAudio2AndMasteringVoice();
-		#endif
 		break;
 	}
 	}
@@ -62,9 +60,7 @@ AudioListenerInterface::~AudioListenerInterface()
 	}
 	case AudioListenerInterface::API::XAUDIO2:
 	{
-		#if defined(_WIN64)
 		XAudio2_DestroyXAudio2AndMasteringVoice();
-		#endif
 		break;
 	}
 	}
@@ -73,6 +69,7 @@ AudioListenerInterface::~AudioListenerInterface()
 //----------OPENAL----------
 void AudioListenerInterface::OpenAL_CreateDeviceAndContext()
 {
+	m_CI.endPointDevice = EndPointDevice::DEFAULT;
 	m_ALCdevice = alcOpenDevice(nullptr);
 	if (!m_ALCdevice)
 	{
@@ -112,9 +109,11 @@ void AudioListenerInterface::OpenAL_DestroyDeviceAndContext()
 		GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::AUDIO | ErrorCode::NO_DEVICE, "Failed to Close OpenAL Device.");
 	}
 }
-
 //----------XAUDIO2----------
-#if defined(_WIN64)
+#if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
+#include <mmdeviceapi.h>
+#include <Functiondiscoverykeys_devpkey.h>
+
 void AudioListenerInterface::XAudio2_CreateXAudio2AndMasteringVoice()
 {
 	if (FAILED(CoInitializeEx(nullptr, COINIT_MULTITHREADED)))
@@ -138,7 +137,104 @@ void AudioListenerInterface::XAudio2_CreateXAudio2AndMasteringVoice()
 	//    Right click on Microsoft Windows XAudio2 debug logging, Properties, then Enable Logging, and hit OK 
 	#endif
 
-	if (FAILED(m_IXAudio2->CreateMasteringVoice(&m_IXAudio2MasteringVoice, XAUDIO2_DEFAULT_CHANNELS, XAUDIO2_DEFAULT_SAMPLERATE, 0, 0, nullptr, AudioCategory_GameEffects)))
+	std::wstring deviceID;
+	IMMDeviceEnumerator* deviceEnumerator;
+	if (FAILED(CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_INPROC_SERVER, __uuidof(IMMDeviceEnumerator), (void**)&deviceEnumerator)))
+	{
+		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Create Audio Device Enumerator.");
+	}
+
+	auto GetDefaultAudioEndpointDeviceID = [&]()
+	{
+		IMMDevice* device;
+		if (FAILED(deviceEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &device)))
+		{
+			GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get Default Audio Endpoint.");
+		}
+
+		LPWSTR wDeviceID_c_str;
+		if (FAILED(device->GetId(&wDeviceID_c_str)))
+		{
+			GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get DeviceID for Default Audio Endpoint.");
+		}
+		deviceID = wDeviceID_c_str;
+
+		CoTaskMemFree((LPVOID)wDeviceID_c_str);
+		device->Release();
+	};
+	auto GetAudioEndpointDeviceID = [&](const std::wstring& _friendlyName)
+	{
+		IMMDeviceCollection* deviceCollections;
+		if (FAILED(deviceEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &deviceCollections)))
+		{
+			GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Enumerate all Audio Endpoints.");
+		}
+		UINT deviceCollectionCount;
+		if (FAILED(deviceCollections->GetCount(&deviceCollectionCount)))
+		{
+			GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get Count for all Audio Endpoints.");
+		}
+		for (UINT i = 0; i < deviceCollectionCount; i++)
+		{
+			IMMDevice* device;
+			if (FAILED(deviceCollections->Item(i, &device)))
+			{
+				GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get Device for Audio Endpoint: %u.", i);
+			}
+
+			LPWSTR wDeviceID_c_str;
+			if (FAILED(device->GetId(&wDeviceID_c_str)))
+			{
+				GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get DeviceID for Audio Endpoint: %u.", i);
+			}
+
+			IPropertyStore* propertyStore;
+			if (FAILED(device->OpenPropertyStore(STGM_READ, &propertyStore)))
+			{
+				GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Open Property Store for Audio Endpoint: %u.", i);
+			}
+
+			PROPVARIANT friendlyName;
+			PropVariantInit(&friendlyName);
+			if (FAILED(propertyStore->GetValue(PKEY_Device_FriendlyName, &friendlyName)))
+			{
+				GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get Value from Property Store for Audio Endpoint: %u.", i);
+			}
+
+			if (friendlyName.pwszVal)
+			{
+				std::wstring name(friendlyName.pwszVal);
+				if (name.find(_friendlyName) != std::wstring::npos)
+				{
+					deviceID = wDeviceID_c_str;
+				}
+			}
+
+			PropVariantClear(&friendlyName);
+			propertyStore->Release();
+			CoTaskMemFree((LPVOID)wDeviceID_c_str);
+			device->Release();
+		}
+		deviceCollections->Release();
+	};
+
+	switch (m_CI.endPointDevice)
+	{
+		default:
+		case EndPointDevice::DEFAULT:
+		{
+			GetDefaultAudioEndpointDeviceID();
+			break;
+		}
+		case EndPointDevice::HEADPHONES_XBOX_CONTROLLER:
+		{
+			GetAudioEndpointDeviceID(L"Headphones (Xbox Controller)");
+			break;
+		}
+	}
+	deviceEnumerator->Release();
+
+	if (FAILED(m_IXAudio2->CreateMasteringVoice(&m_IXAudio2MasteringVoice, XAUDIO2_DEFAULT_CHANNELS, XAUDIO2_DEFAULT_SAMPLERATE, 0, (deviceID.empty() ? nullptr : deviceID.c_str()), nullptr, AudioCategory_GameEffects)))
 	{
 		GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Create XAudio2MasteringVoice.");
 	}
@@ -153,6 +249,9 @@ void AudioListenerInterface::XAudio2_DestroyXAudio2AndMasteringVoice()
 	}
 	CoUninitialize();
 }
+#else
+void AudioListenerInterface::XAudio2_CreateXAudio2AndMasteringVoice() {}
+void AudioListenerInterface::XAudio2_DestroyXAudio2AndMasteringVoice() {}
 #endif
 
 ////////////////////////////////////////////
@@ -180,9 +279,7 @@ AudioSourceInterface::AudioSourceInterface(CreateInfo* pCreateInfo)
 	}
 	case AudioListenerInterface::API::XAUDIO2:
 	{
-		#if defined(_WIN64)
 		XAudio2_CreateIXAudio2SourceVoiceAndX3DAUDIO();
-		#endif
 		break;
 	}
 	}
@@ -205,9 +302,7 @@ AudioSourceInterface::~AudioSourceInterface()
 	}
 	case AudioListenerInterface::API::XAUDIO2:
 	{
-		#if defined(_WIN64)
 		XAudio2_DestroyIXAudio2SourceVoiceAndX3DAUDIO();
-		#endif	
 		break;
 	}
 	}
@@ -230,9 +325,7 @@ void AudioSourceInterface::Stream()
 	}
 	case AudioListenerInterface::API::XAUDIO2:
 	{
-		#if defined(_WIN64)
 		XAudio2_Stream();
-		#endif	
 		break;
 	}
 	}
@@ -261,9 +354,7 @@ void AudioSourceInterface::SetPitch(float value)
 	}
 	case AudioListenerInterface::API::XAUDIO2:
 	{
-		#if defined(_WIN64)
 		XAudio2_SetPitch(value);
-		#endif	
 		break;
 	}
 	}
@@ -295,9 +386,7 @@ void AudioSourceInterface::SetVolume(float value)
 	}
 	case AudioListenerInterface::API::XAUDIO2:
 	{
-		#if defined(_WIN64)
 		XAudio2_SetVolume(linear);
-		#endif	
 		break;
 	}
 	}
@@ -402,7 +491,7 @@ void AudioSourceInterface::OpenAL_SetVolume(float value)
 }
 
 //----------XAUDIO2----------
-#if defined(_WIN64)
+#if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
 void AudioSourceInterface::XAudio2_CreateIXAudio2SourceVoiceAndX3DAUDIO()
 {
 	WAVEFORMATEX wfx;
@@ -578,4 +667,14 @@ void AudioSourceInterface::XAudio2_SetVolume(float value)
 		GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to SetVolume IXAudio2SourceVoice.");
 	}
 }
+#else
+void AudioSourceInterface::XAudio2_CreateIXAudio2SourceVoiceAndX3DAUDIO() {}
+void AudioSourceInterface::XAudio2_DestroyIXAudio2SourceVoiceAndX3DAUDIO() {}
+void AudioSourceInterface::XAudio2_SubmitBuffer() {}
+void AudioSourceInterface::XAudio2_Play() {}
+void AudioSourceInterface::XAudio2_Stop() {}
+void AudioSourceInterface::XAudio2_Pause() {}
+void AudioSourceInterface::XAudio2_Stream() {}
+void AudioSourceInterface::XAudio2_SetPitch(float value) {}
+void AudioSourceInterface::XAudio2_SetVolume(float value) {}
 #endif
