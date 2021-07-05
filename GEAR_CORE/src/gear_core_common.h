@@ -1,8 +1,10 @@
 #pragma once
 #if defined(_MSC_VER)
-#pragma warning(disable : 26812) //Disables 'Prefered scoped enum'  warning C26812
-#pragma warning(disable : 26495) //Disables 'Unitialised variable'  warning C26495
-#pragma warning(disable : 26451) //Disables 'Arithmetic overflow'   warning C26451
+#pragma warning(disable : 26812) //Disables 'Prefered scoped enum'        warning C26812
+#pragma warning(disable : 26495) //Disables 'Unitialised variable'        warning C26495
+#pragma warning(disable : 26451) //Disables 'Arithmetic overflow'         warning C26451
+#pragma warning(disable : 4201)  //Disables 'Nameless struct/union'       warning C4201
+#pragma warning(disable : 4505)  //Disables 'Unreferenced local function' warnign C4505
 #endif
 
 //C Standard Libraries
@@ -25,13 +27,19 @@
 //Smart Poiners
 #include <memory>
 
+//Platfrom Macros
+#include "Core/PlatformMacros.h"
+
 //Removed Window Definition and Set Subsystem
-#if defined(_WIN64)
+
+#if defined(GEAR_PLATFORM_WINDOWS_X64)
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #define NOMINMAX
 
 #ifndef _DEBUG
-#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+//#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif
 
 #endif
@@ -84,11 +92,17 @@
 #pragma comment(lib, "OPENAL/libs/Win64/OpenAL32.lib")
 
 //XAudio2
-#if defined(_WIN64)
+#if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
 #define XAUDIO2_HELPER_FUNCTIONS
 #include <xaudio2.h>
 #include <x3daudio.h>
 #pragma comment(lib,"xaudio2.lib") 
+#endif
+
+//XInput
+#if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
+#include <xinput.h>
+#pragma comment(lib,"xinput.lib") 
 #endif
 
 //GEAR Helpers

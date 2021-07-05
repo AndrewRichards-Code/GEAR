@@ -222,8 +222,8 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 	bool postComputeGraphicsTask = textureGeneralToShaderReadOnlyBarrier.size();
 	bool postTransferGraphicsTask = textureTransferDstToShaderReadOnlyBarrier.size();
 
-	Ref<Node> preTransferGraphicsNode, preUploadForTextrueTransferNode, uploadTransferNode, postComputeGraphicsNode, postTransferGraphicsNode;
-	Node::TransitionResourcesTaskInfo trti;
+	Ref<GPUTask> preTransferGraphicsGPUTask, preUploadForTextrueTransferGPUTask, uploadTransferGPUTask, postComputeGraphicsGPUTask, postTransferGraphicsGPUTask;
+	GPUTask::TransitionResourcesTaskInfo trti;
 
 	//Pre-Transfer Graphics Task
 	{
@@ -231,20 +231,20 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 		trti.dstPipelineStage = PipelineStageBit::TRANSFER_BIT;
 		trti.barriers = textureShaderReadOnlyBarrierToTransferDst;
 
-		Node::CreateInfo preTransferGraphicsNodeCI;
-		preTransferGraphicsNodeCI.debugName = "Pre-Transfer - Graphics";
-		preTransferGraphicsNodeCI.task = Node::Task::TRANSITION_RESOURCES;
-		preTransferGraphicsNodeCI.pTaskInfo = &trti;
-		preTransferGraphicsNodeCI.srcNodes = {};
-		preTransferGraphicsNodeCI.srcPipelineStages = {};
-		preTransferGraphicsNodeCI.cmdBuffer = m_CmdBuffer;
-		preTransferGraphicsNodeCI.cmdBufferIndex = 3;
-		preTransferGraphicsNodeCI.resetCmdBuffer = true;
-		preTransferGraphicsNodeCI.submitCmdBuffer = true;
-		preTransferGraphicsNodeCI.skipTask = !preTransferGraphicsTask;
+		GPUTask::CreateInfo preTransferGraphicsGPUTaskCI;
+		preTransferGraphicsGPUTaskCI.debugName = "Pre-Transfer - Graphics";
+		preTransferGraphicsGPUTaskCI.task = GPUTask::Task::TRANSITION_RESOURCES;
+		preTransferGraphicsGPUTaskCI.pTaskInfo = &trti;
+		preTransferGraphicsGPUTaskCI.srcGPUTasks = {};
+		preTransferGraphicsGPUTaskCI.srcPipelineStages = {};
+		preTransferGraphicsGPUTaskCI.cmdBuffer = m_CmdBuffer;
+		preTransferGraphicsGPUTaskCI.cmdBufferIndex = 3;
+		preTransferGraphicsGPUTaskCI.resetCmdBuffer = true;
+		preTransferGraphicsGPUTaskCI.submitCmdBuffer = true;
+		preTransferGraphicsGPUTaskCI.skipTask = !preTransferGraphicsTask;
 
-		preTransferGraphicsNode = CreateRef<Node>(&preTransferGraphicsNodeCI);
-		preTransferGraphicsNode->Execute();
+		preTransferGraphicsGPUTask = CreateRef<GPUTask>(&preTransferGraphicsGPUTaskCI);
+		preTransferGraphicsGPUTask->Execute();
 	}
 
 	//Pre-Upload Transfer Task
@@ -253,25 +253,25 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 		trti.dstPipelineStage = PipelineStageBit::TRANSFER_BIT;
 		trti.barriers = textureUnknownToTransferDstBarrier;
 
-		Node::CreateInfo preUploadForTextrueTransferNodeCI;
-		preUploadForTextrueTransferNodeCI.debugName = "Pre-Upload - Transfer";
-		preUploadForTextrueTransferNodeCI.task = Node::Task::TRANSITION_RESOURCES;
-		preUploadForTextrueTransferNodeCI.pTaskInfo = &trti;
-		preUploadForTextrueTransferNodeCI.srcNodes = { preTransferGraphicsNode };
-		preUploadForTextrueTransferNodeCI.srcPipelineStages = { PipelineStageBit::TRANSFER_BIT };
-		preUploadForTextrueTransferNodeCI.cmdBuffer = m_TransCmdBuffer;
-		preUploadForTextrueTransferNodeCI.cmdBufferIndex = 0;
-		preUploadForTextrueTransferNodeCI.resetCmdBuffer = true;
-		preUploadForTextrueTransferNodeCI.submitCmdBuffer = false;
-		preUploadForTextrueTransferNodeCI.skipTask = !preUploadTransferTask;
+		GPUTask::CreateInfo preUploadForTextrueTransferGPUTaskCI;
+		preUploadForTextrueTransferGPUTaskCI.debugName = "Pre-Upload - Transfer";
+		preUploadForTextrueTransferGPUTaskCI.task = GPUTask::Task::TRANSITION_RESOURCES;
+		preUploadForTextrueTransferGPUTaskCI.pTaskInfo = &trti;
+		preUploadForTextrueTransferGPUTaskCI.srcGPUTasks = { preTransferGraphicsGPUTask };
+		preUploadForTextrueTransferGPUTaskCI.srcPipelineStages = { PipelineStageBit::TRANSFER_BIT };
+		preUploadForTextrueTransferGPUTaskCI.cmdBuffer = m_TransCmdBuffer;
+		preUploadForTextrueTransferGPUTaskCI.cmdBufferIndex = 0;
+		preUploadForTextrueTransferGPUTaskCI.resetCmdBuffer = true;
+		preUploadForTextrueTransferGPUTaskCI.submitCmdBuffer = false;
+		preUploadForTextrueTransferGPUTaskCI.skipTask = !preUploadTransferTask;
 
-		preUploadForTextrueTransferNode = CreateRef<Node>(&preUploadForTextrueTransferNodeCI);
-		preUploadForTextrueTransferNode->Execute();
+		preUploadForTextrueTransferGPUTask = CreateRef<GPUTask>(&preUploadForTextrueTransferGPUTaskCI);
+		preUploadForTextrueTransferGPUTask->Execute();
 	}
 
 	//Upload Transfer Task
 	{
-		Node::UploadResourceTaskInfo urti;
+		GPUTask::UploadResourceTaskInfo urti;
 		urti.camera = m_Camera;
 		urti.cameraForce = forceUploadCamera;
 		urti.fontCamera = m_FontCamera;
@@ -284,26 +284,26 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 		urti.modelsForce = forceUploadMeshes;
 		urti.materialsForce = false;
 
-		Node::CreateInfo uploadTransferNodeCI;
-		uploadTransferNodeCI.debugName = "Upload - Transfer";
-		uploadTransferNodeCI.task = Node::Task::UPLOAD_RESOURCES;
-		uploadTransferNodeCI.pTaskInfo = &urti;
-		uploadTransferNodeCI.srcNodes = { preUploadForTextrueTransferNode };
-		uploadTransferNodeCI.srcPipelineStages = { (PipelineStageBit)0 };
-		uploadTransferNodeCI.cmdBuffer = m_TransCmdBuffer;
-		uploadTransferNodeCI.cmdBufferIndex = 0;
-		uploadTransferNodeCI.resetCmdBuffer = false;
-		uploadTransferNodeCI.submitCmdBuffer = true;
-		uploadTransferNodeCI.skipTask = !transferTask;
+		GPUTask::CreateInfo uploadTransferGPUTaskCI;
+		uploadTransferGPUTaskCI.debugName = "Upload - Transfer";
+		uploadTransferGPUTaskCI.task = GPUTask::Task::UPLOAD_RESOURCES;
+		uploadTransferGPUTaskCI.pTaskInfo = &urti;
+		uploadTransferGPUTaskCI.srcGPUTasks = { preUploadForTextrueTransferGPUTask };
+		uploadTransferGPUTaskCI.srcPipelineStages = { (PipelineStageBit)0 };
+		uploadTransferGPUTaskCI.cmdBuffer = m_TransCmdBuffer;
+		uploadTransferGPUTaskCI.cmdBufferIndex = 0;
+		uploadTransferGPUTaskCI.resetCmdBuffer = false;
+		uploadTransferGPUTaskCI.submitCmdBuffer = true;
+		uploadTransferGPUTaskCI.skipTask = !transferTask;
 
-		uploadTransferNode = CreateRef<Node>(&uploadTransferNodeCI);
-		uploadTransferNode->Execute();
+		uploadTransferGPUTask = CreateRef<GPUTask>(&uploadTransferGPUTaskCI);
+		uploadTransferGPUTask->Execute();
 	}
 
 	//Async Compute Task
 	{
 		if (asyncComputeTask && transferTask)
-			uploadTransferNode->GetFence()->Wait();
+			uploadTransferGPUTask->GetFence()->Wait();
 
 		if (asyncComputeTask)
 		{
@@ -340,20 +340,20 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 		trti.dstPipelineStage = PipelineStageBit::FRAGMENT_SHADER_BIT;
 		trti.barriers = textureGeneralToShaderReadOnlyBarrier;
 
-		Node::CreateInfo postComputeGraphicsNodeCI;
-		postComputeGraphicsNodeCI.debugName = "Post-Compute - Graphics";
-		postComputeGraphicsNodeCI.task = Node::Task::TRANSITION_RESOURCES;
-		postComputeGraphicsNodeCI.pTaskInfo = &trti;
-		postComputeGraphicsNodeCI.srcNodes = { uploadTransferNode };
-		postComputeGraphicsNodeCI.srcPipelineStages = { PipelineStageBit::COMPUTE_SHADER_BIT };
-		postComputeGraphicsNodeCI.cmdBuffer = m_CmdBuffer;
-		postComputeGraphicsNodeCI.cmdBufferIndex = 2;
-		postComputeGraphicsNodeCI.resetCmdBuffer = true;
-		postComputeGraphicsNodeCI.submitCmdBuffer = false;
-		postComputeGraphicsNodeCI.skipTask = !postComputeGraphicsTask;
+		GPUTask::CreateInfo postComputeGraphicsGPUTaskCI;
+		postComputeGraphicsGPUTaskCI.debugName = "Post-Compute - Graphics";
+		postComputeGraphicsGPUTaskCI.task = GPUTask::Task::TRANSITION_RESOURCES;
+		postComputeGraphicsGPUTaskCI.pTaskInfo = &trti;
+		postComputeGraphicsGPUTaskCI.srcGPUTasks = { uploadTransferGPUTask };
+		postComputeGraphicsGPUTaskCI.srcPipelineStages = { PipelineStageBit::COMPUTE_SHADER_BIT };
+		postComputeGraphicsGPUTaskCI.cmdBuffer = m_CmdBuffer;
+		postComputeGraphicsGPUTaskCI.cmdBufferIndex = 2;
+		postComputeGraphicsGPUTaskCI.resetCmdBuffer = true;
+		postComputeGraphicsGPUTaskCI.submitCmdBuffer = false;
+		postComputeGraphicsGPUTaskCI.skipTask = !postComputeGraphicsTask;
 
-		postComputeGraphicsNode = CreateRef<Node>(&postComputeGraphicsNodeCI);
-		postComputeGraphicsNode->Execute();
+		postComputeGraphicsGPUTask = CreateRef<GPUTask>(&postComputeGraphicsGPUTaskCI);
+		postComputeGraphicsGPUTask->Execute();
 	}
 
 	//Post-Transfer Graphics CmdBuffer
@@ -362,26 +362,26 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 		trti.dstPipelineStage = PipelineStageBit::FRAGMENT_SHADER_BIT;
 		trti.barriers = textureTransferDstToShaderReadOnlyBarrier;
 	
-		Node::CreateInfo postTransferGraphicsNodeCI;
-		postTransferGraphicsNodeCI.debugName = "Post-Transfer - Graphics";
-		postTransferGraphicsNodeCI.task = Node::Task::TRANSITION_RESOURCES;
-		postTransferGraphicsNodeCI.pTaskInfo = &trti;
-		postTransferGraphicsNodeCI.srcNodes = { postComputeGraphicsNode };
-		postTransferGraphicsNodeCI.srcPipelineStages = { (PipelineStageBit)0 };
-		postTransferGraphicsNodeCI.cmdBuffer = m_CmdBuffer;
-		postTransferGraphicsNodeCI.cmdBufferIndex = 2;
-		postTransferGraphicsNodeCI.resetCmdBuffer = false;
-		postTransferGraphicsNodeCI.submitCmdBuffer = true;
-		postTransferGraphicsNodeCI.skipTask = !postTransferGraphicsTask;
+		GPUTask::CreateInfo postTransferGraphicsGPUTaskCI;
+		postTransferGraphicsGPUTaskCI.debugName = "Post-Transfer - Graphics";
+		postTransferGraphicsGPUTaskCI.task = GPUTask::Task::TRANSITION_RESOURCES;
+		postTransferGraphicsGPUTaskCI.pTaskInfo = &trti;
+		postTransferGraphicsGPUTaskCI.srcGPUTasks = { postComputeGraphicsGPUTask };
+		postTransferGraphicsGPUTaskCI.srcPipelineStages = { (PipelineStageBit)0 };
+		postTransferGraphicsGPUTaskCI.cmdBuffer = m_CmdBuffer;
+		postTransferGraphicsGPUTaskCI.cmdBufferIndex = 2;
+		postTransferGraphicsGPUTaskCI.resetCmdBuffer = false;
+		postTransferGraphicsGPUTaskCI.submitCmdBuffer = true;
+		postTransferGraphicsGPUTaskCI.skipTask = !postTransferGraphicsTask;
 	
-		postTransferGraphicsNode = CreateRef<Node>(&postTransferGraphicsNodeCI);
-		postTransferGraphicsNode->Execute();
+		postTransferGraphicsGPUTask = CreateRef<GPUTask>(&postTransferGraphicsGPUTaskCI);
+		postTransferGraphicsGPUTask->Execute();
 	}
 
 	//Wait for all Task Fences
-	preTransferGraphicsNode->GetFence()->Wait();
-	uploadTransferNode->GetFence()->Wait();
-	postTransferGraphicsNode->GetFence()->Wait();
+	preTransferGraphicsGPUTask->GetFence()->Wait();
+	uploadTransferGPUTask->GetFence()->Wait();
+	postTransferGraphicsGPUTask->GetFence()->Wait();
 }
 
 void Renderer::Flush()

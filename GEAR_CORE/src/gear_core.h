@@ -1,12 +1,20 @@
 #pragma once
 
+//Animation
+#include "Animation/Animation.h"
+#include "Animation/Animator.h"
+
 //Audio
 #include "Audio/AudioInterfaces.h"
 #include "Audio/AudioSource.h"
 #include "Audio/AudioListener.h"
 
 //Core
+#include "Core/Application.h"
+#include "Core/EntryPoint.h"
 #include "Core/EnumStringMaps.h"
+#include "Core/PlatformMacros.h"
+#include "Core/Sequencer.h"
 #include "Core/Timer.h"
 #include "Core/TypeLibrary.h"
 
@@ -26,6 +34,7 @@
 
 //Input
 #include "Input/InputManager.h"
+#include "Input/InputInterfaces.h"
 
 //Objects
 #include "Objects/Camera.h"

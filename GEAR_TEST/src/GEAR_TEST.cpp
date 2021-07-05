@@ -1,6 +1,8 @@
+#include "GEAR_TEST.h"
 #include "gear_core.h"
 
 using namespace gear;
+using namespace animation;
 using namespace audio;
 using namespace core;
 using namespace graphics;
@@ -12,17 +14,27 @@ using namespace miru::crossplatform;
 
 using namespace mars;
 
-int main()
+Ref<Application> CreateApplication(int argc, char** argv)
 {
+	return CreateRef<GEAR_TEST>();
+}
+
+void GEAR_TEST::Run()
+{
+	input::InputInterface::CreateInfo iCI = { input::InputInterface::API::XINPUT, 0 };
+	input::InputInterface input(&iCI);
+	GEAR_SET_ERROR_CODE_TO_STRING_FUNCTION;
+
 #if 0
 	AudioListener::CreateInfo listenerCI;
-	listenerCI.audioAPI = audio::AudioListenerInterface::API::OPENAL;
-	auto listener = gear::CreateRef<AudioListener>(&listenerCI);
+	listenerCI.audioAPI = AudioListenerInterface::API::XAUDIO2;
+	listenerCI.endPointDevice = AudioListenerInterface::EndPointDevice::HEADPHONES_XBOX_CONTROLLER;
+	Ref<AudioListener> listener = CreateRef<AudioListener>(&listenerCI);
 
 	AudioSource::CreateInfo rainbowRaodCI;
 	rainbowRaodCI.filepath = "res/wav/Rainbow Road.wav";
 	rainbowRaodCI.pAudioListener = listener;
-	auto rainbowRoad = gear::CreateRef<AudioSource>(&rainbowRaodCI);
+	Ref<AudioSource> rainbowRoad = CreateRef<AudioSource>(&rainbowRaodCI);
 	rainbowRoad->SetPitch(0.0f);
 	rainbowRoad->SetVolume(0.0f);
 	rainbowRoad->Stream();
@@ -31,7 +43,7 @@ int main()
 	sceneCI.debugName = "GEAR_TEST_Main_Scene";
 	sceneCI.filepath = "res/scenes/current_scene.gsf.json";
 	sceneCI.nativeScriptDir = "res/scripts/";
-	gear::Ref<Scene> activeScene = gear::CreateRef<Scene>(&sceneCI);
+	Ref<Scene> activeScene = CreateRef<Scene>(&sceneCI);
 
 	Window::CreateInfo windowCI;
 	//windowCI.api = GraphicsAPI::API::D3D12;
@@ -42,48 +54,49 @@ int main()
 	windowCI.fullscreen = false;
 	windowCI.vSync = true;
 	windowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_2_BIT;
-	windowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::NONE;
-	gear::Ref<Window> window = gear::CreateRef<Window>(&windowCI);
+	windowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::RENDER_DOC;
+	Ref<Window> window = CreateRef<Window>(&windowCI);
 
 	AllocatorManager::CreateInfo mbmCI;
 	mbmCI.pContext = window->GetContext();
 	mbmCI.defaultBlockSize = Allocator::BlockSize::BLOCK_SIZE_128MB;
 	AllocatorManager::Initialise(&mbmCI);
 
-	gear::Ref<FontLibrary> fontLib = gear::CreateRef<FontLibrary>();
+	Ref<FontLibrary> fontLib = CreateRef<FontLibrary>();
 	FontLibrary::LoadInfo fontLI;
 	fontLI.GI.filepath = "res/font/Source_Code_Pro/SourceCodePro-Regular.ttf";
 	fontLI.GI.fontHeightPx = 16;
 	fontLI.GI.generatedTextureSize = 1024;
 	fontLI.GI.savePNGandBINfiles = true;
 	fontLI.regenerateTextureAtlas = true;
-	gear::Ref<FontLibrary::Font> font = fontLib->LoadFont(&fontLI);
+	Ref<FontLibrary::Font> font = fontLib->LoadFont(&fontLI);
 
 	Text::CreateInfo fontRendererCI;
 	fontRendererCI.device = window->GetDevice();
 	fontRendererCI.viewportWidth = window->GetWidth();
 	fontRendererCI.viewportHeight = window->GetHeight();
 	Entity textEntity = activeScene->CreateEntity();
-	textEntity.AddComponent<TextComponent>(std::move(gear::CreateRef<Text>(&fontRendererCI)));
+	textEntity.AddComponent<TextComponent>(std::move(CreateRef<Text>(&fontRendererCI)));
 	uint32_t textRowHeight = 20, render_doc_offset = 40;
 	auto& text = textEntity.GetComponent<TextComponent>().text;
-	text->AddLine(font, window->GetDeviceName(),							{ 0, render_doc_offset + 0 * textRowHeight }, Vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	text->AddLine(font, window->GetGraphicsAPIVersion(),					{ 0, render_doc_offset + 1 * textRowHeight }, GraphicsAPI::IsD3D12()?Vec4(0.0f, 1.0f, 0.0f, 1.0):Vec4(1.0f, 0.0f, 0.0f, 1.0f));
-	text->AddLine(font, "FPS: " + window->GetFPSString<uint32_t>(),			{ 0, render_doc_offset + 2 * textRowHeight }, Vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	text->AddLine(font, "MSAA: " + window->GetAntiAliasingValue() + "x",	{ 0, render_doc_offset + 3 * textRowHeight }, Vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	
+	text->AddLine(font, window->GetDeviceName(), { 0, render_doc_offset + 0 * textRowHeight }, Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	text->AddLine(font, window->GetGraphicsAPIVersion(), { 0, render_doc_offset + 1 * textRowHeight }, GraphicsAPI::IsD3D12() ? Vec4(0.0f, 1.0f, 0.0f, 1.0) : Vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	text->AddLine(font, "FPS: " + window->GetFPSString<uint32_t>(), { 0, render_doc_offset + 2 * textRowHeight }, Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	text->AddLine(font, "MSAA: " + window->GetAntiAliasingValue() + "x", { 0, render_doc_offset + 3 * textRowHeight }, Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+
 	Skybox::CreateInfo skyboxCI;
 	skyboxCI.debugName = "Skybox-HDR";
 	skyboxCI.device = window->GetDevice();
-	skyboxCI.filepaths = { "res/img/snowy_park_01_2k.hdr" };
+	//skyboxCI.filepaths = { "res/img/snowy_park_01_2k.hdr" };
+	skyboxCI.filepaths = { "res/img/kloppenheim_06_2k.hdr" };
 	skyboxCI.generatedCubemapSize = 1024;
 	skyboxCI.transform.translation = Vec3(0, 0, 0);
 	skyboxCI.transform.orientation = Quat(1, 0, 0, 0);
 	skyboxCI.transform.scale = Vec3(500.0f, 500.0f, 500.0f);
 	Entity skyboxEntity = activeScene->CreateEntity();
-	skyboxEntity.AddComponent<SkyboxComponent>(std::move(gear::CreateRef<Skybox>(&skyboxCI)));
+	skyboxEntity.AddComponent<SkyboxComponent>(std::move(CreateRef<Skybox>(&skyboxCI)));
 
-	auto LoadTexture = [](gear::Ref<Window> window, const std::string& filepath, const std::string& debugName) -> gear::Ref<graphics::Texture>
+	auto LoadTexture = [](Ref<Window> window, const std::string& filepath, const std::string& debugName, bool linear = false) -> Ref<graphics::Texture>
 	{
 		Texture::CreateInfo texCI;
 		texCI.debugName = debugName.c_str();
@@ -94,24 +107,25 @@ int main()
 		texCI.mipLevels = GEAR_TEXTURE_MAX_MIP_LEVEL;
 		texCI.arrayLayers = 1;
 		texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
-		texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
+		texCI.format = linear ? miru::crossplatform::Image::Format::R32G32B32A32_SFLOAT : miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
 		texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 		texCI.usage = miru::crossplatform::Image::UsageBit(0);
 		texCI.generateMipMaps = true;
-		return std::move(gear::CreateRef<Texture>(&texCI));
+		texCI.colourSpace = linear ? ColourSpace::LINEAR : ColourSpace::SRGB;
+		return std::move(CreateRef<Texture>(&texCI));
 	};
 
-	//std::future<gear::Ref<graphics::Texture>> rustIronAlbedo = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_basecolor.png"), std::string("UE4 Rust Iron: Albedo"));
-	//std::future<gear::Ref<graphics::Texture>> rustIronMetallic = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_metallic.png"), std::string("UE4 Rust Iron: Metallic"));
-	//std::future<gear::Ref<graphics::Texture>> rustIronNormal = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_normal.png"), std::string("UE4 Rust Iron: Normal"));
-	//std::future<gear::Ref<graphics::Texture>> rustIronRoughness = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_roughness.png"), std::string("UE4 Rust Iron: Roughness"));
+	//std::future<Ref<graphics::Texture>> rustIronAlbedo = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_basecolor.png"), std::string("UE4 Rust Iron: Albedo"));
+	//std::future<Ref<graphics::Texture>> rustIronMetallic = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_metallic.png"), std::string("UE4 Rust Iron: Metallic"));
+	//std::future<Ref<graphics::Texture>> rustIronNormal = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_normal.png"), std::string("UE4 Rust Iron: Normal"));
+	//std::future<Ref<graphics::Texture>> rustIronRoughness = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_roughness.png"), std::string("UE4 Rust Iron: Roughness"));
 
-	//std::future<gear::Ref<graphics::Texture>> slateAlbedo = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-albedo2.png"), std::string("UE4 Slate: Albedo"));
-	//std::future<gear::Ref<graphics::Texture>> slateMetallic = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-metalness.png"), std::string("UE4 Slate: Metallic"));
-	//std::future<gear::Ref<graphics::Texture>> slateNormal = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-normal3-UE4.png"), std::string("UE4 Slate: Normal"));
-	//std::future<gear::Ref<graphics::Texture>> slateRoughness = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-rough.png"), std::string("UE4 Slate: Roughness"));
-	//std::future<gear::Ref<graphics::Texture>> slateAO = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-ao.png"), std::string("UE4 Slate: AO"));
-	
+	//std::future<Ref<graphics::Texture>> slateAlbedo = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-albedo2.png"), std::string("UE4 Slate: Albedo"));
+	//std::future<Ref<graphics::Texture>> slateMetallic = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-metalness.png"), std::string("UE4 Slate: Metallic"));
+	//std::future<Ref<graphics::Texture>> slateNormal = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-normal3-UE4.png"), std::string("UE4 Slate: Normal"));
+	//std::future<Ref<graphics::Texture>> slateRoughness = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-rough.png"), std::string("UE4 Slate: Roughness"));
+	//std::future<Ref<graphics::Texture>> slateAO = std::async(std::launch::async, LoadTexture, window, std::string("res/img/slate2-tiled-ue4/slate2-tiled-ao.png"), std::string("UE4 Slate: AO"));
+
 	Material::CreateInfo matCI;
 	/*matCI.debugName = "UE4 Rust Iron";
 	matCI.device = window->GetDevice();
@@ -121,8 +135,8 @@ int main()
 		{ Material::TextureType::METALLIC, rustIronMetallic.get() },
 		{ Material::TextureType::ROUGHNESS, rustIronRoughness.get() }
 	};
-	gear::Ref<Material> rustIronMaterial = gear::CreateRef<Material>(&matCI);*/
-	
+	Ref<Material> rustIronMaterial = CreateRef<Material>(&matCI);*/
+
 	/*matCI.debugName = "UE4 Slate";
 	matCI.device = window->GetDevice();
 	matCI.pbrTextures = {
@@ -132,25 +146,25 @@ int main()
 		{ Material::TextureType::ROUGHNESS, slateRoughness.get() },
 		{ Material::TextureType::AMBIENT_OCCLUSION, slateAO.get()}
 	};
-	gear::Ref<Material> slateMaterial = gear::CreateRef<Material>(&matCI);*/
+	Ref<Material> slateMaterial = CreateRef<Material>(&matCI);*/
 
 	Mesh::CreateInfo meshCI;
 	/*meshCI.debugName = "quad.fbx";
 	meshCI.device = window->GetDevice();
 	meshCI.filepath = "res/obj/quad.fbx";
-	gear::Ref<Mesh> quadMesh = gear::CreateRef<Mesh>(&meshCI);
+	Ref<Mesh> quadMesh = CreateRef<Mesh>(&meshCI);
 	quadMesh->SetOverrideMaterial(0, slateMaterial);*/
 
 	/*meshCI.debugName = "sphere.fbx";
 	meshCI.device = window->GetDevice();
 	meshCI.filepath = "res/obj/sphere.fbx";
-	gear::Ref<Mesh> sphereMesh = gear::CreateRef<Mesh>(&meshCI);
+	Ref<Mesh> sphereMesh = CreateRef<Mesh>(&meshCI);
 	sphereMesh->SetOverrideMaterial(0, rustIronMaterial);*/
 
 	/*meshCI.debugName = "KagemitsuG4.fbx";
 	meshCI.device = window->GetDevice();
 	meshCI.filepath = "res/obj/KagemitsuG4.fbx";
-	gear::Ref<Mesh> kagemitsuG4Mesh = gear::CreateRef<Mesh>(&meshCI);*/
+	Ref<Mesh> kagemitsuG4Mesh = CreateRef<Mesh>(&meshCI);*/
 
 	/*modelCI.debugName = "Quad";
 	modelCI.device = window->GetDevice();
@@ -161,7 +175,7 @@ int main()
 	modelCI.transform.scale = Vec3(100.0f, 100.0f, 100.0f);
 	modelCI.renderPipelineName = "PBROpaque";
 	Entity quad = activeScene->CreateEntity();
-	quad.AddComponent<ModelComponent>(std::move(gear::CreateRef<Model>(&modelCI)));*/
+	quad.AddComponent<ModelComponent>(std::move(CreateRef<Model>(&modelCI)));*/
 
 	Model::CreateInfo modelCI;
 	/*modelCI.debugName = "KagemitsuG4";
@@ -172,15 +186,16 @@ int main()
 	modelCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
 	modelCI.renderPipelineName = "PBROpaque";
 	Entity KagemitsuG4 = activeScene->CreateEntity();
-	KagemitsuG4.AddComponent<ModelComponent>(gear::CreateRef<Model>(&modelCI));*/
+	KagemitsuG4.AddComponent<ModelComponent>(CreateRef<Model>(&modelCI));*/
 
+#if 0
 	uint32_t gridSize = 5;
 	for (uint32_t i = 0; i < gridSize; i++)
 	{
 		for (uint32_t j = 0; j < gridSize; j++)
 		{
-			float pos_x =(2.0f / float(gridSize)) * float(int(i) - int(gridSize / 2));
-			float pos_y =(2.0f / float(gridSize)) * float(int(j) - int(gridSize / 2)) + 1.0f;
+			float pos_x = (2.0f / float(gridSize)) * float(int(i) - int(gridSize / 2));
+			float pos_y = (2.0f / float(gridSize)) * float(int(j) - int(gridSize / 2)) + 1.0f;
 
 			matCI.debugName = "Test Material_" + std::to_string(i) + "_" + std::to_string(j);
 			matCI.device = window->GetDevice();
@@ -190,12 +205,12 @@ int main()
 			matCI.pbrConstants.roughness = (float(j) + 0.5f) / float(gridSize);
 			matCI.pbrConstants.ambientOcclusion = 0.0f;
 			matCI.pbrConstants.emissive = Vec4(0, 0, 0, 1);
-			gear::Ref<Material> testMaterial = gear::CreateRef<Material>(&matCI);
+			Ref<Material> testMaterial = CreateRef<Material>(&matCI);
 
 			meshCI.debugName = "sphere.fbx";
 			meshCI.device = window->GetDevice();
 			meshCI.filepath = "res/obj/sphere.fbx";
-			gear::Ref<Mesh> sphereMesh = gear::CreateRef<Mesh>(&meshCI);
+			Ref<Mesh> sphereMesh = CreateRef<Mesh>(&meshCI);
 			sphereMesh->SetOverrideMaterial(0, testMaterial);
 
 			modelCI.debugName = "Sphere";
@@ -207,9 +222,45 @@ int main()
 			modelCI.transform.scale = Vec3(1.0f / float(gridSize), 1.0f / float(gridSize), 1.0f / float(gridSize));
 			modelCI.renderPipelineName = "PBROpaque";
 			Entity sphere = activeScene->CreateEntity();
-			sphere.AddComponent<ModelComponent>(std::move(gear::CreateRef<Model>(&modelCI)));
+			sphere.AddComponent<ModelComponent>(std::move(CreateRef<Model>(&modelCI)));
 		}
 	}
+#endif
+
+	std::future<Ref<graphics::Texture>> droneAlbedo = std::async(std::launch::async, LoadTexture, window, std::string("res/img/drone/Totally_LP_defaultMat_BaseColor.png"), std::string("Drone: Albedo"));
+	std::future<Ref<graphics::Texture>> droneMetallic = std::async(std::launch::async, LoadTexture, window, std::string("res/img/drone/Totally_LP_defaultMat_Metallic.png"), std::string("Drone: Metallic"), true);
+	std::future<Ref<graphics::Texture>> droneNormal = std::async(std::launch::async, LoadTexture, window, std::string("res/img/drone/Totally_LP_defaultMat_Normal.png"), std::string("Drone: Normal"));
+	std::future<Ref<graphics::Texture>> droneRoughness = std::async(std::launch::async, LoadTexture, window, std::string("res/img/drone/Totally_LP_defaultMat_Roughness.png"), std::string("Drone: Roughness"), true);
+	std::future<Ref<graphics::Texture>> droneAO = std::async(std::launch::async, LoadTexture, window, std::string("res/img/drone/Totally_LP_defaultMat_Occlusion.png"), std::string("Drone: AO"), true);
+	std::future<Ref<graphics::Texture>> droneEmissive = std::async(std::launch::async, LoadTexture, window, std::string("res/img/drone/Totally_LP_defaultMat_Emissive.png"), std::string("Drone: Emissive"));
+
+	matCI.debugName = "Drone Material";
+	matCI.device = window->GetDevice();
+	matCI.pbrTextures = {
+		{ Material::TextureType::NORMAL, droneNormal.get() },
+		{ Material::TextureType::ALBEDO, droneAlbedo.get() },
+		{ Material::TextureType::METALLIC, droneMetallic.get() },
+		{ Material::TextureType::ROUGHNESS, droneRoughness.get() },
+		{ Material::TextureType::AMBIENT_OCCLUSION, droneAO.get() },
+		{ Material::TextureType::EMISSIVE, droneEmissive.get() },
+	};
+	Ref<Material> droneMaterial = CreateRef<Material>(&matCI);
+
+	meshCI.debugName = "Drone Mesh";
+	meshCI.device = window->GetDevice();
+	meshCI.filepath = "res/obj/Drone_Animated_03.fbx";
+	Ref<Mesh> droneMesh = CreateRef<Mesh>(&meshCI);
+	droneMesh->SetOverrideMaterial(0, droneMaterial);
+
+	modelCI.debugName = "Drone Model";
+	modelCI.device = window->GetDevice();
+	modelCI.pMesh = droneMesh;
+	modelCI.transform.translation = Vec3(0.0, 0.5, -1.0);
+	modelCI.transform.orientation = Quat(sqrtf(2) / 2, -sqrtf(2) / 2, 0, 0);
+	modelCI.transform.scale = Vec3(0.01f, 0.01f, 0.01f);
+	modelCI.renderPipelineName = "PBROpaque";
+	Entity drone = activeScene->CreateEntity();
+	drone.AddComponent<ModelComponent>(CreateRef<Model>(&modelCI));
 
 	Light::CreateInfo lightCI;
 	lightCI.debugName = "Main";
@@ -220,7 +271,7 @@ int main()
 	lightCI.transform.orientation = Quat(1, 0, 0, 0);
 	lightCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
 	Entity lightEntity = activeScene->CreateEntity();
-	lightEntity.AddComponent<LightComponent>(std::move(gear::CreateRef<Light>(&lightCI)));
+	lightEntity.AddComponent<LightComponent>(std::move(CreateRef<Light>(&lightCI)));
 
 	Camera::CreateInfo cameraCI;
 	cameraCI.debugName = "Main";
@@ -233,11 +284,23 @@ int main()
 	cameraCI.flipX = false;
 	cameraCI.flipY = false;
 	Entity cameraEntity = activeScene->CreateEntity();
-	cameraEntity.AddComponent<CameraComponent>(std::move(gear::CreateRef<Camera>(&cameraCI)));
+	cameraEntity.AddComponent<CameraComponent>(std::move(CreateRef<Camera>(&cameraCI)));
 	cameraEntity.AddComponent<NativeScriptComponent>("TestScript");
 
-	gear::Ref<Renderer> m_Renderer = gear::CreateRef<Renderer>(window->GetContext());
-	m_Renderer->InitialiseRenderPipelines({"res/pipelines/PBROpaque.grpf.json", "res/pipelines/Cube.grpf.json", "res/pipelines/Font.grpf.json" }, 
+	Animator::CreateInfo animatorCI;
+	animatorCI.debugName = "Drone Animator";
+	animatorCI.pMesh = droneMesh;
+	Ref<Sequencer> sequencer = CreateRef<Animator>(&animatorCI);
+
+	Ref<Renderer> m_Renderer = CreateRef<Renderer>(window->GetContext());
+	m_Renderer->InitialiseRenderPipelines(
+		{
+			"res/pipelines/PBROpaque.grpf.json",
+			"res/pipelines/HDR.grpf.json",
+			"res/pipelines/Cube.grpf.json",
+			"res/pipelines/Font.grpf.json",
+			"res/pipelines/DebugCoordinateAxes.grpf.json"
+		},
 		(float)window->GetWidth(), (float)window->GetHeight(), window->GetCreateInfo().samples, window->GetRenderPass());
 
 	AllocatorManager::PrintMemoryBlockStatus();
@@ -255,6 +318,8 @@ int main()
 	bool windowResize = false;
 	while (!window->Closed())
 	{
+		ref_cast<Animator>(sequencer)->Update();
+
 		//Update Timer
 		timer.Update();
 
@@ -298,9 +363,9 @@ int main()
 		{
 			activeScene->Play();
 		}
-		
+
 		//Keyboard and Mouse input
-		if(window->IsMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT))
+		if (window->IsMouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT))
 		{
 			window->GetMousePosition(pos_x, pos_y);
 			pos_x /= window->GetWidth();
@@ -313,7 +378,7 @@ int main()
 			last_pos_x = pos_x;
 			last_pos_y = pos_y;
 			yaw += pi * offset_pos_x;
-			pitch += pi/2 * offset_pos_y;
+			pitch += pi / 2 * offset_pos_y;
 			if (pitch > pi / 2)
 				pitch = pi / 2;
 			if (pitch < -pi / 2)
@@ -342,12 +407,12 @@ int main()
 
 		double fov = 0.0;
 		window->GetScrollPosition(fov);
-		camera->m_CI.transform.orientation = Quat(pitch, {1, 0, 0}) * Quat(yaw, { 0, 1, 0 });
+		camera->m_CI.transform.orientation = Quat(pitch, camera->m_Right) * Quat(-yaw, { 0, 1, 0 });
 		camera->m_CI.perspectiveParams.horizonalFOV = DegToRad(90.0 - fov);
 		camera->m_CI.perspectiveParams.aspectRatio = window->GetRatio();
 		camera->m_CI.transform.translation.y = 1.0f;
 		camera->Update();
-		
+
 		//Update Scene
 		activeScene->OnUpdate(m_Renderer, timer);
 

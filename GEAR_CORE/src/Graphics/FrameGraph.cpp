@@ -15,7 +15,7 @@ using namespace graphics;
 using namespace miru;
 using namespace miru::crossplatform;
 
-Node::Node(CreateInfo* pCreateInfo)
+GPUTask::GPUTask(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
@@ -33,11 +33,11 @@ Node::Node(CreateInfo* pCreateInfo)
 	}
 }
 
-Node::~Node()
+GPUTask::~GPUTask()
 {
 }
 
-void Node::Execute()
+void GPUTask::Execute()
 {
 	if (m_CI.resetCmdBuffer)
 	{
@@ -69,7 +69,7 @@ void Node::Execute()
 		std::vector<Ref<Semaphore>> waitSrcSemaphores;
 		std::vector<PipelineStageBit> waitSrcPipelineStages;
 		
-		for (const auto& lastSubmitNodes : LastSubmitNodes(m_CI.srcPipelineStages, m_CI.srcNodes))
+		for (const auto& lastSubmitNodes : LastSubmitGPUTasks(m_CI.srcPipelineStages, m_CI.srcGPUTasks))
 		{
 			waitSrcPipelineStages.push_back(lastSubmitNodes.first);
 			waitSrcSemaphores.push_back(lastSubmitNodes.second->m_SignalSemaphore);
@@ -80,34 +80,34 @@ void Node::Execute()
 	}
 }
 
-std::vector<std::pair<PipelineStageBit, Ref<Node>>> Node::LastSubmitNodes(std::vector<PipelineStageBit>& srcPipelineStages, std::vector<Ref<Node>>& srcNodes)
+std::vector<std::pair<PipelineStageBit, Ref<GPUTask>>> GPUTask::LastSubmitGPUTasks(std::vector<PipelineStageBit>& srcPipelineStages, std::vector<Ref<GPUTask>>& srcGPUTasks)
 {
-	std::vector<std::pair<PipelineStageBit, Ref<Node>>> nodes;
-	for (size_t i = 0; i < srcNodes.size(); i++)
+	std::vector<std::pair<PipelineStageBit, Ref<GPUTask>>> gpuTasks;
+	for (size_t i = 0; i < srcGPUTasks.size(); i++)
 	{
-		Ref<Node>& node = srcNodes[i];
+		Ref<GPUTask>& gpuTask = srcGPUTasks[i];
 		PipelineStageBit pipelineStage = srcPipelineStages[i];
 
-		if (node->m_CI.submitCmdBuffer)
+		if (gpuTask->m_CI.submitCmdBuffer)
 		{
-			nodes.push_back({ pipelineStage, node });
+			gpuTasks.push_back({ pipelineStage, gpuTask });
 		}
 		else
 		{
-			auto& sub_first_nodes = LastSubmitNodes(node->m_CI.srcPipelineStages, node->m_CI.srcNodes);
-			nodes.insert(nodes.end(), sub_first_nodes.begin(), sub_first_nodes.end());
+			auto& sub_first_gpu_tasks = LastSubmitGPUTasks(gpuTask->m_CI.srcPipelineStages, gpuTask->m_CI.srcGPUTasks);
+			gpuTasks.insert(gpuTasks.end(), sub_first_gpu_tasks.begin(), sub_first_gpu_tasks.end());
 		}
 	}
-	return nodes;
+	return gpuTasks;
 };
 
-void Node::TransitionResources()
+void GPUTask::TransitionResources()
 {
 	TransitionResourcesTaskInfo* transResourcesTI = reinterpret_cast<TransitionResourcesTaskInfo*>(m_CI.pTaskInfo);
 	m_CI.cmdBuffer->PipelineBarrier(m_CI.cmdBufferIndex, transResourcesTI->srcPipelineStage, transResourcesTI->dstPipelineStage, DependencyBit::NONE_BIT, transResourcesTI->barriers);
 }
 
-void Node::UploadResources()
+void GPUTask::UploadResources()
 {
 	UploadResourceTaskInfo* uploadResourcesTI = reinterpret_cast<UploadResourceTaskInfo*>(m_CI.pTaskInfo);
 

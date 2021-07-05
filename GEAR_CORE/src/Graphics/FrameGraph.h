@@ -14,7 +14,7 @@ namespace gear
 
 	namespace graphics
 	{
-		class Node
+		class GPUTask
 		{
 		public:
 			enum class Task : uint32_t
@@ -30,21 +30,21 @@ namespace gear
 			struct UploadResourceTaskInfo
 			{
 				Ref<objects::Camera>					camera;
-				bool										cameraForce;
+				bool									cameraForce;
 				Ref<objects::Camera>					fontCamera;
-				bool										fontCameraForce;
+				bool									fontCameraForce;
 				Ref<objects::Skybox>					skybox;
-				bool										skyboxForce;
+				bool									skyboxForce;
 				std::vector<Ref<objects::Light>>		lights;
-				bool										lightsForce;
+				bool									lightsForce;
 				std::vector<Ref<objects::Model>>		models;
-				bool										modelsForce;
-				bool										materialsForce;
+				bool									modelsForce;
+				bool									materialsForce;
 			};
 			struct TransitionResourcesTaskInfo
 			{
-				miru::crossplatform::PipelineStageBit					srcPipelineStage;
-				miru::crossplatform::PipelineStageBit					dstPipelineStage;
+				miru::crossplatform::PipelineStageBit			srcPipelineStage;
+				miru::crossplatform::PipelineStageBit			dstPipelineStage;
 				std::vector<Ref<miru::crossplatform::Barrier>>	barriers;
 			};
 
@@ -53,9 +53,9 @@ namespace gear
 				std::string											debugName;
 				Task												task;
 				void*												pTaskInfo;
-				std::vector<Ref<Node>>						srcNodes;
+				std::vector<Ref<GPUTask>>								srcGPUTasks;
 				std::vector<miru::crossplatform::PipelineStageBit>	srcPipelineStages;
-				Ref<miru::crossplatform::CommandBuffer>		cmdBuffer;
+				Ref<miru::crossplatform::CommandBuffer>				cmdBuffer;
 				uint32_t											cmdBufferIndex;
 				bool												resetCmdBuffer;
 				bool												submitCmdBuffer;
@@ -73,8 +73,8 @@ namespace gear
 
 
 		public:
-			Node(CreateInfo* pCreateInfo);
-			~Node();
+			GPUTask(CreateInfo* pCreateInfo);
+			~GPUTask();
 
 			void Execute();
 
@@ -84,8 +84,8 @@ namespace gear
 			inline const Ref<miru::crossplatform::Semaphore>& GetSemaphore() const { return m_SignalSemaphore; }
 
 		private:
-			std::vector<std::pair<miru::crossplatform::PipelineStageBit, Ref<Node>>> LastSubmitNodes(
-				std::vector<miru::crossplatform::PipelineStageBit>& srcPipelineStages, std::vector<Ref<Node>>& srcNodes);
+			std::vector<std::pair<miru::crossplatform::PipelineStageBit, Ref<GPUTask>>> LastSubmitGPUTasks(
+				std::vector<miru::crossplatform::PipelineStageBit>& srcPipelineStages, std::vector<Ref<GPUTask>>& srcGPUTasks);
 			void TransitionResources();
 			void UploadResources();
 

@@ -17,10 +17,13 @@ namespace core
 		inline operator float() { return static_cast<float>(m_DeltaTime); };
 		inline operator double() { return m_DeltaTime; };
 
+		inline double const& ElapsedTime() const { return m_ElapsedTime; }
+		inline double const& DeltaTime() const { return m_DeltaTime; }
+
 	private:
+		double GetTime();
 		double GetElapsedTime();
 		double GetDeltaTime();
-		double GetTime();
 
 	private:
 		double m_DeltaTime;

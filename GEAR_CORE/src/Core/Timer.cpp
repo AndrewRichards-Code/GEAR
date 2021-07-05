@@ -19,6 +19,13 @@ void Timer::Update()
 	GetDeltaTime();
 }
 
+double Timer::GetTime()
+{
+	m_NowTimePoint = std::chrono::system_clock::now();
+	m_ElapsedDuration = m_NowTimePoint - m_StartTimePoint;
+	return m_ElapsedDuration.count();
+}
+
 double Timer::GetElapsedTime()
 {
 	m_ElapsedTime = GetTime();
@@ -31,11 +38,4 @@ double Timer::GetDeltaTime()
 	m_DeltaTime = m_ElapsedTime - m_PreviousElapsedTime;
 	m_PreviousElapsedTime = m_ElapsedTime;
 	return m_DeltaTime;
-}
-
-double Timer::GetTime()
-{
-	m_NowTimePoint = std::chrono::system_clock::now();
-	m_ElapsedDuration = m_NowTimePoint - m_StartTimePoint;
-	return m_ElapsedDuration.count();
 }
