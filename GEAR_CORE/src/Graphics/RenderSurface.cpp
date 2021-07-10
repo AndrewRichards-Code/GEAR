@@ -45,6 +45,7 @@ RenderSurface::RenderSurface(CreateInfo* pCreateInfo)
 	m_SwapchainCI.height = m_CurrentHeight;
 	m_SwapchainCI.swapchainCount = 2;
 	m_SwapchainCI.vSync = m_CI.vSync;
+	m_SwapchainCI.bpcColourSpace = m_CI.bpcColourSpace;
 	m_Swapchain = Swapchain::Create(&m_SwapchainCI);
 
 	Allocator::CreateInfo attachmentAllocatorCI;

@@ -22,6 +22,7 @@ namespace graphics
 			uint32_t									width;
 			uint32_t									height;
 			bool										fullscreen;
+			uint32_t									fullscreenMonitorIndex;
 			bool										vSync;
 			miru::crossplatform::Image::SampleCountBit	samples;
 			std::string									iconFilepath;
@@ -36,6 +37,7 @@ namespace graphics
 	
 		//Window
 		CreateInfo m_CI;
+		GLFWmonitor* m_Monitor;
 		GLFWwindow* m_Window;
 		const GLFWvidmode* m_Mode;
 		bool m_Fullscreen;
@@ -58,7 +60,6 @@ namespace graphics
 			
 		void Update();
 		bool Closed() const;
-		void Fullscreen();
 		void CalculateFPS();
 	
 		inline const Ref<miru::crossplatform::Context> GetContext() const { return m_RenderSurface->GetContext(); };

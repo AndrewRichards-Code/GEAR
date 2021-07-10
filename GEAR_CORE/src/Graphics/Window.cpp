@@ -55,12 +55,6 @@ bool Window::Closed() const
 	return glfwWindowShouldClose(m_Window);
 }
 
-void Window::Fullscreen()
-{
-	m_Mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-	glfwSetWindowMonitor(m_Window, glfwGetPrimaryMonitor(), 0, 0, m_Mode->width, m_Mode->height, m_Mode->refreshRate);
-}
-
 void Window::CalculateFPS()
 {
 	double m_CurrentTime = glfwGetTime();
@@ -96,7 +90,25 @@ bool Window::Init()
 	
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-	m_Window = glfwCreateWindow((int)m_CI.width, (int)m_CI.height, m_CI.title.c_str(), NULL, NULL);
+
+	if (m_CI.fullscreen)
+	{
+		int monitorCount;
+		GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);
+		if (monitors && monitorCount > 0 && m_CI.fullscreenMonitorIndex < static_cast<uint32_t>(monitorCount))
+			m_Monitor = monitors[m_CI.fullscreenMonitorIndex];
+		else
+			m_Monitor = glfwGetPrimaryMonitor();
+
+		m_Mode = glfwGetVideoMode(m_Monitor);
+		m_CI.width = m_Mode->width;
+		m_CI.height = m_Mode->height;
+	}
+	else
+	{
+		m_Monitor = nullptr;
+	}
+	m_Window = glfwCreateWindow((int)m_CI.width, (int)m_CI.height, m_CI.title.c_str(), m_Monitor, nullptr);
 
 	if (!m_Window)
 	{
@@ -112,6 +124,7 @@ bool Window::Init()
 	m_RenderSurfaceCI.width = m_CI.width;
 	m_RenderSurfaceCI.height = m_CI.height;
 	m_RenderSurfaceCI.vSync = m_CI.vSync;
+	m_RenderSurfaceCI.bpcColourSpace = Swapchain::BPC_ColourSpace::B8G8R8A8_UNORM_SRGB_NONLINEAR;
 	m_RenderSurfaceCI.samples = m_CI.samples;
 	m_RenderSurfaceCI.graphicsDebugger = m_CI.graphicsDebugger;
 	m_RenderSurface = CreateRef<RenderSurface>(&m_RenderSurfaceCI);
@@ -128,9 +141,6 @@ bool Window::Init()
 	glfwSetCursorPosCallback(m_Window, cursor_position_callback);
 	glfwSetJoystickCallback(joystick_callback);
 	glfwSetScrollCallback(m_Window, scroll_callback);
-
-	if (m_CI.fullscreen)
-		Fullscreen();
 	
 	return true;
 }
@@ -194,8 +204,8 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		win->m_Fullscreen = !win->m_Fullscreen;
 		if (win->m_Fullscreen)
 		{
-			win->m_Mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-			glfwSetWindowMonitor(win->m_Window, glfwGetPrimaryMonitor(), 0, 0, win->m_Mode->width, win->m_Mode->height, win->m_Mode->refreshRate);
+			win->m_Mode = glfwGetVideoMode(win->m_Monitor);
+			glfwSetWindowMonitor(win->m_Window, win->m_Monitor, 0, 0, win->m_Mode->width, win->m_Mode->height, win->m_Mode->refreshRate);
 			win->m_RenderSurface->m_CurrentWidth = win->m_Mode->width;
 			win->m_RenderSurface->m_CurrentHeight= win->m_Mode->height;
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -203,7 +213,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 
 		if (!win->m_Fullscreen)
 		{
-			glfwSetWindowMonitor(win->m_Window, NULL, 100, 100, win->m_CI.width, win->m_CI.height, GLFW_DONT_CARE);
+			glfwSetWindowMonitor(win->m_Window, nullptr, 100, 100, win->m_CI.width, win->m_CI.height, GLFW_DONT_CARE);
 			win->m_RenderSurface->m_CurrentWidth = win->m_CI.width;
 			win->m_RenderSurface->m_CurrentHeight = win->m_CI.height;
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));

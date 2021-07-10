@@ -11,14 +11,15 @@ namespace graphics
 	public:
 		struct CreateInfo
 		{
-			std::string									debugName;
-			void*										window;
-			miru::crossplatform::GraphicsAPI::API		api;
-			uint32_t									width;
-			uint32_t									height;
-			bool										vSync;
-			miru::crossplatform::Image::SampleCountBit	samples;
-			miru::debug::GraphicsDebugger::DebuggerType graphicsDebugger;
+			std::string										debugName;
+			void*											window;
+			miru::crossplatform::GraphicsAPI::API			api;
+			uint32_t										width;
+			uint32_t										height;
+			bool											vSync;
+			miru::crossplatform::Swapchain::BPC_ColourSpace bpcColourSpace;
+			miru::crossplatform::Image::SampleCountBit		samples;
+			miru::debug::GraphicsDebugger::DebuggerType		graphicsDebugger;
 		};
 
 	private:
