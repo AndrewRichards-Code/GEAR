@@ -65,10 +65,7 @@ namespace graphics
 		inline const Ref<miru::crossplatform::Context> GetContext() const { return m_RenderSurface->GetContext(); };
 		inline const Ref<miru::crossplatform::Swapchain>& GetSwapchain() const { return m_RenderSurface->GetSwapchain(); };
 		inline void* GetDevice() const { return m_RenderSurface->GetDevice(); }
-		inline const Ref<miru::crossplatform::RenderPass>& GetRenderPass() const { return m_RenderSurface->GetRenderPass(); }
-		inline const Ref<miru::crossplatform::ImageView>& GetSwapchainImageView(size_t index) const { return m_RenderSurface->GetSwapchainImageView(index); }
-		inline const Ref<miru::crossplatform::ImageView>& GetSwapchainDepthImageView() const { return m_RenderSurface->GetSwapchainDepthImageView(); }
-		inline const Ref<miru::crossplatform::Framebuffer>* GetFramebuffers() { return m_RenderSurface->GetFramebuffers(); }
+		inline const Ref<RenderSurface> GetRenderSurface() const { return m_RenderSurface; }
 	
 		inline const miru::crossplatform::GraphicsAPI::API& GetGraphicsAPI() const { m_RenderSurface->GetGraphicsAPI(); }
 		inline bool IsD3D12() const { return miru::crossplatform::GraphicsAPI::IsD3D12(); }

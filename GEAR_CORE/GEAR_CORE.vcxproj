@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210714.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210714.1\build\native\Microsoft.Windows.CppWinRT.props')" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Gaming.Desktop.x64">
       <Configuration>Debug</Configuration>
@@ -178,7 +179,7 @@
     <ClCompile Include="dep\STBI\stb_image.cpp" />
     <ClCompile Include="src\Animation\Animator.cpp" />
     <ClCompile Include="src\Core\Application.cpp" />
-    <ClCompile Include="src\Core\Colour.cpp" />
+    <ClCompile Include="src\Graphics\Colour.cpp" />
     <ClCompile Include="src\Graphics\FrameGraph.cpp" />
     <ClCompile Include="src\Graphics\RenderSurface.cpp" />
     <ClCompile Include="src\Audio\AudioInterfaces.cpp" />
@@ -220,10 +221,12 @@
     <ClInclude Include="src\Animation\Animation.h" />
     <ClInclude Include="src\Animation\Animator.h" />
     <ClInclude Include="src\Core\Application.h" />
-    <ClInclude Include="src\Core\Colour.h" />
+    <ClInclude Include="src\Core\TypesCppHlsl.h" />
+    <ClInclude Include="src\Graphics\Colour.h" />
     <ClInclude Include="src\Core\EntryPoint.h" />
     <ClInclude Include="src\Core\PlatformMacros.h" />
     <ClInclude Include="src\Core\Sequencer.h" />
+    <ClInclude Include="src\Graphics\ColourFunctions.h" />
     <ClInclude Include="src\Graphics\FrameGraph.h" />
     <ClInclude Include="src\Graphics\RenderSurface.h" />
     <ClInclude Include="src\Audio\AudioInterfaces.h" />
@@ -266,7 +269,18 @@
     <ClInclude Include="src\gear_core.h" />
     <ClInclude Include="src\gear_core_common.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.210714.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210714.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210714.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210714.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.210714.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Windows.CppWinRT.2.0.210714.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  </Target>
 </Project>

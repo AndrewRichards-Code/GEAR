@@ -239,43 +239,65 @@ void Texture::LoadImageData(std::vector<uint8_t>& imageData)
 		uint8_t* stbiBuffer = nullptr;
 		float* stbiBufferf = nullptr;
 
-		if (!m_Cubemap)
+		//Loading an HDR file: set correct parameter
+		if (m_HDR && (m_CI.gammaSpace != GammaSpace::LINEAR || m_CI.format != Image::Format::R32G32B32A32_SFLOAT))
+		{
+			m_CI.gammaSpace = GammaSpace::LINEAR;
+			m_CI.format = Image::Format::R32G32B32A32_SFLOAT;
+			GEAR_WARN(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, 
+				"Either Texture::CreateInfo::ColourSpace or Texture::CreateInfo::Image::Format was set incorrectly. They are now set to ColourSpace::LINEAR and Image::Format::R32G32B32A32_SFLOAT");
+		}
+		//Loading a LDR file to linearised: set correct parameter
+		if ((!m_HDR && m_CI.gammaSpace == GammaSpace::LINEAR) && m_CI.format != Image::Format::R32G32B32A32_SFLOAT)
+		{
+			m_CI.format = Image::Format::R32G32B32A32_SFLOAT;
+			GEAR_WARN(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE,
+				"Texture::CreateInfo::Image::Format was set incorrectly for ColourSpace::LINEAR. It is now set toImage::Format::R32G32B32A32_SFLOAT");
+		}
+
+		for (size_t i = 0; i < m_CI.arrayLayers; i++)
 		{
 			if (m_HDR)
 			{
-				stbiBufferf = stbi_loadf(m_CI.file.filepaths[0].c_str(), (int*)&m_Width, (int*)&m_Height, (int*)&m_BPP, 4);
-				imageData.resize(m_Width * m_Height * 4 * sizeof(float));
-				memcpy(imageData.data(), stbiBufferf, imageData.size());
+				stbiBufferf = stbi_loadf(m_CI.file.filepaths[i].c_str(), (int*)&m_Width, (int*)&m_Height, (int*)&m_BPP, 4);
+				if (i == 0)
+					imageData.resize(m_CI.arrayLayers * m_Width * m_Height * 4 * sizeof(float));
+
+				memcpy(imageData.data() + (i * (imageData.size() / m_CI.arrayLayers)), stbiBufferf, (imageData.size() / m_CI.arrayLayers));
 			}
 			else
 			{
-				stbiBuffer = stbi_load(m_CI.file.filepaths[0].c_str(), (int*)&m_Width, (int*)&m_Height, (int*)&m_BPP, 4);
-				imageData.resize(m_Width * m_Height * 4 * sizeof(uint8_t));
-				memcpy(imageData.data(), stbiBuffer, imageData.size());
-			}
-		}
-		else
-		{
-			for (size_t i = 0; i < m_CI.arrayLayers; i++)
-			{
-				if (m_HDR)
+				stbiBuffer = stbi_load(m_CI.file.filepaths[i].c_str(), (int*)&m_Width, (int*)&m_Height, (int*)&m_BPP, 4);
+				if (m_CI.gammaSpace == GammaSpace::LINEAR)
 				{
-					stbiBufferf = stbi_loadf(m_CI.file.filepaths[i].c_str(), (int*)&m_Width, (int*)&m_Height, (int*)&m_BPP, 4);
+					//Copy and convert data to floats in linear space
+					std::vector<float> linearImageData(m_Width * m_Height * 4);
+					for (size_t i = 0; i < linearImageData.size(); i += 4)
+					{
+						mars::Vec4 linearData = Colour_sRGB(stbiBuffer[i + 0], stbiBuffer[i + 1], stbiBuffer[i + 2], stbiBuffer[i + 3]).Linearise_LUT();
+						linearImageData[i + 0] = linearData.r;
+						linearImageData[i + 1] = linearData.g;
+						linearImageData[i + 2] = linearData.b;
+						linearImageData[i + 3] = linearData.a;
+					}
 					if (i == 0)
 						imageData.resize(m_CI.arrayLayers * m_Width * m_Height * 4 * sizeof(float));
 
-					memcpy(imageData.data() + (i * (imageData.size() / m_CI.arrayLayers)), stbiBufferf, (imageData.size() / 6));
+					memcpy(imageData.data() + (i * (imageData.size() / m_CI.arrayLayers)), linearImageData.data(), (imageData.size() / m_CI.arrayLayers));
 				}
-				else
+				else if (m_CI.gammaSpace == GammaSpace::SRGB)
 				{
-					stbiBuffer = stbi_load(m_CI.file.filepaths[i].c_str(), (int*)&m_Width, (int*)&m_Height, (int*)&m_BPP, 4);
+					
 					if (i == 0)
 						imageData.resize(m_CI.arrayLayers * m_Width * m_Height * 4 * sizeof(uint8_t));
 
-					memcpy(imageData.data() + (i * (imageData.size() / m_CI.arrayLayers)), stbiBuffer, (imageData.size() / 6));
+					memcpy(imageData.data() + (i * (imageData.size() / m_CI.arrayLayers)), stbiBuffer, (imageData.size() / m_CI.arrayLayers));
+				}
+				else
+				{
+					GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Unknown ColourSpace.");
 				}
 			}
-
 		}
 
 		if (stbiBufferf)
@@ -303,7 +325,7 @@ void Texture::LoadImageData(std::vector<uint8_t>& imageData)
 	}
 	else
 	{
-		GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Unknown Texture::Create::DataType and/or invalid parameters.");
+		GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Unknown Texture::CreateInfo::DataType and/or invalid parameters.");
 	}
 
 	if (m_Width == 0 && m_Height == 0 && m_Depth == 0)

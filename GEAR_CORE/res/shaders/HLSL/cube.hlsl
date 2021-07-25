@@ -1,5 +1,6 @@
 #include "msc_common.h"
 #include "UniformBufferStructures.h"
+#include "Colourfunctions.h"
 
 struct VS_IN
 {
@@ -21,12 +22,12 @@ typedef VS_OUT PS_IN;
 struct PS_OUT
 {
 	MIRU_LOCATION(0, float4, colour, SV_TARGET0);
+	MIRU_LOCATION(1, float4, emissive, SV_TARGET1);
 };
 
 MIRU_UNIFORM_BUFFER(0, 0, Camera, camera);
 MIRU_UNIFORM_BUFFER(1, 0, Model, model);
-MIRU_UNIFORM_BUFFER(2, 0, SkyboxInfo, skyboxInfo);
-MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 2, 1, float4, skybox);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 2, 0, float4, skybox);
 
 VS_OUT vs_main(VS_IN IN)
 {
@@ -42,10 +43,13 @@ PS_OUT ps_main(PS_IN IN)
 {
 	PS_OUT OUT;
 	
-	float4 irradiance = skybox_ImageCIS.SampleLevel(skybox_SamplerCIS, IN.v_TextCoord, 0.0);
-	float4 mapped = float4(1.0, 1.0, 1.0, 1.0) - exp(-irradiance * skyboxInfo.exposure);
-	OUT.colour = pow(mapped, float4(1.0/skyboxInfo.gamma, 1.0/skyboxInfo.gamma, 1.0/skyboxInfo.gamma, 1.0/skyboxInfo.gamma));
+	OUT.colour = skybox_ImageCIS.SampleLevel(skybox_SamplerCIS, IN.v_TextCoord, 0.0);
 	OUT.colour.a = 1.0;
+	
+	if (GetLuminance(1, OUT.colour.rgb) > 1.0)
+		OUT.emissive = OUT.colour;
+	else
+		OUT.emissive = float4(0.0, 0.0, 0.0, 1.0);
 	
 	return OUT;
 }

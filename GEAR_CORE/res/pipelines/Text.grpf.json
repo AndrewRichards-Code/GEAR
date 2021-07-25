@@ -1,15 +1,15 @@
 {
 	"fileType": "GEAR_RENDER_PIPELINE_FILE",
-	"debugName": "Cube",
+	"debugName": "Text",
 	"shaders": [
 		{
-			"debugName": "Cube_vert_vs_main.spv",
+			"debugName": "Text_vert_vs_main.spv",
 			"stage": "VERTEX_BIT",
 			"entryPoint": "vs_main",
-			"binaryFilepath": "res/shaders/bin/Cube_vert_vs_main.spv",
+			"binaryFilepath": "res/shaders/bin/Text_vert_vs_main.spv",
 			"recompileArguments": {
 				"mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
-				"hlslFilepath": "res/shaders/HLSL/Cube.hlsl",
+				"hlslFilepath": "res/shaders/HLSL/Text.hlsl",
 				"outputDirectory": "res/shaders/bin",
 				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
 				"entryPoint": "vs_main",
@@ -27,13 +27,13 @@
 			}
 		},
 		{
-			"debugName": "Cube_frag_ps_main.spv",
+			"debugName": "Text_frag_ps_main.spv",
 			"stage": "FRAGMENT_BIT",
 			"entryPoint": "ps_main",
-			"binaryFilepath": "res/shaders/bin/Cube_frag_ps_main.spv",
+			"binaryFilepath": "res/shaders/bin/Text_frag_ps_main.spv",
 			"recompileArguments": {
 				"mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
-				"hlslFilepath": "res/shaders/HLSL/Cube.hlsl",
+				"hlslFilepath": "res/shaders/HLSL/Text.hlsl",
 				"outputDirectory": "res/shaders/bin",
 				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
 				"entryPoint": "ps_main",
@@ -88,16 +88,16 @@
 		"lineWidth": 1.0
 	},
 	"multisampleState": {
-		"rasterisationSamples": "FRAMEBUFFER_SAMPLE_COUNT",
+		"rasterisationSamples": "SAMPLE_COUNT_1_BIT",
 		"sampleShadingEnable": false,
 		"minSampleShading": 1.0,
 		"alphaToCoverageEnable": false,
 		"alphaToOneEnable": false
 	},
 	"depthStencilState": {
-		"depthTestEnable": true,
-		"depthWriteEnable": true,
-		"depthCompareOp": "LESS",
+		"depthTestEnable": false,
+		"depthWriteEnable": false,
+		"depthCompareOp": "ALWAYS",
 		"depthBoundsTestEnable": false,
 		"stencilTestEnable": false,
 		"front": {
@@ -123,18 +123,8 @@
 	},
 	"colourBlendState": {
 		"logicOpEnable": false,
-		"logicOp": "COPY",
+		"logicOp": "CLEAR",
 		"attachments": [
-			{
-				"blendEnable": true,
-				"srcColourBlendFactor": "SRC_ALPHA",
-				"dstColourBlendFactor": "ONE_MINUS_SRC_ALPHA",
-				"colourBlendOp": "ADD",
-				"srcAlphaBlendFactor": "ONE",
-				"dstAlphaBlendFactor": "ZERO",
-				"alphaBlendOp": "ADD",
-				"colourWriteMask": [ "R_BIT", "G_BIT", "B_BIT", "A_BIT" ]
-			},
 			{
 				"blendEnable": true,
 				"srcColourBlendFactor": "SRC_ALPHA",

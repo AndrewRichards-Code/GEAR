@@ -26,7 +26,7 @@ namespace graphics
 			miru::crossplatform::Pipeline::MultisampleState			multisampleState;
 			miru::crossplatform::Pipeline::DepthStencilState		depthStencilState;
 			miru::crossplatform::Pipeline::ColourBlendState			colourBlendState;
-			Ref<miru::crossplatform::RenderPass>				renderPass;
+			Ref<miru::crossplatform::RenderPass>					renderPass;
 			uint32_t												subpassIndex;
 		};
 		struct LoadInfo
@@ -36,7 +36,7 @@ namespace graphics
 			float										viewportWidth;
 			float										viewportHeight;
 			miru::crossplatform::Image::SampleCountBit	samples;
-			Ref<miru::crossplatform::RenderPass>	renderPass;
+			Ref<miru::crossplatform::RenderPass>		renderPass;
 			uint32_t									subpassIndex;
 		};
 

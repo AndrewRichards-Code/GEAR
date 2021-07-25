@@ -1,3 +1,6 @@
+#ifndef PBR_FUNCTIONS_H
+#define PBR_FUNCTIONS_H
+
 static const float PI = 3.1415926535897932384626433832795;
 static const float TAU = 2.0 * PI;
 
@@ -96,3 +99,5 @@ float3 SampleHemisphere(float2 hammersleySample)
 	const float cosTheta = sqrt(max(1.0 - hammersleySample.x * hammersleySample.x, 0.0));
 	return float3(cos(TAU * hammersleySample.y) * cosTheta, sin(TAU * hammersleySample.y) * cosTheta, hammersleySample.x);
 }
+
+#endif // PBR_FUNCTIONS_H

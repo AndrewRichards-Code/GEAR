@@ -1,6 +1,6 @@
 #pragma once
-
 #include "gear_core_common.h"
+#include "Colour.h"
 
 namespace gear 
 {
@@ -47,6 +47,7 @@ namespace graphics
 			miru::crossplatform::Image::SampleCountBit	samples;
 			miru::crossplatform::Image::UsageBit		usage;
 			bool										generateMipMaps;
+			GammaSpace									gammaSpace;
 		};
 		#define GEAR_TEXTURE_MAX_MIP_LEVEL 16
 

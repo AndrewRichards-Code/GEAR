@@ -46,15 +46,16 @@ void GEAR_TEST::Run()
 	Ref<Scene> activeScene = CreateRef<Scene>(&sceneCI);
 
 	Window::CreateInfo windowCI;
-	//windowCI.api = GraphicsAPI::API::D3D12;
-	windowCI.api = GraphicsAPI::API::VULKAN;
+	windowCI.api = GraphicsAPI::API::D3D12;
+	//windowCI.api = GraphicsAPI::API::VULKAN;
 	windowCI.title = "GEAR_TEST";
 	windowCI.width = 1920;
 	windowCI.height = 1080;
 	windowCI.fullscreen = false;
+	windowCI.fullscreenMonitorIndex = 1;
 	windowCI.vSync = true;
 	windowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_2_BIT;
-	windowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::RENDER_DOC;
+	windowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::PIX;
 	Ref<Window> window = CreateRef<Window>(&windowCI);
 
 	AllocatorManager::CreateInfo mbmCI;
@@ -111,7 +112,7 @@ void GEAR_TEST::Run()
 		texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 		texCI.usage = miru::crossplatform::Image::UsageBit(0);
 		texCI.generateMipMaps = true;
-		texCI.colourSpace = linear ? ColourSpace::LINEAR : ColourSpace::SRGB;
+		texCI.gammaSpace = linear ? GammaSpace::LINEAR : GammaSpace::SRGB;
 		return std::move(CreateRef<Texture>(&texCI));
 	};
 
@@ -227,12 +228,12 @@ void GEAR_TEST::Run()
 	}
 #endif
 
-	std::future<Ref<graphics::Texture>> droneAlbedo = std::async(std::launch::async, LoadTexture, window, std::string("res/img/drone/Totally_LP_defaultMat_BaseColor.png"), std::string("Drone: Albedo"));
+	std::future<Ref<graphics::Texture>> droneAlbedo = std::async(std::launch::async, LoadTexture, window, std::string("res/img/drone/Totally_LP_defaultMat_BaseColor.png"), std::string("Drone: Albedo"), true);
 	std::future<Ref<graphics::Texture>> droneMetallic = std::async(std::launch::async, LoadTexture, window, std::string("res/img/drone/Totally_LP_defaultMat_Metallic.png"), std::string("Drone: Metallic"), true);
 	std::future<Ref<graphics::Texture>> droneNormal = std::async(std::launch::async, LoadTexture, window, std::string("res/img/drone/Totally_LP_defaultMat_Normal.png"), std::string("Drone: Normal"));
 	std::future<Ref<graphics::Texture>> droneRoughness = std::async(std::launch::async, LoadTexture, window, std::string("res/img/drone/Totally_LP_defaultMat_Roughness.png"), std::string("Drone: Roughness"), true);
 	std::future<Ref<graphics::Texture>> droneAO = std::async(std::launch::async, LoadTexture, window, std::string("res/img/drone/Totally_LP_defaultMat_Occlusion.png"), std::string("Drone: AO"), true);
-	std::future<Ref<graphics::Texture>> droneEmissive = std::async(std::launch::async, LoadTexture, window, std::string("res/img/drone/Totally_LP_defaultMat_Emissive.png"), std::string("Drone: Emissive"));
+	std::future<Ref<graphics::Texture>> droneEmissive = std::async(std::launch::async, LoadTexture, window, std::string("res/img/drone/Totally_LP_defaultMat_Emissive.png"), std::string("Drone: Emissive"), true);
 
 	matCI.debugName = "Drone Material";
 	matCI.device = window->GetDevice();
@@ -293,15 +294,7 @@ void GEAR_TEST::Run()
 	Ref<Sequencer> sequencer = CreateRef<Animator>(&animatorCI);
 
 	Ref<Renderer> m_Renderer = CreateRef<Renderer>(window->GetContext());
-	m_Renderer->InitialiseRenderPipelines(
-		{
-			"res/pipelines/PBROpaque.grpf.json",
-			"res/pipelines/HDR.grpf.json",
-			"res/pipelines/Cube.grpf.json",
-			"res/pipelines/Font.grpf.json",
-			"res/pipelines/DebugCoordinateAxes.grpf.json"
-		},
-		(float)window->GetWidth(), (float)window->GetHeight(), window->GetCreateInfo().samples, window->GetRenderPass());
+	m_Renderer->InitialiseRenderPipelines(window->GetRenderSurface());
 
 	AllocatorManager::PrintMemoryBlockStatus();
 
@@ -416,7 +409,7 @@ void GEAR_TEST::Run()
 		//Update Scene
 		activeScene->OnUpdate(m_Renderer, timer);
 
-		m_Renderer->SubmitFramebuffer(window->GetFramebuffers());
+		m_Renderer->SubmitRenderSurface(window->GetRenderSurface());
 		m_Renderer->Upload(true, false, true, true);
 		m_Renderer->Flush();
 

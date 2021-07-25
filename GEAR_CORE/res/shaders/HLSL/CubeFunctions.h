@@ -1,3 +1,6 @@
+#ifndef CUBE_FUNCTIONS_H
+#define CUBE_FUNCTIONS_H
+
 float3 GetLookupUVW(uint3 threadID, float2 imageDimension)
 {
 	float2 faceTC = threadID.xy / imageDimension;
@@ -65,3 +68,5 @@ float3 TangentToWorld(const float3 v, const float3 N, const float3 B, const floa
 {
 	return B * v.x + T * v.y + N * v.z;
 }
+
+#endif // CUBE_FUNCTIONS_H

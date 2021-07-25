@@ -92,11 +92,11 @@ void Scene::OnUpdate(Ref<graphics::Renderer>& renderer, core::Timer& timer)
 	for (auto& entity : vTextComponent)
 	{
 		const Ref<Text>& text = vTextComponent.get<TextComponent>(entity).text;
-		renderer->SubmitFontCamera(text->GetCamera());
+		renderer->SubmitTextCamera(text->GetCamera());
 
 		for (auto& line : text->GetLines())
 		{
-			renderer->SubmitModel(line.model);
+			renderer->SubmitTextLine(line.model);
 		}
 	}
 }

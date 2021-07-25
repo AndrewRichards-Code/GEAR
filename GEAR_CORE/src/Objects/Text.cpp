@@ -222,7 +222,7 @@ void Text::GenerateLine(size_t lineIndex, bool update)
 		textModelCI.debugName = "GEAR_CORE_FontRenderer: " + line.text;
 		textModelCI.device = m_CI.device;
 		textModelCI.pMesh = CreateRef<Mesh>(&textMeshCI);
-		textModelCI.renderPipelineName = "Font";
+		textModelCI.renderPipelineName = "Text";
 		line.model = CreateRef<Model>(&textModelCI);
 	}
 	else

@@ -27,7 +27,7 @@ struct PS_OUT
 	MIRU_LOCATION(0, float4, colour, SV_TARGET0);
 };
 
-MIRU_UNIFORM_BUFFER(0, 0, Camera, fontCamera);
+MIRU_UNIFORM_BUFFER(0, 0, Camera, textCamera);
 MIRU_UNIFORM_BUFFER(1, 0, Model, model);
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 2, 0, float4, fontAtlas);
 
@@ -35,7 +35,7 @@ VS_OUT vs_main(VS_IN IN)
 {
 	VS_OUT OUT;
 	
-	OUT.v_Position = mul(mul(mul(transpose(fontCamera.proj), transpose(fontCamera.view)), transpose(model.modl)), IN.positions);
+	OUT.v_Position = mul(mul(mul(transpose(textCamera.proj), transpose(textCamera.view)), transpose(model.modl)), IN.positions);
 	OUT.v_TexCoord = IN.texCoords;
 	OUT.v_Colour = IN.colours;
 	
@@ -46,7 +46,7 @@ PS_OUT ps_main(PS_IN IN)
 {
 	PS_OUT OUT;
 	
-	if (IN.v_TexCoord.x == -1.0 && IN.v_TexCoord.x == -1.0)
+	if (IN.v_TexCoord.x == -1.0 && IN.v_TexCoord.y == -1.0)
 	{
 		OUT.colour = IN.v_Colour;
 	}

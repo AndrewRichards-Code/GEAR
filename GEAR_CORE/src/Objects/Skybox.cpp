@@ -32,6 +32,7 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	m_TextureCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	m_TextureCI.usage = Image::UsageBit(0);
 	m_TextureCI.generateMipMaps = false;
+	m_TextureCI.gammaSpace = GammaSpace::LINEAR;
 	m_Texture = CreateRef<Texture>(&m_TextureCI);
 
 	if (!m_Cubemap)
@@ -138,7 +139,7 @@ Skybox::~Skybox()
 void Skybox::Update()
 {
 	m_UB->exposure = m_CI.exposure;
-	m_UB->gamma = m_CI.gamma;
+	m_UB->gammaSpace = static_cast<uint32_t>(m_CI.gammaSpace);
 	m_UB->SubmitData();
 
 	m_Model->GetUB()->modl = TransformToMat4(m_CI.transform);
@@ -147,10 +148,10 @@ void Skybox::Update()
 
 void Skybox::InitialiseUBs()
 {
-	float zero[sizeof(SkyboxInfoUB)] = { 0 };
-	Uniformbuffer<SkyboxInfoUB>::CreateInfo ubCI;
-	ubCI.debugName = "GEAR_CORE_Skybox_SkyboxInfo: " + m_CI.debugName;
+	float zero[sizeof(HDRInfoUB)] = { 0 };
+	Uniformbuffer<HDRInfoUB>::CreateInfo ubCI;
+	ubCI.debugName = "GEAR_CORE_Skybox_HDRInfo: " + m_CI.debugName;
 	ubCI.device = m_CI.device;
 	ubCI.data = zero;
-	m_UB = CreateRef<Uniformbuffer<SkyboxInfoUB>>(&ubCI);
+	m_UB = CreateRef<Uniformbuffer<HDRInfoUB>>(&ubCI);
 }

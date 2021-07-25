@@ -1,15 +1,15 @@
 {
 	"fileType": "GEAR_RENDER_PIPELINE_FILE",
-	"debugName": "Font",
+	"debugName": "HDR",
 	"shaders": [
 		{
-			"debugName": "Font_vert_vs_main.spv",
+			"debugName": "HDR_vert_vs_main.spv",
 			"stage": "VERTEX_BIT",
 			"entryPoint": "vs_main",
-			"binaryFilepath": "res/shaders/bin/Font_vert_vs_main.spv",
+			"binaryFilepath": "res/shaders/bin/HDR_vert_vs_main.spv",
 			"recompileArguments": {
 				"mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
-				"hlslFilepath": "res/shaders/HLSL/Font.hlsl",
+				"hlslFilepath": "res/shaders/HLSL/PostProcess/HDR.hlsl",
 				"outputDirectory": "res/shaders/bin",
 				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
 				"entryPoint": "vs_main",
@@ -27,13 +27,13 @@
 			}
 		},
 		{
-			"debugName": "Font_frag_ps_main.spv",
+			"debugName": "HDR_frag_ps_main.spv",
 			"stage": "FRAGMENT_BIT",
 			"entryPoint": "ps_main",
-			"binaryFilepath": "res/shaders/bin/Font_frag_ps_main.spv",
+			"binaryFilepath": "res/shaders/bin/HDR_frag_ps_main.spv",
 			"recompileArguments": {
 				"mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
-				"hlslFilepath": "res/shaders/HLSL/Font.hlsl",
+				"hlslFilepath": "res/shaders/HLSL/PostProcess/HDR.hlsl",
 				"outputDirectory": "res/shaders/bin",
 				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
 				"entryPoint": "ps_main",
@@ -97,7 +97,7 @@
 	"depthStencilState": {
 		"depthTestEnable": false,
 		"depthWriteEnable": false,
-		"depthCompareOp": "ALWAYS",
+		"depthCompareOp": "LESS",
 		"depthBoundsTestEnable": false,
 		"stencilTestEnable": false,
 		"front": {
@@ -123,7 +123,7 @@
 	},
 	"colourBlendState": {
 		"logicOpEnable": false,
-		"logicOp": "CLEAR",
+		"logicOp": "COPY",
 		"attachments": [
 			{
 				"blendEnable": true,

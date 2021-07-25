@@ -19,7 +19,7 @@ GPUTask::GPUTask(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
-	if (m_CI.submitCmdBuffer)
+	if ((m_CI.cmdBufferControls & CommandBufferBasicControlsBit::SUBMIT) == CommandBufferBasicControlsBit::SUBMIT)
 	{
 		m_CmdBufferFenceCI.debugName = "GEAR_CORE_Fence_" + m_CI.debugName;
 		m_CmdBufferFenceCI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
@@ -39,14 +39,23 @@ GPUTask::~GPUTask()
 
 void GPUTask::Execute()
 {
-	if (m_CI.resetCmdBuffer)
+	if ((m_CI.cmdBufferControls & CommandBufferBasicControlsBit::RESET) == CommandBufferBasicControlsBit::RESET)
 	{
-		m_CI.cmdBuffer->Reset(m_CI.cmdBufferIndex, false);
-		m_CI.cmdBuffer->Begin(m_CI.cmdBufferIndex, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
+		m_CI.cmdBuffer->Reset(m_CI.cmdBufferIndex, m_CI.resetCmdBufferReleaseResource);
+	}
+	if ((m_CI.cmdBufferControls & CommandBufferBasicControlsBit::BEGIN) == CommandBufferBasicControlsBit::BEGIN)
+	{
+		m_CI.cmdBuffer->Begin(m_CI.cmdBufferIndex, m_CI.beginCmdBufferUsage);
 	}
 
 	if (!m_CI.skipTask)
 	{
+		if (m_CI.cmdBuffer->GetCreateInfo().pCommandPool->GetCreateInfo().queueType == CommandPool::QueueType::GRAPHICS
+			|| m_CI.cmdBuffer->GetCreateInfo().pCommandPool->GetCreateInfo().queueType == CommandPool::QueueType::COMPUTE)
+		{
+			m_CI.cmdBuffer->BeginDebugLabel(m_CI.cmdBufferIndex, m_CI.debugName);
+		}
+
 		switch (m_CI.task)
 		{
 		case Task::UPLOAD_RESOURCES:
@@ -59,12 +68,42 @@ void GPUTask::Execute()
 			TransitionResources();
 			break;
 		}
+		case Task::GRAPHICS_RENDER_PASS_BEGIN:
+		{
+			GraphicsRenderPassBegin();
+			break;
+		}
+		case Task::GRAPHICS_RENDER_PASS_END:
+		{
+			GraphicsRenderPassEnd();
+			break;
+		}
+		case Task::GRAPHICS_NEXT_SUBPASS:
+		{
+			GraphicsNextSubpass();
+			break;
+		}
+		case Task::RENDERER_FUNCTION:
+		{
+			RendererFunction();
+			break;
+		}
 		default:
 			break;
 		}
-	}
 
-	if (m_CI.submitCmdBuffer)
+		if (m_CI.cmdBuffer->GetCreateInfo().pCommandPool->GetCreateInfo().queueType == CommandPool::QueueType::GRAPHICS
+			|| m_CI.cmdBuffer->GetCreateInfo().pCommandPool->GetCreateInfo().queueType == CommandPool::QueueType::COMPUTE)
+		{
+			m_CI.cmdBuffer->EndDebugLabel(m_CI.cmdBufferIndex);
+		}
+	}
+	
+	if ((m_CI.cmdBufferControls & CommandBufferBasicControlsBit::END) == CommandBufferBasicControlsBit::END)
+	{
+		m_CI.cmdBuffer->End(m_CI.cmdBufferIndex);
+	}
+	if ((m_CI.cmdBufferControls & CommandBufferBasicControlsBit::SUBMIT) == CommandBufferBasicControlsBit::SUBMIT)
 	{
 		std::vector<Ref<Semaphore>> waitSrcSemaphores;
 		std::vector<PipelineStageBit> waitSrcPipelineStages;
@@ -75,7 +114,6 @@ void GPUTask::Execute()
 			waitSrcSemaphores.push_back(lastSubmitNodes.second->m_SignalSemaphore);
 		}
 
-		m_CI.cmdBuffer->End(m_CI.cmdBufferIndex);
 		m_CI.cmdBuffer->Submit({ m_CI.cmdBufferIndex }, waitSrcSemaphores, waitSrcPipelineStages, { m_SignalSemaphore }, m_CmdBufferFence);
 	}
 }
@@ -88,7 +126,7 @@ std::vector<std::pair<PipelineStageBit, Ref<GPUTask>>> GPUTask::LastSubmitGPUTas
 		Ref<GPUTask>& gpuTask = srcGPUTasks[i];
 		PipelineStageBit pipelineStage = srcPipelineStages[i];
 
-		if (gpuTask->m_CI.submitCmdBuffer)
+		if ((gpuTask->m_CI.cmdBufferControls & CommandBufferBasicControlsBit::SUBMIT) == CommandBufferBasicControlsBit::SUBMIT)
 		{
 			gpuTasks.push_back({ pipelineStage, gpuTask });
 		}
@@ -114,8 +152,8 @@ void GPUTask::UploadResources()
 	if (uploadResourcesTI->camera)
 		uploadResourcesTI->camera->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->cameraForce);
 
-	if (uploadResourcesTI->fontCamera)
-		uploadResourcesTI->fontCamera->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->fontCameraForce);
+	if (uploadResourcesTI->textCamera)
+		uploadResourcesTI->textCamera->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->textCameraForce);
 
 	if (uploadResourcesTI->skybox)
 		uploadResourcesTI->skybox->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->skyboxForce);
@@ -142,5 +180,29 @@ void GPUTask::UploadResources()
 			}
 		}
 	}
+}
+
+void GPUTask::GraphicsRenderPassBegin()
+{
+	GraphicsRenderPassBeginTaskInfo* graphicsRenderPassBeginTI = reinterpret_cast<GraphicsRenderPassBeginTaskInfo*>(m_CI.pTaskInfo);
+	m_CI.cmdBuffer->BeginRenderPass(m_CI.cmdBufferIndex, graphicsRenderPassBeginTI->framebuffer, graphicsRenderPassBeginTI->clearValues);
+}
+
+void GPUTask::GraphicsRenderPassEnd()
+{
+	m_CI.cmdBuffer->EndRenderPass(m_CI.cmdBufferIndex);
+}
+
+void GPUTask::GraphicsNextSubpass()
+{
+	m_CI.cmdBuffer->NextSubpass(m_CI.cmdBufferIndex);
+}
+
+void GPUTask::RendererFunction()
+{
+	RendererFunctionTaskInfo* rendererFunctionTI = reinterpret_cast<RendererFunctionTaskInfo*>(m_CI.pTaskInfo);
+	Renderer* pRenderer = rendererFunctionTI->pRenderer;
+	Renderer::PFN_RendererFunction pfn = rendererFunctionTI->pfn;
+	(pRenderer->*pfn)();
 }
 

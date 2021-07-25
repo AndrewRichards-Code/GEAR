@@ -1,7 +1,7 @@
 #pragma once
 
 #include "gear_core_common.h"
-#include "Graphics/Framebuffer.h"
+#include "Graphics/RenderSurface.h"
 #include "Graphics/RenderPipeline.h"
 #include "Objects/Camera.h"
 #include "Objects/Light.h"
@@ -43,12 +43,14 @@ namespace graphics
 
 		//Renderering Objects
 		std::map<std::string, Ref<graphics::RenderPipeline>> m_RenderPipelines;
-		const Ref<miru::crossplatform::Framebuffer>* m_Framebuffers;
+		Ref<RenderSurface> m_RenderSurface;
 		Ref<objects::Camera> m_Camera;
-		Ref<objects::Camera> m_FontCamera;
+		Ref<objects::Camera> m_TextCamera;
 		std::vector<Ref<objects::Light>> m_Lights;
 		Ref<objects::Skybox> m_Skybox;
-		std::vector<Ref<objects::Model>> m_RenderQueue;
+		std::vector<Ref<objects::Model>> m_ModelQueue;
+		std::vector<Ref<objects::Model>> m_TextQueue;
+		std::vector<Ref<objects::Model>> m_AllQueue;
 
 		//Present Synchronisation Primitives
 		std::vector<Ref<miru::crossplatform::Fence>> m_DrawFences;
@@ -65,31 +67,42 @@ namespace graphics
 		Renderer(const Ref<miru::crossplatform::Context>& context);
 		virtual ~Renderer();
 
-		void InitialiseRenderPipelines(const std::vector<std::string>& filepaths, float viewportWidth, float viewportHeight, miru::crossplatform::Image::SampleCountBit samples, const Ref<miru::crossplatform::RenderPass>& renderPass);
+		void InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface);
 		
-		void SubmitFramebuffer(const Ref<miru::crossplatform::Framebuffer>* framebuffers);
+		void SubmitRenderSurface(const Ref<RenderSurface>& renderSurface);
+
 		void SubmitCamera(const Ref<objects::Camera>& camera);
-		void SubmitFontCamera(const Ref<objects::Camera>& fontCamera);
+		void SubmitTextCamera(const Ref<objects::Camera>& fontCamera);
+
 		void SubmitLights(const std::vector<Ref<objects::Light>>& lights);
+
 		void SubmitSkybox(const Ref<objects::Skybox>& skybox);
+
 		void SubmitModel(const Ref<objects::Model>& obj);
+		void SubmitTextLine(const Ref<objects::Model>& obj);
 
 		void Upload(bool forceUploadCamera, bool forceUploadLights, bool forceUploadSkybox, bool forceUploadMeshes);
+		void BuildDescriptorSetandPools();
 		void Flush();
 		void Present(const Ref<miru::crossplatform::Swapchain>& swapchain, bool& windowResize);
 
+		void MainRenderLoop();
+		void HDRMapping();
+		void DrawTextLines();
 		void DrawCoordinateAxes();
 
 		void ResizeRenderPipelineViewports(uint32_t width, uint32_t height);
 		void RecompileRenderPipelineShaders();
 		void ReloadTextures();
 
-		inline std::vector<Ref<objects::Model>>& GetRenderQueue() { return m_RenderQueue; };
+		inline std::vector<Ref<objects::Model>>& GetRenderQueue() { return m_ModelQueue; };
 		inline const Ref<miru::crossplatform::CommandBuffer>& GetCmdBuffer() { return m_CmdBuffer; };
 		inline const std::map<std::string, Ref<graphics::RenderPipeline>>& GetRenderPipelines() const { return m_RenderPipelines; }
 
 		inline const uint32_t& GetFrameIndex() const { return m_FrameIndex; }
 		inline const uint32_t& GetFrameCount() const { return m_FrameCount; }
+
+		typedef void(Renderer::*PFN_RendererFunction)();
 	};
 }
 }

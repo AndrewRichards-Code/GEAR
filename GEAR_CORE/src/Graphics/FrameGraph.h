@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gear_core_common.h"
+#include "Graphics/Renderer.h"
 
 namespace gear
 {
@@ -14,6 +15,8 @@ namespace gear
 
 	namespace graphics
 	{
+		class Renderer;
+
 		class GPUTask
 		{
 		public:
@@ -24,15 +27,29 @@ namespace gear
 				TRANSITION_RESOURCES,
 				GRAPHICS_RENDER_PASS_BEGIN,
 				GRAPHICS_RENDER_PASS_END,
-				COMPUTE_DISPATCH
+				GRAPHICS_NEXT_SUBPASS,
+				COMPUTE_DISPATCH,
+				RENDERER_FUNCTION
+			};
+			enum class CommandBufferBasicControlsBit : uint32_t
+			{
+				NONE	= 0x00000000,
+				RESET	= 0x00000001,
+				BEGIN	= 0x00000002,
+				END		= 0x00000004,
+				SUBMIT	= 0x00000008,
+
+				RESET_BEGIN = RESET | BEGIN,
+				END_SUBMIT = END | SUBMIT,
+				RESET_BEGIN_END_SUBMIT = RESET | BEGIN | END | SUBMIT,
 			};
 			
 			struct UploadResourceTaskInfo
 			{
 				Ref<objects::Camera>					camera;
 				bool									cameraForce;
-				Ref<objects::Camera>					fontCamera;
-				bool									fontCameraForce;
+				Ref<objects::Camera>					textCamera;
+				bool									textCameraForce;
 				Ref<objects::Skybox>					skybox;
 				bool									skyboxForce;
 				std::vector<Ref<objects::Light>>		lights;
@@ -47,18 +64,37 @@ namespace gear
 				miru::crossplatform::PipelineStageBit			dstPipelineStage;
 				std::vector<Ref<miru::crossplatform::Barrier>>	barriers;
 			};
+			struct GraphicsRenderPassBeginTaskInfo
+			{
+				Ref<miru::crossplatform::Framebuffer>				framebuffer;
+				std::vector<miru::crossplatform::Image::ClearValue>	clearValues;
+			};
+			struct GraphicsRenderPassEndTaskInfo
+			{
+				uint32_t unused;
+			};
+			struct GraphicsNextSubpassTaskInfo
+			{
+				uint32_t unused;
+			};
+			struct RendererFunctionTaskInfo
+			{
+				Renderer*						pRenderer;
+				Renderer::PFN_RendererFunction	pfn;
+			};
 
 			struct CreateInfo
 			{
 				std::string											debugName;
 				Task												task;
 				void*												pTaskInfo;
-				std::vector<Ref<GPUTask>>								srcGPUTasks;
+				std::vector<Ref<GPUTask>>							srcGPUTasks;
 				std::vector<miru::crossplatform::PipelineStageBit>	srcPipelineStages;
 				Ref<miru::crossplatform::CommandBuffer>				cmdBuffer;
 				uint32_t											cmdBufferIndex;
-				bool												resetCmdBuffer;
-				bool												submitCmdBuffer;
+				CommandBufferBasicControlsBit						cmdBufferControls;
+				bool												resetCmdBufferReleaseResource;
+				miru::crossplatform::CommandBuffer::UsageBit		beginCmdBufferUsage;
 				bool												skipTask;
 			};
 
@@ -88,6 +124,10 @@ namespace gear
 				std::vector<miru::crossplatform::PipelineStageBit>& srcPipelineStages, std::vector<Ref<GPUTask>>& srcGPUTasks);
 			void TransitionResources();
 			void UploadResources();
+			void GraphicsRenderPassBegin();
+			void GraphicsRenderPassEnd();
+			void GraphicsNextSubpass();
+			void RendererFunction();
 
 		};
 	}

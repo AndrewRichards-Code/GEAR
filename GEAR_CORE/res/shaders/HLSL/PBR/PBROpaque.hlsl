@@ -1,5 +1,6 @@
 #include "msc_common.h"
 #include "UniformBufferStructures.h"
+#include "ColourFunctions.h"
 #include "PBRFunctions.h"
 #include "../CubeFunctions.h"
 
@@ -27,6 +28,7 @@ typedef VS_OUT PS_IN;
 struct PS_OUT
 {
 	MIRU_LOCATION(0, float4, colour, SV_TARGET0);
+	MIRU_LOCATION(1, float4, emissive, SV_TARGET1);
 };
 
 MIRU_UNIFORM_BUFFER(0, 0, Camera, camera);
@@ -191,5 +193,11 @@ PS_OUT ps_main(PS_IN IN)
 	}
 	
 	OUT.colour = float4(Lo, 1.0);
+	
+	if (GetLuminance(1, OUT.colour.rgb) > 1.0)
+		OUT.emissive = OUT.colour;
+	else
+		OUT.emissive = float4(0.0, 0.0, 0.0, 1.0);
+	
 	return OUT;
 }
