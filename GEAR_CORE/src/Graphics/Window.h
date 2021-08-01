@@ -23,6 +23,7 @@ namespace graphics
 			uint32_t									height;
 			bool										fullscreen;
 			uint32_t									fullscreenMonitorIndex;
+			bool										maximised;
 			bool										vSync;
 			miru::crossplatform::Image::SampleCountBit	samples;
 			std::string									iconFilepath;
@@ -87,6 +88,8 @@ namespace graphics
 		bool IsJoyButtonPressed(unsigned int button) const;
 		void GetJoyAxes(double& x1, double& y1, double& x2, double& y2, double& x3, double& y3) const;
 		void GetScrollPosition(double& position) const;
+
+		GLFWwindow* GetGLFWwindow() { return m_Window; }
 	
 	private:
 		bool Init();

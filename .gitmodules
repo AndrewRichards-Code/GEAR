@@ -4,3 +4,6 @@
 [submodule "GEAR_CORE/dep/MIRU"]
 	path = GEAR_CORE/dep/MIRU
 	url = https://github.com/AndrewRichards-Code/MIRU.git
+[submodule "GEARBOX/dep/imgui"]
+	path = GEARBOX/dep/imgui
+	url = https://github.com/AndrewRichards-Code/imgui.git

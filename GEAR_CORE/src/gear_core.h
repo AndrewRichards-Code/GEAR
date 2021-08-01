@@ -11,7 +11,7 @@
 
 //Core
 #include "Core/Application.h"
-#include "Core/EntryPoint.h"
+//#include "Core/EntryPoint.h"
 #include "Core/EnumStringMaps.h"
 #include "Core/PlatformMacros.h"
 #include "Core/Sequencer.h"

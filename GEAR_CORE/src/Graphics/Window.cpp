@@ -90,6 +90,8 @@ bool Window::Init()
 	
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+	if (m_CI.maximised)
+		glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
 
 	if (m_CI.fullscreen)
 	{

@@ -1,254 +1,136 @@
-#include "GearBox.h"
+#include "GEARBOX.h"
+#include "gear_core.h"
+#include "UIContext.h"
+
+using namespace gearbox::imgui;
+
+using namespace gear;
+using namespace animation;
+using namespace audio;
+using namespace core;
+using namespace graphics;
+using namespace objects;
+using namespace scene;
 
 using namespace miru;
 using namespace miru::crossplatform;
 
-using namespace gear;
-using namespace graphics;
-using namespace scene;
-
 using namespace mars;
 
-GearBox::GearBox(QWidget* parent)
-    : QMainWindow(parent)
+Ref<Application> CreateApplication(int argc, char** argv)
 {
-    ui.setupUi(this);
-	ui.mainView->setAttribute(Qt::WA_NativeWindow);
-	ui.mainView->setAttribute(Qt::WA_PaintOnScreen);
-	ui.mainView->setAttribute(Qt::WA_NoSystemBackground);
-
-	ui.actionEnglish->setData("en");
-	ui.actionJapanese->setData("ja");
-	QActionGroup* langGroup = new QActionGroup(ui.menuLanguage);
-	langGroup->addAction(ui.actionEnglish);
-	langGroup->addAction(ui.actionJapanese);
-	connect(langGroup, SIGNAL(triggered(QAction*)), this, SLOT(LanguageChanged(QAction*)));
-
-	timer = new QTimer(this);
-	timer->setSingleShot(false);
-	timer->start(1);
-	connect(timer, SIGNAL(timeout()), this, SLOT(Render()));
-
-	m_ActiveSceneCI = { "GEAR_TEST_Main_Scene", "res/scenes/current_scene.gsf.json", "res/scripts/" };
-	m_ActiveScene = gear::CreateRef<Scene>(&m_ActiveSceneCI);
-	ui.scenePlayerDockWidgetContents->Initialise(m_ActiveScene);
-	ui.sceneHierarchyDockWidgetContents->Initialise(m_ActiveScene);
-	
-	m_RenderSurfaceCI.debugName = this->windowTitle().toStdString();
-	m_RenderSurfaceCI.window = (HWND)ui.mainView->winId();
-	m_RenderSurfaceCI.api = GraphicsAPI::API::VULKAN;
-	m_RenderSurfaceCI.width = (uint32_t)ui.mainView->width();
-	m_RenderSurfaceCI.height = (uint32_t)ui.mainView->height();
-	m_RenderSurfaceCI.vSync = true;
-	m_RenderSurfaceCI.samples = Image::SampleCountBit::SAMPLE_COUNT_8_BIT;
-	m_RenderSurfaceCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::NONE;
-	m_RenderSurface = gear::CreateRef<RenderSurface>(&m_RenderSurfaceCI);
-	ui.scenePlayerDockWidgetContents->UpdateRenderingLabels(m_RenderSurface);
-
-	AllocatorManager::CreateInfo mbmCI;
-	mbmCI.pContext = m_RenderSurface->GetContext();
-	mbmCI.defaultBlockSize = Allocator::BlockSize::BLOCK_SIZE_128MB;
-	AllocatorManager::Initialise(&mbmCI);
-
-	m_Renderer = gear::CreateRef<Renderer>(m_RenderSurface->GetContext());
-	m_Renderer->InitialiseRenderPipelines({ "res/pipelines/PBROpaque.grpf.json", "res/pipelines/Cube.grpf.json" }, (float)m_RenderSurface->GetWidth(), (float)m_RenderSurface->GetHeight(), m_RenderSurface->GetCreateInfo().samples, m_RenderSurface->GetRenderPass());
-
-	Skybox::CreateInfo skyboxCI;
-	skyboxCI.debugName = "Skybox-HDR";
-	skyboxCI.device = m_RenderSurface->GetDevice();
-	skyboxCI.filepaths = { "res/img/kloppenheim_06_2k.hdr" };
-	skyboxCI.generatedCubemapSize = 1024;
-	skyboxCI.transform.translation = Vec3(0, 0, 0);
-	skyboxCI.transform.orientation = Quat(1, 0, 0, 0);
-	skyboxCI.transform.scale = Vec3(500.0f, 500.0f, 500.0f);
-	Entity skybox = m_ActiveScene->CreateEntity();
-	skybox.AddComponent<SkyboxComponent>(std::move(gear::CreateRef<Skybox>(&skyboxCI)));
-
-	Camera::CreateInfo cameraCI;
-	cameraCI.debugName = "Main Camera";
-	cameraCI.device = m_RenderSurface->GetDevice();
-	cameraCI.transform.translation = Vec3(0, 0, 0);
-	cameraCI.transform.orientation = Quat(1, 0, 0, 0);
-	cameraCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
-	cameraCI.projectionType = Camera::ProjectionType::PERSPECTIVE;
-	cameraCI.perspectiveParams = { DegToRad(90.0), m_RenderSurface->GetRatio(), 0.01f, 3000.0f };
-	cameraCI.flipX = false;
-	cameraCI.flipY = false;
-	cameraEnitity = m_ActiveScene->CreateEntity();
-	cameraEnitity.AddComponent<CameraComponent>(std::move(gear::CreateRef<Camera>(&cameraCI)));
-	cameraEnitity.AddComponent<NativeScriptComponent>("TestScript");
-
-	Light::CreateInfo lightCI;
-	lightCI.debugName = "Main Light";
-	lightCI.device = m_RenderSurface->GetDevice();
-	lightCI.type = Light::LightType::POINT;
-	lightCI.colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	lightCI.transform.translation = Vec3(0.0f, 1.0f, 0.0f);
-	lightCI.transform.orientation = Quat(1, 0, 0, 0);
-	lightCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
-	Entity light = m_ActiveScene->CreateEntity();
-	light.AddComponent<LightComponent>(std::move(gear::CreateRef<Light>(&lightCI)));
-
-	auto LoadTexture = [](void* device, const std::string& filepath, const std::string& debugName) -> gear::Ref<graphics::Texture>
-	{
-		Texture::CreateInfo texCI;
-		texCI.debugName = debugName.c_str();
-		texCI.device = device;
-		texCI.dataType = Texture::DataType::FILE;
-		texCI.file.filepaths = &filepath;
-		texCI.file.count = 1;
-		texCI.mipLevels = 1;
-		texCI.arrayLayers = 1;
-		texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
-		texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
-		texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-		texCI.usage = miru::crossplatform::Image::UsageBit(0);
-		texCI.generateMipMaps = false;
-		return std::move(gear::CreateRef<Texture>(&texCI));
-	};
-
-	std::future<gear::Ref<graphics::Texture>> rustIronAlbedo = std::async(std::launch::async, LoadTexture, m_RenderSurface->GetDevice(), std::string("res/img/rustediron2-Unreal-Engine/rustediron2_basecolor.png"), std::string("UE4 Rust Iron: Albedo"));
-	std::future<gear::Ref<graphics::Texture>> rustIronMetallic = std::async(std::launch::async, LoadTexture, m_RenderSurface->GetDevice(), std::string("res/img/rustediron2-Unreal-Engine/rustediron2_metallic.png"), std::string("UE4 Rust Iron: Metallic"));
-	std::future<gear::Ref<graphics::Texture>> rustIronNormal = std::async(std::launch::async, LoadTexture, m_RenderSurface->GetDevice(), std::string("res/img/rustediron2-Unreal-Engine/rustediron2_normal.png"), std::string("UE4 Rust Iron: Normal"));
-	std::future<gear::Ref<graphics::Texture>> rustIronRoughness = std::async(std::launch::async, LoadTexture, m_RenderSurface->GetDevice(), std::string("res/img/rustediron2-Unreal-Engine/rustediron2_roughness.png"), std::string("UE4 Rust Iron: Roughness"));
-
-	std::future<gear::Ref<graphics::Texture>> slateAlbedo = std::async(std::launch::async, LoadTexture, m_RenderSurface->GetDevice(), std::string("res/img/slate2-tiled-ue4/slate2-tiled-albedo2.png"), std::string("UE4 Slate: Albedo"));
-	std::future<gear::Ref<graphics::Texture>> slateMetallic = std::async(std::launch::async, LoadTexture, m_RenderSurface->GetDevice(), std::string("res/img/slate2-tiled-ue4/slate2-tiled-metalness.png"), std::string("UE4 Slate: Metallic"));
-	std::future<gear::Ref<graphics::Texture>> slateNormal = std::async(std::launch::async, LoadTexture, m_RenderSurface->GetDevice(), std::string("res/img/slate2-tiled-ue4/slate2-tiled-normal3-UE4.png"), std::string("UE4 Slate: Normal"));
-	std::future<gear::Ref<graphics::Texture>> slateRoughness = std::async(std::launch::async, LoadTexture, m_RenderSurface->GetDevice(), std::string("res/img/slate2-tiled-ue4/slate2-tiled-rough.png"), std::string("UE4 Slate: Roughness"));
-	std::future<gear::Ref<graphics::Texture>> slateAO = std::async(std::launch::async, LoadTexture, m_RenderSurface->GetDevice(), std::string("res/img/slate2-tiled-ue4/slate2-tiled-ao.png"), std::string("UE4 Slate: AO"));
-
-	Material::CreateInfo matCI;
-	matCI.debugName = "UE4 Rust Iron";
-	matCI.device = m_RenderSurface->GetDevice();
-	matCI.pbrTextures = {
-		{ Material::TextureType::NORMAL, rustIronNormal.get() },
-		{ Material::TextureType::ALBEDO, rustIronAlbedo.get() },
-		{ Material::TextureType::METALLIC, rustIronMetallic.get() },
-		{ Material::TextureType::ROUGHNESS, rustIronRoughness.get() },
-	};
-	gear::Ref<Material> rustIronMaterial = gear::CreateRef<Material>(&matCI);
-
-	matCI.debugName = "UE4 Slate";
-	matCI.device = m_RenderSurface->GetDevice();
-	matCI.pbrTextures = {
-		{ Material::TextureType::NORMAL, slateNormal.get() },
-		{ Material::TextureType::ALBEDO, slateAlbedo.get() },
-		{ Material::TextureType::METALLIC, slateMetallic.get() },
-		{ Material::TextureType::ROUGHNESS, slateRoughness.get() },
-		{ Material::TextureType::AMBIENT_OCCLUSION, slateAO.get() },
-	};
-	gear::Ref<Material> slateMaterial = gear::CreateRef<Material>(&matCI);
-
-	Mesh::CreateInfo meshCI;
-	meshCI.device = m_RenderSurface->GetDevice();
-	meshCI.debugName = "quad.fbx";
-	meshCI.filepath = "res/obj/quad.fbx";
-	gear::Ref<Mesh> quadMesh = gear::CreateRef<Mesh>(&meshCI);
-	quadMesh->SetOverrideMaterial(0, slateMaterial);
-
-	meshCI.device = m_RenderSurface->GetDevice();
-	meshCI.debugName = "sphere.fbx";
-	meshCI.filepath = "res/obj/sphere.fbx";
-	gear::Ref<Mesh> sphereMesh = gear::CreateRef<Mesh>(&meshCI);
-	sphereMesh->SetOverrideMaterial(0, rustIronMaterial);
-
-	Model::CreateInfo modelCI;
-	modelCI.debugName = "Quad";
-	modelCI.device = m_RenderSurface->GetDevice();
-	modelCI.pMesh = quadMesh;
-	modelCI.materialTextureScaling = Vec2(100.0f, 100.0f);
-	modelCI.transform.translation = Vec3(0, 0, 0);
-	modelCI.transform.orientation = Quat(sqrt(2) / 2, -sqrt(2) / 2, 0, 0);
-	modelCI.transform.scale = Vec3(100.0f, 100.0f, 100.0f);
-	modelCI.renderPipelineName = "PBROpaque";
-	Entity quad = m_ActiveScene->CreateEntity();
-	quad.AddComponent<ModelComponent>(std::move(gear::CreateRef<Model>(&modelCI)));
-
-	modelCI.debugName = "Sphere";
-	modelCI.device = m_RenderSurface->GetDevice();
-	modelCI.pMesh = sphereMesh;
-	modelCI.materialTextureScaling = Vec2(1.0f, 1.0f);
-	modelCI.transform.translation = Vec3(0, 1.0f, -1.5);
-	modelCI.transform.orientation = Quat(1, 0, 0, 0);
-	modelCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
-	modelCI.renderPipelineName = "PBROpaque";
-	Entity sphere = m_ActiveScene->CreateEntity();
-	sphere.AddComponent<ModelComponent>(std::move(gear::CreateRef<Model>(&modelCI)));
-
-	ui.sceneHierarchyDockWidgetContents->Update();
-};
-
-GearBox::~GearBox()
-{
-	delete timer;
+	return CreateRef<GEARBOX>();
 }
 
-void GearBox::RetranslateUI()
+void GEARBOX::Run()
 {
-	ui.retranslateUi(this);
-}
+	Window::CreateInfo mainWindowCI;
+	mainWindowCI.api = GraphicsAPI::API::D3D12;
+	mainWindowCI.title = "GEARBOX";
+	mainWindowCI.width = 1920;
+	mainWindowCI.height = 1080;
+	mainWindowCI.fullscreen = false;
+	mainWindowCI.fullscreenMonitorIndex = 0;
+	mainWindowCI.maximised = true;
+	mainWindowCI.vSync = true;
+	mainWindowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_4_BIT;
+	mainWindowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::PIX;
+	Ref<Window> mainWindow = CreateRef<Window>(&mainWindowCI);
 
-void GearBox::changeEvent(QEvent* event)
-{
-	if (event) 
+	UIContext::CreateInfo uiContextCI;
+	uiContextCI.window = mainWindow;
+	Ref<UIContext>uiContext = CreateRef<UIContext>(&uiContextCI);
+
+	CommandPool::CreateInfo cmdPoolCI;
+	cmdPoolCI.debugName = "CommandPool";
+	cmdPoolCI.pContext = mainWindow->GetContext();
+	cmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
+	cmdPoolCI.queueType = CommandPool::QueueType::GRAPHICS;
+	Ref<CommandPool> cmdPool = CommandPool::Create(&cmdPoolCI);
+
+	CommandBuffer::CreateInfo cmdBufferCI;
+	cmdBufferCI.debugName = "CommandBuffers";
+	cmdBufferCI.pCommandPool = cmdPool;
+	cmdBufferCI.level = CommandBuffer::Level::PRIMARY;
+	cmdBufferCI.commandBufferCount = 3;
+	Ref<CommandBuffer> cmdBuffer = CommandBuffer::Create(&cmdBufferCI);
+
+	Fence::CreateInfo fenceCI;
+	fenceCI.debugName = "DrawFence";
+	fenceCI.device = mainWindow->GetDevice();
+	fenceCI.signaled = true;
+	fenceCI.timeout = UINT64_MAX;
+	std::vector<Ref<Fence>>draws = { Fence::Create(&fenceCI), Fence::Create(&fenceCI) };
+	Semaphore::CreateInfo acquireSemaphoreCI = { "AcquireSeamphore", mainWindow->GetDevice() };
+	Semaphore::CreateInfo submitSemaphoreCI = { "SubmitSeamphore", mainWindow->GetDevice() };
+	std::vector<Ref<Semaphore>>acquire = { Semaphore::Create(&acquireSemaphoreCI), Semaphore::Create(&acquireSemaphoreCI) };
+	std::vector<Ref<Semaphore>>submit = { Semaphore::Create(&submitSemaphoreCI), Semaphore::Create(&submitSemaphoreCI) };
+	uint32_t frameIndex = 0;
+	uint32_t frameCount = 0;
+	float r = 1.00f;
+	float g = 0.00f;
+	float b = 0.00f;
+	bool windowResize = false;
+
+	while (!mainWindow->Closed())
 	{
-		switch (event->type()) 
+		uiContext->NewFrame();
+
+		ImGui::NewFrame();
 		{
-		case QEvent::LanguageChange:
+			static float f = 0.0f;
+			static int counter = 0;
+
+			ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+
+			float colours[3] = { r,g,b };
+			ImGui::ColorPicker3("Clear Colour", colours);
+			r = colours[0];
+			g = colours[1];
+			b = colours[2];
+
+			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+				counter++;
+			ImGui::SameLine();
+			ImGui::Text("counter = %d", counter);
+
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::End();
+		}
+		// Rendering
+		ImGui::Render();
+
+		if (mainWindow->Resized())
 		{
-			this->RetranslateUI();
-			ui.sceneHierarchyDockWidgetContents->RetranslateUI();
-			ui.scenePlayerDockWidgetContents->RetranslateUI();
-			ui.scenePlayerDockWidgetContents->UpdateRenderingLabels(m_RenderSurface);
-			break;
+			frameIndex = 0;
+			mainWindow->Resized() = false;
+
+			cmdBuffer = CommandBuffer::Create(&cmdBufferCI);
+
+			draws = { Fence::Create(&fenceCI), Fence::Create(&fenceCI) };
+			acquire = { Semaphore::Create(&acquireSemaphoreCI), Semaphore::Create(&acquireSemaphoreCI) };
+			submit = { Semaphore::Create(&submitSemaphoreCI), Semaphore::Create(&submitSemaphoreCI) };
 		}
-		default:
-			break;
-		}
+
+		draws[frameIndex]->Wait();
+
+		cmdBuffer->Reset(frameIndex, false);
+		cmdBuffer->Begin(frameIndex, CommandBuffer::UsageBit::SIMULTANEOUS);
+		cmdBuffer->BeginRenderPass(frameIndex, mainWindow->GetRenderSurface()->GetHDRFramebuffers()[frameIndex], { {r, g, b, 1.0f}, {0.0f, 0}, {r, g, b, 1.0f} });
+
+		uiContext->RenderDrawData(cmdBuffer, frameIndex, ImGui::GetDrawData());
+
+		cmdBuffer->EndRenderPass(frameIndex);
+		cmdBuffer->End(frameIndex);
+
+		cmdBuffer->Present({ 0, 1 }, mainWindow->GetSwapchain(), draws, acquire, submit, windowResize);
+		frameIndex = (frameIndex + 1) % 2;
+		frameCount++;
+
+		mainWindow->Update();
+		mainWindow->CalculateFPS();
 	}
-	QMainWindow::changeEvent(event);
-}
-
-void GearBox::Render()
-{
-	//Update Timer
-	m_GearTimer.Update();
-
-	//Update from Window
-	if (ui.mainView->width() != m_RenderSurface->GetWidth() || ui.mainView->height() != m_RenderSurface->GetHeight())
-	{
-		m_RenderSurface->Resize(ui.mainView->width(), ui.mainView->height());
-		if (m_RenderSurface->Resized())
-		{
-			m_Renderer->ResizeRenderPipelineViewports((uint32_t)m_RenderSurface->GetWidth(), (uint32_t)m_RenderSurface->GetHeight());
-			m_RenderSurface->Resized() = false;
-		}
-	}
-	
-	//Update Camera
-	auto& camera = cameraEnitity.GetComponent<CameraComponent>().camera;
-	camera->m_CI.transform.translation.y = 1.0f;
-	camera->Update();
-
-	//Update Scene
-	m_ActiveScene->OnUpdate(m_Renderer, m_GearTimer);
-
-	m_Renderer->SubmitFramebuffer(m_RenderSurface->GetFramebuffers());
-	m_Renderer->Upload(true, false, true, false);
-	m_Renderer->Flush();
-
-	m_Renderer->Present(m_RenderSurface->GetSwapchain(), windowResize);
-}
-
-void GearBox::LanguageChanged(QAction* action)
-{
-	QString locale = action->data().toString();
-	
-	qApp->removeTranslator(&translator);
-	
-	bool loaded = translator.load(QString("gearbox_") + locale + QString(".qm"));
-	if (loaded)
-		qApp->installTranslator(&translator);
-
+	mainWindow->GetContext()->DeviceWaitIdle();
 }
