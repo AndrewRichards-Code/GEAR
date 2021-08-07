@@ -3,25 +3,26 @@
 	"debugName": "Mipmap_array",
 	"shaders": [
 		{
-			"debugName": "Mipmap_comp_mipmap_array.spv",
-			"stage": "COMPUTE_BIT",
-			"entryPoint": "mipmap_array",
-			"binaryFilepath": "res/shaders/bin/Mipmap_comp_mipmap_array.spv",
+			"debugName": "Mipmap_cs_6_4_mipmap_array.spv",
+			"stageAndEntryPoints": [
+				{
+					"stage": "COMPUTE_BIT",
+					"entryPoint": "mipmap_array"
+				}
+			],
+			"binaryFilepath": "res/shaders/bin/Mipmap_cs_6_4_mipmap_array.spv",
 			"recompileArguments": {
 				"mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
 				"hlslFilepath": "res/shaders/HLSL/Mipmap.hlsl",
 				"outputDirectory": "res/shaders/bin",
 				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
 				"entryPoint": "mipmap_array",
-				"shaderStage": "comp",
-				"shaderModel": "6_4",
+				"shaderModel": "cs_6_4",
 				"macros": [],
 				"cso": true,
 				"spv": true,
 				"dxcLocation": "",
-				"glslangLocation": "",
 				"dxcArguments": "",
-				"glslangArguments": "",
 				"nologo": false,
 				"nooutput": false
 			}

@@ -53,6 +53,7 @@ void GEAR_TEST::Run()
 	windowCI.height = 1080;
 	windowCI.fullscreen = false;
 	windowCI.fullscreenMonitorIndex = 1;
+	windowCI.maximised = false;
 	windowCI.vSync = true;
 	windowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_2_BIT;
 	windowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::PIX;

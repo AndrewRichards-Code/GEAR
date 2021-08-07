@@ -3,49 +3,51 @@
   "debugName": "DebugCoordinateAxes",
   "shaders": [
     {
-      "debugName": "Debug_vert_vs_coordinate_axes.spv",
-      "stage": "VERTEX_BIT",
-      "entryPoint": "vs_coordinate_axes",
-      "binaryFilepath": "res/shaders/bin/Debug_vert_vs_coordinate_axes.spv",
+      "debugName": "Debug_vs_6_4_vs_coordinate_axes.spv",
+      "stageAndEntryPoints": [
+        {
+          "stage": "VERTEX_BIT",
+          "entryPoint": "vs_coordinate_axes"
+        }
+      ],
+      "binaryFilepath": "res/shaders/bin/Debug_vs_6_4_vs_coordinate_axes.spv",
       "recompileArguments": {
         "mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
         "hlslFilepath": "res/shaders/HLSL/Debug.hlsl",
         "outputDirectory": "res/shaders/bin",
         "includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
         "entryPoint": "vs_coordinate_axes",
-        "shaderStage": "vert",
-        "shaderModel": "6_4",
+        "shaderModel": "vs_6_4",
         "macros": [],
         "cso": true,
         "spv": true,
         "dxcLocation": "",
-        "glslangLocation": "",
         "dxcArguments": "",
-        "glslangArguments": "",
         "nologo": false,
         "nooutput": false
       }
     },
     {
-      "debugName": "Debug_frag_ps_coordinate_axes.spv",
-      "stage": "FRAGMENT_BIT",
-      "entryPoint": "ps_coordinate_axes",
-      "binaryFilepath": "res/shaders/bin/Debug_frag_ps_coordinate_axes.spv",
+      "debugName": "Debug_ps_6_4_ps_coordinate_axes.spv",
+      "stageAndEntryPoints": [
+        {
+          "stage": "FRAGMENT_BIT",
+          "entryPoint": "ps_coordinate_axes"
+        }
+      ],
+      "binaryFilepath": "res/shaders/bin/Debug_ps_6_4_ps_coordinate_axes.spv",
       "recompileArguments": {
         "mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
         "hlslFilepath": "res/shaders/HLSL/Debug.hlsl",
         "outputDirectory": "res/shaders/bin",
         "includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
         "entryPoint": "ps_coordinate_axes",
-        "shaderStage": "frag",
-        "shaderModel": "6_4",
+        "shaderModel": "ps_6_4",
         "macros": [],
         "cso": true,
         "spv": true,
         "dxcLocation": "",
-        "glslangLocation": "",
         "dxcArguments": "",
-        "glslangArguments": "",
         "nologo": false,
         "nooutput": false
       }

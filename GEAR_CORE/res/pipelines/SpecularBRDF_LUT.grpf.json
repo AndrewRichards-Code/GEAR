@@ -3,25 +3,26 @@
   "debugName": "SpecularBRDF_LUT",
   "shaders": [
     {
-      "debugName": "SpecularBRDF_LUT_comp_main.spv",
-      "stage": "COMPUTE_BIT",
-      "entryPoint": "main",
-      "binaryFilepath": "res/shaders/bin/SpecularBRDF_LUT_comp_main.spv",
+      "debugName": "SpecularBRDF_LUT_cs_6_4_main.spv",
+      "stageAndEntryPoints": [
+        {
+          "stage": "COMPUTE_BIT",
+          "entryPoint": "main"
+        }
+      ],
+      "binaryFilepath": "res/shaders/bin/SpecularBRDF_LUT_cs_6_4_main.spv",
       "recompileArguments": {
         "mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
         "hlslFilepath": "res/shaders/HLSL/PBR/SpecularBRDF_LUT.hlsl",
         "outputDirectory": "res/shaders/bin",
         "includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
         "entryPoint": "main",
-        "shaderStage": "comp",
-        "shaderModel": "6_4",
+        "shaderModel": "cs_6_4",
         "macros": [],
         "cso": true,
         "spv": true,
         "dxcLocation": "",
-        "glslangLocation": "",
         "dxcArguments": "",
-        "glslangArguments": "",
         "nologo": false,
         "nooutput": false
       }

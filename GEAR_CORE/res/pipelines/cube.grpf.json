@@ -1,156 +1,158 @@
 {
-	"fileType": "GEAR_RENDER_PIPELINE_FILE",
-	"debugName": "Cube",
-	"shaders": [
-		{
-			"debugName": "Cube_vert_vs_main.spv",
-			"stage": "VERTEX_BIT",
-			"entryPoint": "vs_main",
-			"binaryFilepath": "res/shaders/bin/Cube_vert_vs_main.spv",
-			"recompileArguments": {
-				"mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
-				"hlslFilepath": "res/shaders/HLSL/Cube.hlsl",
-				"outputDirectory": "res/shaders/bin",
-				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
-				"entryPoint": "vs_main",
-				"shaderStage": "vert",
-				"shaderModel": "6_4",
-				"macros": [],
-				"cso": true,
-				"spv": true,
-				"dxcLocation": "",
-				"glslangLocation": "",
-				"dxcArguments": "",
-				"glslangArguments": "",
-				"nologo": false,
-				"nooutput": false
-			}
-		},
-		{
-			"debugName": "Cube_frag_ps_main.spv",
-			"stage": "FRAGMENT_BIT",
-			"entryPoint": "ps_main",
-			"binaryFilepath": "res/shaders/bin/Cube_frag_ps_main.spv",
-			"recompileArguments": {
-				"mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
-				"hlslFilepath": "res/shaders/HLSL/Cube.hlsl",
-				"outputDirectory": "res/shaders/bin",
-				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
-				"entryPoint": "ps_main",
-				"shaderStage": "frag",
-				"shaderModel": "6_4",
-				"macros": [],
-				"cso": true,
-				"spv": true,
-				"dxcLocation": "",
-				"glslangLocation": "",
-				"dxcArguments": "",
-				"glslangArguments": "",
-				"nologo": false,
-				"nooutput": false
-			}
-		}
-	],
-	"inputAssemblyState": {
-		"topology": "TRIANGLE_LIST",
-		"primitiveRestartEnable": false
-	},
-	"viewportState": {
-		"viewports": [
-			{
-				"x": 0.0,
-				"y": 0.0,
-				"width": "VIEWPORT_WIDTH",
-				"height": "VIEWPORT_HEIGHT",
-				"minDepth": 0.0,
-				"maxDepth": 1.0
-			}
-		],
-		"scissors": [
-			{
-				"x": 0.0,
-				"y": 0.0,
-				"width": "VIEWPORT_WIDTH",
-				"height": "VIEWPORT_HEIGHT"
-			}
-		]
-	},
-	"rasterisationState": {
-		"depthClampEnable": false,
-		"rasteriserDiscardEnable": false,
-		"polygonMode": "FILL",
-		"cullMode": "NONE_BIT",
-		"frontFace": "COUNTER_CLOCKWISE",
-		"depthBiasEnable": false,
-		"depthBiasConstantFactor": 0.0,
-		"depthBiasClamp": 0.0,
-		"depthBiasSlopeFactor": 0.0,
-		"lineWidth": 1.0
-	},
-	"multisampleState": {
-		"rasterisationSamples": "FRAMEBUFFER_SAMPLE_COUNT",
-		"sampleShadingEnable": false,
-		"minSampleShading": 1.0,
-		"alphaToCoverageEnable": false,
-		"alphaToOneEnable": false
-	},
-	"depthStencilState": {
-		"depthTestEnable": true,
-		"depthWriteEnable": true,
-		"depthCompareOp": "LESS",
-		"depthBoundsTestEnable": false,
-		"stencilTestEnable": false,
-		"front": {
-			"failOp": "",
-			"passOp": "",
-			"depthFailOp": "",
-			"compareOp": "",
-			"compareMask": "",
-			"writeMask": "",
-			"reference": ""
-		},
-		"back": {
-			"failOp": "",
-			"passOp": "",
-			"depthFailOp": "",
-			"compareOp": "",
-			"compareMask": "",
-			"writeMask": "",
-			"reference": ""
-		},
-		"minDepthBounds": 0.0,
-		"maxDepthBounds": 1.0
-	},
-	"colourBlendState": {
-		"logicOpEnable": false,
-		"logicOp": "COPY",
-		"attachments": [
-			{
-				"blendEnable": true,
-				"srcColourBlendFactor": "SRC_ALPHA",
-				"dstColourBlendFactor": "ONE_MINUS_SRC_ALPHA",
-				"colourBlendOp": "ADD",
-				"srcAlphaBlendFactor": "ONE",
-				"dstAlphaBlendFactor": "ZERO",
-				"alphaBlendOp": "ADD",
-				"colourWriteMask": [ "R_BIT", "G_BIT", "B_BIT", "A_BIT" ]
-			},
-			{
-				"blendEnable": true,
-				"srcColourBlendFactor": "SRC_ALPHA",
-				"dstColourBlendFactor": "ONE_MINUS_SRC_ALPHA",
-				"colourBlendOp": "ADD",
-				"srcAlphaBlendFactor": "ONE",
-				"dstAlphaBlendFactor": "ZERO",
-				"alphaBlendOp": "ADD",
-				"colourWriteMask": [ "R_BIT", "G_BIT", "B_BIT", "A_BIT" ]
-			}
-		],
-		"blendConstants": [
-			0.0,
-			0.0,
-			0.0,
-			0.0
-		]
-	}
+  "fileType": "GEAR_RENDER_PIPELINE_FILE",
+  "debugName": "Cube",
+  "shaders": [
+    {
+      "debugName": "Cube_vs_6_4_vs_main.spv",
+      "stageAndEntryPoints": [
+        {
+          "stage": "VERTEX_BIT",
+          "entryPoint": "vs_main"
+        }
+      ],
+      "binaryFilepath": "res/shaders/bin/Cube_vs_6_4_vs_main.spv",
+      "recompileArguments": {
+        "mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
+        "hlslFilepath": "res/shaders/HLSL/Cube.hlsl",
+        "outputDirectory": "res/shaders/bin",
+        "includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
+        "entryPoint": "vs_main",
+        "shaderModel": "vs_6_4",
+        "macros": [],
+        "cso": true,
+        "spv": true,
+        "dxcLocation": "",
+        "dxcArguments": "",
+        "nologo": false,
+        "nooutput": false
+      }
+    },
+    {
+      "debugName": "Cube_ps_6_4_ps_main.spv",
+      "stageAndEntryPoints": [
+        {
+          "stage": "FRAGMENT_BIT",
+          "entryPoint": "ps_main"
+        }
+      ],
+      "binaryFilepath": "res/shaders/bin/Cube_ps_6_4_ps_main.spv",
+      "recompileArguments": {
+        "mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
+        "hlslFilepath": "res/shaders/HLSL/Cube.hlsl",
+        "outputDirectory": "res/shaders/bin",
+        "includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
+        "entryPoint": "ps_main",
+        "shaderModel": "ps_6_4",
+        "macros": [],
+        "cso": true,
+        "spv": true,
+        "dxcLocation": "",
+        "dxcArguments": "",
+        "nologo": false,
+        "nooutput": false
+      }
+    }
+  ],
+  "inputAssemblyState": {
+    "topology": "TRIANGLE_LIST",
+    "primitiveRestartEnable": false
+  },
+  "viewportState": {
+    "viewports": [
+      {
+        "x": 0.0,
+        "y": 0.0,
+        "width": "VIEWPORT_WIDTH",
+        "height": "VIEWPORT_HEIGHT",
+        "minDepth": 0.0,
+        "maxDepth": 1.0
+      }
+    ],
+    "scissors": [
+      {
+        "x": 0.0,
+        "y": 0.0,
+        "width": "VIEWPORT_WIDTH",
+        "height": "VIEWPORT_HEIGHT"
+      }
+    ]
+  },
+  "rasterisationState": {
+    "depthClampEnable": false,
+    "rasteriserDiscardEnable": false,
+    "polygonMode": "FILL",
+    "cullMode": "NONE_BIT",
+    "frontFace": "COUNTER_CLOCKWISE",
+    "depthBiasEnable": false,
+    "depthBiasConstantFactor": 0.0,
+    "depthBiasClamp": 0.0,
+    "depthBiasSlopeFactor": 0.0,
+    "lineWidth": 1.0
+  },
+  "multisampleState": {
+    "rasterisationSamples": "FRAMEBUFFER_SAMPLE_COUNT",
+    "sampleShadingEnable": false,
+    "minSampleShading": 1.0,
+    "alphaToCoverageEnable": false,
+    "alphaToOneEnable": false
+  },
+  "depthStencilState": {
+    "depthTestEnable": true,
+    "depthWriteEnable": true,
+    "depthCompareOp": "LESS",
+    "depthBoundsTestEnable": false,
+    "stencilTestEnable": false,
+    "front": {
+      "failOp": "",
+      "passOp": "",
+      "depthFailOp": "",
+      "compareOp": "",
+      "compareMask": "",
+      "writeMask": "",
+      "reference": ""
+    },
+    "back": {
+      "failOp": "",
+      "passOp": "",
+      "depthFailOp": "",
+      "compareOp": "",
+      "compareMask": "",
+      "writeMask": "",
+      "reference": ""
+    },
+    "minDepthBounds": 0.0,
+    "maxDepthBounds": 1.0
+  },
+  "colourBlendState": {
+    "logicOpEnable": false,
+    "logicOp": "COPY",
+    "attachments": [
+      {
+        "blendEnable": true,
+        "srcColourBlendFactor": "SRC_ALPHA",
+        "dstColourBlendFactor": "ONE_MINUS_SRC_ALPHA",
+        "colourBlendOp": "ADD",
+        "srcAlphaBlendFactor": "ONE",
+        "dstAlphaBlendFactor": "ZERO",
+        "alphaBlendOp": "ADD",
+        "colourWriteMask": [ "R_BIT", "G_BIT", "B_BIT", "A_BIT" ]
+      },
+      {
+        "blendEnable": true,
+        "srcColourBlendFactor": "SRC_ALPHA",
+        "dstColourBlendFactor": "ONE_MINUS_SRC_ALPHA",
+        "colourBlendOp": "ADD",
+        "srcAlphaBlendFactor": "ONE",
+        "dstAlphaBlendFactor": "ZERO",
+        "alphaBlendOp": "ADD",
+        "colourWriteMask": [ "R_BIT", "G_BIT", "B_BIT", "A_BIT" ]
+      }
+    ],
+    "blendConstants": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  }
 }

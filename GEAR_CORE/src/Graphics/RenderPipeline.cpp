@@ -90,8 +90,10 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 		Shader::CreateInfo shaderCI;
 		shaderCI.debugName = shader["debugName"];
 		shaderCI.device = pLoadInfo->device;
-		shaderCI.stage = ShaderStageBitStrings[shader["stage"]];
-		shaderCI.entryPoint = shader["entryPoint"];
+		for (auto& stageAndEntryPoint : shader["stageAndEntryPoints"])
+		{
+			shaderCI.stageAndEntryPoints.push_back({ShaderStageBitStrings[stageAndEntryPoint["stage"]], stageAndEntryPoint["entryPoint"]});
+		}
 		shaderCI.binaryFilepath = projectDirectory + std::string(shader["binaryFilepath"]);
 		shaderCI.binaryCode = {};
 
@@ -102,16 +104,13 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 		for (auto& includeDir : recompileArgs["includeDirectories"])
 			shaderCI.recompileArguments.includeDirectories.push_back(relativePathFromCwdToProjDir + std::string(includeDir));
 		shaderCI.recompileArguments.entryPoint = recompileArgs["entryPoint"];
-		shaderCI.recompileArguments.shaderStage = recompileArgs["shaderStage"];
 		shaderCI.recompileArguments.shaderModel = recompileArgs["shaderModel"];
 		for (auto& macro : recompileArgs["macros"])
 			shaderCI.recompileArguments.macros.push_back(macro);
 		shaderCI.recompileArguments.cso = recompileArgs["cso"];
 		shaderCI.recompileArguments.spv = recompileArgs["spv"];
 		shaderCI.recompileArguments.dxcLocation = recompileArgs["dxcLocation"];
-		shaderCI.recompileArguments.glslangLocation = recompileArgs["glslangLocation"];
 		shaderCI.recompileArguments.dxcArguments = recompileArgs["dxcArguments"];
-		shaderCI.recompileArguments.glslangArguments = recompileArgs["glslangArguments"];
 		shaderCI.recompileArguments.nologo = recompileArgs["nologo"];
 		shaderCI.recompileArguments.nooutput = recompileArgs["nooutput"];
 
@@ -119,7 +118,9 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 	}
 
 	//Compute Pipelines are completed here.
-	if (rpCI.shaderCreateInfo.size() == 1 && rpCI.shaderCreateInfo.back().stage == Shader::StageBit::COMPUTE_BIT)
+	if (rpCI.shaderCreateInfo.size() == 1 
+		&& rpCI.shaderCreateInfo.back().stageAndEntryPoints.size() == 1 
+		&& rpCI.shaderCreateInfo.back().stageAndEntryPoints.back().first == Shader::StageBit::COMPUTE_BIT)
 	{
 		*this = graphics::RenderPipeline(&rpCI);
 		return;

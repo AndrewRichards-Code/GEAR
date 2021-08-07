@@ -8,7 +8,7 @@ float3 GetLookupUVW(uint3 threadID, float2 imageDimension)
 	float2 uv = 2.0 * faceTC - float2(1.0, 1.0);
 
 	//Select vector based on cubemap face index.
-	float3 result;
+	float3 result = float3(0.0, 0.0, 0.0);
 
 	switch (threadID.z)
 	{
@@ -37,7 +37,7 @@ float2 CubemapToEquirectangularTextCoords(float3 v)
 
 float4 CubemapFaceColour(uint faceIndex)
 {
-	float4 result;
+	float4 result = float4(0.0, 0.0, 0.0, 1.0);
 
 	switch (faceIndex)
 	{
