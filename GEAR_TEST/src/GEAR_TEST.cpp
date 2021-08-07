@@ -46,8 +46,8 @@ void GEAR_TEST::Run()
 	Ref<Scene> activeScene = CreateRef<Scene>(&sceneCI);
 
 	Window::CreateInfo windowCI;
-	windowCI.api = GraphicsAPI::API::D3D12;
-	//windowCI.api = GraphicsAPI::API::VULKAN;
+	//windowCI.api = GraphicsAPI::API::D3D12;
+	windowCI.api = GraphicsAPI::API::VULKAN;
 	windowCI.title = "GEAR_TEST";
 	windowCI.width = 1920;
 	windowCI.height = 1080;
@@ -294,7 +294,7 @@ void GEAR_TEST::Run()
 	animatorCI.pMesh = droneMesh;
 	Ref<Sequencer> sequencer = CreateRef<Animator>(&animatorCI);
 
-	Ref<Renderer> m_Renderer = CreateRef<Renderer>(window->GetContext());
+	Ref<Renderer> m_Renderer = CreateRef<Renderer>(window);
 	m_Renderer->InitialiseRenderPipelines(window->GetRenderSurface());
 
 	AllocatorManager::PrintMemoryBlockStatus();
@@ -325,9 +325,9 @@ void GEAR_TEST::Run()
 		if (window->Resized())
 		{
 			m_Renderer->ResizeRenderPipelineViewports((uint32_t)window->GetWidth(), (uint32_t)window->GetHeight());
-			//text->m_CI.viewportWidth = (uint32_t)window->GetWidth();
-			//text->m_CI.viewportHeight = (uint32_t)window->GetHeight();
-			//text->Update();
+			text->m_CI.viewportWidth = (uint32_t)window->GetWidth();
+			text->m_CI.viewportHeight = (uint32_t)window->GetHeight();
+			text->Update();
 			window->Resized() = false;
 		}
 

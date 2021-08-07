@@ -38,8 +38,8 @@
 #endif
 #define NOMINMAX
 
-#ifndef _DEBUG
-//#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+#ifdef GEAR_NO_CONSOLE
+#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif
 
 #endif

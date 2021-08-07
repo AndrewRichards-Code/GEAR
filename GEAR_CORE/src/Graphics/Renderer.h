@@ -43,6 +43,7 @@ namespace graphics
 
 		//Renderering Objects
 		std::map<std::string, Ref<graphics::RenderPipeline>> m_RenderPipelines;
+		Ref<Window> m_Window;
 		Ref<RenderSurface> m_RenderSurface;
 		Ref<objects::Camera> m_Camera;
 		Ref<objects::Camera> m_TextCamera;
@@ -64,32 +65,30 @@ namespace graphics
 		uint32_t m_FrameCount = 0;
 
 	public:
-		Renderer(const Ref<miru::crossplatform::Context>& context);
+		Renderer(const Ref<Window>& context);
 		virtual ~Renderer();
 
 		void InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface);
 		
 		void SubmitRenderSurface(const Ref<RenderSurface>& renderSurface);
-
 		void SubmitCamera(const Ref<objects::Camera>& camera);
 		void SubmitTextCamera(const Ref<objects::Camera>& fontCamera);
-
 		void SubmitLights(const std::vector<Ref<objects::Light>>& lights);
-
 		void SubmitSkybox(const Ref<objects::Skybox>& skybox);
-
 		void SubmitModel(const Ref<objects::Model>& obj);
 		void SubmitTextLine(const Ref<objects::Model>& obj);
 
 		void Upload(bool forceUploadCamera, bool forceUploadLights, bool forceUploadSkybox, bool forceUploadMeshes);
 		void BuildDescriptorSetandPools();
 		void Flush();
-		void Present(const Ref<miru::crossplatform::Swapchain>& swapchain, bool& windowResize);
 
 		void MainRenderLoop();
 		void HDRMapping();
 		void DrawTextLines();
 		void DrawCoordinateAxes();
+		void CopyToSwapchain();
+
+		void Present(const Ref<miru::crossplatform::Swapchain>& swapchain, bool& windowResize);
 
 		void ResizeRenderPipelineViewports(uint32_t width, uint32_t height);
 		void RecompileRenderPipelineShaders();

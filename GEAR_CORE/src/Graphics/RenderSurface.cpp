@@ -14,122 +14,63 @@ RenderSurface::RenderSurface(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
-	m_CurrentWidth = m_CI.width;
-	m_CurrentHeight = m_CI.height;
-
-	GraphicsAPI::SetAPI(m_CI.api);
-	GraphicsAPI::AllowSetName();
-	GraphicsAPI::LoadGraphicsDebugger(m_CI.graphicsDebugger);
-
-	m_ContextCI.applicationName = m_CI.debugName.c_str();
-	m_ContextCI.api_version_major = GraphicsAPI::IsD3D12() ? 12 : 1;
-	m_ContextCI.api_version_minor = GraphicsAPI::IsD3D12() ? 1 : 2;
-#ifdef _DEBUG
-	m_ContextCI.instanceLayers = { "VK_LAYER_KHRONOS_validation" };
-	m_ContextCI.instanceExtensions = { "VK_KHR_surface", "VK_KHR_win32_surface" };
-	m_ContextCI.deviceLayers = { "VK_LAYER_KHRONOS_validation" };
-	m_ContextCI.deviceExtensions = { "VK_KHR_swapchain" };
-#else
-	m_ContextCI.instanceLayers = {};
-	m_ContextCI.instanceExtensions = { "VK_KHR_surface", "VK_KHR_win32_surface" };
-	m_ContextCI.deviceLayers = {};
-	m_ContextCI.deviceExtensions = { "VK_KHR_swapchain" };
-#endif
-	m_ContextCI.deviceDebugName = "GEAR_CORE_Context";
-	m_Context = Context::Create(&m_ContextCI);
-
-	m_SwapchainCI.debugName = "GEAR_CORE_Swapchain";
-	m_SwapchainCI.pContext = m_Context;
-	m_SwapchainCI.pWindow = m_CI.window;
-	m_SwapchainCI.width = m_CurrentWidth;
-	m_SwapchainCI.height = m_CurrentHeight;
-	m_SwapchainCI.swapchainCount = 2;
-	m_SwapchainCI.vSync = m_CI.vSync;
-	m_SwapchainCI.bpcColourSpace = m_CI.bpcColourSpace;
-	m_Swapchain = Swapchain::Create(&m_SwapchainCI);
-
 	Allocator::CreateInfo attachmentAllocatorCI;
 	attachmentAllocatorCI.debugName = "GEAR_CORE_GPU_ALLOCATOR_Attachments";
-	attachmentAllocatorCI.pContext = m_Context;
+	attachmentAllocatorCI.pContext = m_CI.pContext;
 	attachmentAllocatorCI.blockSize = Allocator::BlockSize::BLOCK_SIZE_64MB;
 	attachmentAllocatorCI.properties = Allocator::PropertiesBit::DEVICE_LOCAL_BIT;
 	m_AttachmentAllocator = Allocator::Create(&attachmentAllocatorCI);
+
+	m_CurrentWidth = m_CI.width;
+	m_CurrentHeight = m_CI.height;
 
 	CreateAttachments();
 
 	CreateMainRenderPass();
 	CreateHDRRenderPass();
 
-	CreateMainFramebuffer();
-	CreateHDRFramebuffer();
+	CreateMainFramebuffers();
+	CreateHDRFramebuffers();
 }
 
 RenderSurface::~RenderSurface()
 {
-	m_Context->DeviceWaitIdle();
-}
-
-std::string RenderSurface::GetGraphicsAPIVersion() const
-{
-	std::string result("");
-	switch (GraphicsAPI::GetAPI())
-	{
-	case GraphicsAPI::API::UNKNOWN:
-	{
-		result += "UNKNOWN"; break;
-	}
-	case GraphicsAPI::API::D3D12:
-	{
-		result += "D3D12: ";
-		result += "D3D_FEATURE_LEVEL_" + std::to_string(m_ContextCI.api_version_major)
-			+ "_" + std::to_string(m_ContextCI.api_version_minor);
-		break;
-	}
-	case GraphicsAPI::API::VULKAN:
-	{
-		uint32_t version = ref_cast<vulkan::Context>(m_Context)->m_PhysicalDevices.m_PhysicalDeviceProperties[0].apiVersion;
-
-		result += "VULKAN: ";
-		result += std::to_string(m_ContextCI.api_version_major)
-			+ "." + std::to_string(m_ContextCI.api_version_minor)
-			+ "." + std::to_string(VK_VERSION_PATCH(version));
-		break;
-	}
-	}
-
-	return result;
-}
-
-std::string RenderSurface::GetDeviceName() const
-{
-	std::string result;
-	switch (GraphicsAPI::GetAPI())
-	{
-	case GraphicsAPI::API::UNKNOWN:
-	{
-		result += "UNKNOWN"; break;
-	}
-	case GraphicsAPI::API::D3D12:
-	{
-		result = arc::ToString(&ref_cast<d3d12::Context>(m_Context)->m_PhysicalDevices.m_AdapterDescs[0].Description[0]);
-		break;
-	}
-	case GraphicsAPI::API::VULKAN:
-	{
-		result = &ref_cast<vulkan::Context>(m_Context)->m_PhysicalDevices.m_PhysicalDeviceProperties[0].deviceName[0];
-		break;
-	}
-	}
-
-	return result;
+	m_CI.pContext->DeviceWaitIdle();
 }
 
 void RenderSurface::CreateAttachments()
 {
+	//ColourSRGB
+	{
+		m_ColourSRGBImageCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - ColourSRGBImage";
+		m_ColourSRGBImageCI.device = m_CI.pContext->GetDevice();
+		m_ColourSRGBImageCI.type = Image::Type::TYPE_2D;
+		m_ColourSRGBImageCI.format = m_SRGBFormat;
+		m_ColourSRGBImageCI.width = m_CurrentWidth;
+		m_ColourSRGBImageCI.height = m_CurrentHeight;
+		m_ColourSRGBImageCI.depth = 1;
+		m_ColourSRGBImageCI.mipLevels = 1;
+		m_ColourSRGBImageCI.arrayLayers = 1;
+		m_ColourSRGBImageCI.sampleCount = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+		m_ColourSRGBImageCI.usage = Image::UsageBit::COLOUR_ATTACHMENT_BIT | Image::UsageBit::SAMPLED_BIT;
+		m_ColourSRGBImageCI.layout = GraphicsAPI::IsD3D12() ? Image::Layout::SHADER_READ_ONLY_OPTIMAL : Image::Layout::UNKNOWN;
+		m_ColourSRGBImageCI.size = 0;
+		m_ColourSRGBImageCI.data = nullptr;
+		m_ColourSRGBImageCI.pAllocator = m_AttachmentAllocator;
+		m_ColourSRGBImage = Image::Create(&m_ColourSRGBImageCI);
+
+		m_ColourSRGBImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - ColourSRGBImageView";
+		m_ColourSRGBImageViewCI.device = m_CI.pContext->GetDevice();
+		m_ColourSRGBImageViewCI.pImage = m_ColourSRGBImage;
+		m_ColourSRGBImageViewCI.viewType = Image::Type::TYPE_2D;
+		m_ColourSRGBImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
+		m_ColourSRGBImageView = ImageView::Create(&m_ColourSRGBImageViewCI);
+	}
+
 	//Depth
 	{
-		m_DepthImageCI.debugName = "GEAR_CORE_Swapchain: DepthImage";
-		m_DepthImageCI.device = m_Context->GetDevice();
+		m_DepthImageCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - DepthImage";
+		m_DepthImageCI.device = m_CI.pContext->GetDevice();
 		m_DepthImageCI.type = Image::Type::TYPE_2D;
 		m_DepthImageCI.format = Image::Format::D32_SFLOAT;
 		m_DepthImageCI.width = m_CurrentWidth;
@@ -145,8 +86,8 @@ void RenderSurface::CreateAttachments()
 		m_DepthImageCI.pAllocator = m_AttachmentAllocator;
 		m_DepthImage = Image::Create(&m_DepthImageCI);
 
-		m_DepthImageViewCI.debugName = "GEAR_CORE_Swapchain: DepthImageView";
-		m_DepthImageViewCI.device = m_Context->GetDevice();
+		m_DepthImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - DepthImageView";
+		m_DepthImageViewCI.device = m_CI.pContext->GetDevice();
 		m_DepthImageViewCI.pImage = m_DepthImage;
 		m_DepthImageViewCI.viewType = Image::Type::TYPE_2D;
 		m_DepthImageViewCI.subresourceRange = { Image::AspectBit::DEPTH_BIT, 0, 1, 0, 1 };
@@ -156,8 +97,8 @@ void RenderSurface::CreateAttachments()
 	//MSAAColour
 	if (m_CI.samples > Image::SampleCountBit::SAMPLE_COUNT_1_BIT)
 	{
-		m_MSAAColourImageCI.debugName = "GEAR_CORE_Swapchain: MSAAColourImage";
-		m_MSAAColourImageCI.device = m_Context->GetDevice();
+		m_MSAAColourImageCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - MSAAColourImage";
+		m_MSAAColourImageCI.device = m_CI.pContext->GetDevice();
 		m_MSAAColourImageCI.type = Image::Type::TYPE_2D;
 		m_MSAAColourImageCI.format = m_HDRFormat;
 		m_MSAAColourImageCI.width = m_CurrentWidth;
@@ -173,8 +114,8 @@ void RenderSurface::CreateAttachments()
 		m_MSAAColourImageCI.pAllocator = m_AttachmentAllocator;
 		m_MSAAColourImage = Image::Create(&m_MSAAColourImageCI);
 
-		m_MSAAColourImageViewCI.debugName = "GEAR_CORE_Swapchain: MSAAColourImageView";
-		m_MSAAColourImageViewCI.device = m_Context->GetDevice();
+		m_MSAAColourImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - MSAAColourImageView";
+		m_MSAAColourImageViewCI.device = m_CI.pContext->GetDevice();
 		m_MSAAColourImageViewCI.pImage = m_MSAAColourImage;
 		m_MSAAColourImageViewCI.viewType = Image::Type::TYPE_2D;
 		m_MSAAColourImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
@@ -183,8 +124,8 @@ void RenderSurface::CreateAttachments()
 
 	//Colour
 	{
-		m_ColourImageCI.debugName = "GEAR_CORE_Swapchain: ColourImage";
-		m_ColourImageCI.device = m_Context->GetDevice();
+		m_ColourImageCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - ColourImage";
+		m_ColourImageCI.device = m_CI.pContext->GetDevice();
 		m_ColourImageCI.type = Image::Type::TYPE_2D;
 		m_ColourImageCI.format = m_HDRFormat;
 		m_ColourImageCI.width = m_CurrentWidth;
@@ -200,8 +141,8 @@ void RenderSurface::CreateAttachments()
 		m_ColourImageCI.pAllocator = m_AttachmentAllocator;
 		m_ColourImage = Image::Create(&m_ColourImageCI);
 
-		m_ColourImageViewCI.debugName = "GEAR_CORE_Swapchain: ColourImageView";
-		m_ColourImageViewCI.device = m_Context->GetDevice();
+		m_ColourImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - ColourImageView";
+		m_ColourImageViewCI.device = m_CI.pContext->GetDevice();
 		m_ColourImageViewCI.pImage = m_ColourImage;
 		m_ColourImageViewCI.viewType = Image::Type::TYPE_2D;
 		m_ColourImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
@@ -211,8 +152,8 @@ void RenderSurface::CreateAttachments()
 	//MSAAEmissive
 	if (m_CI.samples > Image::SampleCountBit::SAMPLE_COUNT_1_BIT)
 	{
-		m_MSAAEmissiveImageCI.debugName = "GEAR_CORE_Swapchain: MSAAEmissiveImage";
-		m_MSAAEmissiveImageCI.device = m_Context->GetDevice();
+		m_MSAAEmissiveImageCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - MSAAEmissiveImage";
+		m_MSAAEmissiveImageCI.device = m_CI.pContext->GetDevice();
 		m_MSAAEmissiveImageCI.type = Image::Type::TYPE_2D;
 		m_MSAAEmissiveImageCI.format = m_HDRFormat;
 		m_MSAAEmissiveImageCI.width = m_CurrentWidth;
@@ -228,8 +169,8 @@ void RenderSurface::CreateAttachments()
 		m_MSAAEmissiveImageCI.pAllocator = m_AttachmentAllocator;
 		m_MSAAEmissiveImage = Image::Create(&m_MSAAEmissiveImageCI);
 
-		m_MSAAEmissiveImageViewCI.debugName = "GEAR_CORE_Swapchain: MSAAEmissiveImageView";
-		m_MSAAEmissiveImageViewCI.device = m_Context->GetDevice();
+		m_MSAAEmissiveImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - MSAAEmissiveImageView";
+		m_MSAAEmissiveImageViewCI.device = m_CI.pContext->GetDevice();
 		m_MSAAEmissiveImageViewCI.pImage = m_MSAAEmissiveImage;
 		m_MSAAEmissiveImageViewCI.viewType = Image::Type::TYPE_2D;
 		m_MSAAEmissiveImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
@@ -238,8 +179,8 @@ void RenderSurface::CreateAttachments()
 
 	//Emissive
 	{
-		m_EmissiveImageCI.debugName = "GEAR_CORE_Swapchain: EmissiveImage";
-		m_EmissiveImageCI.device = m_Context->GetDevice();
+		m_EmissiveImageCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - EmissiveImage";
+		m_EmissiveImageCI.device = m_CI.pContext->GetDevice();
 		m_EmissiveImageCI.type = Image::Type::TYPE_2D;
 		m_EmissiveImageCI.format = m_HDRFormat;
 		m_EmissiveImageCI.width = m_CurrentWidth;
@@ -255,8 +196,8 @@ void RenderSurface::CreateAttachments()
 		m_EmissiveImageCI.pAllocator = m_AttachmentAllocator;
 		m_EmissiveImage = Image::Create(&m_EmissiveImageCI);
 
-		m_EmissiveImageViewCI.debugName = "GEAR_CORE_Swapchain: EmissiveImageView";
-		m_EmissiveImageViewCI.device = m_Context->GetDevice();
+		m_EmissiveImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - EmissiveImageView";
+		m_EmissiveImageViewCI.device = m_CI.pContext->GetDevice();
 		m_EmissiveImageViewCI.pImage = m_EmissiveImage;
 		m_EmissiveImageViewCI.viewType = Image::Type::TYPE_2D;
 		m_EmissiveImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
@@ -266,8 +207,8 @@ void RenderSurface::CreateAttachments()
 
 void RenderSurface::CreateMainRenderPass()
 {
-	m_MainRenderPassCI.debugName = "GEAR_CORE_MainRenderPass";
-	m_MainRenderPassCI.device = m_Context->GetDevice();
+	m_MainRenderPassCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - MainRenderPass";
+	m_MainRenderPassCI.device = m_CI.pContext->GetDevice();
 
 	if (m_CI.samples > Image::SampleCountBit::SAMPLE_COUNT_1_BIT)
 	{
@@ -400,19 +341,19 @@ void RenderSurface::CreateMainRenderPass()
 
 void RenderSurface::CreateHDRRenderPass()
 {
-	m_HDRRenderPassCI.debugName = "GEAR_CORE_HDRRenderPass";
-	m_HDRRenderPassCI.device = m_Context->GetDevice();
+	m_HDRRenderPassCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - HDRRenderPass";
+	m_HDRRenderPassCI.device = m_CI.pContext->GetDevice();
 	m_HDRRenderPassCI.attachments =
 	{
-		{	//0 - Swapchain
-			m_Swapchain->m_SwapchainImages[0]->GetCreateInfo().format,
+		{	//0 - ColourSRGB
+			m_SRGBFormat,
 			Image::SampleCountBit::SAMPLE_COUNT_1_BIT,
 			RenderPass::AttachmentLoadOp::CLEAR,
 			RenderPass::AttachmentStoreOp::STORE,
 			RenderPass::AttachmentLoadOp::DONT_CARE,
 			RenderPass::AttachmentStoreOp::DONT_CARE,
-			Image::Layout::UNKNOWN,
-			Image::Layout::PRESENT_SRC
+			GraphicsAPI::IsD3D12() ? Image::Layout::PRESENT_SRC : Image::Layout::UNKNOWN,
+			Image::Layout::SHADER_READ_ONLY_OPTIMAL
 		},
 		{	//1 - Colour
 			m_HDRFormat,
@@ -460,12 +401,12 @@ void RenderSurface::CreateHDRRenderPass()
 	m_HDRRenderPass = RenderPass::Create(&m_HDRRenderPassCI);
 }
 
-void RenderSurface::CreateMainFramebuffer()
+void RenderSurface::CreateMainFramebuffers()
 {
 	for (size_t i = 0; i < _countof(m_MainFramebuffers); i++)
 	{
-		m_MainFramebufferCI.debugName = "GEAR_CORE_MainFramebuffer";
-		m_MainFramebufferCI.device = m_Context->GetDevice();
+		m_MainFramebufferCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - MainFramebuffer";
+		m_MainFramebufferCI.device = m_CI.pContext->GetDevice();
 		m_MainFramebufferCI.renderPass = m_MainRenderPass;
 
 		if (m_CI.samples > Image::SampleCountBit::SAMPLE_COUNT_1_BIT)
@@ -480,14 +421,14 @@ void RenderSurface::CreateMainFramebuffer()
 	}
 }
 
-void RenderSurface::CreateHDRFramebuffer()
+void RenderSurface::CreateHDRFramebuffers()
 {
 	for (size_t i = 0; i < _countof(m_HDRFramebuffers); i++)
 	{
-		m_HDRFramebufferCI.debugName = "GEAR_CORE_HDRFramebuffer";
-		m_HDRFramebufferCI.device = m_Context->GetDevice();
+		m_HDRFramebufferCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - HDRFramebuffer";
+		m_HDRFramebufferCI.device = m_CI.pContext->GetDevice();
 		m_HDRFramebufferCI.renderPass = m_HDRRenderPass;
-		m_HDRFramebufferCI.attachments = { m_Swapchain->m_SwapchainImageViews[i], m_ColourImageView, m_EmissiveImageView };
+		m_HDRFramebufferCI.attachments = { m_ColourSRGBImageView, m_ColourImageView, m_EmissiveImageView };
 		m_HDRFramebufferCI.width = m_CurrentWidth;
 		m_HDRFramebufferCI.height = m_CurrentHeight;
 		m_HDRFramebufferCI.layers = 1;
@@ -495,17 +436,12 @@ void RenderSurface::CreateHDRFramebuffer()
 	}
 }
 
-void RenderSurface::Resize(int width, int height)
+void RenderSurface::Resize(uint32_t width, uint32_t height)
 {
 	m_CurrentWidth = width;
 	m_CurrentHeight = height;
 
-	m_Swapchain->Resize(static_cast<uint32_t>(m_CurrentWidth), static_cast<uint32_t>(m_CurrentHeight));
-	if (width > 3840 || height > 2160)
-	{
-		MIRU_ASSERT(true, "Resize event's dimensions are greater then 4K.");
-	}
 	CreateAttachments();
-	CreateMainFramebuffer();
-	CreateHDRFramebuffer();
+	CreateMainFramebuffers();
+	CreateHDRFramebuffers();
 }

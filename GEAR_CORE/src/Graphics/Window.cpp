@@ -2,6 +2,10 @@
 #include "stb_image.h"
 #include "Window.h"
 
+#include "ARC/src/StringConversion.h"
+#include "directx12/D3D12Context.h"
+#include "vulkan/VKContext.h"
+
 using namespace gear;
 using namespace graphics;
 
@@ -40,7 +44,7 @@ Window::Window(CreateInfo* pCreateInfo)
 
 Window::~Window()
 {
-	m_RenderSurface->GetContext()->DeviceWaitIdle();
+	m_Context->DeviceWaitIdle();
 	glfwDestroyWindow(m_Window);
 	glfwTerminate();
 }
@@ -48,6 +52,11 @@ Window::~Window()
 void Window::Update()
 {
 	glfwPollEvents();
+}
+
+void Window::Close()
+{
+	glfwSetWindowShouldClose(m_Window, GLFW_TRUE);
 }
 
 bool Window::Closed() const
@@ -63,88 +72,59 @@ void Window::CalculateFPS()
 	m_FPS = 1.0 / m_DeltaTime;
 }
 
-bool Window::Init()
+std::string Window::GetGraphicsAPIVersion() const
 {
-	if (!glfwInit())
+	std::string result("");
+	switch (GraphicsAPI::GetAPI())
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INIT_FAILED, "Failed to initialise GLFW.");
-		return false;
+	case GraphicsAPI::API::UNKNOWN:
+	{
+		result += "UNKNOWN"; break;
+	}
+	case GraphicsAPI::API::D3D12:
+	{
+		result += "D3D12: ";
+		result += "D3D_FEATURE_LEVEL_" + std::to_string(m_ContextCI.api_version_major)
+			+ "_" + std::to_string(m_ContextCI.api_version_minor);
+		break;
+	}
+	case GraphicsAPI::API::VULKAN:
+	{
+		uint32_t version = ref_cast<vulkan::Context>(m_Context)->m_PhysicalDevices.m_PhysicalDeviceProperties[0].apiVersion;
+
+		result += "VULKAN: ";
+		result += std::to_string(m_ContextCI.api_version_major)
+			+ "." + std::to_string(m_ContextCI.api_version_minor)
+			+ "." + std::to_string(VK_VERSION_PATCH(version));
+		break;
+	}
 	}
 
-	if (m_CI.api == GraphicsAPI::API::VULKAN)
-	{
-		if (glfwVulkanSupported() == GLFW_FALSE)
-		{
-			GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::NOT_SUPPORTED, "GLFW does not support Vulkan.");
-			return false;
-		}
+	return result;
+}
 
-		/*bool glfwPresentationSupport = false;
-		glfwPresentationSupport = glfwGetPhysicalDevicePresentationSupport(ref_cast<vulkan::Context>(m_Context)->m_Instance, ref_cast<vulkan::Context>(m_Context)->m_PhysicalDevices.m_PhysicalDevices[0], 0);
-		if (!glfwPresentationSupport)
-		{
-			GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_NOT_SUPPORTED, "ERROR: GEAR::GRAPHICS::Window: The Vulkan queue family doesn't support presentation to GLFW.");
-			return false;
-		}*/
+std::string Window::GetDeviceName() const
+{
+	std::string result;
+	switch (GraphicsAPI::GetAPI())
+	{
+	case GraphicsAPI::API::UNKNOWN:
+	{
+		result += "UNKNOWN"; break;
 	}
-	
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-	if (m_CI.maximised)
-		glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
-
-	if (m_CI.fullscreen)
+	case GraphicsAPI::API::D3D12:
 	{
-		int monitorCount;
-		GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);
-		if (monitors && monitorCount > 0 && m_CI.fullscreenMonitorIndex < static_cast<uint32_t>(monitorCount))
-			m_Monitor = monitors[m_CI.fullscreenMonitorIndex];
-		else
-			m_Monitor = glfwGetPrimaryMonitor();
-
-		m_Mode = glfwGetVideoMode(m_Monitor);
-		m_CI.width = m_Mode->width;
-		m_CI.height = m_Mode->height;
+		result = arc::ToString(&ref_cast<d3d12::Context>(m_Context)->m_PhysicalDevices.m_AdapterDescs[0].Description[0]);
+		break;
 	}
-	else
+	case GraphicsAPI::API::VULKAN:
 	{
-		m_Monitor = nullptr;
+		result = &ref_cast<vulkan::Context>(m_Context)->m_PhysicalDevices.m_PhysicalDeviceProperties[0].deviceName[0];
+		break;
 	}
-	m_Window = glfwCreateWindow((int)m_CI.width, (int)m_CI.height, m_CI.title.c_str(), m_Monitor, nullptr);
-
-	if (!m_Window)
-	{
-		glfwDestroyWindow(m_Window);
-		glfwTerminate();
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::FUNC_FAILED, "Failed to create GLFW window.");
-		return false;
 	}
 
-	m_RenderSurfaceCI.debugName = m_CI.title;
-	m_RenderSurfaceCI.window = glfwGetWin32Window(m_Window);
-	m_RenderSurfaceCI.api = m_CI.api;
-	m_RenderSurfaceCI.width = m_CI.width;
-	m_RenderSurfaceCI.height = m_CI.height;
-	m_RenderSurfaceCI.vSync = m_CI.vSync;
-	m_RenderSurfaceCI.bpcColourSpace = Swapchain::BPC_ColourSpace::B8G8R8A8_UNORM_SRGB_NONLINEAR;
-	m_RenderSurfaceCI.samples = m_CI.samples;
-	m_RenderSurfaceCI.graphicsDebugger = m_CI.graphicsDebugger;
-	m_RenderSurface = CreateRef<RenderSurface>(&m_RenderSurfaceCI);
-	
-	GLFWimage icon[1];
-	std::string iconFilepath = !m_CI.iconFilepath.empty() ? m_CI.iconFilepath : "../Branding/GEAR_logo_dark.png";
-	icon[0].pixels = stbi_load(iconFilepath.c_str(), &icon->width, &icon->height, 0, 4);
-	glfwSetWindowIcon(m_Window, 1, icon);
-
-	glfwSetWindowUserPointer(m_Window, this);
-	glfwSetWindowSizeCallback(m_Window, window_resize);
-	glfwSetKeyCallback(m_Window, key_callback);
-	glfwSetMouseButtonCallback(m_Window, mouse_button_callback);
-	glfwSetCursorPosCallback(m_Window, cursor_position_callback);
-	glfwSetJoystickCallback(joystick_callback);
-	glfwSetScrollCallback(m_Window, scroll_callback);
-	
-	return true;
+	return result;
 }
 
 bool Window::IsKeyPressed(unsigned int keycode) const
@@ -189,10 +169,190 @@ void Window::GetScrollPosition(double& position) const
 	position = m_ScrollPosition;
 }
 	
+bool Window::Init()
+{
+	if (!glfwInit())
+	{
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INIT_FAILED, "Failed to initialise GLFW.");
+		return false;
+	}
+
+	if (m_CI.api == GraphicsAPI::API::VULKAN)
+	{
+		if (glfwVulkanSupported() == GLFW_FALSE)
+		{
+			GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::NOT_SUPPORTED, "GLFW does not support Vulkan.");
+			return false;
+		}
+
+		/*bool glfwPresentationSupport = false;
+		glfwPresentationSupport = glfwGetPhysicalDevicePresentationSupport(ref_cast<vulkan::Context>(m_Context)->m_Instance, ref_cast<vulkan::Context>(m_Context)->m_PhysicalDevices.m_PhysicalDevices[0], 0);
+		if (!glfwPresentationSupport)
+		{
+			GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_NOT_SUPPORTED, "ERROR: GEAR::GRAPHICS::Window: The Vulkan queue family doesn't support presentation to GLFW.");
+			return false;
+		}*/
+	}
+
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+	if (m_CI.maximised)
+		glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+
+	if (m_CI.fullscreen)
+	{
+		int monitorCount;
+		GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);
+		if (monitors && monitorCount > 0 && m_CI.fullscreenMonitorIndex < static_cast<uint32_t>(monitorCount))
+			m_Monitor = monitors[m_CI.fullscreenMonitorIndex];
+		else
+			m_Monitor = glfwGetPrimaryMonitor();
+
+		m_Mode = glfwGetVideoMode(m_Monitor);
+		m_CI.width = m_Mode->width;
+		m_CI.height = m_Mode->height;
+	}
+	else
+	{
+		m_Monitor = glfwGetPrimaryMonitor();
+		m_Mode = glfwGetVideoMode(m_Monitor);
+	}
+	m_Window = glfwCreateWindow((int)m_CI.width, (int)m_CI.height, m_CI.title.c_str(), m_CI.fullscreen ? m_Monitor : nullptr, nullptr);
+
+	if (!m_Window)
+	{
+		glfwDestroyWindow(m_Window);
+		glfwTerminate();
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::FUNC_FAILED, "Failed to create GLFW window.");
+		return false;
+	}
+
+	GLFWimage icon[1];
+	std::string iconFilepath = !m_CI.iconFilepath.empty() ? m_CI.iconFilepath : "../Branding/GEAR_logo_dark.png";
+	icon[0].pixels = stbi_load(iconFilepath.c_str(), &icon->width, &icon->height, 0, 4);
+	glfwSetWindowIcon(m_Window, 1, icon);
+
+	glfwSetWindowUserPointer(m_Window, this);
+	glfwSetWindowSizeCallback(m_Window, window_resize);
+	glfwSetKeyCallback(m_Window, key_callback);
+	glfwSetMouseButtonCallback(m_Window, mouse_button_callback);
+	glfwSetCursorPosCallback(m_Window, cursor_position_callback);
+	glfwSetJoystickCallback(joystick_callback);
+	glfwSetScrollCallback(m_Window, scroll_callback);
+
+	m_CurrentWidth = m_CI.width;
+	m_CurrentHeight = m_CI.height;
+
+	GraphicsAPI::SetAPI(m_CI.api);
+	GraphicsAPI::AllowSetName();
+	GraphicsAPI::LoadGraphicsDebugger(m_CI.graphicsDebugger);
+
+	m_ContextCI.applicationName = m_CI.title;
+	m_ContextCI.api_version_major = GraphicsAPI::IsD3D12() ? 12 : 1;
+	m_ContextCI.api_version_minor = GraphicsAPI::IsD3D12() ? 1 : 2;
+#ifdef _DEBUG
+	m_ContextCI.instanceLayers = { "VK_LAYER_KHRONOS_validation" };
+	m_ContextCI.instanceExtensions = { "VK_KHR_surface", "VK_KHR_win32_surface" };
+	m_ContextCI.deviceLayers = { "VK_LAYER_KHRONOS_validation" };
+	m_ContextCI.deviceExtensions = { "VK_KHR_swapchain" };
+#else
+	m_ContextCI.instanceLayers = {};
+	m_ContextCI.instanceExtensions = { "VK_KHR_surface", "VK_KHR_win32_surface" };
+	m_ContextCI.deviceLayers = {};
+	m_ContextCI.deviceExtensions = { "VK_KHR_swapchain" };
+#endif
+	m_ContextCI.deviceDebugName = "GEAR_CORE_Context";
+	m_Context = Context::Create(&m_ContextCI);
+
+	m_SwapchainCI.debugName = "GEAR_CORE_Swapchain";
+	m_SwapchainCI.pContext = m_Context;
+	m_SwapchainCI.pWindow = glfwGetWin32Window(m_Window);
+	m_SwapchainCI.width = m_CurrentWidth;
+	m_SwapchainCI.height = m_CurrentHeight;
+	m_SwapchainCI.swapchainCount = 2;
+	m_SwapchainCI.vSync = m_CI.vSync;
+	m_SwapchainCI.bpcColourSpace = Swapchain::BPC_ColourSpace::B8G8R8A8_UNORM_SRGB_NONLINEAR;
+	m_Swapchain = Swapchain::Create(&m_SwapchainCI);
+
+	m_RenderSurfaceCI.debugName = m_CI.title;
+	m_RenderSurfaceCI.pContext = m_Context;
+	m_RenderSurfaceCI.width = m_CI.width;
+	m_RenderSurfaceCI.height = m_CI.height;
+	m_RenderSurfaceCI.samples = m_CI.samples;
+	m_RenderSurface = CreateRef<RenderSurface>(&m_RenderSurfaceCI);
+
+	m_SwapchainRenderPassCI.debugName = "GEAR_CORE_Window: SwapchainRenderPass";
+	m_SwapchainRenderPassCI.device = m_Context->GetDevice();
+	m_SwapchainRenderPassCI.attachments =
+	{
+		{	//0 - Swapchain
+			m_Swapchain->m_SwapchainImages[0]->GetCreateInfo().format,
+			Image::SampleCountBit::SAMPLE_COUNT_1_BIT,
+			RenderPass::AttachmentLoadOp::CLEAR,
+			RenderPass::AttachmentStoreOp::STORE,
+			RenderPass::AttachmentLoadOp::DONT_CARE,
+			RenderPass::AttachmentStoreOp::DONT_CARE,
+			Image::Layout::UNKNOWN,
+			Image::Layout::PRESENT_SRC
+		}
+	};
+	m_SwapchainRenderPassCI.subpassDescriptions =
+	{
+		{
+			PipelineType::GRAPHICS,
+			{},
+			{{0, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL}},
+			{},
+			{},
+			{}
+		}
+	};
+	m_SwapchainRenderPassCI.subpassDependencies =
+	{
+		{
+			MIRU_SUBPASS_EXTERNAL,
+			0,
+			PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT,
+			(Barrier::AccessBit)0,
+			Barrier::AccessBit::COLOUR_ATTACHMENT_READ_BIT | Barrier::AccessBit::COLOUR_ATTACHMENT_WRITE_BIT,
+			DependencyBit::NONE_BIT
+		}
+	};
+	m_SwapchainRenderPass = RenderPass::Create(&m_SwapchainRenderPassCI);
+	CreateSwapchainFramebuffer();
+
+	return true;
+}
+
+void Window::CreateSwapchainFramebuffer()
+{
+	for (size_t i = 0; i < _countof(m_SwapchainFramebuffers); i++)
+	{
+		m_SwapchainFramebufferCI.debugName = "GEAR_CORE_Window: SwapchainFramebuffer";
+		m_SwapchainFramebufferCI.device = m_Context->GetDevice();
+		m_SwapchainFramebufferCI.renderPass = m_SwapchainRenderPass;
+		m_SwapchainFramebufferCI.attachments = { m_Swapchain->m_SwapchainImageViews[i] };
+		m_SwapchainFramebufferCI.width = m_CurrentWidth;
+		m_SwapchainFramebufferCI.height = m_CurrentHeight;
+		m_SwapchainFramebufferCI.layers = 1;
+		m_SwapchainFramebuffers[i] = Framebuffer::Create(&m_SwapchainFramebufferCI);
+	}
+}
+
 void Window::window_resize(GLFWwindow* window, int width, int height)
 {
+	if (width > 3840 || height > 2160)
+	{
+		MIRU_ASSERT(true, "Resize event's dimensions are greater then 4K.");
+	}
+
 	Window* win = (Window*)glfwGetWindowUserPointer(window);
-	win->m_RenderSurface->Resize(width, height);
+	win->m_CurrentWidth = static_cast<uint32_t>(width);
+	win->m_CurrentHeight = static_cast<uint32_t>(height);
+
+	win->m_Swapchain->Resize(win->m_CurrentWidth, win->m_CurrentHeight);
+	win->m_RenderSurface->Resize(win->m_CurrentWidth, win->m_CurrentHeight);
+	win->CreateSwapchainFramebuffer();
 }
 
 void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -208,16 +368,16 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 		{
 			win->m_Mode = glfwGetVideoMode(win->m_Monitor);
 			glfwSetWindowMonitor(win->m_Window, win->m_Monitor, 0, 0, win->m_Mode->width, win->m_Mode->height, win->m_Mode->refreshRate);
-			win->m_RenderSurface->m_CurrentWidth = win->m_Mode->width;
-			win->m_RenderSurface->m_CurrentHeight= win->m_Mode->height;
+			win->m_CurrentWidth = win->m_Mode->width;
+			win->m_CurrentHeight = win->m_Mode->height;
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 
 		if (!win->m_Fullscreen)
 		{
 			glfwSetWindowMonitor(win->m_Window, nullptr, 100, 100, win->m_CI.width, win->m_CI.height, GLFW_DONT_CARE);
-			win->m_RenderSurface->m_CurrentWidth = win->m_CI.width;
-			win->m_RenderSurface->m_CurrentHeight = win->m_CI.height;
+			win->m_CurrentWidth = win->m_CI.width;
+			win->m_CurrentHeight = win->m_CI.height;
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		}
 	}
@@ -256,7 +416,7 @@ void Window::joystick_callback(int joy, int event)
 	}
 }
 
-void Window::scroll_callback(GLFWwindow * window, double xoffset, double yoffset)
+void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	Window* win = (Window*)glfwGetWindowUserPointer(window);
 	win->m_ScrollPosition += yoffset;

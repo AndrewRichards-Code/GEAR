@@ -97,3 +97,20 @@ PS_OUT ps_coordinate_axes(PS_IN IN)
 	
 	return OUT;
 }
+
+MIRU_IMAGE_2D(0, 0, float4, sourceImage);
+
+VS_OUT vs_copy(uint VertexIndex : SV_VertexID)
+{
+	VS_OUT OUT;
+	OUT.v_Position = float4(float2((VertexIndex << 1) & 2, VertexIndex & 2) * 2.0f - 1.0f, 0.0f, 1.0f);
+	return OUT;
+}
+
+PS_OUT ps_copy(PS_IN IN)
+{
+	PS_OUT OUT;
+	OUT.colour = sourceImage.Load(int3(IN.v_Position.xy, 0));
+	
+	return OUT;
+}

@@ -32,15 +32,29 @@ namespace graphics
 	
 	private:
 		friend struct GLFWwindow;
+
+		//Context and Swapchain
+		Ref<miru::crossplatform::Context> m_Context;
+		miru::crossplatform::Context::CreateInfo m_ContextCI;
+		Ref<miru::crossplatform::Swapchain> m_Swapchain;
+		miru::crossplatform::Swapchain::CreateInfo m_SwapchainCI;
 	
+		//RenderSurface
 		Ref<RenderSurface> m_RenderSurface;
 		RenderSurface::CreateInfo m_RenderSurfaceCI;
-	
+
+		//SwapchainRenderPass and SwapchainFramebuffer
+		Ref<miru::crossplatform::RenderPass> m_SwapchainRenderPass;
+		miru::crossplatform::RenderPass::CreateInfo m_SwapchainRenderPassCI;
+		Ref<miru::crossplatform::Framebuffer> m_SwapchainFramebuffers[2];
+		miru::crossplatform::Framebuffer::CreateInfo m_SwapchainFramebufferCI;
+
 		//Window
 		CreateInfo m_CI;
 		GLFWmonitor* m_Monitor;
 		GLFWwindow* m_Window;
 		const GLFWvidmode* m_Mode;
+		uint32_t m_CurrentWidth, m_CurrentHeight;
 		bool m_Fullscreen;
 		double m_CurrentTime, m_PreviousTime = 0.0, m_DeltaTime, m_FPS;
 	
@@ -60,27 +74,11 @@ namespace graphics
 		const CreateInfo& GetCreateInfo() { return m_CI; }
 			
 		void Update();
+		void Close();
 		bool Closed() const;
 		void CalculateFPS();
-	
-		inline const Ref<miru::crossplatform::Context> GetContext() const { return m_RenderSurface->GetContext(); };
-		inline const Ref<miru::crossplatform::Swapchain>& GetSwapchain() const { return m_RenderSurface->GetSwapchain(); };
-		inline void* GetDevice() const { return m_RenderSurface->GetDevice(); }
-		inline const Ref<RenderSurface> GetRenderSurface() const { return m_RenderSurface; }
-	
-		inline const miru::crossplatform::GraphicsAPI::API& GetGraphicsAPI() const { m_RenderSurface->GetGraphicsAPI(); }
-		inline bool IsD3D12() const { return miru::crossplatform::GraphicsAPI::IsD3D12(); }
-		inline bool IsVulkan() const { return miru::crossplatform::GraphicsAPI::IsVulkan(); }
-		inline int GetWidth() const { return m_RenderSurface->GetWidth(); }
-		inline int GetHeight() const { return m_RenderSurface->GetHeight(); }
-		inline float GetRatio() const { return m_RenderSurface->GetRatio(); }
-		inline bool& Resized() const { return m_RenderSurface->Resized(); }
-		inline std::string GetTitle() const { return m_CI.title; }
-		inline std::string GetGraphicsAPIVersion() const { return m_RenderSurface->GetGraphicsAPIVersion(); };
-		inline std::string GetDeviceName() const { return m_RenderSurface->GetDeviceName(); };
-		template<typename T>
-		inline std::string GetFPSString() const { return std::to_string(static_cast<T>(m_FPS)); }
-		inline std::string GetAntiAliasingValue() const { return m_RenderSurface->GetAntiAliasingValue(); }
+		std::string GetGraphicsAPIVersion() const;
+		std::string GetDeviceName() const ;
 	
 		bool IsKeyPressed(unsigned int keycode) const;
 		bool IsMouseButtonPressed(unsigned int button) const;
@@ -88,17 +86,38 @@ namespace graphics
 		bool IsJoyButtonPressed(unsigned int button) const;
 		void GetJoyAxes(double& x1, double& y1, double& x2, double& y2, double& x3, double& y3) const;
 		void GetScrollPosition(double& position) const;
-
-		GLFWwindow* GetGLFWwindow() { return m_Window; }
 	
 	private:
 		bool Init();
+		void CreateSwapchainFramebuffer();
+
 		static void window_resize(GLFWwindow* window, int width, int height);
 		static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 		static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 		static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 		static void joystick_callback(int joy, int event);
 		static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
+	public:
+		inline GLFWwindow* GetGLFWwindow() { return m_Window; }
+		inline const Ref<miru::crossplatform::Context> GetContext() const { return m_Context; };
+		inline const Ref<miru::crossplatform::Swapchain>& GetSwapchain() const { return m_Swapchain; };
+		inline void* GetDevice() const { return m_Context->GetDevice(); }
+		inline const Ref<RenderSurface> GetRenderSurface() const { return m_RenderSurface; }
+		inline const Ref<miru::crossplatform::RenderPass>& GetSwapchainRenderPass() const { return m_SwapchainRenderPass; }
+		inline const Ref<miru::crossplatform::Framebuffer>* GetSwapchainFramebuffers() { return m_SwapchainFramebuffers; }
+
+		inline const miru::crossplatform::GraphicsAPI::API& GetGraphicsAPI() const { m_CI.api; }
+		inline bool IsD3D12() const { return miru::crossplatform::GraphicsAPI::IsD3D12(); }
+		inline bool IsVulkan() const { return miru::crossplatform::GraphicsAPI::IsVulkan(); }
+		inline uint32_t GetWidth() const { return m_CurrentWidth; }
+		inline uint32_t GetHeight() const { return m_CurrentHeight; }
+		inline float GetRatio() const { return ((float)m_CurrentWidth / (float)m_CurrentHeight); }
+		inline bool& Resized() const { return m_Swapchain->m_Resized; }
+		inline std::string GetTitle() const { return m_CI.title; }
+		template<typename T>
+		inline std::string GetFPSString() const { return std::to_string(static_cast<T>(m_FPS)); }
+		inline std::string GetAntiAliasingValue() const { return m_RenderSurface->GetAntiAliasingValue(); }
 	};
 }
 }

@@ -3,6 +3,7 @@
 #include "ARC/src/StringConversion.h"
 #include "ImageProcessing.h"
 #include "FrameGraph.h"
+#include "Window.h"
 
 using namespace gear;
 using namespace graphics;
@@ -11,11 +12,15 @@ using namespace objects;
 using namespace miru;
 using namespace miru::crossplatform;
 
-Renderer::Renderer(const Ref<Context>& context)
+Renderer::Renderer(const Ref<Window>& window)
 {
+	m_Window = window;
+	m_Context = m_Window->GetContext();
+	m_Device = m_Context->GetDevice();
+
 	//Renderer and Transfer CmdPools and CmdBuffers
 	m_CmdPoolCI.debugName = "GEAR_CORE_CommandPool_Renderer";
-	m_CmdPoolCI.pContext = context;
+	m_CmdPoolCI.pContext = m_Context;
 	m_CmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
 	m_CmdPoolCI.queueType = CommandPool::QueueType::GRAPHICS;
 	m_CmdPool = CommandPool::Create(&m_CmdPoolCI);
@@ -28,7 +33,7 @@ Renderer::Renderer(const Ref<Context>& context)
 	m_CmdBuffer = CommandBuffer::Create(&m_CmdBufferCI);
 
 	m_TransCmdPoolCI.debugName = "GEAR_CORE_CommandPool_Renderer_Transfer";
-	m_TransCmdPoolCI.pContext = context;
+	m_TransCmdPoolCI.pContext = m_Context;
 	m_TransCmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
 	m_TransCmdPoolCI.queueType = CommandPool::QueueType::TRANSFER;
 	m_TransCmdPool = CommandPool::Create(&m_TransCmdPoolCI);
@@ -40,8 +45,6 @@ Renderer::Renderer(const Ref<Context>& context)
 	m_TransCmdBufferCI.allocateNewCommandPoolPerBuffer = GraphicsAPI::IsD3D12();
 	m_TransCmdBuffer = CommandBuffer::Create(&m_TransCmdBufferCI);
 
-	m_Context = context;
-	m_Device = context->GetDevice();
 	
 	//Present Synchronisation
 	m_DrawFenceCI.debugName = "GEAR_CORE_Fence_Renderer_Draw";
@@ -67,13 +70,14 @@ Renderer::~Renderer()
 
 void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface)
 {
-	std::vector<std::tuple<std::string, bool, uint32_t>> filepaths =
+	std::vector<std::tuple<std::string, uint32_t, uint32_t>> filepaths =
 	{
-		{"res/pipelines/PBROpaque.grpf.json", true, 0},
-		{"res/pipelines/HDR.grpf.json", false, 0 },
-		{"res/pipelines/Cube.grpf.json", true, 0 },
-		{"res/pipelines/Text.grpf.json", false, 0 },
-		{"res/pipelines/DebugCoordinateAxes.grpf.json", false, 0}
+		{"res/pipelines/PBROpaque.grpf.json", 0, 0},
+		{"res/pipelines/HDR.grpf.json", 1, 0 },
+		{"res/pipelines/Cube.grpf.json", 0, 0 },
+		{"res/pipelines/Text.grpf.json", 1, 0 },
+		{"res/pipelines/DebugCoordinateAxes.grpf.json", 1, 0},
+		{"res/pipelines/DebugCopy.grpf.json", 2, 0}
 	};
 
 	RenderPipeline::LoadInfo renderPipelineLI;
@@ -84,7 +88,8 @@ void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface
 		renderPipelineLI.viewportWidth = static_cast<float>(renderSurface->GetWidth());
 		renderPipelineLI.viewportHeight = static_cast<float>(renderSurface->GetHeight());
 		renderPipelineLI.samples = renderSurface->GetCreateInfo().samples;
-		renderPipelineLI.renderPass = filepath._Get_rest()._Myfirst._Val ? renderSurface->GetMainRenderPass() : renderSurface->GetHDRRenderPass();
+		renderPipelineLI.renderPass = filepath._Get_rest()._Myfirst._Val == 2 ? m_Window->GetSwapchainRenderPass() 
+			: filepath._Get_rest()._Myfirst._Val == 0 ? renderSurface->GetMainRenderPass() : renderSurface->GetHDRRenderPass();
 		renderPipelineLI.subpassIndex = filepath._Get_rest()._Get_rest()._Myfirst._Val;
 		Ref<RenderPipeline> renderPipeline = CreateRef<RenderPipeline>(&renderPipelineLI);
 		m_RenderPipelines[renderPipeline->m_CI.debugName] = renderPipeline;
@@ -415,7 +420,6 @@ void Renderer::BuildDescriptorSetandPools()
 	//Desriptor Pool
 	std::map<DescriptorType, uint32_t> poolSizesMap;
 	size_t m_RenderQueueMaterialCount = 0;
-
 	auto AddToPoolSizeMap = [&](const std::vector<std::vector<Shader::ResourceBindingDescription>>& rbds, uint32_t materialCount = 1) -> void
 	{
 		uint32_t set = 0;
@@ -442,6 +446,7 @@ void Renderer::BuildDescriptorSetandPools()
 		AddToPoolSizeMap(rbds, static_cast<uint32_t>(materialCount));
 	}
 	AddToPoolSizeMap(m_RenderPipelines["HDR"]->GetRBDs());
+	AddToPoolSizeMap(m_RenderPipelines["DebugCopy"]->GetRBDs());
 
 	m_DescPoolCI.debugName = "GEAR_CORE_DescriptorPool_Renderer";
 	m_DescPoolCI.device = m_Device;
@@ -451,6 +456,7 @@ void Renderer::BuildDescriptorSetandPools()
 	m_DescPool = DescriptorPool::Create(&m_DescPoolCI);
 
 	//Per view Descriptor Set
+	m_DescSetPerView.clear();
 	for (auto& pipeline : m_RenderPipelines)
 	{
 		const std::vector<Ref<DescriptorSetLayout>>& descriptorSetLayouts = pipeline.second->GetDescriptorSetLayouts();
@@ -520,6 +526,11 @@ void Renderer::BuildDescriptorSetandPools()
 				const Ref<ImageView>& emissiveImageView = m_RenderSurface->GetHDRFramebuffers()[0]->GetCreateInfo().attachments[2];
 				m_DescSetPerView[pipeline.second]->AddImage(0, binding, { { nullptr, emissiveImageView, Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 			}
+			else if (name.compare("SOURCEIMAGE") == 0)
+			{
+				const Ref<ImageView>& sourceImageView = m_RenderSurface->GetHDRFramebuffers()[0]->GetCreateInfo().attachments[0];
+				m_DescSetPerView[pipeline.second]->AddImage(0, binding, { { nullptr, sourceImageView, Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
+			}
 			else
 				continue;
 		}
@@ -527,6 +538,7 @@ void Renderer::BuildDescriptorSetandPools()
 	}
 
 	//Per model Descriptor Sets
+	m_DescSetPerModel.clear();
 	for (auto& model : m_AllQueue)
 	{
 		const std::vector<Ref<DescriptorSetLayout>>& descriptorSetLayouts = m_RenderPipelines[model->GetPipelineName()]->GetDescriptorSetLayouts();
@@ -564,6 +576,7 @@ void Renderer::BuildDescriptorSetandPools()
 	}
 
 	//Per material Descriptor Sets
+	m_DescSetPerMaterial.clear();
 	for (auto& model : m_AllQueue)
 	{
 		const std::vector<Ref<DescriptorSetLayout>>& descriptorSetLayouts = m_RenderPipelines[model->GetPipelineName()]->GetDescriptorSetLayouts();
@@ -741,6 +754,7 @@ void Renderer::Flush()
 		Ref<GPUTask> hdrMapping = CreateRef<GPUTask>(&hdrMappingCI);
 		hdrMapping->Execute();
 
+		//OSD Text
 		rendererFunctionTI.pRenderer = this;
 		rendererFunctionTI.pfn = &Renderer::DrawTextLines;
 		GPUTask::CreateInfo drawTextLinesCI;
@@ -756,6 +770,7 @@ void Renderer::Flush()
 		Ref<GPUTask> drawTextLines = CreateRef<GPUTask>(&drawTextLinesCI);
 		drawTextLines->Execute();
 
+		//OSD Axes
 		rendererFunctionTI.pRenderer = this;
 		rendererFunctionTI.pfn = &Renderer::DrawCoordinateAxes;
 		GPUTask::CreateInfo drawCoordinateAxesCI;
@@ -779,19 +794,58 @@ void Renderer::Flush()
 		endHDRRenderPassCI.srcPipelineStages = { PipelineStageBit(0) };
 		endHDRRenderPassCI.cmdBuffer = m_CmdBuffer;
 		endHDRRenderPassCI.cmdBufferIndex = m_FrameIndex;
-		endHDRRenderPassCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::END;
+		endHDRRenderPassCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
 		endHDRRenderPassCI.skipTask = false;
 		Ref<GPUTask>endHDRRenderPass = CreateRef<GPUTask>(&endHDRRenderPassCI);
 		endHDRRenderPass->Execute();
+
+		//Copy To Swapchain
+		graphicsRenderPassBeginTI.framebuffer = m_Window->GetSwapchainFramebuffers()[m_FrameIndex];
+		graphicsRenderPassBeginTI.clearValues = { {1.0f, 0.0f, 1.0f, 1.0f} };
+		GPUTask::CreateInfo beginSwapchainRenderPassCI;
+		beginSwapchainRenderPassCI.debugName = "Begin SwapchainRenderPass";
+		beginSwapchainRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_BEGIN;
+		beginSwapchainRenderPassCI.pTaskInfo = &graphicsRenderPassBeginTI;
+		beginSwapchainRenderPassCI.srcGPUTasks = { endHDRRenderPass };
+		beginSwapchainRenderPassCI.srcPipelineStages = {};
+		beginSwapchainRenderPassCI.cmdBuffer = m_CmdBuffer;
+		beginSwapchainRenderPassCI.cmdBufferIndex = m_FrameIndex;
+		beginSwapchainRenderPassCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
+		beginSwapchainRenderPassCI.resetCmdBufferReleaseResource = false;
+		beginSwapchainRenderPassCI.beginCmdBufferUsage = CommandBuffer::UsageBit::SIMULTANEOUS;
+		beginSwapchainRenderPassCI.skipTask = false;
+		Ref<GPUTask> beginSwapchainRenderPass = CreateRef<GPUTask>(&beginSwapchainRenderPassCI);
+		beginSwapchainRenderPass->Execute();
+
+		rendererFunctionTI.pRenderer = this;
+		rendererFunctionTI.pfn = &Renderer::CopyToSwapchain;
+		GPUTask::CreateInfo copyToSwapchainCI;
+		copyToSwapchainCI.debugName = "SwapchainRenderPass";
+		copyToSwapchainCI.task = GPUTask::Task::RENDERER_FUNCTION;
+		copyToSwapchainCI.pTaskInfo = &rendererFunctionTI;
+		copyToSwapchainCI.srcGPUTasks = { beginSwapchainRenderPass };
+		copyToSwapchainCI.srcPipelineStages = { PipelineStageBit(0) };
+		copyToSwapchainCI.cmdBuffer = m_CmdBuffer;
+		copyToSwapchainCI.cmdBufferIndex = m_FrameIndex;
+		copyToSwapchainCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
+		copyToSwapchainCI.skipTask = false;
+		Ref<GPUTask> copyToSwapchain = CreateRef<GPUTask>(&copyToSwapchainCI);
+		copyToSwapchain->Execute();
+
+		GPUTask::CreateInfo endSwapchainRenderPassCI;
+		endSwapchainRenderPassCI.debugName = "End SwapchainRenderPass";
+		endSwapchainRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_END;
+		endSwapchainRenderPassCI.pTaskInfo = &graphicsRenderPassEndTI;
+		endSwapchainRenderPassCI.srcGPUTasks = { copyToSwapchain };
+		endSwapchainRenderPassCI.srcPipelineStages = { PipelineStageBit(0) };
+		endSwapchainRenderPassCI.cmdBuffer = m_CmdBuffer;
+		endSwapchainRenderPassCI.cmdBufferIndex = m_FrameIndex;
+		endSwapchainRenderPassCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::END;
+		endSwapchainRenderPassCI.skipTask = false;
+		Ref<GPUTask>endSwapchainRenderPass = CreateRef<GPUTask>(&endSwapchainRenderPassCI);
+		endSwapchainRenderPass->Execute();
 	}
 	m_AllQueue.clear();
-}
-
-void Renderer::Present(const Ref<Swapchain>& swapchain, bool& windowResize)
-{
-	m_CmdBuffer->Present({ 0, 1 }, swapchain, m_DrawFences, m_AcquireSemaphores, m_SubmitSemaphores, windowResize);
-	m_FrameIndex = (m_FrameIndex + 1) % swapchain->GetCreateInfo().swapchainCount;
-	m_FrameCount++;
 }
 
 void Renderer::MainRenderLoop()
@@ -860,6 +914,23 @@ void Renderer::DrawCoordinateAxes()
 	m_CmdBuffer->Draw(m_FrameIndex, 6);
 }
 
+void Renderer::CopyToSwapchain()
+{
+	const Ref<graphics::RenderPipeline>& renderPipeline = m_RenderPipelines["DebugCopy"];
+	const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
+
+	m_CmdBuffer->BindPipeline(m_FrameIndex, pipeline);
+	m_CmdBuffer->BindDescriptorSets(m_FrameIndex, { m_DescSetPerView[renderPipeline] }, pipeline);
+	m_CmdBuffer->Draw(m_FrameIndex, 3);
+}
+
+void Renderer::Present(const Ref<Swapchain>& swapchain, bool& windowResize)
+{
+	m_CmdBuffer->Present({ 0, 1 }, swapchain, m_DrawFences, m_AcquireSemaphores, m_SubmitSemaphores, windowResize);
+	m_FrameIndex = (m_FrameIndex + 1) % swapchain->GetCreateInfo().swapchainCount;
+	m_FrameCount++;
+}
+
 void Renderer::ResizeRenderPipelineViewports(uint32_t width, uint32_t height)
 {
 	m_Context->DeviceWaitIdle();
@@ -869,6 +940,7 @@ void Renderer::ResizeRenderPipelineViewports(uint32_t width, uint32_t height)
 		renderPipeline.second->m_CI.viewportState.scissors = { { { 0, 0 },{ width, height } } };
 		renderPipeline.second->Rebuild();
 	}
+	m_BuiltDescPoolsAndSets = false;
 }
 
 void Renderer::RecompileRenderPipelineShaders()

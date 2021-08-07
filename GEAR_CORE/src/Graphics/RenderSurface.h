@@ -12,24 +12,20 @@ namespace graphics
 		struct CreateInfo
 		{
 			std::string										debugName;
-			void*											window;
-			miru::crossplatform::GraphicsAPI::API			api;
+			Ref<miru::crossplatform::Context>				pContext;
 			uint32_t										width;
 			uint32_t										height;
-			bool											vSync;
-			miru::crossplatform::Swapchain::BPC_ColourSpace bpcColourSpace;
 			miru::crossplatform::Image::SampleCountBit		samples;
-			miru::debug::GraphicsDebugger::DebuggerType		graphicsDebugger;
 		};
 
 	private:
-		//Context and Swapchain
-		Ref<miru::crossplatform::Context> m_Context;
-		miru::crossplatform::Context::CreateInfo m_ContextCI;
-		Ref<miru::crossplatform::Swapchain> m_Swapchain;
-		miru::crossplatform::Swapchain::CreateInfo m_SwapchainCI;
-
 		Ref<miru::crossplatform::Allocator> m_AttachmentAllocator;
+
+		//ColourSRGBImage
+		Ref<miru::crossplatform::Image> m_ColourSRGBImage;
+		miru::crossplatform::Image::CreateInfo m_ColourSRGBImageCI;
+		Ref<miru::crossplatform::ImageView> m_ColourSRGBImageView;
+		miru::crossplatform::ImageView::CreateInfo m_ColourSRGBImageViewCI;
 
 		//DepthImage
 		Ref<miru::crossplatform::Image> m_DepthImage;
@@ -74,7 +70,9 @@ namespace graphics
 		miru::crossplatform::Framebuffer::CreateInfo m_HDRFramebufferCI;
 
 		CreateInfo m_CI;
-		int m_CurrentWidth, m_CurrentHeight;
+
+		uint32_t m_CurrentWidth, m_CurrentHeight;
+		const miru::crossplatform::Image::Format m_SRGBFormat = miru::crossplatform::Image::Format::B8G8R8A8_UNORM;
 		const miru::crossplatform::Image::Format m_HDRFormat = miru::crossplatform::Image::Format::R16G16B16A16_SFLOAT;
 
 	public:
@@ -83,23 +81,16 @@ namespace graphics
 
 		const CreateInfo& GetCreateInfo() { return m_CI; }
 		
-		void Resize(int width, int height);
+		void Resize(uint32_t width, uint32_t height);
 
-		inline const Ref<miru::crossplatform::Context> GetContext() const { return m_Context; };
-		inline const Ref<miru::crossplatform::Swapchain>& GetSwapchain() const { return m_Swapchain; };
-		inline void* GetDevice() const { return m_Context->GetDevice(); }
 		inline const Ref<miru::crossplatform::RenderPass>& GetMainRenderPass() const { return m_MainRenderPass; }
 		inline const Ref<miru::crossplatform::RenderPass>& GetHDRRenderPass() const { return m_HDRRenderPass; }
 		inline const Ref<miru::crossplatform::Framebuffer>* GetMainFramebuffers() { return m_MainFramebuffers; }
 		inline const Ref<miru::crossplatform::Framebuffer>* GetHDRFramebuffers() { return m_HDRFramebuffers; }
 
-		inline const miru::crossplatform::GraphicsAPI::API& GetGraphicsAPI() const { return m_CI.api; }
 		inline int GetWidth() const { return m_CurrentWidth; }
 		inline int GetHeight() const { return m_CurrentHeight; }
 		inline float GetRatio() const { return ((float)m_CurrentWidth / (float)m_CurrentHeight); }
-		inline bool& Resized() const { return m_Swapchain->m_Resized; }
-		std::string GetGraphicsAPIVersion() const;
-		std::string GetDeviceName() const;
 		inline std::string GetAntiAliasingValue() const { return std::to_string(static_cast<uint32_t>(m_CI.samples)); }
 	
 	private:
@@ -108,8 +99,8 @@ namespace graphics
 		void CreateMainRenderPass();
 		void CreateHDRRenderPass();
 
-		void CreateMainFramebuffer();
-		void CreateHDRFramebuffer();
+		void CreateMainFramebuffers();
+		void CreateHDRFramebuffers();
 		
 		friend class Window;
 	};
