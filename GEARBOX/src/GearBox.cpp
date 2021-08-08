@@ -27,16 +27,17 @@ Ref<Application> CreateApplication(int argc, char** argv)
 void GEARBOX::Run()
 {
 	Window::CreateInfo mainWindowCI;
-	mainWindowCI.api = GraphicsAPI::API::D3D12;
+	//mainWindowCI.api = GraphicsAPI::API::D3D12;
+	mainWindowCI.api = GraphicsAPI::API::VULKAN;
 	mainWindowCI.title = "GEARBOX";
 	mainWindowCI.width = 1920;
 	mainWindowCI.height = 1080;
 	mainWindowCI.fullscreen = false;
 	mainWindowCI.fullscreenMonitorIndex = 0;
-	mainWindowCI.maximised = false;
+	mainWindowCI.maximised = true;
 	mainWindowCI.vSync = true;
 	mainWindowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_4_BIT;
-	mainWindowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::PIX;
+	mainWindowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::NONE;
 	Ref<Window> mainWindow = CreateRef<Window>(&mainWindowCI);
 
 	AllocatorManager::CreateInfo mbmCI;

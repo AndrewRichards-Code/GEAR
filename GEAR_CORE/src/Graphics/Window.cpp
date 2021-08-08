@@ -196,9 +196,7 @@ bool Window::Init()
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-	if (m_CI.maximised)
-		glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
-
+	
 	if (m_CI.fullscreen)
 	{
 		int monitorCount;
@@ -217,6 +215,7 @@ bool Window::Init()
 		m_Monitor = glfwGetPrimaryMonitor();
 		m_Mode = glfwGetVideoMode(m_Monitor);
 	}
+
 	m_Window = glfwCreateWindow((int)m_CI.width, (int)m_CI.height, m_CI.title.c_str(), m_CI.fullscreen ? m_Monitor : nullptr, nullptr);
 
 	if (!m_Window)
@@ -225,6 +224,11 @@ bool Window::Init()
 		glfwTerminate();
 		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::FUNC_FAILED, "Failed to create GLFW window.");
 		return false;
+	}
+
+	if (m_CI.maximised)
+	{
+		glfwMaximizeWindow(m_Window);
 	}
 
 	GLFWimage icon[1];
@@ -240,9 +244,9 @@ bool Window::Init()
 	glfwSetJoystickCallback(joystick_callback);
 	glfwSetScrollCallback(m_Window, scroll_callback);
 
-	m_CurrentWidth = m_CI.width;
-	m_CurrentHeight = m_CI.height;
+	glfwGetWindowSize(m_Window, (int*)&m_CurrentWidth, (int*)&m_CurrentHeight);
 
+	//Set up miru objects.
 	GraphicsAPI::SetAPI(m_CI.api);
 	GraphicsAPI::AllowSetName();
 	GraphicsAPI::LoadGraphicsDebugger(m_CI.graphicsDebugger);
