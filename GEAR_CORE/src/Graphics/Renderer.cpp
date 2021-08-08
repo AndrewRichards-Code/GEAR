@@ -159,6 +159,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 	}
 
 	//Deal with Skybox Textures first
+	if (m_Skybox)
 	{
 		if (!m_Skybox->m_Cubemap && !m_Skybox->m_Generated)
 		{
@@ -238,7 +239,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 	bool preUploadTransferTask = textureUnknownToTransferDstBarrier.size();
 
 	bool transferTask = forceUploadCamera || forceUploadLights || forceUploadMeshes || forceUploadSkybox;
-	bool asyncComputeTask = texturesToGenerateMipmaps.size() || !m_Skybox->m_Generated;
+	bool asyncComputeTask = texturesToGenerateMipmaps.size() || (m_Skybox && !m_Skybox->m_Generated);
 
 	bool postComputeGraphicsTask = textureGeneralToShaderReadOnlyBarrier.size();
 	bool postTransferGraphicsTask = textureTransferDstToShaderReadOnlyBarrier.size();
@@ -483,7 +484,7 @@ void Renderer::BuildDescriptorSetandPools()
 					continue;
 			}
 
-			if (name.compare("CAMERA") == 0)
+			if (name.compare("CAMERA") == 0 && m_Camera)
 			{
 				m_DescSetPerView[pipeline.second]->AddBuffer(0, binding, { { m_Camera->GetUB()->GetBufferView() } });
 			}
@@ -491,42 +492,42 @@ void Renderer::BuildDescriptorSetandPools()
 			{
 				m_DescSetPerView[pipeline.second]->AddBuffer(0, binding, { { m_TextCamera->GetUB()->GetBufferView() } });
 			}
-			else if (name.compare("LIGHTS") == 0)
+			else if (name.compare("LIGHTS") == 0 && !m_Lights.empty())
 			{
 				m_DescSetPerView[pipeline.second]->AddBuffer(0, binding, { { m_Lights[0]->GetUB()->GetBufferView() } });
 			}
 
-			else if (name.find("DIFFUSEIRRADIANCE") == 0)
+			else if (name.find("DIFFUSEIRRADIANCE") == 0 && m_Skybox)
 			{
 				const Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedDiffuseCubemap();
 				m_DescSetPerView[pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 			}
-			else if (name.find("SPECULARIRRADIANCE") == 0)
+			else if (name.find("SPECULARIRRADIANCE") == 0 && m_Skybox)
 			{
 				const Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedSpecularCubemap();
 				m_DescSetPerView[pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 			}
-			else if (name.find("SPECULARBRDF_LUT") == 0)
+			else if (name.find("SPECULARBRDF_LUT") == 0 && m_Skybox)
 			{
 				const Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedSpecularBRDF_LUT();
 				m_DescSetPerView[pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 			}
 
-			else if (name.compare("HDRINFO") == 0)
+			else if (name.compare("HDRINFO") == 0 && m_Skybox)
 			{
 				m_DescSetPerView[pipeline.second]->AddBuffer(0, binding, { { m_Skybox->GetUB()->GetBufferView() } });
 			}
-			else if (name.compare("HDRINPUT") == 0)
+			else if (name.compare("HDRINPUT") == 0 && m_RenderSurface)
 			{
 				const Ref<ImageView>& colourImageView = m_RenderSurface->GetHDRFramebuffers()[0]->GetCreateInfo().attachments[1];
 				m_DescSetPerView[pipeline.second]->AddImage(0, binding, { { nullptr, colourImageView, Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 			}
-			else if (name.compare("EMISSIVEINPUT") == 0)
+			else if (name.compare("EMISSIVEINPUT") == 0 && m_RenderSurface)
 			{
 				const Ref<ImageView>& emissiveImageView = m_RenderSurface->GetHDRFramebuffers()[0]->GetCreateInfo().attachments[2];
 				m_DescSetPerView[pipeline.second]->AddImage(0, binding, { { nullptr, emissiveImageView, Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 			}
-			else if (name.compare("SOURCEIMAGE") == 0)
+			else if (name.compare("SOURCEIMAGE") == 0 && m_RenderSurface)
 			{
 				const Ref<ImageView>& sourceImageView = m_RenderSurface->GetHDRFramebuffers()[0]->GetCreateInfo().attachments[0];
 				m_DescSetPerView[pipeline.second]->AddImage(0, binding, { { nullptr, sourceImageView, Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
@@ -801,7 +802,7 @@ void Renderer::Flush()
 
 		//Copy To Swapchain
 		graphicsRenderPassBeginTI.framebuffer = m_Window->GetSwapchainFramebuffers()[m_FrameIndex];
-		graphicsRenderPassBeginTI.clearValues = { {1.0f, 0.0f, 1.0f, 1.0f} };
+		graphicsRenderPassBeginTI.clearValues = { {0.25f, 0.25f, 0.25f, 1.0f} };
 		GPUTask::CreateInfo beginSwapchainRenderPassCI;
 		beginSwapchainRenderPassCI.debugName = "Begin SwapchainRenderPass";
 		beginSwapchainRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_BEGIN;
@@ -817,20 +818,28 @@ void Renderer::Flush()
 		Ref<GPUTask> beginSwapchainRenderPass = CreateRef<GPUTask>(&beginSwapchainRenderPassCI);
 		beginSwapchainRenderPass->Execute();
 
-		rendererFunctionTI.pRenderer = this;
-		rendererFunctionTI.pfn = &Renderer::CopyToSwapchain;
-		GPUTask::CreateInfo copyToSwapchainCI;
-		copyToSwapchainCI.debugName = "SwapchainRenderPass";
-		copyToSwapchainCI.task = GPUTask::Task::RENDERER_FUNCTION;
-		copyToSwapchainCI.pTaskInfo = &rendererFunctionTI;
-		copyToSwapchainCI.srcGPUTasks = { beginSwapchainRenderPass };
-		copyToSwapchainCI.srcPipelineStages = { PipelineStageBit(0) };
-		copyToSwapchainCI.cmdBuffer = m_CmdBuffer;
-		copyToSwapchainCI.cmdBufferIndex = m_FrameIndex;
-		copyToSwapchainCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-		copyToSwapchainCI.skipTask = false;
-		Ref<GPUTask> copyToSwapchain = CreateRef<GPUTask>(&copyToSwapchainCI);
-		copyToSwapchain->Execute();
+		Ref<GPUTask> copyToSwapchain;
+		if (m_UI_PFN && m_DrawData && m_UI_this)
+		{
+			m_UI_PFN(m_CmdBuffer, m_FrameIndex, m_DrawData, m_UI_this);
+		}
+		else
+		{
+			rendererFunctionTI.pRenderer = this;
+			rendererFunctionTI.pfn = &Renderer::CopyToSwapchain;
+			GPUTask::CreateInfo copyToSwapchainCI;
+			copyToSwapchainCI.debugName = "SwapchainRenderPass";
+			copyToSwapchainCI.task = GPUTask::Task::RENDERER_FUNCTION;
+			copyToSwapchainCI.pTaskInfo = &rendererFunctionTI;
+			copyToSwapchainCI.srcGPUTasks = { beginSwapchainRenderPass };
+			copyToSwapchainCI.srcPipelineStages = { PipelineStageBit(0) };
+			copyToSwapchainCI.cmdBuffer = m_CmdBuffer;
+			copyToSwapchainCI.cmdBufferIndex = m_FrameIndex;
+			copyToSwapchainCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
+			copyToSwapchainCI.skipTask = false;
+			copyToSwapchain = CreateRef<GPUTask>(&copyToSwapchainCI);
+			copyToSwapchain->Execute();
+		}
 
 		GPUTask::CreateInfo endSwapchainRenderPassCI;
 		endSwapchainRenderPassCI.debugName = "End SwapchainRenderPass";
@@ -873,6 +882,9 @@ void Renderer::MainRenderLoop()
 
 void Renderer::HDRMapping()
 {
+	if (!m_Skybox)
+		return;
+
 	const Ref<graphics::RenderPipeline>& renderPipeline = m_RenderPipelines["HDR"];
 	const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
 
@@ -906,6 +918,9 @@ void Renderer::DrawTextLines()
 
 void Renderer::DrawCoordinateAxes()
 {
+	if (!m_Camera)
+		return;
+
 	const Ref<graphics::RenderPipeline>& renderPipeline = m_RenderPipelines["DebugCoordinateAxes"];
 	const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
 

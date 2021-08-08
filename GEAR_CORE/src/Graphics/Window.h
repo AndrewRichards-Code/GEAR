@@ -107,7 +107,7 @@ namespace graphics
 		inline const Ref<miru::crossplatform::RenderPass>& GetSwapchainRenderPass() const { return m_SwapchainRenderPass; }
 		inline const Ref<miru::crossplatform::Framebuffer>* GetSwapchainFramebuffers() { return m_SwapchainFramebuffers; }
 
-		inline const miru::crossplatform::GraphicsAPI::API& GetGraphicsAPI() const { m_CI.api; }
+		inline const miru::crossplatform::GraphicsAPI::API& GetGraphicsAPI() const { return m_CI.api; }
 		inline bool IsD3D12() const { return miru::crossplatform::GraphicsAPI::IsD3D12(); }
 		inline bool IsVulkan() const { return miru::crossplatform::GraphicsAPI::IsVulkan(); }
 		inline uint32_t GetWidth() const { return m_CurrentWidth; }

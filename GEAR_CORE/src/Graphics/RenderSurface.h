@@ -88,8 +88,10 @@ namespace graphics
 		inline const Ref<miru::crossplatform::Framebuffer>* GetMainFramebuffers() { return m_MainFramebuffers; }
 		inline const Ref<miru::crossplatform::Framebuffer>* GetHDRFramebuffers() { return m_HDRFramebuffers; }
 
-		inline int GetWidth() const { return m_CurrentWidth; }
-		inline int GetHeight() const { return m_CurrentHeight; }
+		inline const Ref<miru::crossplatform::Context> GetContext() const { return m_CI.pContext; };
+		inline void* GetDevice() const { return m_CI.pContext->GetDevice(); }
+		inline uint32_t GetWidth() const { return m_CurrentWidth; }
+		inline uint32_t GetHeight() const { return m_CurrentHeight; }
 		inline float GetRatio() const { return ((float)m_CurrentWidth / (float)m_CurrentHeight); }
 		inline std::string GetAntiAliasingValue() const { return std::to_string(static_cast<uint32_t>(m_CI.samples)); }
 	

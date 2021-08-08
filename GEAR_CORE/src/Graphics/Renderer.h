@@ -88,6 +88,12 @@ namespace graphics
 		void DrawCoordinateAxes();
 		void CopyToSwapchain();
 
+		typedef void(*PFN_UIFunction)(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, void* drawData, void* _this);
+		PFN_UIFunction m_UI_PFN = nullptr;
+		void* m_DrawData = nullptr;
+		void* m_UI_this = nullptr;
+		void SetUIFunction(PFN_UIFunction pfn, void* drawData, void* _this) { m_UI_PFN = pfn; m_DrawData = drawData; m_UI_this = _this; }
+
 		void Present(const Ref<miru::crossplatform::Swapchain>& swapchain, bool& windowResize);
 
 		void ResizeRenderPipelineViewports(uint32_t width, uint32_t height);
