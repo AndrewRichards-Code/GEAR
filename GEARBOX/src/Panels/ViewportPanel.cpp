@@ -33,8 +33,11 @@ void ViewportPanel::Draw(const Ref<RenderSurface>& renderSurface, const Ref<imgu
 		ImVec2 size = ImGui::GetContentRegionAvail();
 		if ((size.x != m_CurrentSize.x) || (size.y != m_CurrentSize.y))
 		{
-			m_CurrentSize = size;
 			renderSurface->GetContext()->DeviceWaitIdle();
+
+			//Ensure RenderSurface size is never { 0, 0 }.
+			m_CurrentSize.x = std::max(size.x, 1.0f);
+			m_CurrentSize.y = std::max(size.y, 1.0f);
 			renderSurface->Resize((uint32_t)m_CurrentSize.x, (uint32_t)m_CurrentSize.y);
 			resized = true;
 		}

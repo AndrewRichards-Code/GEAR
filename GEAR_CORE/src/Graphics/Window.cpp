@@ -345,6 +345,14 @@ void Window::CreateSwapchainFramebuffer()
 
 void Window::window_resize(GLFWwindow* window, int width, int height)
 {
+	//Handle minimised window state
+	while (width == 0 || height == 0)
+	{
+		glfwGetFramebufferSize(window, &width, &height);
+		glfwWaitEvents();
+	}
+
+	//Handle resizes greater than 4K
 	if (width > 3840 || height > 2160)
 	{
 		MIRU_ASSERT(true, "Resize event's dimensions are greater then 4K.");
