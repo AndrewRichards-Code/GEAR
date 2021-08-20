@@ -148,61 +148,6 @@ void RenderSurface::CreateAttachments()
 		m_ColourImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
 		m_ColourImageView = ImageView::Create(&m_ColourImageViewCI);
 	}
-
-	//MSAAEmissive
-	if (m_CI.samples > Image::SampleCountBit::SAMPLE_COUNT_1_BIT)
-	{
-		m_MSAAEmissiveImageCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - MSAAEmissiveImage";
-		m_MSAAEmissiveImageCI.device = m_CI.pContext->GetDevice();
-		m_MSAAEmissiveImageCI.type = Image::Type::TYPE_2D;
-		m_MSAAEmissiveImageCI.format = m_HDRFormat;
-		m_MSAAEmissiveImageCI.width = m_CurrentWidth;
-		m_MSAAEmissiveImageCI.height = m_CurrentHeight;
-		m_MSAAEmissiveImageCI.depth = 1;
-		m_MSAAEmissiveImageCI.mipLevels = 1;
-		m_MSAAEmissiveImageCI.arrayLayers = 1;
-		m_MSAAEmissiveImageCI.sampleCount = m_CI.samples;
-		m_MSAAEmissiveImageCI.usage = Image::UsageBit::COLOUR_ATTACHMENT_BIT;
-		m_MSAAEmissiveImageCI.layout = GraphicsAPI::IsD3D12() ? Image::Layout::COLOUR_ATTACHMENT_OPTIMAL : Image::Layout::UNKNOWN;
-		m_MSAAEmissiveImageCI.size = 0;
-		m_MSAAEmissiveImageCI.data = nullptr;
-		m_MSAAEmissiveImageCI.pAllocator = m_AttachmentAllocator;
-		m_MSAAEmissiveImage = Image::Create(&m_MSAAEmissiveImageCI);
-
-		m_MSAAEmissiveImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - MSAAEmissiveImageView";
-		m_MSAAEmissiveImageViewCI.device = m_CI.pContext->GetDevice();
-		m_MSAAEmissiveImageViewCI.pImage = m_MSAAEmissiveImage;
-		m_MSAAEmissiveImageViewCI.viewType = Image::Type::TYPE_2D;
-		m_MSAAEmissiveImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
-		m_MSAAEmissiveImageView = ImageView::Create(&m_MSAAEmissiveImageViewCI);
-	}
-
-	//Emissive
-	{
-		m_EmissiveImageCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - EmissiveImage";
-		m_EmissiveImageCI.device = m_CI.pContext->GetDevice();
-		m_EmissiveImageCI.type = Image::Type::TYPE_2D;
-		m_EmissiveImageCI.format = m_HDRFormat;
-		m_EmissiveImageCI.width = m_CurrentWidth;
-		m_EmissiveImageCI.height = m_CurrentHeight;
-		m_EmissiveImageCI.depth = 1;
-		m_EmissiveImageCI.mipLevels = 1;
-		m_EmissiveImageCI.arrayLayers = 1;
-		m_EmissiveImageCI.sampleCount = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-		m_EmissiveImageCI.usage = Image::UsageBit::COLOUR_ATTACHMENT_BIT | Image::UsageBit::STORAGE_BIT | Image::UsageBit::INPUT_ATTACHMENT_BIT;
-		m_EmissiveImageCI.layout = GraphicsAPI::IsD3D12() ? Image::Layout::COLOUR_ATTACHMENT_OPTIMAL : Image::Layout::UNKNOWN;
-		m_EmissiveImageCI.size = 0;
-		m_EmissiveImageCI.data = nullptr;
-		m_EmissiveImageCI.pAllocator = m_AttachmentAllocator;
-		m_EmissiveImage = Image::Create(&m_EmissiveImageCI);
-
-		m_EmissiveImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - EmissiveImageView";
-		m_EmissiveImageViewCI.device = m_CI.pContext->GetDevice();
-		m_EmissiveImageViewCI.pImage = m_EmissiveImage;
-		m_EmissiveImageViewCI.viewType = Image::Type::TYPE_2D;
-		m_EmissiveImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
-		m_EmissiveImageView = ImageView::Create(&m_EmissiveImageViewCI);
-	}
 }
 
 void RenderSurface::CreateMainRenderPass()
@@ -243,35 +188,15 @@ void RenderSurface::CreateMainRenderPass()
 				RenderPass::AttachmentStoreOp::DONT_CARE,
 				GraphicsAPI::IsD3D12() ? Image::Layout::PRESENT_SRC : Image::Layout::UNKNOWN,
 				Image::Layout::COLOUR_ATTACHMENT_OPTIMAL
-			},
-			{	//3 - MSAAEmissive
-				m_HDRFormat,
-				m_CI.samples,
-				RenderPass::AttachmentLoadOp::CLEAR,
-				RenderPass::AttachmentStoreOp::STORE,
-				RenderPass::AttachmentLoadOp::DONT_CARE,
-				RenderPass::AttachmentStoreOp::DONT_CARE,
-				GraphicsAPI::IsD3D12() ? Image::Layout::PRESENT_SRC : Image::Layout::UNKNOWN,
-				Image::Layout::COLOUR_ATTACHMENT_OPTIMAL
-			},
-			{	//4 - Emissive
-				m_HDRFormat,
-				Image::SampleCountBit::SAMPLE_COUNT_1_BIT,
-				RenderPass::AttachmentLoadOp::CLEAR,
-				RenderPass::AttachmentStoreOp::STORE,
-				RenderPass::AttachmentLoadOp::DONT_CARE,
-				RenderPass::AttachmentStoreOp::DONT_CARE,
-				GraphicsAPI::IsD3D12() ? Image::Layout::PRESENT_SRC : Image::Layout::UNKNOWN,
-				Image::Layout::COLOUR_ATTACHMENT_OPTIMAL
-			},
+			}
 		};
 		m_MainRenderPassCI.subpassDescriptions =
 		{
 			{
 				PipelineType::GRAPHICS,
 				{},
-				{{1, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL},{3, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL}},
-				{{2, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL},{4, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL}},
+				{{1, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL}},
+				{{2, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL}},
 				{{0, Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL}},
 				{}
 			}
@@ -300,24 +225,14 @@ void RenderSurface::CreateMainRenderPass()
 				RenderPass::AttachmentStoreOp::DONT_CARE,
 				GraphicsAPI::IsD3D12() ? Image::Layout::PRESENT_SRC : Image::Layout::UNKNOWN,
 				Image::Layout::COLOUR_ATTACHMENT_OPTIMAL
-			},
-			{	//2 - Emissive
-				m_HDRFormat,
-				Image::SampleCountBit::SAMPLE_COUNT_1_BIT,
-				RenderPass::AttachmentLoadOp::CLEAR,
-				RenderPass::AttachmentStoreOp::STORE,
-				RenderPass::AttachmentLoadOp::DONT_CARE,
-				RenderPass::AttachmentStoreOp::DONT_CARE,
-				GraphicsAPI::IsD3D12() ? Image::Layout::PRESENT_SRC : Image::Layout::UNKNOWN,
-				Image::Layout::COLOUR_ATTACHMENT_OPTIMAL
-			},
+			}
 		};
 		m_MainRenderPassCI.subpassDescriptions =
 		{
 			{
 				PipelineType::GRAPHICS,
 				{},
-				{{1, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL},{2, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL}},
+				{{1, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL}},
 				{},
 				{{0, Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL}},
 				{}
@@ -364,23 +279,13 @@ void RenderSurface::CreateHDRRenderPass()
 			RenderPass::AttachmentStoreOp::DONT_CARE,
 			Image::Layout::COLOUR_ATTACHMENT_OPTIMAL,
 			Image::Layout::COLOUR_ATTACHMENT_OPTIMAL
-		},
-		{	//2 - Emissive
-			m_HDRFormat,
-			Image::SampleCountBit::SAMPLE_COUNT_1_BIT,
-			RenderPass::AttachmentLoadOp::LOAD,
-			RenderPass::AttachmentStoreOp::DONT_CARE,
-			RenderPass::AttachmentLoadOp::DONT_CARE,
-			RenderPass::AttachmentStoreOp::DONT_CARE,
-			Image::Layout::COLOUR_ATTACHMENT_OPTIMAL,
-			Image::Layout::COLOUR_ATTACHMENT_OPTIMAL
-		},
+		}
 	};
 	m_HDRRenderPassCI.subpassDescriptions =
 	{
 		{
 			PipelineType::GRAPHICS,
-			{{1, Image::Layout::SHADER_READ_ONLY_OPTIMAL},{2, Image::Layout::SHADER_READ_ONLY_OPTIMAL}},
+			{{1, Image::Layout::SHADER_READ_ONLY_OPTIMAL}},
 			{{0, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL}},
 			{},
 			{},
@@ -410,9 +315,9 @@ void RenderSurface::CreateMainFramebuffers()
 		m_MainFramebufferCI.renderPass = m_MainRenderPass;
 
 		if (m_CI.samples > Image::SampleCountBit::SAMPLE_COUNT_1_BIT)
-			m_MainFramebufferCI.attachments = { m_DepthImageView, m_MSAAColourImageView, m_ColourImageView, m_MSAAEmissiveImageView, m_EmissiveImageView };
+			m_MainFramebufferCI.attachments = { m_DepthImageView, m_MSAAColourImageView, m_ColourImageView };
 		else
-			m_MainFramebufferCI.attachments = { m_DepthImageView, m_ColourImageView, m_EmissiveImageView };
+			m_MainFramebufferCI.attachments = { m_DepthImageView, m_ColourImageView };
 
 		m_MainFramebufferCI.width = m_CurrentWidth;
 		m_MainFramebufferCI.height = m_CurrentHeight;
@@ -428,7 +333,7 @@ void RenderSurface::CreateHDRFramebuffers()
 		m_HDRFramebufferCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - HDRFramebuffer";
 		m_HDRFramebufferCI.device = m_CI.pContext->GetDevice();
 		m_HDRFramebufferCI.renderPass = m_HDRRenderPass;
-		m_HDRFramebufferCI.attachments = { m_ColourSRGBImageView, m_ColourImageView, m_EmissiveImageView };
+		m_HDRFramebufferCI.attachments = { m_ColourSRGBImageView, m_ColourImageView };
 		m_HDRFramebufferCI.width = m_CurrentWidth;
 		m_HDRFramebufferCI.height = m_CurrentHeight;
 		m_HDRFramebufferCI.layers = 1;

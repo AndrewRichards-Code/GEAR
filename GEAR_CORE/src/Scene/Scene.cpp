@@ -36,6 +36,11 @@ Entity Scene::CreateEntity()
 	return entity;
 }
 
+void Scene::DestroyEntity(Entity entity)
+{
+	m_Registry.destroy(entity.m_Entity);
+}
+
 void Scene::OnUpdate(Ref<graphics::Renderer>& renderer, core::Timer& timer)
 {
 	if (m_Playing)
@@ -63,9 +68,16 @@ void Scene::OnUpdate(Ref<graphics::Renderer>& renderer, core::Timer& timer)
 	}
 
 	auto& vCameraComponents = m_Registry.view<CameraComponent>();
-	for (auto& entity : vCameraComponents)
+	if (!vCameraComponents.empty())
 	{
-		renderer->SubmitCamera(vCameraComponents.get<CameraComponent>(entity));
+		for (auto& entity : vCameraComponents)
+		{
+			renderer->SubmitCamera(vCameraComponents.get<CameraComponent>(entity));
+		}
+	}
+	else
+	{
+		renderer->SubmitCamera(nullptr);
 	}
 
 	std::vector<Ref<Light>> lights;

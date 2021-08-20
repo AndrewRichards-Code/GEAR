@@ -59,8 +59,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)dep\imgui;$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\DATE;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)dep\imgui;$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\DATE;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>gearbox_common.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -77,8 +79,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GEAR_NO_CONSOLE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)dep\imgui;$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\DATE;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)dep\imgui;$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\DATE;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>gearbox_common.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -90,13 +94,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\ComponentUI\CameraComponentUI.h" />
+    <ClInclude Include="src\ComponentUI\ComponentUI.h" />
+    <ClInclude Include="src\ComponentUI\NameComponentUI.h" />
+    <ClInclude Include="src\ComponentUI\TransformComponentUI.h" />
     <ClInclude Include="src\GEARBOX.h" />
+    <ClInclude Include="src\gearbox_common.h" />
     <ClInclude Include="src\Panels\Panel.h" />
+    <ClInclude Include="src\Panels\Panels.h" />
+    <ClInclude Include="src\Panels\PropertiesPanel.h" />
+    <ClInclude Include="src\Panels\SceneHierarchyPanel.h" />
     <ClInclude Include="src\Panels\ViewportPanel.h" />
     <ClInclude Include="src\UIContext.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\ComponentUI\CameraComponentUI.cpp" />
+    <ClCompile Include="src\ComponentUI\ComponentUI.cpp" />
+    <ClCompile Include="src\ComponentUI\NameComponentUI.cpp" />
+    <ClCompile Include="src\ComponentUI\TransformComponentUI.cpp" />
     <ClCompile Include="src\GEARBOX.cpp" />
+    <ClCompile Include="src\gearbox_common.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src\Panels\PropertiesPanel.cpp" />
+    <ClCompile Include="src\Panels\SceneHierarchyPanel.cpp" />
     <ClCompile Include="src\Panels\ViewportPanel.cpp" />
     <ClCompile Include="src\UIContext.cpp" />
   </ItemGroup>

@@ -4,7 +4,6 @@
 
 MIRU_UNIFORM_BUFFER(0, 0, HDRInfo, hdrInfo);
 MIRU_SUBPASS_INPUT(0, 1, 0, float4, hdrInput);
-MIRU_SUBPASS_INPUT(0, 2, 1, float4, emissiveInput);
 
 struct VS_OUT
 {
@@ -30,7 +29,6 @@ PS_OUT ps_main(PS_IN IN)
 	
 	//Calculate irradiance
 	float4 irradiance = MIRU_SUBPASS_LOAD(hdrInput, IN.v_Position);
-	irradiance += MIRU_SUBPASS_LOAD(emissiveInput, IN.v_Position);
 	
 	//Exposure tone mapping
 	float3 mapped = float3(1.0, 1.0, 1.0) - exp(-irradiance.rgb * hdrInfo.exposure);

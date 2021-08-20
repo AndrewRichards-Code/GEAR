@@ -46,8 +46,8 @@ void GEAR_TEST::Run()
 	Ref<Scene> activeScene = CreateRef<Scene>(&sceneCI);
 
 	Window::CreateInfo windowCI;
-	windowCI.api = GraphicsAPI::API::D3D12;
-	//windowCI.api = GraphicsAPI::API::VULKAN;
+	//windowCI.api = GraphicsAPI::API::D3D12;
+	windowCI.api = GraphicsAPI::API::VULKAN;
 	windowCI.title = "GEAR_TEST";
 	windowCI.width = 1920;
 	windowCI.height = 1080;

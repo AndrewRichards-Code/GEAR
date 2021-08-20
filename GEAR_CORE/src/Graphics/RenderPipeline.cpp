@@ -256,7 +256,10 @@ void RenderPipeline::FinalisePipline()
 			viads.push_back({ vsiad.location, vsiad.binding, vsiad.vertexType, vsiad.offset, vsiad.semanticName.c_str() });
 		}
 		std::vector<VertexInputBindingDescription> vibds;
-		vibds.push_back({ 0, stride, VertexInputRate::VERTEX });
+		if (stride > 0)
+		{
+			vibds.push_back({ 0, stride, VertexInputRate::VERTEX });
+		}
 
 		for (auto& shader : m_Shaders)
 		{

@@ -65,7 +65,7 @@ namespace graphics
 		uint32_t m_FrameCount = 0;
 
 	public:
-		Renderer(const Ref<Window>& context);
+		Renderer(const Ref<Window>& window);
 		virtual ~Renderer();
 
 		void InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface);
@@ -100,6 +100,12 @@ namespace graphics
 		void RecompileRenderPipelineShaders();
 		void ReloadTextures();
 
+		inline Ref<miru::crossplatform::Context> GetContext() { return m_Context; }
+		inline void* GetDevice() { return m_Device; }
+		inline Ref<Window> GetWindow() { return m_Window; }
+		inline Ref<RenderSurface> GetRenderSurface() { return m_RenderSurface; }
+
+		inline Ref<objects::Camera> GetCamera() { return m_Camera; }
 		inline std::vector<Ref<objects::Model>>& GetRenderQueue() { return m_ModelQueue; };
 		inline const Ref<miru::crossplatform::CommandBuffer>& GetCmdBuffer() { return m_CmdBuffer; };
 		inline const std::map<std::string, Ref<graphics::RenderPipeline>>& GetRenderPipelines() const { return m_RenderPipelines; }

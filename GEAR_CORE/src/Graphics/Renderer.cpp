@@ -61,6 +61,8 @@ Renderer::Renderer(const Ref<Window>& window)
 	m_SubmitSemaphoreCI.device = m_Device;
 	m_SubmitSemaphores = { Semaphore::Create(&m_SubmitSemaphoreCI), Semaphore::Create(&m_SubmitSemaphoreCI) };
 
+	SubmitRenderSurface(m_Window->GetRenderSurface());
+	InitialiseRenderPipelines(m_RenderSurface);
 }
 
 Renderer::~Renderer()
@@ -80,6 +82,8 @@ void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface
 		{"res/pipelines/DebugCopy.grpf.json", 2, 0}
 	};
 
+	m_RenderPipelines.clear();
+
 	RenderPipeline::LoadInfo renderPipelineLI;
 	for (auto& filepath : filepaths)
 	{
@@ -98,12 +102,19 @@ void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface
 
 void Renderer::SubmitRenderSurface(const Ref<RenderSurface>& renderSurface)
 { 
-	m_RenderSurface = renderSurface; 
+	if (m_RenderSurface != renderSurface)
+	{
+		m_RenderSurface = renderSurface;
+	}
 }
 
 void Renderer::SubmitCamera(const Ref<objects::Camera>& camera)
 { 
-	m_Camera = camera; 
+	if (m_Camera != camera)
+	{
+		m_Camera = camera;
+		m_BuiltDescPoolsAndSets = false;
+	}
 }
 
 void Renderer::SubmitTextCamera(const Ref<Camera>& textCamera)
@@ -674,7 +685,7 @@ void Renderer::Flush()
 		//Main Render
 		GPUTask::GraphicsRenderPassBeginTaskInfo graphicsRenderPassBeginTI;
 		graphicsRenderPassBeginTI.framebuffer = m_RenderSurface->GetMainFramebuffers()[m_FrameIndex];
-		graphicsRenderPassBeginTI.clearValues = { {1.0f, 0}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f}};
+		graphicsRenderPassBeginTI.clearValues = { {1.0f, 0}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f} };
 		GPUTask::CreateInfo beginMainRenderPassCI;
 		beginMainRenderPassCI.debugName = "Begin MainRenderPass";
 		beginMainRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_BEGIN;
@@ -724,7 +735,7 @@ void Renderer::Flush()
 
 		//HDRMapping
 		graphicsRenderPassBeginTI.framebuffer = m_RenderSurface->GetHDRFramebuffers()[m_FrameIndex];
-		graphicsRenderPassBeginTI.clearValues = { {0.25f, 0.25f, 0.25f, 1.0f}, {1.0f, 0} };
+		graphicsRenderPassBeginTI.clearValues = { {0.25f, 0.25f, 0.25f, 1.0f} };
 		GPUTask::CreateInfo beginHDRRenderPassCI;
 		beginHDRRenderPassCI.debugName = "Begin HDRRenderPass";
 		beginHDRRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_BEGIN;

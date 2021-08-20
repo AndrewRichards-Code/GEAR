@@ -1,7 +1,5 @@
 #pragma once
-#include "gear_core.h"
-
-#include "imgui.h"
+#include "gearbox_common.h"
 
 namespace gearbox
 {
@@ -44,6 +42,7 @@ namespace imgui
 		ID3D12GraphicsCommandList* GetID3D12GraphicsCommandList(const Ref<miru::crossplatform::CommandBuffer> cmdBuffer, uint32_t index);
 
 		void DrawMenuBar();
+		void SetDarkTheme();
 
 		//Members
 	private:

@@ -1,3 +1,4 @@
+#include "gearbox_common.h"
 #include "UIContext.h"
 
 #include "vulkan/VKContext.h"
@@ -8,10 +9,6 @@
 #include "directx12/D3D12Context.h"
 #include "directx12/D3D12CommandPoolBuffer.h"
 #include "directx12/D3D12Swapchain.h"
-
-#include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_vulkan_with_textures.h"
-#include "backends/imgui_impl_dx12.h"
 
 using namespace gearbox;
 using namespace imgui;
@@ -36,8 +33,10 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 	//io.ConfigViewportsNoAutoMerge = true;
 	//io.ConfigViewportsNoTaskBarIcon = true;
 
+	io.FontDefault = io.Fonts->AddFontFromFileTTF("res/fonts/electrolize/Electrolize-Regular.ttf", 15.0f);
+
 	// Setup Dear ImGui style
-	ImGui::StyleColorsDark();
+	SetDarkTheme();
 
 	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
 	ImGuiStyle& style = ImGui::GetStyle();
@@ -51,7 +50,7 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 	if (m_API == GraphicsAPI::API::VULKAN)
 	{
 		// Initialise ImGui with the GLFW window
-		ImGui_ImplGlfw_InitForVulkan(window->GetGLFWwindow(), false);
+		ImGui_ImplGlfw_InitForVulkan(window->GetGLFWwindow(), true);
 
 		Ref<vulkan::Context> vkContext = ref_cast<vulkan::Context>(window->GetContext());
 		
@@ -91,7 +90,7 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 	else if (m_API == GraphicsAPI::API::D3D12)
 	{
 		// Initialise ImGui with the GLFW window
-		ImGui_ImplGlfw_InitForOther(window->GetGLFWwindow(), false);
+		ImGui_ImplGlfw_InitForOther(window->GetGLFWwindow(), true);
 
 		Ref<d3d12::Context> d3d12Context = ref_cast<d3d12::Context>(window->GetContext());
 
@@ -322,4 +321,55 @@ void UIContext::DrawMenuBar()
 		}
 		ImGui::EndMenuBar();
 	}
+}
+
+static ImVec4 operator+(ImVec4& a, ImVec4& b)
+{
+	return ImVec4(
+		a.x + b.x,
+		a.y + b.y,
+		a.z + b.z,
+		a.w + b.w
+	);
+}
+
+void UIContext::SetDarkTheme()
+{
+	ImGui::StyleColorsDark();
+	ImVec4* colours = ImGui::GetStyle().Colors;
+
+	ImVec4 Grey_Background = ImVec4(0.1f, 0.105f, 0.11f, 1.0f);
+	ImVec4 Grey_Default = ImVec4(0.2f, 0.205f, 0.21f, 1.0f);
+	ImVec4 Grey_Hovered = ImVec4(0.3f, 0.305f, 0.31f, 1.0f);
+	ImVec4 Grey_Active = ImVec4(0.15f, 0.1505f, 0.151f, 1.0f);
+	ImVec4 AddRed = ImVec4(0.8f, 0.0, 0.0, 1.0f);
+
+	colours[ImGuiCol_WindowBg] = Grey_Background;
+
+	// Headers
+	colours[ImGuiCol_Header] = Grey_Default;
+	colours[ImGuiCol_HeaderHovered] = Grey_Active + AddRed;
+	colours[ImGuiCol_HeaderActive] = Grey_Active + AddRed;
+
+	// Buttons
+	colours[ImGuiCol_Button] = Grey_Default;
+	colours[ImGuiCol_ButtonHovered] = Grey_Active + AddRed;
+	colours[ImGuiCol_ButtonActive] = Grey_Active + AddRed;
+
+	// Frame BG
+	colours[ImGuiCol_FrameBg] = Grey_Default;
+	colours[ImGuiCol_FrameBgHovered] = Grey_Active + AddRed;
+	colours[ImGuiCol_FrameBgActive] = Grey_Active + AddRed;
+
+	// Tabs
+	colours[ImGuiCol_Tab] = Grey_Active;
+	colours[ImGuiCol_TabHovered] = Grey_Active + AddRed;//ImVec4{ 0.38f, 0.3805f, 0.381f, 1.0f };
+	colours[ImGuiCol_TabActive] = Grey_Active + AddRed;// ImVec4{ 0.28f, 0.2805f, 0.281f, 1.0f };
+	colours[ImGuiCol_TabUnfocused] = Grey_Active;
+	colours[ImGuiCol_TabUnfocusedActive] = Grey_Default;
+
+	// Title
+	colours[ImGuiCol_TitleBg] = Grey_Active;
+	colours[ImGuiCol_TitleBgActive] = Grey_Active;
+	colours[ImGuiCol_TitleBgCollapsed] = Grey_Active;
 }

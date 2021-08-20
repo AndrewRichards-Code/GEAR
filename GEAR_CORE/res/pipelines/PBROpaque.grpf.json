@@ -136,16 +136,6 @@
         "dstAlphaBlendFactor": "ZERO",
         "alphaBlendOp": "ADD",
         "colourWriteMask": [ "R_BIT", "G_BIT", "B_BIT", "A_BIT" ]
-      },
-      {
-        "blendEnable": true,
-        "srcColourBlendFactor": "SRC_ALPHA",
-        "dstColourBlendFactor": "ONE_MINUS_SRC_ALPHA",
-        "colourBlendOp": "ADD",
-        "srcAlphaBlendFactor": "ONE",
-        "dstAlphaBlendFactor": "ZERO",
-        "alphaBlendOp": "ADD",
-        "colourWriteMask": [ "R_BIT", "G_BIT", "B_BIT", "A_BIT" ]
       }
     ],
     "blendConstants": [

@@ -74,14 +74,14 @@ namespace scene
 		}
 
 		template<typename T>
-		T& RemoveComponent()
+		void RemoveComponent()
 		{
 			if (!HasComponent<T>())
 			{
 				GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::SCENE | ErrorCode::INVALID_COMPONENT,
 					"Entity(0x%x) does not have a %s.", m_Entity, typeid(T).name());
 			}
-			return m_CI.pScene->m_Registry.remove<T>(m_Entity);
+			m_CI.pScene->m_Registry.remove<T>(m_Entity);
 		}
 
 		bool operator==(const Entity& other) const
@@ -92,9 +92,13 @@ namespace scene
 		{
 			return !(*this == other);
 		}
+		operator bool()
+		{
+			return static_cast<uint32_t>(m_Entity) != ~0;
+		}
 		
 	//private:
-		entt::entity m_Entity;
+		entt::entity m_Entity = entt::entity(~0);
 	};
 }
 }

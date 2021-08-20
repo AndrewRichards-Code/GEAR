@@ -45,18 +45,6 @@ namespace graphics
 		Ref<miru::crossplatform::ImageView> m_ColourImageView;
 		miru::crossplatform::ImageView::CreateInfo m_ColourImageViewCI;
 
-		//MSAAEmissiveImage
-		Ref<miru::crossplatform::Image> m_MSAAEmissiveImage;
-		miru::crossplatform::Image::CreateInfo m_MSAAEmissiveImageCI;
-		Ref<miru::crossplatform::ImageView> m_MSAAEmissiveImageView;
-		miru::crossplatform::ImageView::CreateInfo m_MSAAEmissiveImageViewCI;
-
-		//EmissiveImage
-		Ref<miru::crossplatform::Image> m_EmissiveImage;
-		miru::crossplatform::Image::CreateInfo m_EmissiveImageCI;
-		Ref<miru::crossplatform::ImageView> m_EmissiveImageView;
-		miru::crossplatform::ImageView::CreateInfo m_EmissiveImageViewCI;
-
 		//MainRenderPass and MainFramebuffer
 		Ref<miru::crossplatform::RenderPass> m_MainRenderPass;
 		miru::crossplatform::RenderPass::CreateInfo m_MainRenderPassCI;

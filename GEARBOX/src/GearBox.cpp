@@ -1,10 +1,12 @@
+#include "gearbox_common.h"
 #include "GEARBOX.h"
-#include "gear_core.h"
-#include "UIContext.h"
-#include "Panels/ViewportPanel.h"
+
+#include "Panels/Panels.h"
+
 
 using namespace gearbox;
 using namespace imgui;
+using namespace panels;
 
 using namespace gear;
 using namespace animation;
@@ -27,14 +29,14 @@ Ref<Application> CreateApplication(int argc, char** argv)
 void GEARBOX::Run()
 {
 	Window::CreateInfo mainWindowCI;
-	//mainWindowCI.api = GraphicsAPI::API::D3D12;
-	mainWindowCI.api = GraphicsAPI::API::VULKAN;
+	mainWindowCI.api = GraphicsAPI::API::D3D12;
+	//mainWindowCI.api = GraphicsAPI::API::VULKAN;
 	mainWindowCI.title = "GEARBOX";
 	mainWindowCI.width = 1920;
 	mainWindowCI.height = 1080;
 	mainWindowCI.fullscreen = false;
 	mainWindowCI.fullscreenMonitorIndex = 0;
-	mainWindowCI.maximised = true;
+	mainWindowCI.maximised = false;
 	mainWindowCI.vSync = true;
 	mainWindowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_4_BIT;
 	mainWindowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::NONE;
@@ -45,38 +47,53 @@ void GEARBOX::Run()
 	mbmCI.defaultBlockSize = Allocator::BlockSize::BLOCK_SIZE_128MB;
 	AllocatorManager::Initialise(&mbmCI);
 
+	Scene::CreateInfo sceneCI;
+	sceneCI.debugName = "GEARBOX_DefaultScene";
+	sceneCI.filepath = "res/scenes/current_scene.gsf.json";
+	sceneCI.nativeScriptDir = "res/scripts/";
+	Ref<Scene> activeScene = CreateRef<Scene>(&sceneCI);
+	
+	Ref<Renderer> renderer = CreateRef<Renderer>(mainWindow);
+
 	UIContext::CreateInfo uiContextCI;
 	uiContextCI.window = mainWindow;
 	Ref<UIContext>uiContext = CreateRef<UIContext>(&uiContextCI);
 
-	
+	std::vector<Ref<Panel>> editorPanels;
+
+	ViewportPanel::CreateInfo mainViewportCI = { renderer, uiContext };
+	editorPanels.emplace_back(CreateRef<ViewportPanel>(&mainViewportCI));
+	SceneHierarchyPanel::CreateInfo sceneHierarchyPanelCI = { activeScene, ref_cast<ViewportPanel>(editorPanels.back()) };
+	editorPanels.emplace_back(CreateRef<SceneHierarchyPanel>(&sceneHierarchyPanelCI));
+	PropertiesPanel::CreateInfo propertiesCI = { ref_cast<SceneHierarchyPanel>(editorPanels.back()) };
+	editorPanels.emplace_back(CreateRef<PropertiesPanel>(&propertiesCI));
+
+
 	bool windowResize = false;
-
-	Ref<Renderer> renderer = CreateRef<Renderer>(mainWindow);
-	renderer->InitialiseRenderPipelines(mainWindow->GetRenderSurface());
-
-	panels::ViewportPanel mainViewport;
+	core::Timer timer;
 	while (!mainWindow->Closed())
 	{
-		if (mainWindow->Resized())
-		{
-			renderer->ResizeRenderPipelineViewports(mainWindow->GetWidth(), mainWindow->GetHeight());
-			mainWindow->Resized() = false;
-		}
-
 		uiContext->BeginFrame();
 		uiContext->BeginDockspace();
+		for (auto& panel : editorPanels)
 		{
-			mainViewport.Draw(mainWindow->GetRenderSurface(), uiContext);
+			panel->Draw();
 		}
 		uiContext->EndDockspace();
 		uiContext->EndFrame();
-		
+
+		if (mainWindow->Resized())
+		{
+			renderer->ResizeRenderPipelineViewports(mainWindow->GetRenderSurface()->GetWidth(), mainWindow->GetRenderSurface()->GetHeight());
+			mainWindow->Resized() = false;
+		}
+
 		Renderer::PFN_UIFunction UIDraw = [](const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, void* drawData, void* _this) -> void
 		{
 			UIContext::RenderDrawData(cmdBuffer, frameIndex, (ImDrawData*)drawData, (UIContext*)_this);
 		};
 
+		activeScene->OnUpdate(renderer, timer);
 		renderer->SubmitRenderSurface(mainWindow->GetRenderSurface());
 		renderer->SetUIFunction(UIDraw, ImGui::GetDrawData(), uiContext.get());
 		renderer->Upload(true, false, false, false);
