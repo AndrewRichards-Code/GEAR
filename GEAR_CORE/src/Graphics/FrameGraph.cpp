@@ -156,7 +156,10 @@ void GPUTask::UploadResources()
 		uploadResourcesTI->textCamera->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->textCameraForce);
 
 	if (uploadResourcesTI->skybox)
+	{
 		uploadResourcesTI->skybox->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->skyboxForce);
+		uploadResourcesTI->skybox->GetTexture()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex);
+	}
 
 	for (auto& light : uploadResourcesTI->lights)
 		light->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->lightsForce);

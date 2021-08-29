@@ -29,8 +29,8 @@ Ref<Application> CreateApplication(int argc, char** argv)
 void GEARBOX::Run()
 {
 	Window::CreateInfo mainWindowCI;
-	mainWindowCI.api = GraphicsAPI::API::D3D12;
-	//mainWindowCI.api = GraphicsAPI::API::VULKAN;
+	//mainWindowCI.api = GraphicsAPI::API::D3D12;
+	mainWindowCI.api = GraphicsAPI::API::VULKAN;
 	mainWindowCI.title = "GEARBOX";
 	mainWindowCI.width = 1920;
 	mainWindowCI.height = 1080;
@@ -39,7 +39,7 @@ void GEARBOX::Run()
 	mainWindowCI.maximised = false;
 	mainWindowCI.vSync = true;
 	mainWindowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_4_BIT;
-	mainWindowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::NONE;
+	mainWindowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::RENDER_DOC;
 	Ref<Window> mainWindow = CreateRef<Window>(&mainWindowCI);
 
 	AllocatorManager::CreateInfo mbmCI;
@@ -59,7 +59,7 @@ void GEARBOX::Run()
 	uiContextCI.window = mainWindow;
 	Ref<UIContext>uiContext = CreateRef<UIContext>(&uiContextCI);
 
-	std::vector<Ref<Panel>> editorPanels;
+	std::vector<Ref<Panel>>& editorPanels = uiContext->GetEditorPanels();
 
 	ViewportPanel::CreateInfo mainViewportCI = { renderer, uiContext };
 	editorPanels.emplace_back(CreateRef<ViewportPanel>(&mainViewportCI));
@@ -67,20 +67,14 @@ void GEARBOX::Run()
 	editorPanels.emplace_back(CreateRef<SceneHierarchyPanel>(&sceneHierarchyPanelCI));
 	PropertiesPanel::CreateInfo propertiesCI = { ref_cast<SceneHierarchyPanel>(editorPanels.back()) };
 	editorPanels.emplace_back(CreateRef<PropertiesPanel>(&propertiesCI));
-
+	ContentBrowserPanel::CreateInfo contentBrowserCI = { uiContext, std::filesystem::current_path() };
+	editorPanels.emplace_back(CreateRef<ContentBrowserPanel>(&contentBrowserCI));
 
 	bool windowResize = false;
 	core::Timer timer;
 	while (!mainWindow->Closed())
 	{
-		uiContext->BeginFrame();
-		uiContext->BeginDockspace();
-		for (auto& panel : editorPanels)
-		{
-			panel->Draw();
-		}
-		uiContext->EndDockspace();
-		uiContext->EndFrame();
+		uiContext->Draw();
 
 		if (mainWindow->Resized())
 		{
@@ -96,7 +90,7 @@ void GEARBOX::Run()
 		activeScene->OnUpdate(renderer, timer);
 		renderer->SubmitRenderSurface(mainWindow->GetRenderSurface());
 		renderer->SetUIFunction(UIDraw, ImGui::GetDrawData(), uiContext.get());
-		renderer->Upload(true, false, false, false);
+		renderer->Upload(true, false, true, false);
 		renderer->Flush();
 		renderer->Present(mainWindow->GetSwapchain(), windowResize);
 

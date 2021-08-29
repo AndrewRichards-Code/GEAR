@@ -56,7 +56,7 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	}
 	else
 	{
-		m_GeneratedCubemap = nullptr;
+		m_GeneratedCubemap = m_Texture;
 	}
 
 	m_GeneratedDiffuseCubemapCI.debugName = "GEAR_CORE_Skybox_GeneratedDiffuseCubemap: " + m_CI.debugName;
@@ -138,6 +138,30 @@ Skybox::~Skybox()
 
 void Skybox::Update()
 {
+	if (m_Reload)
+	{
+		m_Cubemap = m_CI.filepaths.size() == 6;
+		m_HDR = stbi_is_hdr(m_CI.filepaths[0].c_str());
+
+		m_TextureCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
+		m_TextureCI.device = m_CI.device;
+		m_TextureCI.dataType = Texture::DataType::FILE;
+		m_TextureCI.file.filepaths = m_CI.filepaths.data();
+		m_TextureCI.file.count = m_CI.filepaths.size();
+		m_TextureCI.mipLevels = 1;
+		m_TextureCI.arrayLayers = m_CI.filepaths.size() == 6 ? 6 : 1;
+		m_TextureCI.type = m_CI.filepaths.size() == 6 ? Image::Type::TYPE_CUBE : Image::Type::TYPE_2D;
+		m_TextureCI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
+		m_TextureCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+		m_TextureCI.usage = Image::UsageBit(0);
+		m_TextureCI.generateMipMaps = false;
+		m_TextureCI.gammaSpace = GammaSpace::LINEAR;
+		m_Texture = CreateRef<Texture>(&m_TextureCI);
+
+		m_Reload = false;
+		m_Generated = false;
+	}
+
 	m_UB->exposure = m_CI.exposure;
 	m_UB->gammaSpace = static_cast<uint32_t>(m_CI.gammaSpace);
 	m_UB->SubmitData();

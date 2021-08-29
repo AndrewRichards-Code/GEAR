@@ -129,8 +129,15 @@ void Renderer::SubmitLights(const std::vector<Ref<Light>>& lights)
 
 void Renderer::SubmitSkybox(const Ref<Skybox>& skybox)
 { 
-	m_Skybox = skybox; 
-	SubmitModel(skybox->GetModel()); 
+	if (m_Skybox != skybox)
+	{
+		m_Skybox = skybox; 
+		m_BuiltDescPoolsAndSets = false;
+	}
+	if (m_Skybox)
+	{
+		SubmitModel(m_Skybox->GetModel());
+	}
 }
 
 void Renderer::SubmitModel(const Ref<Model>& obj)
@@ -149,10 +156,11 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 	std::set<Ref<Texture>> texturesToProcess;
 	std::vector<Ref<Texture>> texturesToGenerateMipmaps;
 
-	std::vector<Ref<Barrier>> textureShaderReadOnlyBarrierToTransferDst;
 	std::vector<Ref<Barrier>> textureUnknownToTransferDstBarrier;
 	std::vector<Ref<Barrier>> textureTransferDstToShaderReadOnlyBarrier;
+	std::vector<Ref<Barrier>> textureShaderReadOnlyToTransferDst;
 	std::vector<Ref<Barrier>> textureGeneralToShaderReadOnlyBarrier;
+	std::vector<Ref<Barrier>> textureShaderReadOnlyToGeneralBarrier;
 
 	m_AllQueue.insert(m_AllQueue.end(), m_ModelQueue.begin(), m_ModelQueue.end());
 	m_AllQueue.insert(m_AllQueue.end(), m_TextQueue.begin(), m_TextQueue.end());
@@ -174,30 +182,40 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 	{
 		if (!m_Skybox->m_Cubemap && !m_Skybox->m_Generated)
 		{
-			m_Skybox->GetGeneratedSpecularBRDF_LUT()->TransitionSubResources(textureGeneralToShaderReadOnlyBarrier,
-				{ { Barrier::AccessBit::SHADER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT,
-				Image::Layout::GENERAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
-
-			m_Skybox->GetGeneratedSpecularCubemap()->TransitionSubResources(textureGeneralToShaderReadOnlyBarrier,
-				{ { Barrier::AccessBit::SHADER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT,
-				Image::Layout::GENERAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
+			auto SkyboxTextureStateUpdate = [&](Ref<Texture> texture)
+			{
+				if (texture->m_ShaderReadable)
+				{
+					texture->TransitionSubResources(textureShaderReadOnlyToGeneralBarrier,
+						{ { Barrier::AccessBit::SHADER_READ_BIT, 
+						Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT,
+						Image::Layout::SHADER_READ_ONLY_OPTIMAL, 
+						Image::Layout::GENERAL, 
+						{}, true } });
+					texture->m_ShaderReadable = false;
+				}
+				texture->TransitionSubResources(textureGeneralToShaderReadOnlyBarrier,
+					{ { Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT, 
+					Barrier::AccessBit::SHADER_READ_BIT ,
+					Image::Layout::GENERAL,
+					Image::Layout::SHADER_READ_ONLY_OPTIMAL, 
+					{}, true } });
+				texture->m_ShaderReadable = true;
+			};
+			SkyboxTextureStateUpdate(m_Skybox->GetGeneratedSpecularBRDF_LUT());
+			SkyboxTextureStateUpdate(m_Skybox->GetGeneratedSpecularCubemap());
+			SkyboxTextureStateUpdate(m_Skybox->GetGeneratedDiffuseCubemap());
+			SkyboxTextureStateUpdate(m_Skybox->GetGeneratedCubemap());
+			SkyboxTextureStateUpdate(m_Skybox->GetTexture());
+				
+			if (m_Skybox->GetTexture()->m_PreUpload)
+			{
+				m_Skybox->GetTexture()->TransitionSubResources(textureUnknownToTransferDstBarrier,
+					{ { Barrier::AccessBit::NONE_BIT, Barrier::AccessBit::TRANSFER_WRITE_BIT,
+					Image::Layout::UNKNOWN, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
+				m_Skybox->GetTexture()->m_PreUpload = false;
+			}
 			
-			m_Skybox->GetGeneratedDiffuseCubemap()->TransitionSubResources(textureGeneralToShaderReadOnlyBarrier,
-				{ { Barrier::AccessBit::SHADER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT,
-				Image::Layout::GENERAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
-			
-			m_Skybox->GetGeneratedCubemap()->TransitionSubResources(textureGeneralToShaderReadOnlyBarrier,
-				{ { Barrier::AccessBit::SHADER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT,
-				Image::Layout::GENERAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
-	
-			m_Skybox->GetTexture()->TransitionSubResources(textureUnknownToTransferDstBarrier,
-				{ { Barrier::AccessBit::NONE_BIT, Barrier::AccessBit::TRANSFER_WRITE_BIT,
-				Image::Layout::UNKNOWN, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
-			m_Skybox->GetTexture()->m_PreUpload = false;
-	
-			m_Skybox->GetTexture()->TransitionSubResources(textureGeneralToShaderReadOnlyBarrier,
-				{ { Barrier::AccessBit::SHADER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT,
-				Image::Layout::GENERAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
 		}
 		texturesToProcess.erase(m_Skybox->GetGeneratedSpecularBRDF_LUT());
 		texturesToProcess.erase(m_Skybox->GetGeneratedSpecularCubemap());
@@ -213,7 +231,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 		{
 			texture->Reload();
 			texture->m_ShaderReadable = false;
-			texture->TransitionSubResources(textureShaderReadOnlyBarrierToTransferDst,
+			texture->TransitionSubResources(textureShaderReadOnlyToTransferDst,
 				{ { Barrier::AccessBit::SHADER_READ_BIT, Barrier::AccessBit::TRANSFER_WRITE_BIT,
 				Image::Layout::SHADER_READ_ONLY_OPTIMAL, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
 		}
@@ -246,7 +264,8 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 	}
 	m_ReloadTextures = false;
 
-	bool preTransferGraphicsTask = textureShaderReadOnlyBarrierToTransferDst.size();
+	bool preTransferGraphicsTask1 = textureShaderReadOnlyToTransferDst.size();
+	bool preTransferGraphicsTask2 = textureShaderReadOnlyToGeneralBarrier.size();
 	bool preUploadTransferTask = textureUnknownToTransferDstBarrier.size();
 
 	bool transferTask = forceUploadCamera || forceUploadLights || forceUploadMeshes || forceUploadSkybox;
@@ -255,30 +274,44 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 	bool postComputeGraphicsTask = textureGeneralToShaderReadOnlyBarrier.size();
 	bool postTransferGraphicsTask = textureTransferDstToShaderReadOnlyBarrier.size();
 
-	Ref<GPUTask> preTransferGraphicsGPUTask, preUploadForTextrueTransferGPUTask, uploadTransferGPUTask, postComputeGraphicsGPUTask, postTransferGraphicsGPUTask;
+	Ref<GPUTask> preTransferGraphicsGPUTask1, preTransferGraphicsGPUTask2, preUploadForTextrueTransferGPUTask, uploadTransferGPUTask, postComputeGraphicsGPUTask, postTransferGraphicsGPUTask;
 	GPUTask::TransitionResourcesTaskInfo trti;
 
 	//Pre-Transfer Graphics Task
 	{
 		trti.srcPipelineStage = PipelineStageBit::FRAGMENT_SHADER_BIT;
 		trti.dstPipelineStage = PipelineStageBit::TRANSFER_BIT;
-		trti.barriers = textureShaderReadOnlyBarrierToTransferDst;
+		trti.barriers = textureShaderReadOnlyToTransferDst;
 
 		GPUTask::CreateInfo preTransferGraphicsGPUTaskCI;
-		preTransferGraphicsGPUTaskCI.debugName = "Pre-Transfer - Graphics";
+		preTransferGraphicsGPUTaskCI.debugName = "Pre-Transfer - Graphics 1";
 		preTransferGraphicsGPUTaskCI.task = GPUTask::Task::TRANSITION_RESOURCES;
 		preTransferGraphicsGPUTaskCI.pTaskInfo = &trti;
 		preTransferGraphicsGPUTaskCI.srcGPUTasks = {};
 		preTransferGraphicsGPUTaskCI.srcPipelineStages = {};
 		preTransferGraphicsGPUTaskCI.cmdBuffer = m_CmdBuffer;
 		preTransferGraphicsGPUTaskCI.cmdBufferIndex = 3;
-		preTransferGraphicsGPUTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::RESET_BEGIN_END_SUBMIT;
+		preTransferGraphicsGPUTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::RESET_BEGIN;
 		preTransferGraphicsGPUTaskCI.resetCmdBufferReleaseResource = false;
 		preTransferGraphicsGPUTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-		preTransferGraphicsGPUTaskCI.skipTask = !preTransferGraphicsTask;
+		preTransferGraphicsGPUTaskCI.skipTask = !preTransferGraphicsTask1;
 
-		preTransferGraphicsGPUTask = CreateRef<GPUTask>(&preTransferGraphicsGPUTaskCI);
-		preTransferGraphicsGPUTask->Execute();
+		preTransferGraphicsGPUTask1 = CreateRef<GPUTask>(&preTransferGraphicsGPUTaskCI);
+		preTransferGraphicsGPUTask1->Execute();
+
+		trti.srcPipelineStage = PipelineStageBit::FRAGMENT_SHADER_BIT;
+		trti.dstPipelineStage = PipelineStageBit::COMPUTE_SHADER_BIT;
+		trti.barriers = textureShaderReadOnlyToGeneralBarrier;
+
+		preTransferGraphicsGPUTaskCI.debugName = "Pre-Transfer - Graphics 2 ";
+		preTransferGraphicsGPUTaskCI.pTaskInfo = &trti;
+		preTransferGraphicsGPUTaskCI.srcGPUTasks = { preTransferGraphicsGPUTask1 };
+		preTransferGraphicsGPUTaskCI.srcPipelineStages = { PipelineStageBit::TRANSFER_BIT };
+		preTransferGraphicsGPUTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::END_SUBMIT;
+		preTransferGraphicsGPUTaskCI.skipTask = !preTransferGraphicsTask2;
+
+		preTransferGraphicsGPUTask2 = CreateRef<GPUTask>(&preTransferGraphicsGPUTaskCI);
+		preTransferGraphicsGPUTask2->Execute();
 	}
 
 	//Pre-Upload Transfer Task
@@ -291,7 +324,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 		preUploadForTextrueTransferGPUTaskCI.debugName = "Pre-Upload - Transfer";
 		preUploadForTextrueTransferGPUTaskCI.task = GPUTask::Task::TRANSITION_RESOURCES;
 		preUploadForTextrueTransferGPUTaskCI.pTaskInfo = &trti;
-		preUploadForTextrueTransferGPUTaskCI.srcGPUTasks = { preTransferGraphicsGPUTask };
+		preUploadForTextrueTransferGPUTaskCI.srcGPUTasks = { preTransferGraphicsGPUTask2 };
 		preUploadForTextrueTransferGPUTaskCI.srcPipelineStages = { PipelineStageBit::TRANSFER_BIT };
 		preUploadForTextrueTransferGPUTaskCI.cmdBuffer = m_TransCmdBuffer;
 		preUploadForTextrueTransferGPUTaskCI.cmdBufferIndex = 0;
@@ -417,7 +450,7 @@ void Renderer::Upload(bool forceUploadCamera, bool forceUploadLights, bool force
 	}
 
 	//Wait for all Task Fences
-	preTransferGraphicsGPUTask->GetFence()->Wait();
+	preTransferGraphicsGPUTask2->GetFence()->Wait();
 	uploadTransferGPUTask->GetFence()->Wait();
 	postTransferGraphicsGPUTask->GetFence()->Wait();
 }
@@ -832,7 +865,9 @@ void Renderer::Flush()
 		Ref<GPUTask> copyToSwapchain;
 		if (m_UI_PFN && m_DrawData && m_UI_this)
 		{
+			m_CmdBuffer->BeginDebugLabel(m_FrameIndex, "UI Draw Function");
 			m_UI_PFN(m_CmdBuffer, m_FrameIndex, m_DrawData, m_UI_this);
+			m_CmdBuffer->EndDebugLabel(m_FrameIndex);
 		}
 		else
 		{
@@ -870,6 +905,9 @@ void Renderer::Flush()
 
 void Renderer::MainRenderLoop()
 {
+	if (!m_Camera)
+		return;
+
 	for (auto& model : m_ModelQueue)
 	{
 		const Ref<graphics::RenderPipeline>& renderPipeline = m_RenderPipelines[model->GetPipelineName()];

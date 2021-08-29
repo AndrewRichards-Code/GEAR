@@ -13,7 +13,7 @@ namespace graphics
 	public:
 		struct TextureResourceInfo
 		{
-			Ref<Texture>&						texture;
+			Ref<Texture>&							texture;
 			miru::crossplatform::Barrier::AccessBit srcAccess;
 			miru::crossplatform::Image::Layout		oldLayout;
 			miru::crossplatform::PipelineStageBit	srcStage;

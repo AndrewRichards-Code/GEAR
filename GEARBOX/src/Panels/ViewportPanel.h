@@ -40,8 +40,6 @@ namespace gearbox
 			ImTextureID m_ImageID = 0;
 			ImVec2 m_CurrentSize;
 			
-			VkSampler m_VKSampler = VK_NULL_HANDLE;
-
 			//Camera Control
 			float m_Roll = 0;
 			float m_Pitch = 0;

@@ -58,6 +58,11 @@ namespace scene
 				GetComponent<NameComponent>() = GetComponent<ModelComponent>().GetCreateInfo().debugName;
 				GetComponent<TransformComponent>() = GetComponent<ModelComponent>().GetCreateInfo().transform;
 			}
+			if (typeid(T) == typeid(SkyboxComponent))
+			{
+				GetComponent<NameComponent>() = GetComponent<SkyboxComponent>().GetCreateInfo().debugName;
+				GetComponent<TransformComponent>() = GetComponent<SkyboxComponent>().GetCreateInfo().transform;
+			}
 
 			return component;
 		}

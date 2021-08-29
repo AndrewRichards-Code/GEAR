@@ -15,8 +15,6 @@ void gearbox::componentui::DrawCameraComponentUI(gear::scene::Entity entity, flo
 	Ref<Camera>& camera = entity.GetComponent<CameraComponent>().camera;
 	Camera::CreateInfo& CI = camera->m_CI;
 
-	float speed = 0.01f;
-
 	DrawDropDownMenu("Projection Type", { "Perspective", "Orthographic" }, CI.projectionType);
 
 	if (CI.projectionType == Camera::ProjectionType::PERSPECTIVE)

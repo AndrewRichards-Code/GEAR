@@ -51,6 +51,15 @@
     <ClInclude Include="src\ComponentUI\CameraComponentUI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\ComponentUI\SkyboxComponentUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Panels\ContentBrowserPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Panels\ContentEditorPanel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\GEARBOX.cpp">
@@ -81,6 +90,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ComponentUI\CameraComponentUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ComponentUI\SkyboxComponentUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Panels\ContentBrowserPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Panels\ContentEditorPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

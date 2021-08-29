@@ -94,6 +94,10 @@ Texture::Texture(CreateInfo* pCreateInfo)
 
 Texture::~Texture()
 {
+	for (uint32_t mipLevel = 0; mipLevel < m_SubresourceMap.size(); mipLevel++)
+	{
+		m_SubresourceMap[mipLevel].clear();
+	}
 }
 
 void Texture::Upload(const Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)

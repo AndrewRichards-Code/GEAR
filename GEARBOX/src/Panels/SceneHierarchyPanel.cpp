@@ -19,7 +19,7 @@ SceneHierarchyPanel::~SceneHierarchyPanel()
 
 void SceneHierarchyPanel::Draw()
 {
-	if (ImGui::Begin("Scene Hierarchy"))
+	if (ImGui::Begin("Scene Hierarchy", &m_Open))
 	{
 		Ref<Scene> scene = m_CI.scene;
 		entt::registry& reg = scene->GetRegistry();

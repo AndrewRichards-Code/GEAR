@@ -12,10 +12,47 @@
 
 using namespace gearbox;
 using namespace imgui;
+using namespace panels;
 
 using namespace miru;
 using namespace miru::crossplatform;
 
+UIContext::UIContext(CreateInfo* pCreateInfo)
+	:m_CI(*pCreateInfo)
+{
+	Initialise(m_CI.window);
+}
+
+UIContext::~UIContext()
+{
+	ShutDown();
+}
+
+void UIContext::Draw()
+{
+	//Remove closed panels
+	for (auto it = editorPanels.begin(); it != editorPanels.end(); it++)
+	{
+		Ref<Panel>& panel = *it;
+		if (!panel->IsOpen())
+		{
+			editorPanels.erase(it);
+			if (!editorPanels.empty())
+				it = editorPanels.begin(); //Reset the iterator.
+			else
+				break;
+		}
+	}
+
+	BeginFrame();
+	BeginDockspace();
+	for (auto& panel : editorPanels)
+	{
+		panel->Draw();
+	}
+	EndDockspace();
+	EndFrame();
+}
 
 void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 {
@@ -96,7 +133,7 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 		desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		desc.NumDescriptors = 100;
+		desc.NumDescriptors = 1000;
 		desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 		HRESULT res = d3d12Context->m_Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_D3D12DescriptorHeapSRV));
 		GEAR_ASSERT(res, "GEARBOX: Failed to Create ID3D12DescriptorHeap for ImGui.");
@@ -144,63 +181,6 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 	}
 }
 
-void UIContext::BeginFrame()
-{
-	// Start the Dear ImGui frame for Window and API
-	ImGui_ImplGlfw_NewFrame();
-	if (m_API == GraphicsAPI::API::VULKAN)
-	{
-		ImGui_ImplVulkan_NewFrame();
-	}
-	else if (m_API == GraphicsAPI::API::D3D12)
-	{
-		ImGui_ImplDX12_NewFrame();
-	}
-	else
-	{
-		GEAR_ASSERT(gear::ErrorCode::REVERSED | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
-	}
-
-	// Start the Dear ImGui frame
-	ImGui::NewFrame();
-}
-
-void UIContext::EndFrame()
-{
-	// Rendering
-	ImGui::Render();
-}
-
-void UIContext::RenderDrawData(const Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex, ImDrawData* drawData, UIContext* _this)
-{
-	if (drawData)
-	{
-		// Record ImGui commands to the buffer/list
-		if (_this->m_API == GraphicsAPI::API::VULKAN)
-		{
-			ImGui_ImplVulkan_RenderDrawData(reinterpret_cast<ImDrawData*>(drawData), _this->GetVkCommandBuffer(cmdBuffer, frameIndex));
-		}
-		else if (_this->m_API == GraphicsAPI::API::D3D12)
-		{
-			ID3D12GraphicsCommandList* cmdList = _this->GetID3D12GraphicsCommandList(cmdBuffer, frameIndex);
-			cmdList->SetDescriptorHeaps(1, &(_this->m_D3D12DescriptorHeapSRV));
-			ImGui_ImplDX12_RenderDrawData(reinterpret_cast<ImDrawData*>(drawData), cmdList);
-		}
-		else
-		{
-			GEAR_ASSERT(gear::ErrorCode::REVERSED | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
-		}
-	}
-
-	// Update and Render additional Platform Windows
-	ImGuiIO& io = ImGui::GetIO();
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	{
-		ImGui::UpdatePlatformWindows();
-		ImGui::RenderPlatformWindowsDefault();
-	}
-}
-
 void UIContext::ShutDown()
 {
 	// Start the Dear ImGui frame
@@ -235,6 +215,33 @@ void UIContext::ShutDown()
 
 	// Clean up Dear ImGui context
 	ImGui::DestroyContext();
+}
+
+void UIContext::BeginFrame()
+{
+	// Start the Dear ImGui frame for Window and API
+	ImGui_ImplGlfw_NewFrame();
+	if (m_API == GraphicsAPI::API::VULKAN)
+	{
+		ImGui_ImplVulkan_NewFrame();
+	}
+	else if (m_API == GraphicsAPI::API::D3D12)
+	{
+		ImGui_ImplDX12_NewFrame();
+	}
+	else
+	{
+		GEAR_ASSERT(gear::ErrorCode::REVERSED | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
+	}
+
+	// Start the Dear ImGui frame
+	ImGui::NewFrame();
+}
+
+void UIContext::EndFrame()
+{
+	// Rendering
+	ImGui::Render();
 }
 
 void UIContext::BeginDockspace()
@@ -298,13 +305,44 @@ void UIContext::EndDockspace()
 	ImGui::End();
 }
 
-VkCommandBuffer UIContext::GetVkCommandBuffer(const Ref<CommandBuffer> cmdBuffer, uint32_t index)
+void UIContext::RenderDrawData(const Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex, ImDrawData* drawData, UIContext* _this)
 {
-	return ref_cast<vulkan::CommandBuffer>(cmdBuffer)->m_CmdBuffers[index];
+	if (drawData)
+	{
+		// Record ImGui commands to the buffer/list
+		if (_this->m_API == GraphicsAPI::API::VULKAN)
+		{
+			ImGui_ImplVulkan_RenderDrawData(reinterpret_cast<ImDrawData*>(drawData), _this->GetVkCommandBuffer(cmdBuffer, frameIndex));
+		}
+		else if (_this->m_API == GraphicsAPI::API::D3D12)
+		{
+			ID3D12GraphicsCommandList* cmdList = _this->GetID3D12GraphicsCommandList(cmdBuffer, frameIndex);
+			cmdList->SetDescriptorHeaps(1, &(_this->m_D3D12DescriptorHeapSRV));
+			ImGui_ImplDX12_RenderDrawData(reinterpret_cast<ImDrawData*>(drawData), cmdList);
+		}
+		else
+		{
+			GEAR_ASSERT(gear::ErrorCode::REVERSED | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
+		}
+	}
+
+	// Update and Render additional Platform Windows
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+	}
 }
+
 ID3D12GraphicsCommandList* UIContext::GetID3D12GraphicsCommandList(const Ref<CommandBuffer> cmdBuffer, uint32_t index)
 {
 	return reinterpret_cast<ID3D12GraphicsCommandList*>(ref_cast<d3d12::CommandBuffer>(cmdBuffer)->m_CmdBuffers[index]);
+}
+
+VkCommandBuffer UIContext::GetVkCommandBuffer(const Ref<CommandBuffer> cmdBuffer, uint32_t index)
+{
+	return ref_cast<vulkan::CommandBuffer>(cmdBuffer)->m_CmdBuffers[index];
 }
 
 void UIContext::DrawMenuBar()

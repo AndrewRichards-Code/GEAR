@@ -1,5 +1,6 @@
 #pragma once
 #include "gearbox_common.h"
+#include "../UIContext.h"
 
 namespace gearbox
 {
@@ -30,6 +31,7 @@ namespace componentui
 		ImGui::PushID(label.c_str());
 
 		ImGui::Columns(2);
+
 		ImGui::SetColumnWidth(0, width);
 		ImGui::Text(label.c_str());
 
@@ -41,7 +43,8 @@ namespace componentui
 		ImGui::PopID();
 	}
 
-	void DrawInputText(const std::string& label, std::string& name, float width = DefaultWidth);
+	void DrawStaticText(const std::string& label, const std::string& name, float width = DefaultWidth);
+	bool DrawInputText(const std::string& label, std::string& name, float width = DefaultWidth);
 	void DrawCheckbox(const std::string& label, bool& value, float width = DefaultWidth);
 	template<typename T>
 	void DrawDropDownMenu(const std::string& label, const std::vector<std::string>& items, T& selectedItem, float width = DefaultWidth)
@@ -64,10 +67,12 @@ namespace componentui
 		EndColumnLabel();
 	}
 
-	void DrawFloat(const std::string& label, float& value, float minValue, float maxValue = DefaultMaximumF, float width = DefaultWidth);
-	void DrawDouble(const std::string& label, double& value, double minValue, double maxValue = DefaultMaximumD, float width = DefaultWidth);
-	void DrawVec3(const std::string& label, mars::Vec3& value, float resetValue = 0.0f, float width = DefaultWidth);
-	void DrawQuat(const std::string& label, mars::Quat& value, float width = DefaultWidth);
+	void DrawUint32(const std::string& label, uint32_t& value, uint32_t minValue, uint32_t maxValue, bool powerOf2 = false, float width = DefaultWidth, float speed = 1.0f);
+
+	void DrawFloat(const std::string& label, float& value, float minValue, float maxValue = DefaultMaximumF, float width = DefaultWidth, float speed = DefaultSpeed);
+	void DrawDouble(const std::string& label, double& value, double minValue, double maxValue = DefaultMaximumD, float width = DefaultWidth, float speed = DefaultSpeed);
+	void DrawVec3(const std::string& label, mars::Vec3& value, float resetValue = 0.0f, float width = DefaultWidth, float speed = DefaultSpeed);
+	void DrawQuat(const std::string& label, mars::Quat& value, float width = DefaultWidth, float speed = 0.001f);
 
 	enum class ComponentSettingsBit : uint64_t
 	{
@@ -94,5 +99,7 @@ namespace componentui
 			}
 		}
 	}
+
+	ImTextureID GetTextureID(const Ref<miru::crossplatform::ImageView>& imageView, Ref<gearbox::imgui::UIContext>& uiContext, bool resized, ImTextureID previousTextureID);
 }
 }

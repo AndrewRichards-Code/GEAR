@@ -84,7 +84,7 @@ void Scene::OnUpdate(Ref<graphics::Renderer>& renderer, core::Timer& timer)
 	auto& vLightComponents = m_Registry.view<LightComponent>();
 	for (auto& entity : vLightComponents)
 	{
-		lights.push_back(vLightComponents.get<LightComponent>(entity));	
+		lights.push_back(vLightComponents.get<LightComponent>(entity));
 	}
 	renderer->SubmitLights(lights);
 
@@ -95,9 +95,16 @@ void Scene::OnUpdate(Ref<graphics::Renderer>& renderer, core::Timer& timer)
 	}
 
 	auto& vSkyboxComponent = m_Registry.view<SkyboxComponent>();
-	for (auto& entity : vSkyboxComponent)
+	if (!vSkyboxComponent.empty())
 	{
-		renderer->SubmitSkybox(vSkyboxComponent.get<SkyboxComponent>(entity));
+		for (auto& entity : vSkyboxComponent)
+		{
+			renderer->SubmitSkybox(vSkyboxComponent.get<SkyboxComponent>(entity));
+		}
+	}
+	else
+	{
+		renderer->SubmitSkybox(nullptr);
 	}
 
 	auto& vTextComponent = m_Registry.view<TextComponent>();

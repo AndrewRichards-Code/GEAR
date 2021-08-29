@@ -52,6 +52,7 @@ namespace objects
 		bool m_Cubemap;
 		bool m_HDR;
 		bool m_Generated = false;
+		bool m_Reload = false;
 
 		CreateInfo m_CI;
 

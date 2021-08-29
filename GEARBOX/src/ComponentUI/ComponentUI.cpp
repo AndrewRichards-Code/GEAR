@@ -1,6 +1,9 @@
 #include "gearbox_common.h"
 #include "NameComponentUI.h"
 
+#include "directx12/D3D12Image.h"
+#include "vulkan/VKImage.h"
+
 using namespace gear;
 using namespace scene;
 using namespace objects;
@@ -8,13 +11,23 @@ using namespace objects;
 using namespace gearbox;
 using namespace componentui;
 
+using namespace miru::crossplatform;
+
 using namespace mars;
 
-void gearbox::componentui::DrawInputText(const std::string& label, std::string& name, float width)
+void gearbox::componentui::DrawStaticText(const std::string& label, const std::string& name, float width)
 {
 	BeginColumnLabel(label, width);
-	ImGui::InputText("##label", &name);
+	ImGui::Text(name.c_str());
 	EndColumnLabel();
+}
+
+bool gearbox::componentui::DrawInputText(const std::string& label, std::string& name, float width)
+{
+	BeginColumnLabel(label, width);
+	bool ret = ImGui::InputText("##label", &name);
+	EndColumnLabel();
+	return ret;
 }
 
 void gearbox::componentui::DrawCheckbox(const std::string& label, bool& value, float width)
@@ -24,21 +37,31 @@ void gearbox::componentui::DrawCheckbox(const std::string& label, bool& value, f
 	EndColumnLabel();
 }
 
-void gearbox::componentui::DrawFloat(const std::string& label, float& value, float minValue, float maxValue, float width)
+void gearbox::componentui::DrawUint32(const std::string& label, uint32_t& value, uint32_t minValue, uint32_t maxValue, bool powerOf2, float width, float speed)
 {
 	BeginColumnLabel(label, width);
-	ImGui::DragFloat("##label", &value, DefaultSpeed, minValue, maxValue);
+	uint32_t _value = powerOf2 ? mars::Utility::NextPowerOf2(value) : value;
+	float _speed = powerOf2 ? float(_value / 2) : speed;
+	ImGui::DragScalar("##label", ImGuiDataType_U32, (void*)&_value, _speed, (const void*)&minValue, (const void*)&maxValue, "%u");
+	value = _value;
 	EndColumnLabel();
 }
 
-void gearbox::componentui::DrawDouble(const std::string& label, double& value, double minValue, double maxValue, float width)
+void gearbox::componentui::DrawFloat(const std::string& label, float& value, float minValue, float maxValue, float width, float speed)
 {
 	BeginColumnLabel(label, width);
-	ImGui::DragScalar("##label", ImGuiDataType_Double, (void*)&value, DefaultSpeed, (const void*)&minValue, (const void*)&maxValue, "%.3f");
+	ImGui::DragFloat("##label", &value, speed, minValue, maxValue);
 	EndColumnLabel();
 }
 
-void gearbox::componentui::DrawVec3(const std::string& label, Vec3& value, float resetValue, float width)
+void gearbox::componentui::DrawDouble(const std::string& label, double& value, double minValue, double maxValue, float width, float speed)
+{
+	BeginColumnLabel(label, width);
+	ImGui::DragScalar("##label", ImGuiDataType_Double, (void*)&value, speed, (const void*)&minValue, (const void*)&maxValue, "%.3f");
+	EndColumnLabel();
+}
+
+void gearbox::componentui::DrawVec3(const std::string& label, Vec3& value, float resetValue, float width, float speed)
 {
 	float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 	ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
@@ -57,7 +80,7 @@ void gearbox::componentui::DrawVec3(const std::string& label, Vec3& value, float
 	}
 	ImGui::PopStyleColor(3);
 	ImGui::SameLine();
-	ImGui::DragFloat("##X", &value.x, DefaultSpeed);
+	ImGui::DragFloat("##X", &value.x, speed);
 	ImGui::PopItemWidth();
 	ImGui::SameLine();
 
@@ -70,7 +93,7 @@ void gearbox::componentui::DrawVec3(const std::string& label, Vec3& value, float
 	}
 	ImGui::PopStyleColor(3);
 	ImGui::SameLine();
-	ImGui::DragFloat("##Y", &value.y, DefaultSpeed);
+	ImGui::DragFloat("##Y", &value.y, speed);
 	ImGui::PopItemWidth();
 	ImGui::SameLine();
 
@@ -83,7 +106,7 @@ void gearbox::componentui::DrawVec3(const std::string& label, Vec3& value, float
 	}
 	ImGui::PopStyleColor(3);
 	ImGui::SameLine();
-	ImGui::DragFloat("##Z", &value.z, DefaultSpeed);
+	ImGui::DragFloat("##Z", &value.z, speed);
 	ImGui::PopItemWidth();
 
 	ImGui::PopStyleVar();
@@ -91,11 +114,10 @@ void gearbox::componentui::DrawVec3(const std::string& label, Vec3& value, float
 	EndColumnLabel();
 }
 
-void gearbox::componentui::DrawQuat(const std::string& label, Quat& value, float width)
+void gearbox::componentui::DrawQuat(const std::string& label, Quat& value, float width, float speed)
 {
 	float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 	ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
-	float speed = 0.001f;
 	double min = -1.0;
 	double max = +1.0;
 
@@ -178,4 +200,86 @@ ComponentSettingsBit gearbox::componentui::DrawComponentSetting()
 	}
 
 	return result;
+}
+
+ImTextureID gearbox::componentui::GetTextureID(const Ref<miru::crossplatform::ImageView>& imageView, Ref<imgui::UIContext>& uiContext, bool resized, ImTextureID previousTextureID)
+{
+	ImTextureID ImageID = 0;
+
+	if (GraphicsAPI::IsD3D12())
+	{
+		if (!previousTextureID || resized)
+		{
+			Ref<miru::d3d12::Image> d3d12ColourImage = ref_cast<miru::d3d12::Image>(imageView->GetCreateInfo().pImage);
+
+			ID3D12Device* device = (ID3D12Device*)uiContext->GetCreateInfo().window->GetDevice();
+
+			UINT handleIncrement = 0;
+			if (previousTextureID && resized)
+			{
+				if (uiContext->m_D3D12GPUHandleHeapOffsets.find(previousTextureID) != uiContext->m_D3D12GPUHandleHeapOffsets.end())
+				{
+					handleIncrement = uiContext->m_D3D12GPUHandleHeapOffsets[previousTextureID];
+				}
+			}
+			else
+			{
+				handleIncrement = (device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)) * uiContext->m_GPUHandleHeapIndex;
+				uiContext->m_GPUHandleHeapIndex++;
+			}
+			
+			D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;
+			cpuHandle.ptr = uiContext->m_D3D12DescriptorHeapSRV->GetCPUDescriptorHandleForHeapStart().ptr + handleIncrement;
+			device->CreateShaderResourceView(d3d12ColourImage->m_Image, nullptr, cpuHandle);
+			
+			D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle;
+			gpuHandle.ptr = uiContext->m_D3D12DescriptorHeapSRV->GetGPUDescriptorHandleForHeapStart().ptr + handleIncrement;
+
+			ImageID = (ImTextureID)(gpuHandle.ptr);
+
+			uiContext->m_D3D12GPUHandleHeapOffsets[ImageID] = handleIncrement;
+		}
+	}
+	else
+	{
+		if (!previousTextureID || resized)
+		{
+			Ref<miru::vulkan::ImageView> vkColourImageView = ref_cast<miru::vulkan::ImageView>(imageView);
+
+			VkSamplerCreateInfo sCI;
+			sCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+			sCI.pNext = nullptr;
+			sCI.flags = 0;
+			sCI.magFilter = VK_FILTER_LINEAR;
+			sCI.minFilter = VK_FILTER_LINEAR;
+			sCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+			sCI.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+			sCI.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+			sCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+			sCI.mipLodBias = 0.0f;
+			sCI.anisotropyEnable = false;
+			sCI.maxAnisotropy = 1.0f;
+			sCI.compareEnable = false;
+			sCI.compareOp = VK_COMPARE_OP_NEVER;
+			sCI.minLod = 0;
+			sCI.maxLod = 0;
+			sCI.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+			sCI.unnormalizedCoordinates = false;
+			VkDevice device = *(VkDevice*)uiContext->GetCreateInfo().window->GetDevice();
+			if (!uiContext->m_VKSampler)
+				vkCreateSampler(device, &sCI, nullptr, &(uiContext->m_VKSampler));
+
+			if (previousTextureID && resized)
+			{
+				vkFreeDescriptorSets(device, uiContext->m_VulkanDescriptorPool, 1, (VkDescriptorSet*)&previousTextureID);
+			}
+
+			ImageID = ImGui_ImplVulkan_AddTexture(uiContext->m_VKSampler, vkColourImageView->m_ImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+	}
+
+	if (ImageID == 0)
+		ImageID = previousTextureID;
+
+	return ImageID;
 }

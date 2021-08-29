@@ -1,4 +1,5 @@
 #pragma once
-#include "Panels/ViewportPanel.h"
+#include "Panels/ContentBrowserPanel.h"
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/PropertiesPanel.h"
+#include "Panels/ViewportPanel.h"

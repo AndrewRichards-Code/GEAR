@@ -4,6 +4,7 @@
 #include "ComponentUI/NameComponentUI.h"
 #include "ComponentUI/TransformComponentUI.h"
 #include "ComponentUI/CameraComponentUI.h"
+#include "ComponentUI/SkyboxComponentUI.h"
 
 using namespace gear;
 using namespace scene;
@@ -27,7 +28,7 @@ PropertiesPanel::~PropertiesPanel()
 
 void PropertiesPanel::Draw()
 {
-	if (ImGui::Begin("Properties"))
+	if (ImGui::Begin("Properties", &m_Open))
 	{
 		Entity& entity = m_CI.sceneHeirarchyPanel->GetSelectedEntity();
 		void* device = m_CI.sceneHeirarchyPanel->GetCreateInfo().viewport->GetCreateInfo().renderer->GetDevice();
@@ -36,9 +37,9 @@ void PropertiesPanel::Draw()
 		{
 			DrawNameComponentUI(entity);
 			DrawTransformComponentUI(entity);
-			//DrawCameraComponentUI(entity, screenRatio);
 
 			DrawComponentUI<CameraComponent>("Camera", entity, DrawCameraComponentUI, entity, screenRatio);
+			DrawComponentUI<SkyboxComponent>("Skybox", entity, DrawSkyboxComponentUI, entity);
 			
 			if (ImGui::Button("Add Component"))
 				ImGui::OpenPopup("AddComponents");
@@ -48,6 +49,11 @@ void PropertiesPanel::Draw()
 				if (ImGui::MenuItem("Camera"))
 				{
 					AddCameraComponent(entity, screenRatio, device);
+					ImGui::CloseCurrentPopup();
+				}
+				if (ImGui::MenuItem("Skybox"))
+				{
+					AddSkyboxComponent(entity, device);
 					ImGui::CloseCurrentPopup();
 				}
 				ImGui::EndPopup();
