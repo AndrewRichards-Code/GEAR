@@ -39,7 +39,7 @@ void GEARBOX::Run()
 	mainWindowCI.maximised = false;
 	mainWindowCI.vSync = true;
 	mainWindowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_4_BIT;
-	mainWindowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::RENDER_DOC;
+	mainWindowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::NONE;
 	Ref<Window> mainWindow = CreateRef<Window>(&mainWindowCI);
 
 	AllocatorManager::CreateInfo mbmCI;

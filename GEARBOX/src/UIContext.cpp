@@ -347,18 +347,50 @@ VkCommandBuffer UIContext::GetVkCommandBuffer(const Ref<CommandBuffer> cmdBuffer
 
 void UIContext::DrawMenuBar()
 {
+	static std::function<void()> ShowPopup = nullptr;
+
 	if (ImGui::BeginMenuBar())
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("Close", NULL, false))
-			{
+			if (ImGui::MenuItem("Close", nullptr, false))
 				m_CI.window->Close();
+			
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Help"))
+		{
+			if (ImGui::MenuItem("About", nullptr, false))
+			{
+				ShowPopup = [&]()
+				{
+					if (!ImGui::IsPopupOpen("Version"))
+						ImGui::OpenPopup("Version");
+
+					if (ImGui::BeginPopupModal("Version"))
+					{
+						ImGui::Text("GEARBOX - Version: %1.1f %s", 1.0, "Alpha");
+						std::string gpu = "GPU: " + m_CI.window->GetDeviceName();
+						ImGui::Text(gpu.c_str());
+						std::string api = "API: " + m_CI.window->GetGraphicsAPIVersion();
+						ImGui::Text(api.c_str());
+						if (ImGui::Button("Close", ImVec2(80, 0)))
+						{
+							ImGui::CloseCurrentPopup();
+							ShowPopup = nullptr;
+						}
+						ImGui::EndPopup();
+					}
+				};
 			}
 			ImGui::EndMenu();
 		}
+		
 		ImGui::EndMenuBar();
 	}
+
+	if (ShowPopup)
+		ShowPopup();
 }
 
 static ImVec4 operator+(ImVec4& a, ImVec4& b)

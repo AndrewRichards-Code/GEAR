@@ -70,7 +70,7 @@ void GEAR_TEST::Run()
 	fontLI.GI.fontHeightPx = 16;
 	fontLI.GI.generatedTextureSize = 1024;
 	fontLI.GI.savePNGandBINfiles = true;
-	fontLI.regenerateTextureAtlas = true;
+	fontLI.regenerateTextureAtlas = false;
 	Ref<FontLibrary::Font> font = fontLib->LoadFont(&fontLI);
 
 	Text::CreateInfo fontRendererCI;
@@ -104,8 +104,7 @@ void GEAR_TEST::Run()
 		texCI.debugName = debugName.c_str();
 		texCI.device = window->GetDevice();
 		texCI.dataType = Texture::DataType::FILE;
-		texCI.file.filepaths = &filepath;
-		texCI.file.count = 1;
+		texCI.file.filepaths = { filepath };
 		texCI.mipLevels = GEAR_TEXTURE_MAX_MIP_LEVEL;
 		texCI.arrayLayers = 1;
 		texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
@@ -397,7 +396,7 @@ void GEAR_TEST::Run()
 
 		double fov = 0.0;
 		window->GetScrollPosition(fov);
-		camera->m_CI.transform.orientation = Quat::FromEulerAngles(Vec3(pitch, -yaw, roll));
+		camera->m_CI.transform.orientation = Quat::FromEulerAngles(Vec3((float)pitch, (float)-yaw, (float)roll));
 		camera->m_CI.perspectiveParams.horizonalFOV = DegToRad(90.0 - fov);
 		camera->m_CI.perspectiveParams.aspectRatio = window->GetRatio();
 		camera->m_CI.transform.translation.y = 1.0f;

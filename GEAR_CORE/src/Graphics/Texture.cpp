@@ -237,7 +237,7 @@ void Texture::CreateSampler()
 
 void Texture::LoadImageData(std::vector<uint8_t>& imageData)
 {
-	if (m_CI.dataType == DataType::FILE && m_CI.file.filepaths && m_CI.file.count)
+	if (m_CI.dataType == DataType::FILE && m_CI.file.filepaths.size())
 	{
 		m_HDR = stbi_is_hdr(m_CI.file.filepaths[0].c_str());
 		uint8_t* stbiBuffer = nullptr;
@@ -321,6 +321,7 @@ void Texture::LoadImageData(std::vector<uint8_t>& imageData)
 		{
 			imageData.resize(m_CI.data.size);
 			memcpy(imageData.data(), m_CI.data.data, m_CI.data.size);
+			m_CI.data.data = nullptr;
 		}
 		else
 		{

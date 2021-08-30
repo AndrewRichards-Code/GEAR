@@ -250,14 +250,14 @@ void Renderer::Upload()
 	//Process them
 	for (auto& texture : texturesToProcess)
 	{
-		/*if (m_ReloadTextures)
+		if (m_ReloadTextures)
 		{
 			texture->Reload();
 			texture->m_ShaderReadable = false;
 			texture->TransitionSubResources(textureShaderReadOnlyToTransferDst,
 				{ { Barrier::AccessBit::SHADER_READ_BIT, Barrier::AccessBit::TRANSFER_WRITE_BIT,
 				Image::Layout::SHADER_READ_ONLY_OPTIMAL, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
-		}*/
+		}
 
 		if (texture->m_PreUpload)
 		{
@@ -285,7 +285,7 @@ void Renderer::Upload()
 			texture->m_ShaderReadable = true;
 		}
 	}
-	//m_ReloadTextures = false;
+	m_ReloadTextures = false;
 
 	bool preTransferGraphicsTask1 = textureShaderReadOnlyToTransferDst.size();
 	bool preTransferGraphicsTask2 = textureShaderReadOnlyToGeneralBarrier.size();
@@ -1078,6 +1078,6 @@ void Renderer::RecompileRenderPipelineShaders()
 
 void Renderer::ReloadTextures()
 {
-	//m_Context->DeviceWaitIdle();
-	//m_ReloadTextures = true;
+	m_Context->DeviceWaitIdle();
+	m_ReloadTextures = true;
 }

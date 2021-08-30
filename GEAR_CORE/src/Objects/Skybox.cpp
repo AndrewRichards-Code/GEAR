@@ -23,8 +23,7 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	m_TextureCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
 	m_TextureCI.device = m_CI.device;
 	m_TextureCI.dataType = Texture::DataType::FILE;
-	m_TextureCI.file.filepaths = m_CI.filepaths.data();
-	m_TextureCI.file.count = m_CI.filepaths.size();
+	m_TextureCI.file.filepaths = m_CI.filepaths;
 	m_TextureCI.mipLevels = 1;
 	m_TextureCI.arrayLayers = m_CI.filepaths.size() == 6 ? 6 : 1;
 	m_TextureCI.type = m_CI.filepaths.size() == 6 ? Image::Type::TYPE_CUBE : Image::Type::TYPE_2D;
@@ -146,8 +145,7 @@ void Skybox::Update()
 		m_TextureCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
 		m_TextureCI.device = m_CI.device;
 		m_TextureCI.dataType = Texture::DataType::FILE;
-		m_TextureCI.file.filepaths = m_CI.filepaths.data();
-		m_TextureCI.file.count = m_CI.filepaths.size();
+		m_TextureCI.file.filepaths = m_CI.filepaths;
 		m_TextureCI.mipLevels = 1;
 		m_TextureCI.arrayLayers = m_CI.filepaths.size() == 6 ? 6 : 1;
 		m_TextureCI.type = m_CI.filepaths.size() == 6 ? Image::Type::TYPE_CUBE : Image::Type::TYPE_2D;

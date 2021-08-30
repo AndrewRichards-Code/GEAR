@@ -207,8 +207,7 @@ std::vector<ModelLoader::MeshData> ModelLoader::ProcessMeshes(aiNode* node, cons
 							graphics::Texture::CreateInfo texCI;
 							texCI.device = m_Device;
 							texCI.dataType = graphics::Texture::DataType::FILE;
-							texCI.file.filepaths = &filepath;
-							texCI.file.count = 1;
+							texCI.file.filepaths = { filepath };
 							texCI.mipLevels = 1;
 							texCI.arrayLayers = 1;
 							texCI.type = miru::crossplatform::Image::Type::TYPE_2D;

@@ -75,6 +75,8 @@ namespace graphics
 		uint32_t m_FrameCount = 0;
 		uint32_t m_SwapchainImageCount = 0;
 
+		bool m_ReloadTextures = false;
+
 	public:
 		Renderer(CreateInfo* pCreateInfo);
 		virtual ~Renderer();

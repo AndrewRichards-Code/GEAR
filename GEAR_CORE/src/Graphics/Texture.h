@@ -25,8 +25,7 @@ namespace graphics
 		};
 		struct DataTypeFileParameters
 		{
-			const std::string*	filepaths;
-			size_t				count;
+			std::vector<std::string> filepaths;
 		};
 
 		//Provide either filepaths or data, size and image dimension details.
@@ -35,11 +34,8 @@ namespace graphics
 			std::string									debugName;
 			void*										device;
 			DataType									dataType;
-			union
-			{
-				DataTypeDataParameters		data;
-				DataTypeFileParameters		file;
-			};
+			DataTypeDataParameters						data;
+			DataTypeFileParameters						file;
 			uint32_t									mipLevels;
 			uint32_t									arrayLayers;
 			miru::crossplatform::Image::Type			type;

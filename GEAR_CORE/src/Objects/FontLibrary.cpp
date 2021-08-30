@@ -170,6 +170,8 @@ Ref<FontLibrary::Font> FontLibrary::LoadGeneratedFont(const GenerateInfo& GI)
 			data.depth = 1;
 			result->textureAtlas = GenerateTextureAtlas(GI, data);
 			result->fontHeightPx = GI.fontHeightPx;
+
+			stbi_image_free((void*)data.data);
 		}
 		stream.close();
 	}
