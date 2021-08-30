@@ -53,7 +53,12 @@ void GEARBOX::Run()
 	sceneCI.nativeScriptDir = "res/scripts/";
 	Ref<Scene> activeScene = CreateRef<Scene>(&sceneCI);
 	
-	Ref<Renderer> renderer = CreateRef<Renderer>(mainWindow);
+	Renderer::CreateInfo rendererCI;
+	rendererCI.window = mainWindow;
+	rendererCI.shouldCopyToSwapchian = false;
+	rendererCI.shouldDrawExternalUI = true;
+	rendererCI.shouldPresent = true;
+	Ref<Renderer> renderer = CreateRef<Renderer>(&rendererCI);
 
 	UIContext::CreateInfo uiContextCI;
 	uiContextCI.window = mainWindow;
@@ -90,9 +95,8 @@ void GEARBOX::Run()
 		activeScene->OnUpdate(renderer, timer);
 		renderer->SubmitRenderSurface(mainWindow->GetRenderSurface());
 		renderer->SetUIFunction(UIDraw, ImGui::GetDrawData(), uiContext.get());
-		renderer->Upload(true, false, true, false);
-		renderer->Flush();
-		renderer->Present(mainWindow->GetSwapchain(), windowResize);
+		renderer->Execute();
+		renderer->Present(windowResize);
 
 		mainWindow->Update();
 		mainWindow->CalculateFPS();

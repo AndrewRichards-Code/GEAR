@@ -205,7 +205,10 @@ void GPUTask::RendererFunction()
 {
 	RendererFunctionTaskInfo* rendererFunctionTI = reinterpret_cast<RendererFunctionTaskInfo*>(m_CI.pTaskInfo);
 	Renderer* pRenderer = rendererFunctionTI->pRenderer;
+	Renderer::DescriptorPoolAndSets descPoolsandSets; 
+	if (rendererFunctionTI->pDescPoolAndSets)
+		descPoolsandSets = *(rendererFunctionTI->pDescPoolAndSets);
 	Renderer::PFN_RendererFunction pfn = rendererFunctionTI->pfn;
-	(pRenderer->*pfn)();
+	(pRenderer->*pfn)(m_CI.cmdBuffer, m_CI.cmdBufferIndex, descPoolsandSets);
 }
 

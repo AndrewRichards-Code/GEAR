@@ -252,7 +252,8 @@ void GEAR_TEST::Run()
 	meshCI.device = window->GetDevice();
 	meshCI.filepath = "res/obj/Drone_Animated_03.fbx";
 	Ref<Mesh> droneMesh = CreateRef<Mesh>(&meshCI);
-	droneMesh->SetOverrideMaterial(0, droneMaterial);
+	for(size_t i = 0; i < droneMesh->GetMaterials().size(); i++)
+		droneMesh->SetOverrideMaterial(i, droneMaterial);
 
 	modelCI.debugName = "Drone Model";
 	modelCI.device = window->GetDevice();
@@ -294,8 +295,12 @@ void GEAR_TEST::Run()
 	animatorCI.pMesh = droneMesh;
 	Ref<Sequencer> sequencer = CreateRef<Animator>(&animatorCI);
 
-	Ref<Renderer> m_Renderer = CreateRef<Renderer>(window);
-	m_Renderer->InitialiseRenderPipelines(window->GetRenderSurface());
+	Renderer::CreateInfo rendererCI;
+	rendererCI.window = window;
+	rendererCI.shouldCopyToSwapchian = true;
+	rendererCI.shouldDrawExternalUI = false;
+	rendererCI.shouldPresent = true;
+	Ref<Renderer> m_Renderer = CreateRef<Renderer>(&rendererCI);
 
 	AllocatorManager::PrintMemoryBlockStatus();
 
@@ -390,18 +395,9 @@ void GEAR_TEST::Run()
 		if (window->IsKeyPressed(GLFW_KEY_S))
 			camera->m_CI.transform.translation -= camera->m_Direction * (float)timer;
 
-		/*if (window->IsKeyPressed(GLFW_KEY_L))
-			yaw += DegToRad(10.0);
-		if (window->IsKeyPressed(GLFW_KEY_J))
-			yaw -= DegToRad(10.0);
-		if (window->IsKeyPressed(GLFW_KEY_I))
-			pitch += DegToRad(10.0);
-		if (window->IsKeyPressed(GLFW_KEY_K))
-			pitch -= DegToRad(10.0);*/
-
 		double fov = 0.0;
 		window->GetScrollPosition(fov);
-		camera->m_CI.transform.orientation = Quat(pitch, camera->m_Right) * Quat(-yaw, { 0, 1, 0 });
+		camera->m_CI.transform.orientation = Quat::FromEulerAngles(Vec3(pitch, -yaw, roll));
 		camera->m_CI.perspectiveParams.horizonalFOV = DegToRad(90.0 - fov);
 		camera->m_CI.perspectiveParams.aspectRatio = window->GetRatio();
 		camera->m_CI.transform.translation.y = 1.0f;
@@ -411,10 +407,9 @@ void GEAR_TEST::Run()
 		activeScene->OnUpdate(m_Renderer, timer);
 
 		m_Renderer->SubmitRenderSurface(window->GetRenderSurface());
-		m_Renderer->Upload(true, false, true, true);
-		m_Renderer->Flush();
+		m_Renderer->Execute();
 
-		m_Renderer->Present(window->GetSwapchain(), windowResize);
+		m_Renderer->Present(windowResize);
 		window->Update();
 		window->CalculateFPS();
 	}

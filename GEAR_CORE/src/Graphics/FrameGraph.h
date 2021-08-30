@@ -79,8 +79,9 @@ namespace gear
 			};
 			struct RendererFunctionTaskInfo
 			{
-				Renderer*						pRenderer;
-				Renderer::PFN_RendererFunction	pfn;
+				Renderer*							pRenderer;
+				Renderer::PFN_RendererFunction		pfn;
+				Renderer::DescriptorPoolAndSets*	pDescPoolAndSets;
 			};
 
 			struct CreateInfo
