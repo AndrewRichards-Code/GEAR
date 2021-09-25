@@ -13,7 +13,7 @@ namespace graphics
 	public:
 		struct TextureResourceInfo
 		{
-			Ref<Texture>&							texture;
+			Ref<Texture>							texture;
 			miru::crossplatform::Barrier::AccessBit srcAccess;
 			miru::crossplatform::Image::Layout		oldLayout;
 			miru::crossplatform::PipelineStageBit	srcStage;
@@ -32,21 +32,39 @@ namespace graphics
 		~ImageProcessing();
 
 		//Final state of the resource will be miru::crossplatform::Image::Layout::GENERAL
-		static void GenerateMipMaps(const TextureResourceInfo& TRI);
+		static void GenerateMipMaps(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, const TextureResourceInfo& TRI);
 
 		//Final state of the resources will be miru::crossplatform::Image::Layout::GENERAL
-		static void EquirectangularToCube(const TextureResourceInfo& environmentCubemapTRI, const TextureResourceInfo& equirectangularTRI);
+		static void EquirectangularToCube(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, const TextureResourceInfo& environmentCubemapTRI, const TextureResourceInfo& equirectangularTRI);
 
 		//Final state of the resources will be miru::crossplatform::Image::Layout::GENERAL
-		static void DiffuseIrradiance(const TextureResourceInfo& diffuseIrradianceTRI, const TextureResourceInfo& environmentCubemapTRI);
+		static void DiffuseIrradiance(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, const TextureResourceInfo& diffuseIrradianceTRI, const TextureResourceInfo& environmentCubemapTRI);
 
 		//Final state of the resources will be miru::crossplatform::Image::Layout::GENERAL
-		static void SpecularIrradiance(const TextureResourceInfo& specularIrradianceTRI, const TextureResourceInfo& environmentCubemapTRI);
+		static void SpecularIrradiance(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, const TextureResourceInfo& specularIrradianceTRI, const TextureResourceInfo& environmentCubemapTRI);
 
 		//Final state of the resources will be miru::crossplatform::Image::Layout::GENERAL
-		static void SpecularBRDF_LUT(const TextureResourceInfo& TRI);
+		static void SpecularBRDF_LUT(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, const TextureResourceInfo& TRI);
 
 		static void RecompileRenderPipelineShaders();
+
+		typedef void(*PFN_ImageProcessing1)(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, const TextureResourceInfo& tri1);
+		typedef void(*PFN_ImageProcessing2)(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, const TextureResourceInfo& tri1, const TextureResourceInfo& tri2);
+
+		static void SaveImageViewsAndDescriptorSets(const std::vector<Ref<miru::crossplatform::ImageView>>& imageViews, const std::vector<Ref<miru::crossplatform::DescriptorSet>>& descSets)
+		{
+			for (const auto& imageView : imageViews)
+				s_ImageViews.push_back(imageView);
+			for (const auto& descSet : descSets)
+				s_DescSets.push_back(descSet);
+		}
+		static void ClearImageViewsAndDescriptorSets()
+		{
+			s_ImageViews.clear();
+			s_DescSets.clear();
+		}
+		static std::vector<Ref<miru::crossplatform::ImageView>> s_ImageViews;
+		static std::vector<Ref<miru::crossplatform::DescriptorSet>> s_DescSets;
 	};
 }
 }

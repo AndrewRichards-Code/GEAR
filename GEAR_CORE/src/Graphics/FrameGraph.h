@@ -2,6 +2,7 @@
 
 #include "gear_core_common.h"
 #include "Graphics/Renderer.h"
+#include "Graphics/ImageProcessing.h"
 
 namespace gear
 {
@@ -29,7 +30,9 @@ namespace gear
 				GRAPHICS_RENDER_PASS_END,
 				GRAPHICS_NEXT_SUBPASS,
 				COMPUTE_DISPATCH,
-				RENDERER_FUNCTION
+				RENDERER_FUNCTION,
+				IMAGE_PROCESSING_FUNCTION_1,
+				IMAGE_PROCESSING_FUNCTION_2,
 			};
 			enum class CommandBufferBasicControlsBit : uint32_t
 			{
@@ -83,6 +86,17 @@ namespace gear
 				Renderer::PFN_RendererFunction		pfn;
 				Renderer::DescriptorPoolAndSets*	pDescPoolAndSets;
 			};
+			struct ImageProcessingFunctionTaskInfo1
+			{
+				ImageProcessing::PFN_ImageProcessing1	pfn;
+				ImageProcessing::TextureResourceInfo	tri1;
+			};
+			struct ImageProcessingFunctionTaskInfo2
+			{
+				ImageProcessing::PFN_ImageProcessing2	pfn;
+				ImageProcessing::TextureResourceInfo	tri1;
+				ImageProcessing::TextureResourceInfo	tri2;
+			};
 
 			struct CreateInfo
 			{
@@ -129,6 +143,8 @@ namespace gear
 			void GraphicsRenderPassEnd();
 			void GraphicsNextSubpass();
 			void RendererFunction();
+			void ImageProcessingFunction1();
+			void ImageProcessingFunction2();
 
 		};
 	}

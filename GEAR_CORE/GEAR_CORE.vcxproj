@@ -181,6 +181,7 @@
     <ClCompile Include="src\Core\Application.cpp" />
     <ClCompile Include="src\Graphics\Colour.cpp" />
     <ClCompile Include="src\Graphics\FrameGraph.cpp" />
+    <ClCompile Include="src\Graphics\PostProcessing.cpp" />
     <ClCompile Include="src\Graphics\RenderSurface.cpp" />
     <ClCompile Include="src\Audio\AudioInterfaces.cpp" />
     <ClCompile Include="src\Audio\AudioSource.cpp" />
@@ -228,6 +229,7 @@
     <ClInclude Include="src\Core\Sequencer.h" />
     <ClInclude Include="src\Graphics\ColourFunctions.h" />
     <ClInclude Include="src\Graphics\FrameGraph.h" />
+    <ClInclude Include="src\Graphics\PostProcessing.h" />
     <ClInclude Include="src\Graphics\RenderSurface.h" />
     <ClInclude Include="src\Audio\AudioInterfaces.h" />
     <ClInclude Include="src\Audio\AudioSource.h" />

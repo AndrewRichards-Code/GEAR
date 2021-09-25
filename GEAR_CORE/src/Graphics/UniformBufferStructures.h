@@ -38,6 +38,12 @@ namespace gear
 				GEAR_FLOAT		roughness;
 			};
 
+			struct BloomInfo
+			{
+				GEAR_FLOAT		threshold;
+				GEAR_FLOAT		upsampleScale;
+			};
+
 			//Per model - Set 1
 
 			struct Model
@@ -52,7 +58,7 @@ namespace gear
 			struct HDRInfo
 			{
 				GEAR_FLOAT		exposure;
-				GEAR_UINT		gammaSpace; //0 = Linear, 1 = sRGB, 2 = Rec709, 3 = Rec2020. See ColourSpace.
+				GEAR_UINT		gammaSpace; //0 = Linear, 1 = sRGB, 2 = Rec709, 3 = Rec2020. See ColourSpace. enum?
 			};
 
 			struct PBRConstants

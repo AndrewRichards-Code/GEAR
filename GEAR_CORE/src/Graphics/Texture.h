@@ -53,8 +53,8 @@ namespace graphics
 			miru::crossplatform::Barrier::AccessBit			dstAccess;
 			miru::crossplatform::Image::Layout				oldLayout;
 			miru::crossplatform::Image::Layout				newLayout;
-			miru::crossplatform::Image::SubresourceRange	subresoureRange; //Option 1
-			bool											allSubresources; //Option 2
+			miru::crossplatform::Image::SubresourceRange	subresourceRange; //Option 1
+			bool											allSubresources;  //Option 2
 		};
 
 	private:

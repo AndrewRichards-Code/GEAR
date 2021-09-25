@@ -165,13 +165,13 @@ void Texture::TransitionSubResources(std::vector<Ref<Barrier>>& barriers, const 
 		barrierCI.newLayout = transitionInfo.newLayout;
 		
 		if (transitionInfo.allSubresources)
-			barrierCI.subresoureRange = m_TextureImageViewCI.subresourceRange;
+			barrierCI.subresourceRange = m_TextureImageViewCI.subresourceRange;
 		else
-			barrierCI.subresoureRange = transitionInfo.subresoureRange;
+			barrierCI.subresourceRange = transitionInfo.subresourceRange;
 		
 		barriers.emplace_back(Barrier::Create(&barrierCI));
 		
-		const Image::SubresourceRange& range = barrierCI.subresoureRange;
+		const Image::SubresourceRange& range = barrierCI.subresourceRange;
 		for (uint32_t mipLevel = range.baseMipLevel; mipLevel < range.baseMipLevel + range.mipLevelCount; mipLevel++)
 		{
 			for (uint32_t arrayLayers = range.baseArrayLayer; arrayLayers < range.baseArrayLayer + range.arrayLayerCount; arrayLayers++)

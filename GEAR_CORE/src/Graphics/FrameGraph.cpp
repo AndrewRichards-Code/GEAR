@@ -88,6 +88,16 @@ void GPUTask::Execute()
 			RendererFunction();
 			break;
 		}
+		case Task::IMAGE_PROCESSING_FUNCTION_1:
+		{
+			ImageProcessingFunction1();
+			break;
+		}
+		case Task::IMAGE_PROCESSING_FUNCTION_2:
+		{
+			ImageProcessingFunction2();
+			break;
+		}
 		default:
 			break;
 		}
@@ -210,5 +220,19 @@ void GPUTask::RendererFunction()
 		descPoolsandSets = *(rendererFunctionTI->pDescPoolAndSets);
 	Renderer::PFN_RendererFunction pfn = rendererFunctionTI->pfn;
 	(pRenderer->*pfn)(m_CI.cmdBuffer, m_CI.cmdBufferIndex, descPoolsandSets);
+}
+
+void GPUTask::ImageProcessingFunction1()
+{
+	ImageProcessingFunctionTaskInfo1* imageProcessingFunctionTI = reinterpret_cast<ImageProcessingFunctionTaskInfo1*>(m_CI.pTaskInfo);
+	ImageProcessing::PFN_ImageProcessing1 pfn = imageProcessingFunctionTI->pfn;
+	pfn(m_CI.cmdBuffer, imageProcessingFunctionTI->tri1);
+}
+
+void GPUTask::ImageProcessingFunction2()
+{
+	ImageProcessingFunctionTaskInfo2* imageProcessingFunctionTI = reinterpret_cast<ImageProcessingFunctionTaskInfo2*>(m_CI.pTaskInfo);
+	ImageProcessing::PFN_ImageProcessing2 pfn = imageProcessingFunctionTI->pfn;
+	pfn(m_CI.cmdBuffer, imageProcessingFunctionTI->tri1, imageProcessingFunctionTI->tri2);
 }
 

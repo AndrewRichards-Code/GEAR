@@ -8,7 +8,7 @@ MIRU_RW_IMAGE_2D_ARRAY(0, 1, float4, outputImageArray);
 
 float4 ColateColour(uint2 threadID)
 {
-	uint3 pixel = uint3(2 * threadID.x, 2* threadID.y, 0);
+	uint3 pixel = uint3(2 * threadID.x, 2 * threadID.y, 0);
 	
 	float4 colour00 = inputImage.Load(pixel, int2(0, 0));
 	float4 colour01 = inputImage.Load(pixel, int2(0, 1));
@@ -20,7 +20,7 @@ float4 ColateColour(uint2 threadID)
 
 float4 ColateColourArray(uint3 threadID)
 {
-	int4 pixel = int4(2 * threadID.x, 2* threadID.y, threadID.z, 0);
+	int4 pixel = int4(2 * threadID.x, 2 * threadID.y, threadID.z, 0);
 	
 	float4 colour00 = inputImageArray.Load(pixel, int2(0, 0));
 	float4 colour01 = inputImageArray.Load(pixel, int2(0, 1));
