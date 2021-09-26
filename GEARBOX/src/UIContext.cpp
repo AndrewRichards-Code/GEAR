@@ -1,5 +1,7 @@
 #include "gearbox_common.h"
 #include "UIContext.h"
+#include "Panels/Panels.h"
+#include "Core/FileDialog.h"
 
 #include "vulkan/VKContext.h"
 #include "vulkan/VKCommandPoolBuffer.h"
@@ -31,14 +33,14 @@ UIContext::~UIContext()
 void UIContext::Draw()
 {
 	//Remove closed panels
-	for (auto it = editorPanels.begin(); it != editorPanels.end(); it++)
+	for (auto it = m_EditorPanels.begin(); it != m_EditorPanels.end(); it++)
 	{
 		Ref<Panel>& panel = *it;
 		if (!panel->IsOpen())
 		{
-			editorPanels.erase(it);
-			if (!editorPanels.empty())
-				it = editorPanels.begin(); //Reset the iterator.
+			m_EditorPanels.erase(it);
+			if (!m_EditorPanels.empty())
+				it = m_EditorPanels.begin(); //Reset the iterator.
 			else
 				break;
 		}
@@ -46,7 +48,7 @@ void UIContext::Draw()
 
 	BeginFrame();
 	BeginDockspace();
-	for (auto& panel : editorPanels)
+	for (auto& panel : m_EditorPanels)
 	{
 		panel->Draw();
 	}
@@ -345,16 +347,128 @@ VkCommandBuffer UIContext::GetVkCommandBuffer(const Ref<CommandBuffer> cmdBuffer
 	return ref_cast<vulkan::CommandBuffer>(cmdBuffer)->m_CmdBuffers[index];
 }
 
+bool UIContext::ShortcutPressed(const std::vector<uint32_t>& keycodes)
+{
+	bool result = true;
+	for (const auto& keycode : keycodes)
+	{
+		result &= m_CI.window->IsKeyPressed(static_cast<unsigned int>(keycode));
+	}
+	return result;
+}
+
 void UIContext::DrawMenuBar()
 {
-	static std::function<void()> ShowPopup = nullptr;
+	static std::function<void()> PopupWindow = nullptr;
+	bool saveToSaveAs = false;
+
+	auto NewScene = [&]()
+	{
+		Ref<SceneHierarchyPanel> sceneHierarchyPanel = GetPanel<SceneHierarchyPanel>();
+		if (sceneHierarchyPanel)
+		{
+			gear::scene::Scene::CreateInfo sceneCI;
+			sceneCI.debugName = "DefaultScene";
+			sceneCI.nativeScriptDir = "res/scripts/";
+			sceneHierarchyPanel->SetScene(CreateRef<gear::scene::Scene>(&sceneCI));
+			sceneHierarchyPanel->UpdateWindowTitle();
+		}
+	};
+	auto OpenScene = [&]()
+	{
+		Ref<SceneHierarchyPanel> sceneHierarchyPanel = GetPanel<SceneHierarchyPanel>();
+		if (sceneHierarchyPanel)
+		{
+			void* window = (void*)glfwGetWin32Window(m_CI.window->GetGLFWwindow());
+			std::string filepath = gear::core::FileDialog_Open(window, "GEAR Scene file (*.gsf)\0*.gsf\0");
+
+			if (!filepath.empty())
+			{
+				sceneHierarchyPanel->GetScene()->LoadFromFile(filepath, m_CI.window);
+				sceneHierarchyPanel->UpdateWindowTitle();
+			}
+		}
+	};
+	auto SaveScene = [&]()
+	{
+		Ref<SceneHierarchyPanel> sceneHierarchyPanel = GetPanel<SceneHierarchyPanel>();
+		if (sceneHierarchyPanel)
+		{
+			if (!sceneHierarchyPanel->GetScene()->GetFilepath().empty())
+			{
+				sceneHierarchyPanel->GetScene()->SaveToFile("");
+				sceneHierarchyPanel->UpdateWindowTitle();
+			}
+			else
+			{
+				saveToSaveAs = true;
+			}
+		}
+	};
+	auto SaveSceneAs = [&]()
+	{
+		Ref<SceneHierarchyPanel> sceneHierarchyPanel = GetPanel<SceneHierarchyPanel>();
+		if (sceneHierarchyPanel)
+		{
+			void* window = (void*)glfwGetWin32Window(m_CI.window->GetGLFWwindow());
+			std::string filepath = gear::core::FileDialog_Save(window, "GEAR Scene file (*.gsf)\0*.gsf\0");
+
+			if (!filepath.empty())
+			{
+				sceneHierarchyPanel->GetScene()->SaveToFile(filepath);
+				sceneHierarchyPanel->UpdateWindowTitle();
+			}
+		}
+	};
+	auto Exit = [&]()
+	{
+		m_CI.window->Close();
+	};
+	auto About = [&]()
+	{
+		if (!ImGui::IsPopupOpen("Version"))
+			ImGui::OpenPopup("Version");
+
+		if (ImGui::BeginPopupModal("Version"))
+		{
+			ImGui::Text("GEARBOX - Version: %1.1f %s", 1.0, "Alpha");
+			std::string gpu = "GPU: " + m_CI.window->GetDeviceName();
+			ImGui::Text(gpu.c_str());
+			std::string api = "API: " + m_CI.window->GetGraphicsAPIVersion();
+			ImGui::Text(api.c_str());
+			if (ImGui::Button("Close", ImVec2(80, 0)))
+			{
+				ImGui::CloseCurrentPopup();
+				PopupWindow = nullptr;
+			}
+			ImGui::EndPopup();
+		}
+	};
+
+	
+	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_N }))
+		NewScene();
+	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_O }))
+		OpenScene();
+	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_S }))
+		SaveScene();
+	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_S }) || saveToSaveAs)
+		SaveSceneAs();
 
 	if (ImGui::BeginMenuBar())
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("Close", nullptr, false))
-				m_CI.window->Close();
+			if (ImGui::MenuItem("New Scene", "Ctrl+N"))
+				NewScene();
+			if (ImGui::MenuItem("Open Scene", "Ctrl+O"))
+				OpenScene();
+			if (ImGui::MenuItem("Save Scene", "Ctrl+S"))
+				SaveScene();
+			if (ImGui::MenuItem("Save Scene As", "Ctrl+Shift+S") || saveToSaveAs)
+				SaveScene();
+			if (ImGui::MenuItem("Exit", "Alt+F4"))
+				Exit();
 			
 			ImGui::EndMenu();
 		}
@@ -362,26 +476,7 @@ void UIContext::DrawMenuBar()
 		{
 			if (ImGui::MenuItem("About", nullptr, false))
 			{
-				ShowPopup = [&]()
-				{
-					if (!ImGui::IsPopupOpen("Version"))
-						ImGui::OpenPopup("Version");
-
-					if (ImGui::BeginPopupModal("Version"))
-					{
-						ImGui::Text("GEARBOX - Version: %1.1f %s", 1.0, "Alpha");
-						std::string gpu = "GPU: " + m_CI.window->GetDeviceName();
-						ImGui::Text(gpu.c_str());
-						std::string api = "API: " + m_CI.window->GetGraphicsAPIVersion();
-						ImGui::Text(api.c_str());
-						if (ImGui::Button("Close", ImVec2(80, 0)))
-						{
-							ImGui::CloseCurrentPopup();
-							ShowPopup = nullptr;
-						}
-						ImGui::EndPopup();
-					}
-				};
+				PopupWindow = About;
 			}
 			ImGui::EndMenu();
 		}
@@ -389,8 +484,8 @@ void UIContext::DrawMenuBar()
 		ImGui::EndMenuBar();
 	}
 
-	if (ShowPopup)
-		ShowPopup();
+	if (PopupWindow)
+		PopupWindow();
 }
 
 static ImVec4 operator+(ImVec4& a, ImVec4& b)

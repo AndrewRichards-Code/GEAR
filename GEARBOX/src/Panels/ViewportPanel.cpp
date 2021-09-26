@@ -1,6 +1,8 @@
 #include "gearbox_common.h"
 #include "ViewportPanel.h"
+#include "Panels.h"
 #include "ComponentUI/ComponentUI.h"
+#include "ARC/src/FileSystemHelpers.h"
 
 using namespace gear;
 using namespace graphics;
@@ -67,6 +69,23 @@ void ViewportPanel::Draw()
 		m_ImageID = componentui::GetTextureID(colourImageView, m_CI.uiContext, resized, m_ImageID);
 		ImGui::Image(m_ImageID, ImVec2(static_cast<float>(width), static_cast<float>(height)));
 
+		if (ImGui::BeginDragDropTarget())
+		{
+			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(".gsf");
+			if (payload)
+			{
+				std::string filepath = (char*)payload->Data;
+				if (arc::FileExist(filepath))
+				{
+					Ref<SceneHierarchyPanel> sceneHierarchyPanel = m_CI.uiContext->GetPanel<SceneHierarchyPanel>();
+					if (sceneHierarchyPanel)
+					{
+						sceneHierarchyPanel->GetScene()->LoadFromFile(filepath, m_CI.uiContext->GetCreateInfo().window);
+						sceneHierarchyPanel->UpdateWindowTitle();
+					}
+				}
+			}
+		}
 		
 	}
 	ImGui::End();

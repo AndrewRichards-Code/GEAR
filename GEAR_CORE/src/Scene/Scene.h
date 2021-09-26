@@ -8,7 +8,7 @@
 namespace gear
 {
 namespace core { class Timer; }
-namespace graphics { class Renderer;}
+namespace graphics { class Renderer; class Window; }
 
 namespace scene
 {
@@ -21,7 +21,6 @@ namespace scene
 		struct CreateInfo
 		{
 			std::string debugName;
-			std::string filepath;
 			std::string nativeScriptDir;
 		};
 	
@@ -42,14 +41,21 @@ namespace scene
 		void LoadNativeScriptLibrary();
 		void UnloadNativeScriptLibrary();
 
-		void LoadFromFile();
-		void SaveToFile();
+		void LoadEntity(nlohmann::json& entity_json, Entity entity, const Ref<graphics::Window>& window);
+		void LoadFromFile(const std::string& filepath, const Ref<graphics::Window>& window);
+		
+		void SaveEntity(nlohmann::ordered_json& entity_json, Entity entity);
+		void SaveToFile(const std::string& filepath);
+
 		inline void Play() { m_Playing = true; }
 		inline void Stop() { m_Playing = false; }
+		inline const std::string& GetFilepath() const { return m_Filepath; }
 	
 	private:
+		core::UUID m_UUID;
 		entt::registry m_Registry;
 		bool m_Playing = false;
+		std::string m_Filepath;
 
 		friend class Entity;
 	};

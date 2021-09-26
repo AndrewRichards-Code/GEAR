@@ -179,6 +179,8 @@
     <ClCompile Include="dep\STBI\stb_image.cpp" />
     <ClCompile Include="src\Animation\Animator.cpp" />
     <ClCompile Include="src\Core\Application.cpp" />
+    <ClCompile Include="src\Core\FileDialog.cpp" />
+    <ClCompile Include="src\Core\UUID.cpp" />
     <ClCompile Include="src\Graphics\Colour.cpp" />
     <ClCompile Include="src\Graphics\FrameGraph.cpp" />
     <ClCompile Include="src\Graphics\PostProcessing.cpp" />
@@ -211,6 +213,7 @@
     <ClCompile Include="src\Objects\Mesh.cpp" />
     <ClCompile Include="src\Objects\Model.cpp" />
     <ClCompile Include="src\Objects\Skybox.cpp" />
+    <ClCompile Include="src\Scene\Components.cpp" />
     <ClCompile Include="src\Scene\Entity.cpp" />
     <ClCompile Include="src\Scene\NativeScriptManager.cpp" />
     <ClCompile Include="src\Scene\Scene.cpp" />
@@ -222,7 +225,9 @@
     <ClInclude Include="src\Animation\Animation.h" />
     <ClInclude Include="src\Animation\Animator.h" />
     <ClInclude Include="src\Core\Application.h" />
+    <ClInclude Include="src\Core\FileDialog.h" />
     <ClInclude Include="src\Core\TypesCppHlsl.h" />
+    <ClInclude Include="src\Core\UUID.h" />
     <ClInclude Include="src\Graphics\Colour.h" />
     <ClInclude Include="src\Core\EntryPoint.h" />
     <ClInclude Include="src\Core\PlatformMacros.h" />

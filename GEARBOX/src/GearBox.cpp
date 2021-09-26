@@ -48,8 +48,7 @@ void GEARBOX::Run()
 	AllocatorManager::Initialise(&mbmCI);
 
 	Scene::CreateInfo sceneCI;
-	sceneCI.debugName = "GEARBOX_DefaultScene";
-	sceneCI.filepath = "res/scenes/current_scene.gsf.json";
+	sceneCI.debugName = "DefaultScene";
 	sceneCI.nativeScriptDir = "res/scripts/";
 	Ref<Scene> activeScene = CreateRef<Scene>(&sceneCI);
 	
@@ -91,8 +90,7 @@ void GEARBOX::Run()
 		{
 			UIContext::RenderDrawData(cmdBuffer, frameIndex, (ImDrawData*)drawData, (UIContext*)_this);
 		};
-
-		activeScene->OnUpdate(renderer, timer);
+		uiContext->GetPanel<SceneHierarchyPanel>()->GetScene()->OnUpdate(renderer, timer);
 		renderer->SubmitRenderSurface(mainWindow->GetRenderSurface());
 		renderer->SetUIFunction(UIDraw, ImGui::GetDrawData(), uiContext.get());
 		renderer->Execute();

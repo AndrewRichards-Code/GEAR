@@ -7,7 +7,7 @@ namespace panels
 {
 	class Panel
 	{
-	protected:
+	public:
 		enum class Type : uint32_t
 		{
 			UNKNOWN,
@@ -25,6 +25,7 @@ namespace panels
 	public:
 		virtual void Draw() = 0;
 		inline const bool& IsOpen() const { return m_Open; }
+		inline const Type& GetPanelType() const { return m_Type; }
 
 	protected:
 		Type m_Type = Type::UNKNOWN;

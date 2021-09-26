@@ -21,7 +21,7 @@ void SceneHierarchyPanel::Draw()
 {
 	if (ImGui::Begin("Scene Hierarchy", &m_Open))
 	{
-		Ref<Scene> scene = m_CI.scene;
+		Ref<Scene>& scene = m_CI.scene;
 		entt::registry& reg = scene->GetRegistry();
 
 		reg.each([&](entt::entity entityID)
@@ -90,4 +90,18 @@ void SceneHierarchyPanel::DrawEntityNode(Entity& entity)
 
 		scene->DestroyEntity(entity);
 	}
+}
+
+void SceneHierarchyPanel::SetScene(const Ref<gear::scene::Scene>& scene)
+{
+	m_CI.scene = scene;
+	m_SelectedEntity.m_Entity = entt::entity(~0);
+}
+
+void SceneHierarchyPanel::UpdateWindowTitle()
+{
+	const Ref<gear::graphics::Window>& window = m_CI.viewport->GetCreateInfo().uiContext->GetCreateInfo().window;
+	std::string newTitle = window->GetCreateInfo().title + " - " + (m_CI.scene ? m_CI.scene->m_CI.debugName : "");
+
+	glfwSetWindowTitle(window->GetGLFWwindow(), newTitle.c_str());
 }

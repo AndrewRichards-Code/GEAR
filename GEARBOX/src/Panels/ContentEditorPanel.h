@@ -1,6 +1,6 @@
 #pragma once
 #include "Panel.h"
-#include "../UIContext.h"
+#include "UIContext.h"
 
 namespace gearbox
 {

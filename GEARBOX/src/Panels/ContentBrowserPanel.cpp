@@ -21,8 +21,7 @@ ContentBrowserPanel::ContentBrowserPanel(CreateInfo* pCreateInfo)
 	tCI.debugName = "GEARBOX: FolderTexture";
 	tCI.device = m_CI.uiContext->GetCreateInfo().window->GetDevice();
 	tCI.dataType = Texture::DataType::FILE;
-	tCI.file.filepaths = &m_FolderTextureFilepath;
-	tCI.file.count = 1;
+	tCI.file.filepaths = { m_FolderTextureFilepath };
 	tCI.mipLevels = 1;
 	tCI.arrayLayers = 1;
 	tCI.type = Image::Type::TYPE_2D;
@@ -33,13 +32,13 @@ ContentBrowserPanel::ContentBrowserPanel(CreateInfo* pCreateInfo)
 	tCI.gammaSpace = GammaSpace::SRGB;
 	m_FolderTexture = CreateRef<Texture>(&tCI);
 	tCI.debugName = "GEARBOX: FileTexture";
-	tCI.file.filepaths = &m_FileTextureFilepath;
+	tCI.file.filepaths = { m_FileTextureFilepath };
 	m_FileTexture = CreateRef<Texture>(&tCI);
 	for (auto& fileExt : m_FileExtTextureFilepath)
 	{
 		tCI.debugName = "GEARBOX: FileTexture: " + arc::ToUpper(fileExt.extension);
 		std::string filepath = "icons/" + fileExt.filename;
-		tCI.file.filepaths = &filepath;
+		tCI.file.filepaths = { filepath };
 		fileExt.texture = CreateRef<Texture>(&tCI);
 	}
 
@@ -157,6 +156,7 @@ void ContentBrowserPanel::Draw()
 			{
 				imageID = directory.is_directory() ? m_FolderTextureID : m_FileTextureID;
 			}
+
 			//Draw icon
 			ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
 			if (imageID != 0)

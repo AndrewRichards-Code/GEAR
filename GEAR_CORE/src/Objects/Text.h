@@ -25,11 +25,11 @@ namespace objects
 		struct Line
 		{
 			Ref<FontLibrary::Font>	font;
-			std::string						text;
-			mars::Uint2						initPosition;
-			mars::Uint2						position;
-			mars::Vec4						colour;
-			mars::Vec4						backgroundColour;
+			std::string				text;
+			mars::Uint2				initPosition;
+			mars::Uint2				position;
+			mars::Vec4				colour;
+			mars::Vec4				backgroundColour;
 			Ref<Model>				model;
 		};
 		std::vector<Line> m_Lines;

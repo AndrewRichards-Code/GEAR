@@ -15,6 +15,7 @@ namespace scene
 
 	public:
 		CreateInfo m_CI;
+		entt::entity m_Entity = entt::entity(~0);
 	
 	public:
 		Entity() = default;
@@ -37,31 +38,10 @@ namespace scene
 			}
 			T& component = m_CI.pScene->m_Registry.emplace<T>(m_Entity, std::forward<Args>(args)...);
 
-			//Addition per Type actions
+			//Additional per Type actions
 			if (typeid(T) == typeid(NativeScriptComponent))
 			{
-				auto& nsc = GetComponent<NativeScriptComponent>();
-				nsc.entity = this;
-			}
-			if (typeid(T) == typeid(CameraComponent))
-			{
-				GetComponent<NameComponent>() = GetComponent<CameraComponent>().GetCreateInfo().debugName;
-				GetComponent<TransformComponent>() = GetComponent<CameraComponent>().GetCreateInfo().transform;
-			}
-			if (typeid(T) == typeid(LightComponent))
-			{
-				GetComponent<NameComponent>() = GetComponent<LightComponent>().GetCreateInfo().debugName;
-				GetComponent<TransformComponent>() = GetComponent<LightComponent>().GetCreateInfo().transform;
-			}
-			if (typeid(T) == typeid(ModelComponent))
-			{
-				GetComponent<NameComponent>() = GetComponent<ModelComponent>().GetCreateInfo().debugName;
-				GetComponent<TransformComponent>() = GetComponent<ModelComponent>().GetCreateInfo().transform;
-			}
-			if (typeid(T) == typeid(SkyboxComponent))
-			{
-				GetComponent<NameComponent>() = GetComponent<SkyboxComponent>().GetCreateInfo().debugName;
-				GetComponent<TransformComponent>() = GetComponent<SkyboxComponent>().GetCreateInfo().transform;
+				GetComponent<NativeScriptComponent>().entity = this;
 			}
 
 			return component;
@@ -101,9 +81,10 @@ namespace scene
 		{
 			return static_cast<uint32_t>(m_Entity) != ~0;
 		}
-		
-	//private:
-		entt::entity m_Entity = entt::entity(~0);
+		const core::UUID& GetUUID()
+		{
+			return GetComponent<UUIDComponent>().uuid; 
+		}
 	};
 }
 }

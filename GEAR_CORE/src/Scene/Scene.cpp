@@ -30,6 +30,7 @@ Entity Scene::CreateEntity()
 	Entity::CreateInfo entityCI = { this };
 	Entity entity(&entityCI);
 
+	entity.AddComponent<UUIDComponent>();
 	entity.AddComponent<NameComponent>();
 	entity.AddComponent<TransformComponent>();
 	
@@ -152,117 +153,133 @@ void Scene::UnloadNativeScriptLibrary()
 		NativeScriptManager::Unload(s_NativeScriptLibrary);
 }
 
-void Scene::LoadFromFile()
+void Scene::LoadEntity(nlohmann::json & entity_json, Entity entity, const Ref<graphics::Window>& window)
 {
+	if (!entity.HasComponent<UUIDComponent>())
+	{
+		entity.AddComponent<UUIDComponent>().Load(entity_json, window);
+	}
+	if (!entity.HasComponent<NameComponent>())
+	{
+		entity.AddComponent<NameComponent>().Load(entity_json, window);
+	}
+	if (!entity.HasComponent<TransformComponent>())
+	{
+		entity.AddComponent<TransformComponent>().Load(entity_json, window);
+	}
+	if (!entity.HasComponent<CameraComponent>())
+	{
+		if (!entity.AddComponent<CameraComponent>().Load(entity_json, window))
+			entity.RemoveComponent<CameraComponent>();
+	}
+	if (!entity.HasComponent<LightComponent>())
+	{
+		if (!entity.AddComponent<LightComponent>().Load(entity_json, window))
+			entity.RemoveComponent<LightComponent>();
+	}
 }
 
-void Scene::SaveToFile()
+void Scene::LoadFromFile(const std::string& filepath, const Ref<graphics::Window>& window)
 {
-	using namespace nlohmann;
+	std::filesystem::path cwd = std::filesystem::current_path();
+	std::filesystem::path fullSaveFilepath = cwd / std::filesystem::path(filepath);
 
-	ordered_json scene_gsf_json;
-	ordered_json& scene = scene_gsf_json["scene"];
-	scene["debugName"] = m_CI.debugName;
+	if (filepath.find(".gsf") == std::string::npos)
+		fullSaveFilepath += ".gsf";
 
-	ordered_json& cameras = scene_gsf_json["scene"]["cameras"];
-	auto& vCameraComponents = m_Registry.view<CameraComponent>();
-	for (auto& entity : vCameraComponents)
+	nlohmann::json scene_gsf_json;
+	std::ifstream openFile(fullSaveFilepath, std::ios::binary);
+	if (openFile.is_open())
 	{
-		auto& cameraCI = vCameraComponents.get<CameraComponent>(entity).GetCreateInfo();
-
-		ordered_json& camera = cameras[cameraCI.debugName.c_str()];
-		camera["debugName"] = cameraCI.debugName;
-		camera["transform"]["translation"] = { cameraCI.transform.translation.x, cameraCI.transform.translation.y, cameraCI.transform.translation.z };
-		camera["transform"]["orientation"] = { cameraCI.transform.orientation.s, cameraCI.transform.orientation.i, cameraCI.transform.orientation.j, cameraCI.transform.orientation.k };
-		camera["transform"]["scale"] = { cameraCI.transform.scale.x, cameraCI.transform.scale.y, cameraCI.transform.scale.z };
-		camera["projectionType"] = cameraCI.projectionType;
-		camera["orthographicsParams"]["left"] = cameraCI.orthographicsParams.left;
-		camera["orthographicsParams"]["right"] = cameraCI.orthographicsParams.right;
-		camera["orthographicsParams"]["bottom"] = cameraCI.orthographicsParams.bottom;
-		camera["orthographicsParams"]["top"] = cameraCI.orthographicsParams.top;
-		camera["orthographicsParams"]["near"] = cameraCI.orthographicsParams.near;
-		camera["orthographicsParams"]["far"] = cameraCI.orthographicsParams.far;
-		camera["perspectiveParams"]["horizonalFOV"] = cameraCI.perspectiveParams.horizonalFOV;
-		camera["perspectiveParams"]["aspectRatio"] = cameraCI.perspectiveParams.aspectRatio;
-		camera["perspectiveParams"]["zNear"] = cameraCI.perspectiveParams.zNear;
-		camera["perspectiveParams"]["zFar"] = cameraCI.perspectiveParams.zFar;
-		camera["flipX"] = cameraCI.flipX;
-		camera["flipY"] = cameraCI.flipY;
+		openFile >> scene_gsf_json;
+	}
+	else
+	{
+		GEAR_WARN(ErrorCode::GRAPHICS | ErrorCode::NO_FILE, "Unable to open %s.", fullSaveFilepath.c_str());
+		return;
 	}
 
-	ordered_json& lights = scene_gsf_json["scene"]["lights"];
-	auto& vLightComponents = m_Registry.view<LightComponent>();
-	for (auto& entity : vLightComponents)
+	if (scene_gsf_json.empty())
 	{
-		auto& lightCI = vLightComponents.get<LightComponent>(entity).GetCreateInfo();
-
-		ordered_json& light = lights[lightCI.debugName.c_str()];
-		light["debugName"] = lightCI.debugName;
-		light["type"] = lightCI.type;
-		light["colour"] = { lightCI.colour.r, lightCI.colour.g, lightCI.colour.b, lightCI.colour.a };
-		light["transform"]["translation"] = { lightCI.transform.translation.x, lightCI.transform.translation.y, lightCI.transform.translation.z };
-		light["transform"]["orientation"] = { lightCI.transform.orientation.s, lightCI.transform.orientation.i, lightCI.transform.orientation.j, lightCI.transform.orientation.k };
-		light["transform"]["scale"] = { lightCI.transform.scale.x, lightCI.transform.scale.y, lightCI.transform.scale.z };
+		GEAR_WARN(ErrorCode::GRAPHICS | ErrorCode::LOAD_FAILED, "%s is not valid.", fullSaveFilepath.c_str());
+		return;
 	}
 
-	ordered_json& models = scene_gsf_json["scene"]["models"];
-	auto& vModelComponents = m_Registry.view<ModelComponent>();
-	for (auto& entity : vModelComponents)
+	nlohmann::json& scene = scene_gsf_json;
+	m_CI.debugName = scene["debugName"];
+	m_UUID = core::UUID(scene["uuid"]);
+
+	nlohmann::json& entities = scene["entities"];
+	for (auto& entity_json : entities)
 	{
-		auto& modelCI = vModelComponents.get<ModelComponent>(entity).GetCreateInfo();
-		auto& meshCI = modelCI.pMesh->m_CI;
+		Entity::CreateInfo entityCI = { this };
+		Entity entity(&entityCI);
 
-		ordered_json& model = models[modelCI.debugName.c_str()];
-		model["debugName"] = modelCI.debugName;
+		LoadEntity(entity_json, entity, window);
+	}
 
-		ordered_json& mesh = model["mesh"];
-		mesh["debugName"] = meshCI.debugName;
-		mesh["filepath"] = meshCI.filepath;
+	m_Filepath = filepath;
+}
 
-		ordered_json& materials = model["materials"];
-		for (auto& material : modelCI.pMesh->GetMaterials())
+void Scene::SaveEntity(nlohmann::ordered_json & entity_json, Entity entity)
+{
+	if (entity.HasComponent<UUIDComponent>())
+	{
+		entity.GetComponent<UUIDComponent>().Save(entity_json);
+	}
+	if (entity.HasComponent<NameComponent>())
+	{
+		entity.GetComponent<NameComponent>().Save(entity_json);
+	}
+	if (entity.HasComponent<TransformComponent>())
+	{
+		entity.GetComponent<TransformComponent>().Save(entity_json);
+	}
+	if (entity.HasComponent<CameraComponent>())
+	{
+		entity.GetComponent<CameraComponent>().Save(entity_json);
+	}
+	if (entity.HasComponent<LightComponent>())
+	{
+		entity.GetComponent<LightComponent>().Save(entity_json);
+	}
+}
+
+void Scene::SaveToFile(const std::string& filepath)
+{
+	std::string _filepath = filepath;
+	if (_filepath.empty())
+	{
+		if (!m_Filepath.empty())
+			_filepath = m_Filepath;
+		else
+			return;
+	}
+
+	nlohmann::ordered_json scene_gsf_json;
+	nlohmann::ordered_json& scene = scene_gsf_json["scene"];
+
+	//Use filename as debugName.
+	scene["debugName"] = m_CI.debugName = std::filesystem::path(_filepath).filename().generic_string();
+	scene["uuid"] = m_UUID.AsUint64_t();
+
+	nlohmann::ordered_json& entities = scene["entities"];
+	m_Registry.each([&](entt::entity entityID)
 		{
-			auto& materialCI = material->m_CI;
+			Entity entity;
+			entity.m_CI = { this };
+			entity.m_Entity = entityID;
 
-			ordered_json& material = materials[materialCI.debugName.c_str()];
-			material["debugName"] = materialCI.debugName;
-
-			ordered_json& textures = material["textures"];
-			for (auto& pbrTexture : materialCI.pbrTextures)
-			{
-				auto& textureCI = pbrTexture.second->GetCreateInfo();
-
-				ordered_json& texture = textures[textureCI.debugName.c_str()];
-				texture["pbrType"] = pbrTexture.first;
-				texture["debugName"] = textureCI.debugName;
-				texture["arrayLayers"] = textureCI.arrayLayers;
-				texture["mipLevels"] = textureCI.mipLevels;
-				texture["type"] = textureCI.type;
-				texture["format"] = textureCI.format;
-				texture["samples"] = textureCI.samples;
-				texture["usage"] = textureCI.usage;
-				texture["generateMipMaps"] = textureCI.generateMipMaps;
-			}
-
-			material["fresnel"] = { materialCI.pbrConstants.fresnel.r, materialCI.pbrConstants.fresnel.g, materialCI.pbrConstants.fresnel.b, materialCI.pbrConstants.fresnel.a };
-			material["albedo"] = { materialCI.pbrConstants.albedo.r, materialCI.pbrConstants.albedo.g, materialCI.pbrConstants.albedo.b, materialCI.pbrConstants.albedo.a };
-			material["metallic"] = materialCI.pbrConstants.metallic;
-			material["roughness"] = materialCI.pbrConstants.roughness;
-			material["ambientOcclusion"] = materialCI.pbrConstants.ambientOcclusion;
-			material["emissive"] = { materialCI.pbrConstants.emissive.r, materialCI.pbrConstants.emissive.g, materialCI.pbrConstants.emissive.b, materialCI.pbrConstants.emissive.a };
-
-		}
-
-		model["materialTextureScaling"] = { modelCI.materialTextureScaling.x, modelCI.materialTextureScaling.y };
-		model["transform"]["translation"] = { modelCI.transform.translation.x, modelCI.transform.translation.y, modelCI.transform.translation.z };
-		model["transform"]["orientation"] = { modelCI.transform.orientation.s, modelCI.transform.orientation.i, modelCI.transform.orientation.j, modelCI.transform.orientation.k };
-		model["transform"]["scale"] = { modelCI.transform.scale.x, modelCI.transform.scale.y, modelCI.transform.scale.z };
-		model["renderPipelineName"] = modelCI.renderPipelineName;
-	}
+			nlohmann::ordered_json& _entity = entities[std::to_string(entity.GetUUID()).c_str()];
+			SaveEntity(_entity, entity);
+		});
 
 	std::filesystem::path cwd = std::filesystem::current_path();
-	std::filesystem::path fullSaveFilepath = cwd / std::filesystem::path(m_CI.filepath);
-	std::filesystem::path fullSaveFileDir = cwd / std::filesystem::path(m_CI.filepath).remove_filename();
+	std::filesystem::path fullSaveFilepath = cwd / std::filesystem::path(_filepath);
+	std::filesystem::path fullSaveFileDir = cwd / std::filesystem::path(_filepath).remove_filename();
+
+	if (_filepath.find(".gsf") == std::string::npos)
+		fullSaveFilepath += ".gsf";
 	
 	if (!std::filesystem::exists(fullSaveFileDir))
 		std::filesystem::create_directory(fullSaveFileDir);

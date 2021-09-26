@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Core/UUID.h"
+#include "Graphics/Window.h"
 #include "Objects/Camera.h"
 #include "Objects/Light.h"
 #include "Objects/Model.h"
@@ -7,13 +9,28 @@
 #include "Objects/Text.h"
 #include "Objects/Transform.h"
 
-#define GEAR_SCENE_COMPONENTS_DEFAULTS(_struct) _struct() = default; _struct(const _struct&) = default; virtual ~##_struct() = default
+#define GEAR_SCENE_COMPONENTS_DEFAULTS(_struct)							\
+_struct() = default;													\
+_struct(const _struct&) = default;										\
+virtual ~##_struct() = default;											\
+bool Load(nlohmann::json&, const Ref<gear::graphics::Window>& window);	\
+void Save(nlohmann::ordered_json&)										
 
 namespace gear
 {
 namespace scene
 {
 	using namespace objects;
+
+	struct UUIDComponent
+	{
+		core::UUID uuid;
+
+		GEAR_SCENE_COMPONENTS_DEFAULTS(UUIDComponent);
+		UUIDComponent(const uint64_t _uuid) : uuid(_uuid) {}
+
+		operator const core::UUID&() const { return uuid; }
+	};
 
 	struct NameComponent
 	{
@@ -34,6 +51,9 @@ namespace scene
 
 		operator Transform&() { return transform; }
 		operator mars::Mat4() { return objects::TransformToMat4(transform); }
+
+		static void Load(const nlohmann::json& parent, Transform& transform);
+		static void Save(nlohmann::ordered_json& parent, const Transform& transform);
 	};
 
 	struct CameraComponent

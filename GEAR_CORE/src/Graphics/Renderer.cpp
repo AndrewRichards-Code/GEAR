@@ -431,122 +431,108 @@ void Renderer::Upload()
 			generateMipmapsComputeGPUTasks.back()->Execute();
 		}
 
-		GPUTask::ImageProcessingFunctionTaskInfo2 ipfti2;
-		ipfti2.pfn = ImageProcessing::EquirectangularToCube;
-		ipfti2.tri1 = { m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT };
-		ipfti2.tri2 = { m_Skybox->GetTexture(), Barrier::AccessBit::TRANSFER_WRITE_BIT, Image::Layout::TRANSFER_DST_OPTIMAL, PipelineStageBit::TRANSFER_BIT };
-		GPUTask::CreateInfo generateSkyboxTaskCI;
-		generateSkyboxTaskCI.debugName = "EquirectangularToCube : " + m_Skybox->GetTexture()->GetCreateInfo().debugName;
-		generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_2;
-		generateSkyboxTaskCI.pTaskInfo = &ipfti2;
-		if (!generateMipmapsComputeGPUTasks.empty())
-			generateSkyboxTaskCI.srcGPUTasks = { generateMipmapsComputeGPUTasks.back() };
-		else
-			generateSkyboxTaskCI.srcGPUTasks = { beginAsyncComputeGPUTask };
-		generateSkyboxTaskCI.srcPipelineStages = { (PipelineStageBit)0 };
-		generateSkyboxTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
-		generateSkyboxTaskCI.cmdBufferIndex = 0;
-		generateSkyboxTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-		generateSkyboxTaskCI.resetCmdBufferReleaseResource = false;
-		generateSkyboxTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-		generateSkyboxTaskCI.skipTask = m_Skybox->m_Generated;
-		generateSkyboxComputeGPUTasks.emplace_back(CreateRef<GPUTask>(&generateSkyboxTaskCI));
-		generateSkyboxComputeGPUTasks.back()->Execute();
-
-		GPUTask::ImageProcessingFunctionTaskInfo1 ipfti1;
-		ipfti1.pfn = ImageProcessing::GenerateMipMaps;
-		ipfti1.tri1 = { m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT };
-		generateSkyboxTaskCI.debugName = "GenerateMipMaps : " + m_Skybox->GetTexture()->GetCreateInfo().debugName;
-		generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_1;
-		generateSkyboxTaskCI.pTaskInfo = &ipfti1;
-		generateSkyboxTaskCI.srcGPUTasks = { generateSkyboxComputeGPUTasks.back() };
-		generateSkyboxTaskCI.srcPipelineStages = { PipelineStageBit::COMPUTE_SHADER_BIT };
-		generateSkyboxTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
-		generateSkyboxTaskCI.cmdBufferIndex = 0;
-		generateSkyboxTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-		generateSkyboxTaskCI.resetCmdBufferReleaseResource = false;
-		generateSkyboxTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-		generateSkyboxTaskCI.skipTask = m_Skybox->m_Generated;
-		generateSkyboxComputeGPUTasks.emplace_back(CreateRef<GPUTask>(&generateSkyboxTaskCI));
-		generateSkyboxComputeGPUTasks.back()->Execute();
-
-		ipfti2.pfn = ImageProcessing::DiffuseIrradiance;
-		ipfti2.tri1 = { m_Skybox->GetGeneratedDiffuseCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT };
-		ipfti2.tri2 = { m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT };
-		generateSkyboxTaskCI.debugName = "DiffuseIrradiance : " + m_Skybox->GetTexture()->GetCreateInfo().debugName;
-		generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_2;
-		generateSkyboxTaskCI.pTaskInfo = &ipfti2;
-		generateSkyboxTaskCI.srcGPUTasks = { generateSkyboxComputeGPUTasks.back() };
-		generateSkyboxTaskCI.srcPipelineStages = { PipelineStageBit::COMPUTE_SHADER_BIT };
-		generateSkyboxTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
-		generateSkyboxTaskCI.cmdBufferIndex = 0;
-		generateSkyboxTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-		generateSkyboxTaskCI.resetCmdBufferReleaseResource = false;
-		generateSkyboxTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-		generateSkyboxTaskCI.skipTask = m_Skybox->m_Generated;
-		generateSkyboxComputeGPUTasks.emplace_back(CreateRef<GPUTask>(&generateSkyboxTaskCI));
-		generateSkyboxComputeGPUTasks.back()->Execute();
-
-		ipfti2.pfn = ImageProcessing::SpecularIrradiance;
-		ipfti2.tri1 = { m_Skybox->GetGeneratedSpecularCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT };
-		ipfti2.tri2 = { m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT };
-		generateSkyboxTaskCI.debugName = "SpecularIrradiance : " + m_Skybox->GetTexture()->GetCreateInfo().debugName;
-		generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_2;
-		generateSkyboxTaskCI.pTaskInfo = &ipfti2;
-		generateSkyboxTaskCI.srcGPUTasks = { generateSkyboxComputeGPUTasks.back() };
-		generateSkyboxTaskCI.srcPipelineStages = { PipelineStageBit::COMPUTE_SHADER_BIT };
-		generateSkyboxTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
-		generateSkyboxTaskCI.cmdBufferIndex = 0;
-		generateSkyboxTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-		generateSkyboxTaskCI.resetCmdBufferReleaseResource = false;
-		generateSkyboxTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-		generateSkyboxTaskCI.skipTask = m_Skybox->m_Generated;
-		generateSkyboxComputeGPUTasks.emplace_back(CreateRef<GPUTask>(&generateSkyboxTaskCI));
-		generateSkyboxComputeGPUTasks.back()->Execute();
-
-		ipfti1.pfn = ImageProcessing::SpecularBRDF_LUT;
-		ipfti1.tri1 = { m_Skybox->GetGeneratedSpecularBRDF_LUT(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT };
-		generateSkyboxTaskCI.debugName = "SpecularBRDF_LUT : " + m_Skybox->GetTexture()->GetCreateInfo().debugName;
-		generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_1;
-		generateSkyboxTaskCI.pTaskInfo = &ipfti1;
-		generateSkyboxTaskCI.srcGPUTasks = { generateSkyboxComputeGPUTasks.back() };
-		generateSkyboxTaskCI.srcPipelineStages = { PipelineStageBit::COMPUTE_SHADER_BIT };
-		generateSkyboxTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
-		generateSkyboxTaskCI.cmdBufferIndex = 0;
-		generateSkyboxTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-		generateSkyboxTaskCI.resetCmdBufferReleaseResource = false;
-		generateSkyboxTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-		generateSkyboxTaskCI.skipTask = m_Skybox->m_Generated;
-		generateSkyboxComputeGPUTasks.emplace_back(CreateRef<GPUTask>(&generateSkyboxTaskCI));
-		generateSkyboxComputeGPUTasks.back()->Execute();
-		
-		/*if (!m_Skybox->m_Cubemap && !m_Skybox->m_Generated)
+		if (m_Skybox && !m_Skybox->m_Cubemap && !m_Skybox->m_Generated)
 		{
-			ImageProcessing::EquirectangularToCube(
-				{ m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT },
-				{ m_Skybox->GetTexture(), Barrier::AccessBit::TRANSFER_WRITE_BIT, Image::Layout::TRANSFER_DST_OPTIMAL, PipelineStageBit::TRANSFER_BIT });
+			GPUTask::ImageProcessingFunctionTaskInfo2 ipfti2;
+			ipfti2.pfn = ImageProcessing::EquirectangularToCube;
+			ipfti2.tri1 = { m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT };
+			ipfti2.tri2 = { m_Skybox->GetTexture(), Barrier::AccessBit::TRANSFER_WRITE_BIT, Image::Layout::TRANSFER_DST_OPTIMAL, PipelineStageBit::TRANSFER_BIT };
+			GPUTask::CreateInfo generateSkyboxTaskCI;
+			generateSkyboxTaskCI.debugName = "EquirectangularToCube : " + m_Skybox->GetTexture()->GetCreateInfo().debugName;
+			generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_2;
+			generateSkyboxTaskCI.pTaskInfo = &ipfti2;
+			if (!generateMipmapsComputeGPUTasks.empty())
+				generateSkyboxTaskCI.srcGPUTasks = { generateMipmapsComputeGPUTasks.back() };
+			else
+				generateSkyboxTaskCI.srcGPUTasks = { beginAsyncComputeGPUTask };
+			generateSkyboxTaskCI.srcPipelineStages = { (PipelineStageBit)0 };
+			generateSkyboxTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
+			generateSkyboxTaskCI.cmdBufferIndex = 0;
+			generateSkyboxTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
+			generateSkyboxTaskCI.resetCmdBufferReleaseResource = false;
+			generateSkyboxTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
+			generateSkyboxTaskCI.skipTask = m_Skybox->m_Generated;
+			generateSkyboxComputeGPUTasks.emplace_back(CreateRef<GPUTask>(&generateSkyboxTaskCI));
+			generateSkyboxComputeGPUTasks.back()->Execute();
+
+			GPUTask::ImageProcessingFunctionTaskInfo1 ipfti1;
+			ipfti1.pfn = ImageProcessing::GenerateMipMaps;
+			ipfti1.tri1 = { m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT };
+			generateSkyboxTaskCI.debugName = "GenerateMipMaps : " + m_Skybox->GetTexture()->GetCreateInfo().debugName;
+			generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_1;
+			generateSkyboxTaskCI.pTaskInfo = &ipfti1;
+			generateSkyboxTaskCI.srcGPUTasks = { generateSkyboxComputeGPUTasks.back() };
+			generateSkyboxTaskCI.srcPipelineStages = { PipelineStageBit::COMPUTE_SHADER_BIT };
+			generateSkyboxTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
+			generateSkyboxTaskCI.cmdBufferIndex = 0;
+			generateSkyboxTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
+			generateSkyboxTaskCI.resetCmdBufferReleaseResource = false;
+			generateSkyboxTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
+			generateSkyboxTaskCI.skipTask = m_Skybox->m_Generated;
+			generateSkyboxComputeGPUTasks.emplace_back(CreateRef<GPUTask>(&generateSkyboxTaskCI));
+			generateSkyboxComputeGPUTasks.back()->Execute();
+
+			ipfti2.pfn = ImageProcessing::DiffuseIrradiance;
+			ipfti2.tri1 = { m_Skybox->GetGeneratedDiffuseCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT };
+			ipfti2.tri2 = { m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT };
+			generateSkyboxTaskCI.debugName = "DiffuseIrradiance : " + m_Skybox->GetTexture()->GetCreateInfo().debugName;
+			generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_2;
+			generateSkyboxTaskCI.pTaskInfo = &ipfti2;
+			generateSkyboxTaskCI.srcGPUTasks = { generateSkyboxComputeGPUTasks.back() };
+			generateSkyboxTaskCI.srcPipelineStages = { PipelineStageBit::COMPUTE_SHADER_BIT };
+			generateSkyboxTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
+			generateSkyboxTaskCI.cmdBufferIndex = 0;
+			generateSkyboxTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
+			generateSkyboxTaskCI.resetCmdBufferReleaseResource = false;
+			generateSkyboxTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
+			generateSkyboxTaskCI.skipTask = m_Skybox->m_Generated;
+			generateSkyboxComputeGPUTasks.emplace_back(CreateRef<GPUTask>(&generateSkyboxTaskCI));
+			generateSkyboxComputeGPUTasks.back()->Execute();
+
+			ipfti2.pfn = ImageProcessing::SpecularIrradiance;
+			ipfti2.tri1 = { m_Skybox->GetGeneratedSpecularCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT };
+			ipfti2.tri2 = { m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT };
+			generateSkyboxTaskCI.debugName = "SpecularIrradiance : " + m_Skybox->GetTexture()->GetCreateInfo().debugName;
+			generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_2;
+			generateSkyboxTaskCI.pTaskInfo = &ipfti2;
+			generateSkyboxTaskCI.srcGPUTasks = { generateSkyboxComputeGPUTasks.back() };
+			generateSkyboxTaskCI.srcPipelineStages = { PipelineStageBit::COMPUTE_SHADER_BIT };
+			generateSkyboxTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
+			generateSkyboxTaskCI.cmdBufferIndex = 0;
+			generateSkyboxTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
+			generateSkyboxTaskCI.resetCmdBufferReleaseResource = false;
+			generateSkyboxTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
+			generateSkyboxTaskCI.skipTask = m_Skybox->m_Generated;
+			generateSkyboxComputeGPUTasks.emplace_back(CreateRef<GPUTask>(&generateSkyboxTaskCI));
+			generateSkyboxComputeGPUTasks.back()->Execute();
+
+			ipfti1.pfn = ImageProcessing::SpecularBRDF_LUT;
+			ipfti1.tri1 = { m_Skybox->GetGeneratedSpecularBRDF_LUT(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT };
+			generateSkyboxTaskCI.debugName = "SpecularBRDF_LUT : " + m_Skybox->GetTexture()->GetCreateInfo().debugName;
+			generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_1;
+			generateSkyboxTaskCI.pTaskInfo = &ipfti1;
+			generateSkyboxTaskCI.srcGPUTasks = { generateSkyboxComputeGPUTasks.back() };
+			generateSkyboxTaskCI.srcPipelineStages = { PipelineStageBit::COMPUTE_SHADER_BIT };
+			generateSkyboxTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
+			generateSkyboxTaskCI.cmdBufferIndex = 0;
+			generateSkyboxTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
+			generateSkyboxTaskCI.resetCmdBufferReleaseResource = false;
+			generateSkyboxTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
+			generateSkyboxTaskCI.skipTask = m_Skybox->m_Generated;
+			generateSkyboxComputeGPUTasks.emplace_back(CreateRef<GPUTask>(&generateSkyboxTaskCI));
+			generateSkyboxComputeGPUTasks.back()->Execute();
+			
 			m_Skybox->m_Generated = true;
-
-			ImageProcessing::GenerateMipMaps({ m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT });
-
-			ImageProcessing::DiffuseIrradiance(
-				{ m_Skybox->GetGeneratedDiffuseCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT },
-				{ m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT });
-
-			ImageProcessing::SpecularIrradiance(
-				{ m_Skybox->GetGeneratedSpecularCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT },
-				{ m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT });
-
-			ImageProcessing::SpecularBRDF_LUT(
-				{ m_Skybox->GetGeneratedSpecularBRDF_LUT(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT });
-		}*/
-		m_Skybox->m_Generated = true;
+		}
 
 		GPUTask::CreateInfo endAsyncComputeGPUTaskCI;
 		endAsyncComputeGPUTaskCI.debugName = "Async Compute End";
 		endAsyncComputeGPUTaskCI.task = GPUTask::Task::NONE;
 		endAsyncComputeGPUTaskCI.pTaskInfo = nullptr;
-		endAsyncComputeGPUTaskCI.srcGPUTasks = { generateSkyboxComputeGPUTasks.back() };
+		if (generateMipmapsComputeGPUTasks.empty())
+			endAsyncComputeGPUTaskCI.srcGPUTasks = { beginAsyncComputeGPUTask };
+		else
+			endAsyncComputeGPUTaskCI.srcGPUTasks = { generateMipmapsComputeGPUTasks.back() };
 		for(auto& i : endAsyncComputeGPUTaskCI.srcGPUTasks)
 			endAsyncComputeGPUTaskCI.srcPipelineStages.push_back(PipelineStageBit::COMPUTE_SHADER_BIT);
 		endAsyncComputeGPUTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;

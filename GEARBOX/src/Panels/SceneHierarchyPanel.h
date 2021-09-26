@@ -27,7 +27,10 @@ namespace panels
 		void DrawEntityNode(gear::scene::Entity& entity);
 		
 	public:
-		inline void SetScene(const Ref<gear::scene::Scene>& scene) { m_CI.scene = scene; }
+		void SetScene(const Ref<gear::scene::Scene>& scene);
+		void UpdateWindowTitle();
+		
+		inline const Ref<gear::scene::Scene>& GetScene() { return m_CI.scene; }
 		inline gear::scene::Entity& GetSelectedEntity() { return m_SelectedEntity; };
 		inline CreateInfo& GetCreateInfo() { return m_CI; }
 
