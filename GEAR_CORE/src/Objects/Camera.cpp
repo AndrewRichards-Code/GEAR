@@ -60,8 +60,7 @@ void Camera::DefineView()
 	m_Up		= +Vec3(orientation * Vec4(0, 1, 0, 0));
 	m_Right		= +Vec3(orientation * Vec4(1, 0, 0, 0));
 
-	//m_UB->view = orientation * Mat4::Translation(-m_CI.transform.translation);
-	auto transform = TransformToMat4(m_CI.transform);
+	Mat4 transform = TransformToMat4(m_CI.transform);
 	transform.Inverse();
 	m_UB->view = transform;
 }

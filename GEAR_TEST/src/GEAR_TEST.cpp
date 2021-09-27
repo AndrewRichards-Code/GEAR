@@ -41,7 +41,6 @@ void GEAR_TEST::Run()
 #endif
 	Scene::CreateInfo sceneCI;
 	sceneCI.debugName = "GEAR_TEST_Main_Scene";
-	sceneCI.filepath = "res/scenes/current_scene.gsf.json";
 	sceneCI.nativeScriptDir = "res/scripts/";
 	Ref<Scene> activeScene = CreateRef<Scene>(&sceneCI);
 
@@ -349,7 +348,7 @@ void GEAR_TEST::Run()
 
 		if (window->IsKeyPressed(GLFW_KEY_S) && window->IsKeyPressed(GLFW_KEY_LEFT_CONTROL))
 		{
-			activeScene->SaveToFile();
+			activeScene->SaveToFile("res/scenes/current_scene.gsf.json");
 		}
 
 		if (window->IsKeyPressed(GLFW_KEY_L))

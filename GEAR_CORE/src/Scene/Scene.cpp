@@ -153,29 +153,34 @@ void Scene::UnloadNativeScriptLibrary()
 		NativeScriptManager::Unload(s_NativeScriptLibrary);
 }
 
-void Scene::LoadEntity(nlohmann::json & entity_json, Entity entity, const Ref<graphics::Window>& window)
+void Scene::LoadEntity(nlohmann::json& references, nlohmann::json& entity, Entity entityID, const Ref<graphics::Window>& window)
 {
-	if (!entity.HasComponent<UUIDComponent>())
+	if (!entityID.HasComponent<UUIDComponent>())
 	{
-		entity.AddComponent<UUIDComponent>().Load(entity_json, window);
+		entityID.AddComponent<UUIDComponent>().Load(references, entity, window);
 	}
-	if (!entity.HasComponent<NameComponent>())
+	if (!entityID.HasComponent<NameComponent>())
 	{
-		entity.AddComponent<NameComponent>().Load(entity_json, window);
+		entityID.AddComponent<NameComponent>().Load(references, entity, window);
 	}
-	if (!entity.HasComponent<TransformComponent>())
+	if (!entityID.HasComponent<TransformComponent>())
 	{
-		entity.AddComponent<TransformComponent>().Load(entity_json, window);
+		entityID.AddComponent<TransformComponent>().Load(references, entity, window);
 	}
-	if (!entity.HasComponent<CameraComponent>())
+	if (!entityID.HasComponent<CameraComponent>())
 	{
-		if (!entity.AddComponent<CameraComponent>().Load(entity_json, window))
-			entity.RemoveComponent<CameraComponent>();
+		if (!entityID.AddComponent<CameraComponent>().Load(references, entity, window))
+			entityID.RemoveComponent<CameraComponent>();
 	}
-	if (!entity.HasComponent<LightComponent>())
+	if (!entityID.HasComponent<LightComponent>())
 	{
-		if (!entity.AddComponent<LightComponent>().Load(entity_json, window))
-			entity.RemoveComponent<LightComponent>();
+		if (!entityID.AddComponent<LightComponent>().Load(references, entity, window))
+			entityID.RemoveComponent<LightComponent>();
+	}
+	if (!entityID.HasComponent<SkyboxComponent>())
+	{
+		if (!entityID.AddComponent<SkyboxComponent>().Load(references, entity, window))
+			entityID.RemoveComponent<SkyboxComponent>();
 	}
 }
 
@@ -210,38 +215,43 @@ void Scene::LoadFromFile(const std::string& filepath, const Ref<graphics::Window
 	m_UUID = core::UUID(scene["uuid"]);
 
 	nlohmann::json& entities = scene["entities"];
+	nlohmann::json& references = scene["references"];
 	for (auto& entity_json : entities)
 	{
 		Entity::CreateInfo entityCI = { this };
 		Entity entity(&entityCI);
 
-		LoadEntity(entity_json, entity, window);
+		LoadEntity(references, entity_json, entity, window);
 	}
 
 	m_Filepath = filepath;
 }
 
-void Scene::SaveEntity(nlohmann::ordered_json & entity_json, Entity entity)
+void Scene::SaveEntity(nlohmann::ordered_json& references, nlohmann::ordered_json& entity, Entity entityID)
 {
-	if (entity.HasComponent<UUIDComponent>())
+	if (entityID.HasComponent<UUIDComponent>())
 	{
-		entity.GetComponent<UUIDComponent>().Save(entity_json);
+		entityID.GetComponent<UUIDComponent>().Save(references, entity);
 	}
-	if (entity.HasComponent<NameComponent>())
+	if (entityID.HasComponent<NameComponent>())
 	{
-		entity.GetComponent<NameComponent>().Save(entity_json);
+		entityID.GetComponent<NameComponent>().Save(references, entity);
 	}
-	if (entity.HasComponent<TransformComponent>())
+	if (entityID.HasComponent<TransformComponent>())
 	{
-		entity.GetComponent<TransformComponent>().Save(entity_json);
+		entityID.GetComponent<TransformComponent>().Save(references, entity);
 	}
-	if (entity.HasComponent<CameraComponent>())
+	if (entityID.HasComponent<CameraComponent>())
 	{
-		entity.GetComponent<CameraComponent>().Save(entity_json);
+		entityID.GetComponent<CameraComponent>().Save(references, entity);
 	}
-	if (entity.HasComponent<LightComponent>())
+	if (entityID.HasComponent<LightComponent>())
 	{
-		entity.GetComponent<LightComponent>().Save(entity_json);
+		entityID.GetComponent<LightComponent>().Save(references, entity);
+	}
+	if (entityID.HasComponent<SkyboxComponent>())
+	{
+		entityID.GetComponent<SkyboxComponent>().Save(references, entity);
 	}
 }
 
@@ -263,6 +273,7 @@ void Scene::SaveToFile(const std::string& filepath)
 	scene["debugName"] = m_CI.debugName = std::filesystem::path(_filepath).filename().generic_string();
 	scene["uuid"] = m_UUID.AsUint64_t();
 
+	nlohmann::ordered_json& references = scene["references"];
 	nlohmann::ordered_json& entities = scene["entities"];
 	m_Registry.each([&](entt::entity entityID)
 		{
@@ -270,8 +281,8 @@ void Scene::SaveToFile(const std::string& filepath)
 			entity.m_CI = { this };
 			entity.m_Entity = entityID;
 
-			nlohmann::ordered_json& _entity = entities[std::to_string(entity.GetUUID()).c_str()];
-			SaveEntity(_entity, entity);
+			nlohmann::ordered_json& _entity = entities[entity.GetUUID().AsString().c_str()];
+			SaveEntity(references, _entity, entity);
 		});
 
 	std::filesystem::path cwd = std::filesystem::current_path();

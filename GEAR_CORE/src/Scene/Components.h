@@ -9,12 +9,12 @@
 #include "Objects/Text.h"
 #include "Objects/Transform.h"
 
-#define GEAR_SCENE_COMPONENTS_DEFAULTS(_struct)							\
-_struct() = default;													\
-_struct(const _struct&) = default;										\
-virtual ~##_struct() = default;											\
-bool Load(nlohmann::json&, const Ref<gear::graphics::Window>& window);	\
-void Save(nlohmann::ordered_json&)										
+#define GEAR_SCENE_COMPONENTS_DEFAULTS(_struct)											\
+_struct() = default;																	\
+_struct(const _struct&) = default;														\
+virtual ~##_struct() = default;															\
+bool Load(nlohmann::json&, nlohmann::json&, const Ref<gear::graphics::Window>& window);	\
+void Save(nlohmann::ordered_json&, nlohmann::ordered_json&)
 
 namespace gear
 {

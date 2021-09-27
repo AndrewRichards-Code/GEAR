@@ -15,6 +15,7 @@ namespace core
 		UUID(uint64_t uuid);
 
 		const uint64_t& AsUint64_t() const { return m_UUID; }
+		std::string AsString() const { return std::to_string(m_UUID); }
 		operator uint64_t() const { return m_UUID; }
 	};
 }

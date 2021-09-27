@@ -74,5 +74,7 @@ void gearbox::componentui::AddSkyboxComponent(gear::scene::Entity entity, void* 
 		skyboxCI.transform.orientation = Quat(1, 0, 0, 0);
 		skyboxCI.transform.scale = Vec3(500.0f, 500.0f, 500.0f);
 		entity.AddComponent<SkyboxComponent>(&skyboxCI);
+
+		entity.GetComponent<TransformComponent>().transform = skyboxCI.transform;
 	}
 }

@@ -349,6 +349,8 @@ VkCommandBuffer UIContext::GetVkCommandBuffer(const Ref<CommandBuffer> cmdBuffer
 
 bool UIContext::ShortcutPressed(const std::vector<uint32_t>& keycodes)
 {
+	m_CI.window->Update();
+
 	bool result = true;
 	for (const auto& keycode : keycodes)
 	{
@@ -431,7 +433,7 @@ void UIContext::DrawMenuBar()
 
 		if (ImGui::BeginPopupModal("Version"))
 		{
-			ImGui::Text("GEARBOX - Version: %1.1f %s", 1.0, "Alpha");
+			ImGui::Text("GEARBOX - Version: %d.%d.%d %s", GEAR_VERSION_MAJOR, GEAR_VERSION_MINOR, GEAR_VERSION_PATCH, GEAR_VERSION_TYPE_STR);
 			std::string gpu = "GPU: " + m_CI.window->GetDeviceName();
 			ImGui::Text(gpu.c_str());
 			std::string api = "API: " + m_CI.window->GetGraphicsAPIVersion();

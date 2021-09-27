@@ -41,10 +41,10 @@ namespace scene
 		void LoadNativeScriptLibrary();
 		void UnloadNativeScriptLibrary();
 
-		void LoadEntity(nlohmann::json& entity_json, Entity entity, const Ref<graphics::Window>& window);
+		void LoadEntity(nlohmann::json& references, nlohmann::json& entity, Entity entityID, const Ref<graphics::Window>& window);
 		void LoadFromFile(const std::string& filepath, const Ref<graphics::Window>& window);
 		
-		void SaveEntity(nlohmann::ordered_json& entity_json, Entity entity);
+		void SaveEntity(nlohmann::ordered_json& references, nlohmann::ordered_json& entity, Entity entityID);
 		void SaveToFile(const std::string& filepath);
 
 		inline void Play() { m_Playing = true; }

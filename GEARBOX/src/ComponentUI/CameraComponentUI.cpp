@@ -67,5 +67,7 @@ void gearbox::componentui::AddCameraComponent(gear::scene::Entity entity, float 
 		cameraCI.flipX = false;
 		cameraCI.flipY = false;
 		entity.AddComponent<CameraComponent>(&cameraCI);
+
+		entity.GetComponent<TransformComponent>().transform = cameraCI.transform;
 	}
 }

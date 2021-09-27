@@ -29,11 +29,16 @@ FontLibrary::~FontLibrary()
 
 Ref<FontLibrary::Font> FontLibrary::LoadFont(LoadInfo* pLoadInfo)
 {
+	Ref<FontLibrary::Font> result;
+	result->loadInfo = *pLoadInfo;
+
 	if (pLoadInfo->regenerateTextureAtlas)
 	{
-		return std::move(GenerateFont(pLoadInfo->GI));
+		result = GenerateFont(pLoadInfo->GI);
 	}
-	return std::move(LoadGeneratedFont(pLoadInfo->GI));
+	result = LoadGeneratedFont(pLoadInfo->GI);
+	
+	return std::move(result);
 }
 
 Ref<FontLibrary::Font> FontLibrary::GenerateFont(const GenerateInfo& GI)

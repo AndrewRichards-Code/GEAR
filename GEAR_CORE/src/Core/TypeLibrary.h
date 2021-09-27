@@ -35,13 +35,21 @@ namespace core
 			}
 			return false;
 		}
-		static const Ref<T>& CFind(const UUID& uuid)
+		static Ref<T>& Get(const UUID& uuid)
 		{
 			return s_Entries[uuid];
 		}
-		static Ref<T>& Find(const UUID& uuid)
+		static bool FindUUID(const Ref<T>& type, UUID& outUUID)
 		{
-			return s_Entries[uuid];
+			for (const auto& entry : s_Entries)
+			{
+				if (entry.second == type)
+				{
+					outUUID = entry.first;
+					return true;
+				}
+			}
+			return false;
 		}
 		static void Erase(const UUID& uuid)
 		{

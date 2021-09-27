@@ -32,6 +32,18 @@
 
 //Removed Window Definition and Set Subsystem
 
+//GEAR Version
+#define GEAR_VERSION_MAJOR 1
+#define GEAR_VERSION_MINOR 0
+#define GEAR_VERSION_PATCH 0
+#define GEAR_MAKE_VERSION(major, minor, patch) ((((uint32_t)(major)) << 22) | (((uint32_t)(minor)) << 12) | ((uint32_t)(patch)))
+#define GEAR_VERSION_CURRENT GEAR_MAKE_VERSION(GEAR_VERSION_MAJOR, GEAR_VERSION_MINOR, GEAR_VERSION_PATCH)
+
+#define GEAR_VERSION_TYPE_STR_ALPHA "Alpha"
+#define GEAR_VERSION_TYPE_STR_BETA "Beta"
+#define GEAR_VERSION_TYPE_STR_RELEASE "Release"
+#define GEAR_VERSION_TYPE_STR GEAR_VERSION_TYPE_STR_ALPHA
+
 #if defined(GEAR_PLATFORM_WINDOWS_X64)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN

@@ -41,7 +41,8 @@ namespace objects
 
 		struct Font
 		{
-			Ref<graphics::Texture>			textureAtlas;
+			LoadInfo								loadInfo;
+			Ref<graphics::Texture>					textureAtlas;
 			std::array<GlyphInfo, s_NumCaracters>	glyphInfos;
 			uint32_t								fontHeightPx;
 		};
