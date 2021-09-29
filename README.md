@@ -10,6 +10,10 @@ Inspired by Yan Chernikov's (aka TheCheno) videos on C++, OpenGL and Game Engine
 PBR and IBL Render
 ![pbr_ibl_render](/Branding/Screenshots/pbr_render_textured.jpg)
 
+## GEARBOX Demo
+GEARBOX Editor - Work in Progress
+![gearbox_screenshot](/Branding/Screenshots/gearbox_screenshot.png)
+
 # Projects:
 ## GEAR_CORE: 
 Contains the core functionality of the game engine. Build as a static library; Dynamic Runtime Linking (MD).
@@ -21,7 +25,7 @@ Offline GPU-accelerated Mipmap generator. Build as executable; Dynamic Runtime L
 Simple test application for development, test and demonstration. Build as executable; Dynamic Runtime Linking (MD).
 
 ## GEARBOX: 
-A simple level editor using Qt5. Build as executable; Dynamic Runtime Linking (MD).
+A simple level editor using ImGui. Build as executable; Dynamic Runtime Linking (MD).
 
 # Build Tools with Visual Studio:
 ## Windows x64:
