@@ -1,0 +1,55 @@
+{
+    "fileType": "GEAR_ASSET_FILE",
+    "material": {
+        "debugName": "Mirror",
+        "pbrConstants": {
+            "albedo": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "ambientOcclusion": 1.0,
+            "emissive": [
+                9.999999974752427e-07,
+                9.999899930335232e-07,
+                9.999899930335232e-07,
+                1.0
+            ],
+            "fresnel": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "metallic": 1.0,
+            "roughness": 0.0
+        },
+        "textures": {
+            "albedo": {
+                "debugName": "C:/Users/Andrew/source/repos/GEAR/GEARBOX/res/img/rustediron2-Unreal-Engine\\rustediron2_basecolor.png",
+                "filepath": "C:/Users/Andrew/source/repos/GEAR/GEARBOX/res/img/rustediron2-Unreal-Engine\\rustediron2_basecolor.png",
+                "linear": true,
+                "textureType": "albedo"
+            },
+            "metallic": {
+                "debugName": "C:/Users/Andrew/source/repos/GEAR/GEARBOX/res/img/rustediron2-Unreal-Engine\\rustediron2_metallic.png",
+                "filepath": "C:/Users/Andrew/source/repos/GEAR/GEARBOX/res/img/rustediron2-Unreal-Engine\\rustediron2_metallic.png",
+                "linear": true,
+                "textureType": "metallic"
+            },
+            "normal": {
+                "debugName": "C:/Users/Andrew/source/repos/GEAR/GEARBOX/res/img/rustediron2-Unreal-Engine\\rustediron2_normal.png",
+                "filepath": "C:/Users/Andrew/source/repos/GEAR/GEARBOX/res/img/rustediron2-Unreal-Engine\\rustediron2_normal.png",
+                "linear": false,
+                "textureType": "normal"
+            },
+            "roughness": {
+                "debugName": "C:/Users/Andrew/source/repos/GEAR/GEARBOX/res/img/rustediron2-Unreal-Engine\\rustediron2_roughness.png",
+                "filepath": "C:/Users/Andrew/source/repos/GEAR/GEARBOX/res/img/rustediron2-Unreal-Engine\\rustediron2_roughness.png",
+                "linear": true,
+                "textureType": "roughness"
+            }
+        }
+    }
+}

@@ -189,7 +189,7 @@ void GPUTask::UploadResources()
 			
 			for (auto& texture : material->GetTextures())
 			{
-				texture.second->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->materialsForce);
+				texture.second->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, /*uploadResourcesTI->materialsForce*/false);
 			}
 		}
 	}

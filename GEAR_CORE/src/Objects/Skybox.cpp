@@ -44,7 +44,7 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 		m_GeneratedCubemapCI.data.width = m_CI.generatedCubemapSize;
 		m_GeneratedCubemapCI.data.height = m_CI.generatedCubemapSize;
 		m_GeneratedCubemapCI.data.depth = 1;
-		m_GeneratedCubemapCI.mipLevels = GEAR_TEXTURE_MAX_MIP_LEVEL;
+		m_GeneratedCubemapCI.mipLevels = graphics::Texture::MaxMipLevel;
 		m_GeneratedCubemapCI.arrayLayers = 6;
 		m_GeneratedCubemapCI.type = Image::Type::TYPE_CUBE;
 		m_GeneratedCubemapCI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
@@ -83,7 +83,7 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	m_GeneratedSpecularCubemapCI.data.width = m_CI.generatedCubemapSize;
 	m_GeneratedSpecularCubemapCI.data.height = m_CI.generatedCubemapSize;
 	m_GeneratedSpecularCubemapCI.data.depth = 1;
-	m_GeneratedSpecularCubemapCI.mipLevels = GEAR_TEXTURE_MAX_MIP_LEVEL;
+	m_GeneratedSpecularCubemapCI.mipLevels = graphics::Texture::MaxMipLevel;
 	m_GeneratedSpecularCubemapCI.arrayLayers = 6;
 	m_GeneratedSpecularCubemapCI.type = Image::Type::TYPE_CUBE;
 	m_GeneratedSpecularCubemapCI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;

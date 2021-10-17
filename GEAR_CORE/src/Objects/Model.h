@@ -35,7 +35,7 @@ namespace objects
 		Model(CreateInfo* pCreateInfo);
 		~Model();
 	
-		//Update the skybox from the current state of Model::CreateInfo m_CI.
+		//Update the model from the current state of Model::CreateInfo m_CI.
 		void Update();
 	
 		inline const Ref<objects::Mesh>& GetMesh() const { return m_CI.pMesh; }

@@ -14,8 +14,6 @@ namespace panels
 	class ContentEditorPanel;
 }
 
-namespace imgui
-{
 	class UIContext final
 	{
 		//enums/structs
@@ -32,6 +30,8 @@ namespace imgui
 
 		void Draw();
 
+		inline void* GetDevice() { return m_CI.window->GetDevice(); }
+		inline Ref<miru::crossplatform::Context> GetContext() { return m_CI.window->GetContext(); }
 		inline const CreateInfo& GetCreateInfo() { return m_CI; }
 		inline std::vector<Ref<panels::Panel>>& GetEditorPanels() { return m_EditorPanels; };
 
@@ -106,11 +106,13 @@ namespace imgui
 	public:
 		VkDescriptorPool m_VulkanDescriptorPool;
 		VkDescriptorPoolCreateInfo m_VulkanDescriptorPoolCI;
-		VkSampler m_VKSampler = VK_NULL_HANDLE;
+		VkSampler m_VulkanSampler;
+		VkSamplerCreateInfo m_VulkanSamplerCI;
 	
 		ID3D12DescriptorHeap* m_D3D12DescriptorHeapSRV;
 		std::map<ImTextureID, UINT> m_D3D12GPUHandleHeapOffsets;
 		UINT m_GPUHandleHeapIndex = 1;
+
+		std::map<Ref<miru::crossplatform::ImageView>, ImTextureID> m_TextureIDs;
 	};
-}
 }

@@ -104,7 +104,7 @@ void GEAR_TEST::Run()
 		texCI.device = window->GetDevice();
 		texCI.dataType = Texture::DataType::FILE;
 		texCI.file.filepaths = { filepath };
-		texCI.mipLevels = GEAR_TEXTURE_MAX_MIP_LEVEL;
+		texCI.mipLevels = Texture::MaxMipLevel;
 		texCI.arrayLayers = 1;
 		texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
 		texCI.format = linear ? miru::crossplatform::Image::Format::R32G32B32A32_SFLOAT : miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
@@ -348,7 +348,7 @@ void GEAR_TEST::Run()
 
 		if (window->IsKeyPressed(GLFW_KEY_S) && window->IsKeyPressed(GLFW_KEY_LEFT_CONTROL))
 		{
-			activeScene->SaveToFile("res/scenes/current_scene.gsf.json");
+			activeScene->SaveToFile("res/scenes/current_scene.gsf");
 		}
 
 		if (window->IsKeyPressed(GLFW_KEY_L))

@@ -53,7 +53,7 @@ void PostProcessing::BloomPreFilter(const Ref<miru::crossplatform::CommandBuffer
 	{
 		RenderPipeline::LoadInfo s_PipelineLI;
 		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/BloomPrefilter.grpf.json";
+		s_PipelineLI.filepath = "res/pipelines/BloomPrefilter.grpf";
 		s_PipelineLI.viewportWidth = 0.0f;
 		s_PipelineLI.viewportHeight = 0.0f;
 		s_PipelineLI.renderPass = nullptr;
@@ -177,7 +177,7 @@ void PostProcessing::BloomDownsample(const Ref<miru::crossplatform::CommandBuffe
 	{
 		RenderPipeline::LoadInfo s_PipelineLI;
 		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/BloomDownsample.grpf.json";
+		s_PipelineLI.filepath = "res/pipelines/BloomDownsample.grpf";
 		s_PipelineLI.viewportWidth = 0.0f;
 		s_PipelineLI.viewportHeight = 0.0f;
 		s_PipelineLI.renderPass = nullptr;
@@ -238,11 +238,11 @@ void PostProcessing::BloomDownsample(const Ref<miru::crossplatform::CommandBuffe
 	m_DescSetCI.debugName = "GEAR_CORE_DescriptorSet_Bloom_Downsample";
 	m_DescSetCI.pDescriptorPool = m_DescPool;
 	m_DescSetCI.pDescriptorSetLayouts = s_BloomDownsample->GetDescriptorSetLayouts();
-	Image::Layout m_ImageLayout = Image::Layout::GENERAL;
+	Image::Layout m_ImageLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL;
 	for (uint32_t i = 0; i < m_DescPoolCI.maxSets; i++)
 	{
 		m_DescSets.emplace_back(DescriptorSet::Create(&m_DescSetCI));
-		m_DescSets[i]->AddImage(0, 0, { { s_Samplers[frameIndex],	m_ImageViews[i + 0], m_ImageLayout } });
+		m_DescSets[i]->AddImage(0, 0, { { s_Samplers[frameIndex],	m_ImageViews[i + 0], Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 		m_DescSets[i]->AddImage(0, 1, { { nullptr,					m_ImageViews[i + 1], m_ImageLayout } });
 		m_DescSets[i]->Update();
 	}
@@ -265,8 +265,8 @@ void PostProcessing::BloomDownsample(const Ref<miru::crossplatform::CommandBuffe
 			barrierCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
 			barrierCI.pImage = IRI.image;
 			barrierCI.oldLayout = m_ImageLayout;
-			barrierCI.newLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : m_ImageLayout;
-			barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, 1 };
+			barrierCI.newLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
+			barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i-1, 1, 0, 1 };
 			
 			barriers.clear();
 			barriers.emplace_back(Barrier::Create(&barrierCI));
@@ -284,9 +284,9 @@ void PostProcessing::BloomDownsample(const Ref<miru::crossplatform::CommandBuffe
 			barrierCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
 			barrierCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
 			barrierCI.pImage = IRI.image;
-			barrierCI.oldLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : m_ImageLayout;
+			barrierCI.oldLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
 			barrierCI.newLayout = m_ImageLayout;
-			barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, 1 };
+			barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i-1, 1, 0, 1 };
 
 			barriers.clear();
 			barriers.emplace_back(Barrier::Create(&barrierCI));
@@ -301,7 +301,7 @@ void PostProcessing::BloomUpsample(const Ref<miru::crossplatform::CommandBuffer>
 	{
 		RenderPipeline::LoadInfo s_PipelineLI;
 		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/BloomUpsample.grpf.json";
+		s_PipelineLI.filepath = "res/pipelines/BloomUpsample.grpf";
 		s_PipelineLI.viewportWidth = 0.0f;
 		s_PipelineLI.viewportHeight = 0.0f;
 		s_PipelineLI.renderPass = nullptr;
@@ -332,11 +332,11 @@ void PostProcessing::BloomUpsample(const Ref<miru::crossplatform::CommandBuffer>
 	m_DescSetCI.debugName = "GEAR_CORE_DescriptorSet_Bloom_Upsample";
 	m_DescSetCI.pDescriptorPool = m_DescPool;
 	m_DescSetCI.pDescriptorSetLayouts = s_BloomUpsample->GetDescriptorSetLayouts();
-	Image::Layout m_ImageLayout = Image::Layout::GENERAL;
+	Image::Layout m_ImageLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL;
 	for (uint32_t i = 0; i < m_DescPoolCI.maxSets; i++)
 	{
 		m_DescSets.emplace_back(DescriptorSet::Create(&m_DescSetCI));
-		m_DescSets[i]->AddImage(0, 0, { { s_Samplers[frameIndex],	m_ImageViews[i + 1], m_ImageLayout } });
+		m_DescSets[i]->AddImage(0, 0, { { s_Samplers[frameIndex],	m_ImageViews[i + 1], Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 		m_DescSets[i]->AddImage(0, 1, { { nullptr,					m_ImageViews[i + 0], m_ImageLayout } });
 		m_DescSets[i]->AddBuffer(0, 2, { { m_BloomInfoUBs[frameIndex]->GetBufferView() } });
 		m_DescSets[i]->Update();
@@ -360,7 +360,7 @@ void PostProcessing::BloomUpsample(const Ref<miru::crossplatform::CommandBuffer>
 			barrierCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
 			barrierCI.pImage = m_ImageViews[i]->GetCreateInfo().pImage;
 			barrierCI.oldLayout = m_ImageLayout;
-			barrierCI.newLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : m_ImageLayout;
+			barrierCI.newLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
 			barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, 1 };
 
 			barriers.clear();
@@ -379,7 +379,7 @@ void PostProcessing::BloomUpsample(const Ref<miru::crossplatform::CommandBuffer>
 			barrierCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
 			barrierCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
 			barrierCI.pImage = m_ImageViews[i]->GetCreateInfo().pImage;
-			barrierCI.oldLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : m_ImageLayout;
+			barrierCI.oldLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
 			barrierCI.newLayout = m_ImageLayout;
 			barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, 1 };
 

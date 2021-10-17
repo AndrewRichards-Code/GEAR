@@ -96,6 +96,7 @@
   <ItemGroup>
     <ClInclude Include="src\ComponentUI\CameraComponentUI.h" />
     <ClInclude Include="src\ComponentUI\ComponentUI.h" />
+    <ClInclude Include="src\ComponentUI\ModelComponentUI.h" />
     <ClInclude Include="src\ComponentUI\NameComponentUI.h" />
     <ClInclude Include="src\ComponentUI\SkyboxComponentUI.h" />
     <ClInclude Include="src\ComponentUI\TransformComponentUI.h" />
@@ -113,6 +114,7 @@
   <ItemGroup>
     <ClCompile Include="src\ComponentUI\CameraComponentUI.cpp" />
     <ClCompile Include="src\ComponentUI\ComponentUI.cpp" />
+    <ClCompile Include="src\ComponentUI\ModelComponentUI.cpp" />
     <ClCompile Include="src\ComponentUI\NameComponentUI.cpp" />
     <ClCompile Include="src\ComponentUI\SkyboxComponentUI.cpp" />
     <ClCompile Include="src\ComponentUI\TransformComponentUI.cpp" />

@@ -1,0 +1,30 @@
+{
+    "fileType": "GEAR_ASSET_FILE",
+    "material": {
+        "debugName": "Mirror",
+        "pbrConstants": {
+            "albedo": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "ambientOcclusion": 1.0,
+            "emissive": [
+                9.999999974752427e-07,
+                9.999899930335232e-07,
+                9.999899930335232e-07,
+                1.0
+            ],
+            "fresnel": [
+                1.0,
+                1.0,
+                1.0,
+                1.0
+            ],
+            "metallic": 1.0,
+            "roughness": 0.0
+        },
+        "textures": null
+    }
+}

@@ -2,7 +2,6 @@
 #include "ViewportPanel.h"
 #include "Panels.h"
 #include "ComponentUI/ComponentUI.h"
-#include "ARC/src/FileSystemHelpers.h"
 
 using namespace gear;
 using namespace graphics;
@@ -66,7 +65,7 @@ void ViewportPanel::Draw()
 		uint32_t width = colourImageView->GetCreateInfo().pImage->GetCreateInfo().width;
 		uint32_t height = colourImageView->GetCreateInfo().pImage->GetCreateInfo().height;
 		
-		m_ImageID = componentui::GetTextureID(colourImageView, m_CI.uiContext, resized, m_ImageID);
+		m_ImageID = componentui::GetTextureID(colourImageView, m_CI.uiContext, resized);
 		ImGui::Image(m_ImageID, ImVec2(static_cast<float>(width), static_cast<float>(height)));
 
 		if (ImGui::BeginDragDropTarget())
@@ -75,7 +74,7 @@ void ViewportPanel::Draw()
 			if (payload)
 			{
 				std::string filepath = (char*)payload->Data;
-				if (arc::FileExist(filepath))
+				if (std::filesystem::exists(filepath))
 				{
 					Ref<SceneHierarchyPanel> sceneHierarchyPanel = m_CI.uiContext->GetPanel<SceneHierarchyPanel>();
 					if (sceneHierarchyPanel)
@@ -94,40 +93,48 @@ void ViewportPanel::Draw()
 void ViewportPanel::UpdateCameraTransform()
 {
 	Ref<objects::Camera> camera = m_CI.renderer->GetCamera();
-	if (!camera || !ImGui::IsWindowFocused())
+	if (!camera)
 		return;
 
-	//Stop camera snapping back when new input is detected
-	if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) || ImGui::IsMouseClicked(ImGuiMouseButton_Middle))
-	{
-		m_InitialMousePosition = GetMousePositionInViewport();
-	}
+	//View matrix update
+	camera->m_CI.perspectiveParams.aspectRatio = m_CI.renderer->GetRenderSurface()->GetRatio();
 	
-	//Main update
-	if (ImGui::IsMouseDown(ImGuiMouseButton_::ImGuiMouseButton_Right))
+	//Mouse Control
+	if (ImGui::IsWindowFocused())
 	{
-		const Vec2& mouse = GetMousePositionInViewport();
-		Vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
-		m_InitialMousePosition = mouse;
+		//Stop camera snapping back when new input is detected
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) || ImGui::IsMouseClicked(ImGuiMouseButton_Middle))
+		{
+			m_InitialMousePosition = GetMousePositionInViewport();
+		}
 
-		m_Yaw += delta.x;
-		m_Pitch += delta.y;
+		//Main update
+		if (ImGui::IsMouseDown(ImGuiMouseButton_::ImGuiMouseButton_Right))
+		{
+			const Vec2& mouse = GetMousePositionInViewport();
+			Vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
+			m_InitialMousePosition = mouse;
 
-		camera->m_CI.transform.orientation = Quat::FromEulerAngles(Vec3(m_Pitch, -m_Yaw, m_Roll));
+			m_Yaw += delta.x;
+			m_Pitch += delta.y;
+
+			camera->m_CI.transform.orientation = Quat::FromEulerAngles(Vec3(m_Pitch, -m_Yaw, m_Roll));
+		}
+		if (ImGui::IsMouseDown(ImGuiMouseButton_::ImGuiMouseButton_Middle))
+		{
+			const Vec2& mouse = GetMousePositionInViewport();
+			Vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
+			m_InitialMousePosition = mouse;
+
+			float x_offset = delta.x;
+			float y_offset = delta.y;
+
+			camera->m_CI.transform.translation +=
+				(camera->m_Right * -x_offset) +
+				(camera->m_Up * y_offset);
+		}
 	}
-	if (ImGui::IsMouseDown(ImGuiMouseButton_::ImGuiMouseButton_Middle))
-	{
-		const Vec2& mouse = GetMousePositionInViewport();
-		Vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
-		m_InitialMousePosition = mouse;
 
-		float x_offset = delta.x;
-		float y_offset = delta.y;
-
-		camera->m_CI.transform.translation +=
-			(camera->m_Right * -x_offset) +
-			(camera->m_Up * y_offset);
-	}
 	camera->Update();
 }
 

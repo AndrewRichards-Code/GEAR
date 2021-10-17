@@ -1,15 +1,18 @@
 #include "gearbox_common.h"
 #include "ContentEditorPanel.h"
 #include "ComponentUI/ComponentUI.h"
+#include "ComponentUI/ModelComponentUI.h"
+#include "Core/AssetFile.h"
 
-#include "ARC/src/FileSystemHelpers.h"
 
 using namespace gearbox;
 using namespace panels;
 using namespace componentui;
 
 using namespace gear;
+using namespace core;
 using namespace graphics;
+using namespace objects;
 
 using namespace miru::crossplatform;
 
@@ -28,26 +31,24 @@ void ContentEditorPanel::Draw()
 	std::string title = "Content Editor: " + m_CI.currentFilepath.string();
 	if (ImGui::Begin(title.c_str(), &m_Open))
 	{
+		open = ImGui::Button("Open");
+		ImGui::SameLine();
+		close = ImGui::Button("Close");
+		if (close)
+			open = close;
+
 		ContentType contentType = GetContextTypeFromExtension(m_CI.filepathExt);
 		if (contentType == ContentType::TEXT)
 		{
-			open = ImGui::Button("Open");
-			ImGui::SameLine();
-			close = ImGui::Button("Close");
-			if (close)
-				open = close;
-			ImGui::SameLine();
-			ImGui::Text("File Size: %.1f kB", float(fileSize)/1000.0f);
-
-			static std::fstream stream;
 			if (open)
 			{
+				std::fstream stream;
 				if (!stream.is_open())
 					stream.open(m_CI.currentFilepathFull.string(), std::ios::ate | std::ios::in);
 
 				if (stream.is_open() && read)
 				{
-					fileSize = static_cast<size_t>(stream.tellg());
+					size_t fileSize = static_cast<size_t>(stream.tellg());
 					stream.seekg(0, std::fstream::beg);
 					std::string line;
 					while (!stream.eof())
@@ -55,20 +56,49 @@ void ContentEditorPanel::Draw()
 						std::getline(stream, line);
 						output.append(line + "\n");
 					}
+					stream.close();
 					read = false;
 				}
 				
 				if (close)
 				{
-					stream.close();
 					output.clear();
 					open = close = false;
 					read = true;
-
 				}
 			}
 
-			ImGui::Text(output.c_str());
+			if (!output.empty())
+				ImGui::TextUnformatted(output.c_str());
+		}
+
+		if (contentType == ContentType::GEAR_ASSET)
+		{
+			if (open)
+			{
+				if (read)
+				{
+					AssetFile assetFile = AssetFile(m_CI.currentFilepathFull.string());
+					if (assetFile.Contains(AssetFile::Type::MATERIAL))
+					{
+						Material::CreateInfo materialCI = { m_CI.currentFilepath.string(), m_CI.uiContext->GetDevice(), {}, {} };
+						material = CreateRef<Material>(&materialCI);
+
+						material->LoadFromAssetFile(assetFile);
+						read = false;
+					}
+				}
+
+				if (close)
+				{
+					material = nullptr;
+					open = close = false;
+					read = true;
+				}
+			}
+			
+			if(material)
+				DrawMaterialUI(material, m_CI.uiContext, false);
 		}
 			
 		/*if (ImGui::BeginDragDropTarget())
@@ -77,7 +107,7 @@ void ContentEditorPanel::Draw()
 			if (payload)
 			{
 				std::string filepath = (char*)payload->Data;
-				if (arc::FileExist(filepath))
+				if (std::filesystem::exist(filepath))
 				{
 					m_CI.currentFilepath = filepath;
 				}
@@ -234,5 +264,19 @@ ContentEditorPanel::ContentType ContentEditorPanel::GetContextTypeFromExtension(
 		contentType = ContentType::COMPRESSED;
 	else
 		contentType = ContentType::UNKNOWN;
+
+	//Check against GEAR custom files
+	if (contentType == ContentType::UNKNOWN)
+	{
+		if (fileExtension.compare(".gsf") == 0)
+			contentType = ContentType::GEAR_SCENE;
+		else if (fileExtension.compare(".gaf") == 0)
+			contentType = ContentType::GEAR_ASSET;
+		else if (fileExtension.compare(".grpf") == 0)
+			contentType = ContentType::GEAR_RENDER_PIPELINE;
+		else
+			contentType = ContentType::UNKNOWN;
+	}
+
 	return contentType;
 }

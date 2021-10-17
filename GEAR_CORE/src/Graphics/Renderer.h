@@ -70,6 +70,9 @@ namespace graphics
 		Ref<objects::Skybox> m_Skybox;
 		std::vector<Ref<objects::Model>> m_ModelQueue;
 		std::vector<Ref<objects::Model>> m_TextQueue;
+
+		//Default Objects
+		Ref<objects::Light> m_DefaultLight;
 		
 		uint32_t m_FrameIndex = 0;
 		uint32_t m_FrameCount = 0;

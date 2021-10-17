@@ -1,120 +1,265 @@
 {
-    "debugName": "Test.gsf",
-    "uuid": 7089646094366150252,
-    "references": null,
-    "entities": {
-        "8077919658766236766": {
-            "UUIDComponent": {
-                "uuid": 8077919658766236766
-            },
-            "NameComponent": {
-                "name": "Camera"
-            },
-            "TransformComponent": {
-                "translation": [
-                    0.17997188866138458,
-                    0.06063670292496681,
-                    0.16556113958358765
-                ],
-                "orientation": [
-                    -0.87921281040944,
-                    0.05546395725212186,
-                    -0.4722510567048403,
-                    -0.02979132254584516
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "CameraComponent": {
-                "debugName": "Camera",
-                "translation": [
-                    0.17997188866138458,
-                    0.06063670292496681,
-                    0.16556113958358765
-                ],
-                "orientation": [
-                    0.8584315300424641,
-                    0.009013874199259506,
-                    0.5128206918506794,
-                    -0.0053848222500524736
-                ],
-                "scale": [
-                    1.0,
-                    1.0,
-                    1.0
-                ],
-                "projectionType": 0,
-                "orthographicsParams": {
-                    "left": 3370280550400.0,
-                    "right": 1.9463495016098022,
-                    "bottom": 2.572289228439331,
-                    "top": 0.0010000000474974513,
-                    "near": 3000.0,
-                    "far": 0.0
+    "fileType": "GEAR_SCENE_FILE",
+    "scene": {
+        "debugName": "Test.gsf",
+        "entities": {
+            "10885921181474819722": {
+                "ModelComponent": {
+                    "debugName": "Model-Drone",
+                    "mesh": {
+                        "material": [
+                        ],
+                        "uuid": 12479521206861207107
+                    },
+                    "renderPipelineName": "PBROpaque",
+                    "transform": {
+                        "orientation": [
+                            0.4999999700803503,
+                            -0.5000000299196463,
+                            0.4999999323313984,
+                            0.5000000676685942
+                        ],
+                        "scale": [
+                            0.009999999776482582,
+                            0.009999999776482582,
+                            0.009999999776482582
+                        ],
+                        "translation": [
+                            0.0,
+                            0.0,
+                            -1.3899999856948853
+                        ]
+                    }
                 },
-                "perspectiveParams": {
-                    "horizonalFOV": 1.5707963267948966,
-                    "aspectRatio": 2.572289228439331,
-                    "zNear": 0.0010000000474974513,
-                    "zFar": 3000.0
+                "NameComponent": {
+                    "name": "Drone"
                 },
-                "flipX": false,
-                "flipY": false
+                "TransformComponent": {
+                    "transform": {
+                        "orientation": [
+                            0.4999999700803503,
+                            -0.5000000299196463,
+                            0.4999999323313984,
+                            0.5000000676685942
+                        ],
+                        "scale": [
+                            0.009999999776482582,
+                            0.009999999776482582,
+                            0.009999999776482582
+                        ],
+                        "translation": [
+                            0.0,
+                            0.0,
+                            -1.3899999856948853
+                        ]
+                    }
+                },
+                "UUIDComponent": {
+                    "uuid": 10885921181474819722
+                }
+            },
+            "13288517680627091088": {
+                "ModelComponent": {
+                    "debugName": "Sphere",
+                    "mesh": {
+                        "material": [
+                        ],
+                        "uuid": 5182918752097057605
+                    },
+                    "renderPipelineName": "PBROpaque",
+                    "transform": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            6.970046849264955e-17
+                        ],
+                        "scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "translation": [
+                            2.0399999618530273,
+                            0.0,
+                            -2.059999942779541
+                        ]
+                    }
+                },
+                "NameComponent": {
+                    "name": "Sphere"
+                },
+                "TransformComponent": {
+                    "transform": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            6.970046849264955e-17
+                        ],
+                        "scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "translation": [
+                            2.0399999618530273,
+                            0.0,
+                            -2.059999942779541
+                        ]
+                    }
+                },
+                "UUIDComponent": {
+                    "uuid": 13288517680627091088
+                }
+            },
+            "13548267898940117083": {
+                "NameComponent": {
+                    "name": "Skybox"
+                },
+                "SkyboxComponent": {
+                    "debugName": "Skybox-HDR",
+                    "exposure": 2.609999895095825,
+                    "filepaths": [
+                        "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img\\kloppenheim_06_2k.hdr"
+                    ],
+                    "gammaSpace": 1,
+                    "generatedCubemapSize": 1024,
+                    "transform": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "scale": [
+                            500.0,
+                            500.0,
+                            500.0
+                        ],
+                        "translation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "TransformComponent": {
+                    "transform": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "scale": [
+                            500.0,
+                            500.0,
+                            500.0
+                        ],
+                        "translation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "UUIDComponent": {
+                    "uuid": 13548267898940117083
+                }
+            },
+            "8077919658766236766": {
+                "CameraComponent": {
+                    "debugName": "Camera",
+                    "flipX": false,
+                    "flipY": false,
+                    "orthographicsParams": {
+                        "bottom": 1.6241872310638428,
+                        "far": 0.0,
+                        "left": -11828.0625,
+                        "near": 3000.0,
+                        "right": 1.9136245250701904,
+                        "top": 0.0010000000474974513
+                    },
+                    "perspectiveParams": {
+                        "aspectRatio": 1.6241872310638428,
+                        "horizonalFOV": 1.3089969389957474,
+                        "zFar": 3000.0,
+                        "zNear": 0.0010000000474974513
+                    },
+                    "projectionType": 0,
+                    "transform": {
+                        "orientation": [
+                            0.9662261759931307,
+                            -0.09596961420472866,
+                            0.23798751866618464,
+                            0.023637913067775115
+                        ],
+                        "scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "translation": [
+                            1.5121634006500244,
+                            1.5771247148513794,
+                            2.963871955871582
+                        ]
+                    }
+                },
+                "NameComponent": {
+                    "name": "Camera"
+                },
+                "TransformComponent": {
+                    "transform": {
+                        "orientation": [
+                            0.9038481533428196,
+                            -0.11586906181667475,
+                            0.40852196755277415,
+                            0.0523705856307573
+                        ],
+                        "scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "translation": [
+                            1.1733218431472778,
+                            0.3542986512184143,
+                            -0.3820040225982666
+                        ]
+                    }
+                },
+                "UUIDComponent": {
+                    "uuid": 8077919658766236766
+                }
             }
         },
-        "13548267898940117083": {
-            "UUIDComponent": {
-                "uuid": 13548267898940117083
+        "references": {
+            "12479521206861207107": {
+                "data": {
+                    "debugName": "Mesh-Drone",
+                    "filepath": "../GEAR_TEST/res/obj/Drone_Animated_03.fbx"
+                },
+                "type": {
+                    "hash_code": 3736462184517488487,
+                    "name": "struct gear::objects::Mesh::CreateInfo"
+                },
+                "uuid": 12479521206861207107
             },
-            "NameComponent": {
-                "name": "Skybox"
-            },
-            "TransformComponent": {
-                "translation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "orientation": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    500.0,
-                    500.0,
-                    500.0
-                ]
-            },
-            "SkyboxComponent": {
-                "debugName": "Skybox-HDR",
-                "filepaths": [
-                    "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img\\kloppenheim_06_2k.hdr"
-                ],
-                "generatedCubemapSize": 1024,
-                "translation": [
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "orientation": [
-                    1.0,
-                    0.0,
-                    0.0,
-                    0.0
-                ],
-                "scale": [
-                    500.0,
-                    500.0,
-                    500.0
-                ],
-                "exposure": 1.0,
-                "gammaSpace": 1
+           
+            "5182918752097057605": {
+                "data": {
+                    "debugName": "Mesh-Sphere",
+                    "filepath": "res/obj/sphere.fbx"
+                },
+                "type": {
+                    "hash_code": 3736462184517488487,
+                    "name": "struct gear::objects::Mesh::CreateInfo"
+                },
+                "uuid": 5182918752097057605
             }
-        }
+        },
+        "uuid": 7089646094366150252
     }
 }

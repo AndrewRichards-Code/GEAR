@@ -13,7 +13,7 @@ namespace gearbox
 			struct CreateInfo
 			{
 				Ref<gear::graphics::Renderer>	renderer;
-				Ref<imgui::UIContext>			uiContext;
+				Ref<UIContext>					uiContext;
 			};
 
 			//Methods

@@ -45,7 +45,7 @@ namespace graphics
 			bool										generateMipMaps;
 			GammaSpace									gammaSpace;
 		};
-		#define GEAR_TEXTURE_MAX_MIP_LEVEL 16
+		uint32_t static constexpr MaxMipLevel = 16;
 
 		struct SubresouresTransitionInfo
 		{
@@ -97,7 +97,7 @@ namespace graphics
 		Texture(CreateInfo* pCreateInfo);
 		~Texture();
 
-		const CreateInfo& GetCreateInfo() { return m_CI; }
+		CreateInfo& GetCreateInfo() { return m_CI; }
 
 		void Upload(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
 		void Download(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
@@ -118,7 +118,6 @@ namespace graphics
 		inline bool IsCubemap() const { return m_Cubemap; }
 		inline bool IsDepthTexture() const { return m_DepthTexture; }
 		inline bool IsUploaded() const { return m_Upload; }
-		inline const CreateInfo& GetCreateInfo() const { return m_CI; }
 
 		inline void SetAnisotrophicValue(float anisostrphicVal) { m_AnisotrophicValue = anisostrphicVal; CreateSampler(); };
 		inline float GetAnisotrophicValue() const { return m_AnisotrophicValue; };

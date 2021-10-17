@@ -5,6 +5,7 @@
 #include "INativeScript.h"
 
 #include "Core/Timer.h"
+#include "Core/JsonFileHelper.h"
 #include "Graphics/Renderer.h"
 
 using namespace arc;
@@ -81,7 +82,7 @@ void Scene::OnUpdate(Ref<graphics::Renderer>& renderer, core::Timer& timer)
 		renderer->SubmitCamera(nullptr);
 	}
 
-	std::vector<Ref<Light>> lights;
+	std::vector<Ref<objects::Light>> lights;
 	auto& vLightComponents = m_Registry.view<LightComponent>();
 	for (auto& entity : vLightComponents)
 	{
@@ -111,7 +112,7 @@ void Scene::OnUpdate(Ref<graphics::Renderer>& renderer, core::Timer& timer)
 	auto& vTextComponent = m_Registry.view<TextComponent>();
 	for (auto& entity : vTextComponent)
 	{
-		const Ref<Text>& text = vTextComponent.get<TextComponent>(entity).text;
+		const Ref<objects::Text>& text = vTextComponent.get<TextComponent>(entity).text;
 		renderer->SubmitTextCamera(text->GetCamera());
 
 		for (auto& line : text->GetLines())
@@ -153,35 +154,41 @@ void Scene::UnloadNativeScriptLibrary()
 		NativeScriptManager::Unload(s_NativeScriptLibrary);
 }
 
-void Scene::LoadEntity(nlohmann::json& references, nlohmann::json& entity, Entity entityID, const Ref<graphics::Window>& window)
+using namespace nlohmann;
+
+void Scene::LoadEntity(json& references, json& entity, Entity entityID, const Ref<graphics::Window>& window)
 {
+	LoadSaveParameters lsp = { this, entity, references, window };
+
 	if (!entityID.HasComponent<UUIDComponent>())
 	{
-		entityID.AddComponent<UUIDComponent>().Load(references, entity, window);
+		entityID.AddComponent<UUIDComponent>().Load(lsp);
 	}
 	if (!entityID.HasComponent<NameComponent>())
 	{
-		entityID.AddComponent<NameComponent>().Load(references, entity, window);
+		entityID.AddComponent<NameComponent>().Load(lsp);
 	}
 	if (!entityID.HasComponent<TransformComponent>())
 	{
-		entityID.AddComponent<TransformComponent>().Load(references, entity, window);
+		entityID.AddComponent<TransformComponent>().Load(lsp);
 	}
-	if (!entityID.HasComponent<CameraComponent>())
+	if (!entityID.HasComponent<CameraComponent>() && JsonHasComponent<CameraComponent>(entity))
 	{
-		if (!entityID.AddComponent<CameraComponent>().Load(references, entity, window))
-			entityID.RemoveComponent<CameraComponent>();
+		entityID.AddComponent<CameraComponent>().Load(lsp);
 	}
-	if (!entityID.HasComponent<LightComponent>())
+	if (!entityID.HasComponent<LightComponent>() && JsonHasComponent<LightComponent>(entity))
 	{
-		if (!entityID.AddComponent<LightComponent>().Load(references, entity, window))
-			entityID.RemoveComponent<LightComponent>();
+		entityID.AddComponent<LightComponent>().Load(lsp);
 	}
-	if (!entityID.HasComponent<SkyboxComponent>())
+	if (!entityID.HasComponent<ModelComponent>() && JsonHasComponent<ModelComponent>(entity))
 	{
-		if (!entityID.AddComponent<SkyboxComponent>().Load(references, entity, window))
-			entityID.RemoveComponent<SkyboxComponent>();
+		entityID.AddComponent<ModelComponent>().Load(lsp);
 	}
+	if (!entityID.HasComponent<SkyboxComponent>() && JsonHasComponent<SkyboxComponent>(entity))
+	{
+		entityID.AddComponent<SkyboxComponent>().Load(lsp);
+	}
+
 }
 
 void Scene::LoadFromFile(const std::string& filepath, const Ref<graphics::Window>& window)
@@ -189,33 +196,22 @@ void Scene::LoadFromFile(const std::string& filepath, const Ref<graphics::Window
 	std::filesystem::path cwd = std::filesystem::current_path();
 	std::filesystem::path fullSaveFilepath = cwd / std::filesystem::path(filepath);
 
-	if (filepath.find(".gsf") == std::string::npos)
-		fullSaveFilepath += ".gsf";
+	s_Meshes.clear();
+	s_Materials.clear();
+	s_Fonts.clear();
 
-	nlohmann::json scene_gsf_json;
-	std::ifstream openFile(fullSaveFilepath, std::ios::binary);
-	if (openFile.is_open())
-	{
-		openFile >> scene_gsf_json;
-	}
-	else
-	{
-		GEAR_WARN(ErrorCode::GRAPHICS | ErrorCode::NO_FILE, "Unable to open %s.", fullSaveFilepath.c_str());
-		return;
-	}
+	ClearEntities();
 
-	if (scene_gsf_json.empty())
-	{
-		GEAR_WARN(ErrorCode::GRAPHICS | ErrorCode::LOAD_FAILED, "%s is not valid.", fullSaveFilepath.c_str());
-		return;
-	}
+	json scene_gsf;
+	core::LoadJsonFile(fullSaveFilepath.string(), ".gsf", "GEAR_SCENE_FILE", scene_gsf);
 
-	nlohmann::json& scene = scene_gsf_json;
+	json& scene = scene_gsf["scene"];
 	m_CI.debugName = scene["debugName"];
 	m_UUID = core::UUID(scene["uuid"]);
 
-	nlohmann::json& entities = scene["entities"];
-	nlohmann::json& references = scene["references"];
+	json& entities = scene["entities"];
+	json& references = scene["references"];
+
 	for (auto& entity_json : entities)
 	{
 		Entity::CreateInfo entityCI = { this };
@@ -227,31 +223,37 @@ void Scene::LoadFromFile(const std::string& filepath, const Ref<graphics::Window
 	m_Filepath = filepath;
 }
 
-void Scene::SaveEntity(nlohmann::ordered_json& references, nlohmann::ordered_json& entity, Entity entityID)
+void Scene::SaveEntity(json& references, json& entity, Entity entityID)
 {
+	LoadSaveParameters lsp = { this, entity, references, nullptr };
+
 	if (entityID.HasComponent<UUIDComponent>())
 	{
-		entityID.GetComponent<UUIDComponent>().Save(references, entity);
+		entityID.GetComponent<UUIDComponent>().Save(lsp);
 	}
 	if (entityID.HasComponent<NameComponent>())
 	{
-		entityID.GetComponent<NameComponent>().Save(references, entity);
+		entityID.GetComponent<NameComponent>().Save(lsp);
 	}
 	if (entityID.HasComponent<TransformComponent>())
 	{
-		entityID.GetComponent<TransformComponent>().Save(references, entity);
+		entityID.GetComponent<TransformComponent>().Save(lsp);
 	}
 	if (entityID.HasComponent<CameraComponent>())
 	{
-		entityID.GetComponent<CameraComponent>().Save(references, entity);
+		entityID.GetComponent<CameraComponent>().Save(lsp);
 	}
 	if (entityID.HasComponent<LightComponent>())
 	{
-		entityID.GetComponent<LightComponent>().Save(references, entity);
+		entityID.GetComponent<LightComponent>().Save(lsp);
+	}
+	if (entityID.HasComponent<ModelComponent>())
+	{
+		entityID.GetComponent<ModelComponent>().Save(lsp);
 	}
 	if (entityID.HasComponent<SkyboxComponent>())
 	{
-		entityID.GetComponent<SkyboxComponent>().Save(references, entity);
+		entityID.GetComponent<SkyboxComponent>().Save(lsp);
 	}
 }
 
@@ -266,43 +268,31 @@ void Scene::SaveToFile(const std::string& filepath)
 			return;
 	}
 
-	nlohmann::ordered_json scene_gsf_json;
-	nlohmann::ordered_json& scene = scene_gsf_json["scene"];
+	std::filesystem::path cwd = std::filesystem::current_path();
+	std::filesystem::path fullSaveFilepath = cwd / std::filesystem::path(_filepath);
+
+	s_Meshes.clear();
+	s_Materials.clear();
+	s_Fonts.clear();
+
+	json scene_gsf;
+	json& scene = scene_gsf["scene"];
 
 	//Use filename as debugName.
 	scene["debugName"] = m_CI.debugName = std::filesystem::path(_filepath).filename().generic_string();
 	scene["uuid"] = m_UUID.AsUint64_t();
 
-	nlohmann::ordered_json& references = scene["references"];
-	nlohmann::ordered_json& entities = scene["entities"];
+	json& entities = scene["entities"];
+	json& references = scene["references"];
 	m_Registry.each([&](entt::entity entityID)
 		{
 			Entity entity;
 			entity.m_CI = { this };
 			entity.m_Entity = entityID;
 
-			nlohmann::ordered_json& _entity = entities[entity.GetUUID().AsString().c_str()];
+			json& _entity = entities[entity.GetUUID().AsString().c_str()];
 			SaveEntity(references, _entity, entity);
 		});
 
-	std::filesystem::path cwd = std::filesystem::current_path();
-	std::filesystem::path fullSaveFilepath = cwd / std::filesystem::path(_filepath);
-	std::filesystem::path fullSaveFileDir = cwd / std::filesystem::path(_filepath).remove_filename();
-
-	if (_filepath.find(".gsf") == std::string::npos)
-		fullSaveFilepath += ".gsf";
-	
-	if (!std::filesystem::exists(fullSaveFileDir))
-		std::filesystem::create_directory(fullSaveFileDir);
-
-	std::ofstream saveFile(fullSaveFilepath.string(), std::ios::binary);
-	if (!saveFile.is_open())
-	{
-		GEAR_WARN(ErrorCode::SCENE | ErrorCode::NO_FILE, "Can not save to file: %s", fullSaveFilepath.string().c_str());
-		return;
-	}
-	else
-	{
-		saveFile << std::setw(4) << scene;
-	}
+	core::SaveJsonFile(fullSaveFilepath.string(), ".gsf", "GEAR_SCENE_FILE", scene_gsf);
 }

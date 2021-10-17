@@ -38,7 +38,7 @@ void gearbox::componentui::DrawCameraComponentUI(gear::scene::Entity entity, flo
 		op.right = +1.0f;
 		op.bottom = -screenRatio;
 		op.top = +screenRatio;
-		DrawFloat("Near", op.near, 0.0, op.far);
+		DrawFloat("Near", op.near, 0.0f, op.far);
 		DrawFloat("Far", op.far, op.near);
 
 		CI.orthographicsParams = op;

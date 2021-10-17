@@ -43,7 +43,7 @@ void ImageProcessing::GenerateMipMaps(const Ref<miru::crossplatform::CommandBuff
 	{ 
 		RenderPipeline::LoadInfo s_PipelineLI;
 		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/Mipmap.grpf.json";
+		s_PipelineLI.filepath = "res/pipelines/Mipmap.grpf";
 		s_PipelineLI.viewportWidth = 0.0f;
 		s_PipelineLI.viewportHeight = 0.0f;
 		s_PipelineLI.renderPass = nullptr;
@@ -54,7 +54,7 @@ void ImageProcessing::GenerateMipMaps(const Ref<miru::crossplatform::CommandBuff
 	{
 		RenderPipeline::LoadInfo s_PipelineLI;
 		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/MipmapArray.grpf.json";
+		s_PipelineLI.filepath = "res/pipelines/MipmapArray.grpf";
 		s_PipelineLI.viewportWidth = 0.0f;
 		s_PipelineLI.viewportHeight = 0.0f;
 		s_PipelineLI.renderPass = nullptr;
@@ -182,7 +182,7 @@ void ImageProcessing::EquirectangularToCube(const Ref<miru::crossplatform::Comma
 	{
 		RenderPipeline::LoadInfo s_PipelineLI;
 		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/EquirectangularToCube.grpf.json";
+		s_PipelineLI.filepath = "res/pipelines/EquirectangularToCube.grpf";
 		s_PipelineLI.viewportWidth = 0.0f;
 		s_PipelineLI.viewportHeight = 0.0f;
 		s_PipelineLI.renderPass = nullptr;
@@ -310,7 +310,7 @@ void ImageProcessing::DiffuseIrradiance(const Ref<miru::crossplatform::CommandBu
 	{
 		RenderPipeline::LoadInfo s_PipelineLI;
 		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/DiffuseIrradiance.grpf.json";
+		s_PipelineLI.filepath = "res/pipelines/DiffuseIrradiance.grpf";
 		s_PipelineLI.viewportWidth = 0.0f;
 		s_PipelineLI.viewportHeight = 0.0f;
 		s_PipelineLI.renderPass = nullptr;
@@ -426,7 +426,7 @@ void ImageProcessing::SpecularIrradiance(const Ref<miru::crossplatform::CommandB
 	{
 		RenderPipeline::LoadInfo s_PipelineLI;
 		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/SpecularIrradiance.grpf.json";
+		s_PipelineLI.filepath = "res/pipelines/SpecularIrradiance.grpf";
 		s_PipelineLI.viewportWidth = 0.0f;
 		s_PipelineLI.viewportHeight = 0.0f;
 		s_PipelineLI.renderPass = nullptr;
@@ -586,7 +586,7 @@ void ImageProcessing::SpecularBRDF_LUT(const Ref<miru::crossplatform::CommandBuf
 	{
 		RenderPipeline::LoadInfo s_PipelineLI;
 		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/SpecularBRDF_LUT.grpf.json";
+		s_PipelineLI.filepath = "res/pipelines/SpecularBRDF_LUT.grpf";
 		s_PipelineLI.viewportWidth = 0.0f;
 		s_PipelineLI.viewportHeight = 0.0f;
 		s_PipelineLI.renderPass = nullptr;

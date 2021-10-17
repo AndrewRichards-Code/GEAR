@@ -1,7 +1,6 @@
 #include "gearbox_common.h"
 #include "SkyboxComponentUI.h"
 
-#include "ARC/src/FileSystemHelpers.h"
 
 using namespace gear;
 using namespace scene;
@@ -17,13 +16,14 @@ void gearbox::componentui::DrawSkyboxComponentUI(gear::scene::Entity entity)
 	Ref<Skybox>& skybox = entity.GetComponent<SkyboxComponent>().skybox;
 	Skybox::CreateInfo& CI = skybox->m_CI;
 
+	const char* ext = ".hdr";
 	bool hdr = true;
 	DrawCheckbox("HDR", hdr);
 	if (hdr)
 	{
 		if (DrawInputText("Filepath", CI.filepaths[0]))
 		{
-			if(arc::FileExist(CI.filepaths[0]) && CI.filepaths[0].find(".hdr") != std::string::npos)
+			if(std::filesystem::exists(CI.filepaths[0]) && CI.filepaths[0].find(ext) != std::string::npos)
 				skybox->m_Reload = true;
 		}
 	}
@@ -36,11 +36,11 @@ void gearbox::componentui::DrawSkyboxComponentUI(gear::scene::Entity entity)
 	}
 	if (ImGui::BeginDragDropTarget())
 	{
-		const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(".hdr");
+		const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(ext);
 		if (payload)
 		{
 			std::string filepath = (char*)payload->Data;
-			if (arc::FileExist(filepath))
+			if (std::filesystem::exists(filepath))
 			{
 				CI.filepaths[0] = filepath;
 				skybox->m_Reload = true;
@@ -68,7 +68,7 @@ void gearbox::componentui::AddSkyboxComponent(gear::scene::Entity entity, void* 
 		Skybox::CreateInfo skyboxCI;
 		skyboxCI.debugName = "Skybox-HDR";
 		skyboxCI.device = device;
-		skyboxCI.filepaths = { "../GEAR_TEST/res/img/kloppenheim_06_2k.hdr" };
+		skyboxCI.filepaths = { "res/img/kloppenheim_06_2k.hdr" };
 		skyboxCI.generatedCubemapSize = 1024;
 		skyboxCI.transform.translation = Vec3(0, 0, 0);
 		skyboxCI.transform.orientation = Quat(1, 0, 0, 0);

@@ -30,8 +30,6 @@
 //Platfrom Macros
 #include "Core/PlatformMacros.h"
 
-//Removed Window Definition and Set Subsystem
-
 //GEAR Version
 #define GEAR_VERSION_MAJOR 1
 #define GEAR_VERSION_MINOR 0

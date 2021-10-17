@@ -1,6 +1,7 @@
 #pragma once
 #include "Panel.h"
 #include "UIContext.h"
+#include "Objects/Material.h"
 
 namespace gearbox
 {
@@ -24,12 +25,16 @@ namespace gearbox
 				LIBRARY_SYMBOLS,
 				SCRIPT,
 				BINARY,
-				COMPRESSED
+				COMPRESSED,
+
+				GEAR_SCENE,
+				GEAR_ASSET,
+				GEAR_RENDER_PIPELINE
 			};
 
 			struct CreateInfo
 			{
-				Ref<imgui::UIContext>	uiContext;
+				Ref<UIContext>	uiContext;
 				std::filesystem::path	currentFilepath;
 				std::filesystem::path	currentFilepathFull;
 				std::string				filepathExt;
@@ -53,8 +58,9 @@ namespace gearbox
 			bool open = false;
 			bool close = false;
 			bool read = true;
-			size_t fileSize = 0;
 			std::string output;
+
+			Ref<gear::objects::Material> material;
 			
 		};
 	}

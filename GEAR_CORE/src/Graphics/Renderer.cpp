@@ -84,6 +84,17 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 	}
 	SubmitRenderSurface(m_CI.window->GetRenderSurface());
 	InitialiseRenderPipelines(m_RenderSurface);
+
+	//Set Default Objects
+	Light::CreateInfo lightCI;
+	lightCI.debugName = "GEAR_CORE_Light_Renderer";
+	lightCI.device = m_Device;
+	lightCI.type = Light::LightType::POINT;
+	lightCI.colour = mars::Vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	lightCI.transform.translation = mars::Vec3(0.0f, 2.0f, 0.0f);
+	lightCI.transform.orientation = mars::Quat(1, 0, 0, 0);
+	lightCI.transform.scale = mars::Vec3(1.0f, 1.0f, 1.0f);
+	m_DefaultLight = CreateRef<Light>(&lightCI);
 }
 
 Renderer::~Renderer()
@@ -96,14 +107,22 @@ void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface
 	if (!s_RenderPipelines.empty())
 		return;
 	
-	std::vector<std::tuple<std::string, uint32_t, uint32_t>> filepaths =
+	//Filepath, RenderPass Index, Subpass Index
+	std::vector<std::tuple<std::string, size_t, uint32_t>> filepaths =
 	{
-		{ "res/pipelines/PBROpaque.grpf.json",				0, 0 },
-		{ "res/pipelines/HDR.grpf.json",					1, 0 },
-		{ "res/pipelines/Cube.grpf.json",					0, 0 },
-		{ "res/pipelines/Text.grpf.json",					1, 0 },
-		{ "res/pipelines/DebugCoordinateAxes.grpf.json",	1, 0 },
-		{ "res/pipelines/DebugCopy.grpf.json",				2, 0 }
+		{ "res/pipelines/PBROpaque.grpf",			0, 0 },
+		{ "res/pipelines/HDR.grpf",					1, 0 },
+		{ "res/pipelines/Cube.grpf",				0, 0 },
+		{ "res/pipelines/Text.grpf",				1, 0 },
+		{ "res/pipelines/DebugCoordinateAxes.grpf",	1, 0 },
+		{ "res/pipelines/DebugCopy.grpf",			2, 0 }
+	};
+
+	Ref<RenderPass> renderPasses[3] =
+	{
+			renderSurface->GetMainRenderPass(),
+			renderSurface->GetHDRRenderPass(),
+			m_CI.window->GetSwapchainRenderPass()
 	};
 
 	RenderPipeline::LoadInfo renderPipelineLI;
@@ -114,11 +133,7 @@ void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface
 		renderPipelineLI.viewportWidth = static_cast<float>(renderSurface->GetWidth());
 		renderPipelineLI.viewportHeight = static_cast<float>(renderSurface->GetHeight());
 		renderPipelineLI.samples = renderSurface->GetCreateInfo().samples;
-		renderPipelineLI.renderPass = 
-			filepath._Get_rest()._Myfirst._Val == 2 ? 
-			m_CI.window->GetSwapchainRenderPass() :
-			filepath._Get_rest()._Myfirst._Val == 0 ? 
-			renderSurface->GetMainRenderPass() : renderSurface->GetHDRRenderPass();
+		renderPipelineLI.renderPass = renderPasses[filepath._Get_rest()._Myfirst._Val];
 		renderPipelineLI.subpassIndex = filepath._Get_rest()._Get_rest()._Myfirst._Val;
 		Ref<RenderPipeline> renderPipeline = CreateRef<RenderPipeline>(&renderPipelineLI);
 		s_RenderPipelines[renderPipeline->m_CI.debugName] = renderPipeline;
@@ -288,6 +303,12 @@ void Renderer::Upload()
 	}
 	m_ReloadTextures = false;
 
+	//Set Lights
+	if (m_Lights.empty())
+	{
+		m_Lights.push_back(m_DefaultLight);
+	}
+
 	bool preTransferGraphicsTask1 = textureShaderReadOnlyToTransferDst.size();
 	bool preTransferGraphicsTask2 = textureShaderReadOnlyToGeneralBarrier.size();
 	bool preUploadTransferTask = textureUnknownToTransferDstBarrier.size();
@@ -371,8 +392,8 @@ void Renderer::Upload()
 		urti.lights = m_Lights;
 		urti.lightsForce = false;
 		urti.models = allQueue;
-		urti.modelsForce = false;
-		urti.materialsForce = false;
+		urti.modelsForce = true;
+		urti.materialsForce = true;
 		GPUTask::CreateInfo uploadTransferGPUTaskCI;
 		uploadTransferGPUTaskCI.debugName = "Upload - Transfer";
 		uploadTransferGPUTaskCI.task = GPUTask::Task::UPLOAD_RESOURCES;
@@ -678,7 +699,7 @@ void Renderer::BuildDescriptorSetandPools()
 			{
 				descPoolAndSets.setPerRenderPipeline[pipeline.second]->AddBuffer(0, binding, { { m_TextCamera->GetUB()->GetBufferView() } });
 			}
-			else if (name.compare("LIGHTS") == 0 && !m_Lights.empty())
+			else if (name.compare("LIGHTS") == 0 && m_Lights[0])
 			{
 				descPoolAndSets.setPerRenderPipeline[pipeline.second]->AddBuffer(0, binding, { { m_Lights[0]->GetUB()->GetBufferView() } });
 			}
@@ -794,7 +815,6 @@ void Renderer::BuildDescriptorSetandPools()
 				
 				if (name.find("SKYBOX") == 0)
 				{
-					const Ref<Material>& material = m_Skybox->GetModel()->GetMesh()->GetMaterials()[0];
 					const Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedCubemap();
 					descPoolAndSets.setPerMaterial[material]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 				}
@@ -884,7 +904,7 @@ void Renderer::Draw()
 	mainRenderLoopCI.cmdBuffer = graphicsCmdBuffer;
 	mainRenderLoopCI.cmdBufferIndex = m_FrameIndex;
 	mainRenderLoopCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	mainRenderLoopCI.skipTask = false;
+	mainRenderLoopCI.skipTask = !m_Camera;
 	Ref<GPUTask> mainRenderLoop = CreateRef<GPUTask>(&mainRenderLoopCI);
 	mainRenderLoop->Execute();
 
@@ -937,7 +957,7 @@ void Renderer::Draw()
 	hdrMappingCI.cmdBuffer = graphicsCmdBuffer;
 	hdrMappingCI.cmdBufferIndex = m_FrameIndex;
 	hdrMappingCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	hdrMappingCI.skipTask = false;
+	hdrMappingCI.skipTask = !m_Skybox;
 	Ref<GPUTask> hdrMapping = CreateRef<GPUTask>(&hdrMappingCI);
 	hdrMapping->Execute();
 
@@ -967,7 +987,7 @@ void Renderer::Draw()
 	drawCoordinateAxesCI.cmdBuffer = graphicsCmdBuffer;
 	drawCoordinateAxesCI.cmdBufferIndex = m_FrameIndex;
 	drawCoordinateAxesCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	drawCoordinateAxesCI.skipTask = false;
+	drawCoordinateAxesCI.skipTask = !m_Camera;
 	Ref<GPUTask> drawCoordinateAxes = CreateRef<GPUTask>(&drawCoordinateAxesCI);
 	drawCoordinateAxes->Execute();
 
@@ -1048,6 +1068,9 @@ void Renderer::Draw()
 	endSwapchainRenderPassCI.skipTask = false;
 	Ref<GPUTask>endSwapchainRenderPass = CreateRef<GPUTask>(&endSwapchainRenderPassCI);
 	endSwapchainRenderPass->Execute();
+
+	m_ModelQueue.clear();
+	m_TextQueue.clear();
 }
 
 void Renderer::Execute()
@@ -1066,9 +1089,6 @@ void Renderer::Execute()
 
 void Renderer::MainRenderLoop(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets)
 {
-	if (!m_Camera)
-		return;
-
 	for (auto& model : m_ModelQueue)
 	{
 		const Ref<graphics::RenderPipeline>& renderPipeline = s_RenderPipelines[model->GetPipelineName()];
@@ -1094,14 +1114,10 @@ void Renderer::MainRenderLoop(const Ref<miru::crossplatform::CommandBuffer>& cmd
 			cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetCount());
 		}
 	}
-	m_ModelQueue.clear();
 }
 
 void Renderer::HDRMapping(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets)
 {
-	if (!m_Skybox)
-		return;
-
 	const Ref<graphics::RenderPipeline>& renderPipeline = s_RenderPipelines["HDR"];
 	const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
 
@@ -1136,14 +1152,10 @@ void Renderer::DrawTextLines(const Ref<miru::crossplatform::CommandBuffer>& cmdB
 			cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetCount());
 		}
 	}
-	m_TextQueue.clear();
 }
 
 void Renderer::DrawCoordinateAxes(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets)
 {
-	if (!m_Camera)
-		return;
-
 	const Ref<graphics::RenderPipeline>& renderPipeline = s_RenderPipelines["DebugCoordinateAxes"];
 	const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
 

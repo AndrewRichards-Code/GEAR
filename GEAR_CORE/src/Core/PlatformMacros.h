@@ -31,15 +31,15 @@
 #pragma endregion
 
 #pragma region GEAR_XBOX_MACROS
-#if defined(XBOX) || defined(_XBOX_ONE) || defined(_DURANGO)
-	//XDK: XboxOne
-	#define GEAR_PLATFORM_XBOX_ONE_XDK
+#if defined(_GAMING_XBOX_SCARLETT)
+	//GDKX: Gaming.Xbox.Scarlett.x64
+	#define GEAR_PLATFORM_XBOX_SCARLETT
 #elif defined(_GAMING_XBOX) 
 	//GDKX: Gaming.Xbox.XboxOne.x64
 	#define GEAR_PLATFORM_XBOX_ONE_GDKX
-#elif defined(_GAMING_XBOX_SCARLETT)
-	//GDKX: Gaming.Xbox.Scarlett.x64
-	#define GEAR_PLATFORM_XBOX_SCARLETT
+#elif defined(XBOX) || defined(_XBOX_ONE) || defined(_DURANGO)
+	//XDK: XboxOne
+	#define GEAR_PLATFORM_XBOX_ONE_XDK
 #endif
 #pragma endregion
 

@@ -9,24 +9,36 @@
 #include "Objects/Text.h"
 #include "Objects/Transform.h"
 
-#define GEAR_SCENE_COMPONENTS_DEFAULTS(_struct)											\
-_struct() = default;																	\
-_struct(const _struct&) = default;														\
-virtual ~##_struct() = default;															\
-bool Load(nlohmann::json&, nlohmann::json&, const Ref<gear::graphics::Window>& window);	\
-void Save(nlohmann::ordered_json&, nlohmann::ordered_json&)
-
 namespace gear
 {
 namespace scene
 {
-	using namespace objects;
+	class Scene;
+	struct LoadSaveParameters
+	{
+		scene::Scene*					scene;
+		nlohmann::json&					entity;
+		nlohmann::json&					references;
+		const Ref<graphics::Window>&	window;
+	};
+
+	#define GEAR_SCENE_COMPONENTS_DEFAULTS_DECLARATION(_struct)	\
+	_struct() = default;										\
+	_struct(const _struct&) = default;							\
+	virtual ~##_struct() = default;								\
+	void Load(LoadSaveParameters&);								\
+	void Save(LoadSaveParameters&);								\
+	static const std::string s_StructName;
+	
+	#define GEAR_SCENE_COMPONENTS_DEFAULTS_DEFINITION(_struct)	\
+	const std::string gear::scene::_struct::s_StructName = #_struct;
+
 
 	struct UUIDComponent
 	{
 		core::UUID uuid;
 
-		GEAR_SCENE_COMPONENTS_DEFAULTS(UUIDComponent);
+		GEAR_SCENE_COMPONENTS_DEFAULTS_DECLARATION(UUIDComponent);
 		UUIDComponent(const uint64_t _uuid) : uuid(_uuid) {}
 
 		operator const core::UUID&() const { return uuid; }
@@ -36,7 +48,7 @@ namespace scene
 	{
 		std::string name;
 
-		GEAR_SCENE_COMPONENTS_DEFAULTS(NameComponent);
+		GEAR_SCENE_COMPONENTS_DEFAULTS_DECLARATION(NameComponent);
 		NameComponent(const std::string& _name) : name(_name) {}
 
 		operator std::string&() { return name; }
@@ -44,114 +56,86 @@ namespace scene
 
 	struct TransformComponent
 	{
-		Transform transform;
+		objects::Transform transform;
 
-		GEAR_SCENE_COMPONENTS_DEFAULTS(TransformComponent);
-		TransformComponent(const Transform& _transform) : transform(_transform) {}
+		GEAR_SCENE_COMPONENTS_DEFAULTS_DECLARATION(TransformComponent);
+		TransformComponent(const objects::Transform& _transform) : transform(_transform) {}
 
-		operator Transform&() { return transform; }
+		operator objects::Transform&() { return transform; }
 		operator mars::Mat4() { return objects::TransformToMat4(transform); }
 
-		static void Load(const nlohmann::json& parent, Transform& transform);
-		static void Save(nlohmann::ordered_json& parent, const Transform& transform);
+		static void Load(const nlohmann::json& parent, objects::Transform& transform);
+		static void Save(nlohmann::json& parent, const objects::Transform& transform);
 	};
 
 	struct CameraComponent
 	{
-		Ref<Camera> camera;
+		Ref<objects::Camera> camera;
 
-		GEAR_SCENE_COMPONENTS_DEFAULTS(CameraComponent);
-		CameraComponent(Ref<Camera>& _camera) : camera(_camera) {}
-		CameraComponent(Ref<Camera>&& _camera) : camera(std::move(_camera)) {}
-		CameraComponent(Camera::CreateInfo* pCreateInfo) : camera(CreateRef<Camera>(pCreateInfo)) {}
+		GEAR_SCENE_COMPONENTS_DEFAULTS_DECLARATION(CameraComponent);
+		CameraComponent(Ref<objects::Camera>& _camera) : camera(_camera) {}
+		CameraComponent(Ref<objects::Camera>&& _camera) : camera(std::move(_camera)) {}
+		CameraComponent(objects::Camera::CreateInfo* pCreateInfo) : camera(CreateRef<objects::Camera>(pCreateInfo)) {}
 
-		Camera::CreateInfo& GetCreateInfo() { return camera->m_CI; }
+		objects::Camera::CreateInfo& GetCreateInfo() { return camera->m_CI; }
 
-		operator Ref<Camera>&() { return camera; }
+		operator Ref<objects::Camera>&() { return camera; }
 	};
 
 	struct LightComponent
 	{
-		Ref<Light> light;
+		Ref<objects::Light> light;
 
-		GEAR_SCENE_COMPONENTS_DEFAULTS(LightComponent);
-		LightComponent(Ref<Light>& _light) : light(_light) {}
-		LightComponent(Ref<Light>&& _light) : light(std::move(_light)) {}
-		LightComponent(Light::CreateInfo* pCreateInfo) : light(CreateRef<Light>(pCreateInfo)) {}
+		GEAR_SCENE_COMPONENTS_DEFAULTS_DECLARATION(LightComponent);
+		LightComponent(Ref<objects::Light>& _light) : light(_light) {}
+		LightComponent(Ref<objects::Light>&& _light) : light(std::move(_light)) {}
+		LightComponent(objects::Light::CreateInfo* pCreateInfo) : light(CreateRef<objects::Light>(pCreateInfo)) {}
 
-		Light::CreateInfo& GetCreateInfo() { return light->m_CI; }
+		objects::Light::CreateInfo& GetCreateInfo() { return light->m_CI; }
 
-		operator Ref<Light>&() { return light; }
+		operator Ref<objects::Light>&() { return light; }
 	};
 
 	struct ModelComponent
 	{
-		Ref<Model> model;
+		Ref<objects::Model> model;
 
-		GEAR_SCENE_COMPONENTS_DEFAULTS(ModelComponent);
-		ModelComponent(Ref<Model>& _model) : model(_model) {}
-		ModelComponent(Ref<Model>&& _model) : model(std::move(_model)) {}
-		ModelComponent(Model::CreateInfo* pCreateInfo) : model(CreateRef<Model>(pCreateInfo)) {}
+		GEAR_SCENE_COMPONENTS_DEFAULTS_DECLARATION(ModelComponent);
+		ModelComponent(Ref<objects::Model>& _model) : model(_model) {}
+		ModelComponent(Ref<objects::Model>&& _model) : model(std::move(_model)) {}
+		ModelComponent(objects::Model::CreateInfo* pCreateInfo) : model(CreateRef<objects::Model>(pCreateInfo)) {}
 
-		Model::CreateInfo& GetCreateInfo() { return model->m_CI; }
+		objects::Model::CreateInfo& GetCreateInfo() { return model->m_CI; }
 
-		operator Ref<Model>&() { return model; }
+		operator Ref<objects::Model>&() { return model; }
 	};
 
 	struct SkyboxComponent
 	{
-		Ref<Skybox> skybox;
+		Ref<objects::Skybox> skybox;
 
-		GEAR_SCENE_COMPONENTS_DEFAULTS(SkyboxComponent);
-		SkyboxComponent(Ref<Skybox>& _skybox) : skybox(_skybox) {}
-		SkyboxComponent(Ref<Skybox>&& _skybox) : skybox(std::move(_skybox)) {}
-		SkyboxComponent(Skybox::CreateInfo* pCreateInfo) : skybox(CreateRef<Skybox>(pCreateInfo)) {}
+		GEAR_SCENE_COMPONENTS_DEFAULTS_DECLARATION(SkyboxComponent);
+		SkyboxComponent(Ref<objects::Skybox>& _skybox) : skybox(_skybox) {}
+		SkyboxComponent(Ref<objects::Skybox>&& _skybox) : skybox(std::move(_skybox)) {}
+		SkyboxComponent(objects::Skybox::CreateInfo* pCreateInfo) : skybox(CreateRef<objects::Skybox>(pCreateInfo)) {}
 
-		Skybox::CreateInfo& GetCreateInfo() { return skybox->m_CI; }
+		objects::Skybox::CreateInfo& GetCreateInfo() { return skybox->m_CI; }
 
-		operator Ref<Skybox>& () { return skybox; }
+		operator Ref<objects::Skybox>& () { return skybox; }
 	};
 
 	struct TextComponent
 	{
-		Ref<Text> text;
+		Ref<objects::Text> text;
 
-		GEAR_SCENE_COMPONENTS_DEFAULTS(TextComponent);
-		TextComponent(Ref<Text>& _model) : text(_model) {}
-		TextComponent(Ref<Text>&& _model) : text(std::move(_model)) {}
-		TextComponent(Text::CreateInfo* pCreateInfo) : text(CreateRef<Text>(pCreateInfo)) {}
+		GEAR_SCENE_COMPONENTS_DEFAULTS_DECLARATION(TextComponent);
+		TextComponent(Ref<objects::Text>& _model) : text(_model) {}
+		TextComponent(Ref<objects::Text>&& _model) : text(std::move(_model)) {}
+		TextComponent(objects::Text::CreateInfo* pCreateInfo) : text(CreateRef<objects::Text>(pCreateInfo)) {}
 
 		//Text::CreateInfo& GetCreateInfo() { return text->m_CI; }
 
-		operator Ref<Text>& () { return text; }
-	};
-
-	struct MeshComponent
-	{
-		Ref<Mesh> mesh;
-
-		GEAR_SCENE_COMPONENTS_DEFAULTS(MeshComponent);
-		MeshComponent(Ref<Mesh>& _mesh) : mesh(_mesh) {}
-		MeshComponent(Ref<Mesh>&& _mesh) : mesh(std::move(_mesh)) {}
-		MeshComponent(Mesh::CreateInfo* pCreateInfo) : mesh(CreateRef<Mesh>(pCreateInfo)) {}
-
-		Mesh::CreateInfo& GetCreateInfo() { return mesh->m_CI; }
-
-		operator Ref<Mesh>&() { return mesh; }
-	};
-
-	struct MaterialComponent
-	{
-		Ref<Material> material;
-
-		GEAR_SCENE_COMPONENTS_DEFAULTS(MaterialComponent);
-		MaterialComponent(Ref<Material>& _material) : material(_material) {}
-		MaterialComponent(Ref<Material>&& _material) : material(std::move(_material)) {}
-		MaterialComponent(Material::CreateInfo* pCreateInfo) : material(CreateRef<Material>(pCreateInfo)) {}
-
-		Material::CreateInfo& GetCreateInfo() { return material->m_CI; }
-
-		operator Ref<Material>&() { return material; }
+		operator Ref<objects::Text>& () { return text; }
 	};
 
 	class Entity;
@@ -167,5 +151,11 @@ namespace scene
 
 		operator INativeScript*() { return pNativeScript; }
 	};
+
+	template<typename T>
+	bool JsonHasComponent(nlohmann::json& entity)
+	{
+		return !(entity[T::s_StructName].empty());
+	}
 }
 }

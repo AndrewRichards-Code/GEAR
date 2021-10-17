@@ -35,9 +35,11 @@ namespace objects
 		inline const std::vector<Ref<graphics::Vertexbuffer>>& GetVertexBuffers() const { return m_VBs; }
 		inline const std::vector<Ref<graphics::Indexbuffer>>& GetIndexBuffers() const { return m_IBs; }
 		inline const std::vector<Ref<objects::Material>>& GetMaterials() const { return m_Materials; }
+		inline std::vector<Ref<objects::Material>>& GetMaterials() { return m_Materials; }
 		inline const ModelLoader::ModelData& GetModelData() const { return m_CI.data; }
 
 		inline void SetOverrideMaterial(size_t index, const Ref<objects::Material>& material) { m_Materials[index] = material; }
+		inline Ref<objects::Material>& GetMaterial(size_t index) { return m_Materials[index]; }
 	};
 }
 }

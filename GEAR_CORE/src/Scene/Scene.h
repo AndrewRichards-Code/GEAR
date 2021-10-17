@@ -4,7 +4,6 @@
 
 #include "Components.h"
 
-
 namespace gear
 {
 namespace core { class Timer; }
@@ -37,6 +36,7 @@ namespace scene
 		void OnUpdate(Ref<graphics::Renderer>& m_Renderer, core::Timer& timer);
 
 		entt::registry& GetRegistry();
+		inline void ClearEntities() { m_Registry.clear(); }
 
 		void LoadNativeScriptLibrary();
 		void UnloadNativeScriptLibrary();
@@ -44,7 +44,7 @@ namespace scene
 		void LoadEntity(nlohmann::json& references, nlohmann::json& entity, Entity entityID, const Ref<graphics::Window>& window);
 		void LoadFromFile(const std::string& filepath, const Ref<graphics::Window>& window);
 		
-		void SaveEntity(nlohmann::ordered_json& references, nlohmann::ordered_json& entity, Entity entityID);
+		void SaveEntity(nlohmann::json& references, nlohmann::json& entity, Entity entityID);
 		void SaveToFile(const std::string& filepath);
 
 		inline void Play() { m_Playing = true; }
@@ -56,6 +56,11 @@ namespace scene
 		entt::registry m_Registry;
 		bool m_Playing = false;
 		std::string m_Filepath;
+
+	public:
+		std::map<core::UUID, Ref<objects::Mesh>> s_Meshes;
+		std::map<core::UUID, Ref<objects::Material>> s_Materials;
+		std::map<core::UUID, Ref<objects::FontLibrary::Font>> s_Fonts;
 
 		friend class Entity;
 	};

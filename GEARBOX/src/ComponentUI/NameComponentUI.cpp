@@ -11,10 +11,6 @@ using namespace componentui;
 
 void gearbox::componentui::DrawNameComponentUI(gear::scene::Entity entity)
 {
-	if (DrawTreeNode<NameComponent>("Name", entity))
-	{
-		DrawInputText("Name", entity.GetComponent<NameComponent>().name);
-		DrawStaticText("UUID", std::to_string(entity.GetUUID()));
-		EndDrawTreeNode();
-	}
+	DrawInputText("Name", entity.GetComponent<NameComponent>().name);
+	DrawStaticText("UUID", std::to_string(entity.GetUUID()));
 }

@@ -4,7 +4,6 @@
 #include "Objects/Material.h"
 #include "Objects/Transform.h"
 #include "Animation/Animation.h"
-#include "ARC/src/FileSystemHelpers.h"
 
 using namespace gear;
 using namespace animation;
@@ -202,7 +201,7 @@ std::vector<ModelLoader::MeshData> ModelLoader::ProcessMeshes(aiNode* node, cons
 							type = objects::Material::TextureType::UNKNOWN; break;
 						}
 
-						if (arc::FileExist(filepath))
+						if (std::filesystem::exists(filepath))
 						{
 							graphics::Texture::CreateInfo texCI;
 							texCI.device = m_Device;

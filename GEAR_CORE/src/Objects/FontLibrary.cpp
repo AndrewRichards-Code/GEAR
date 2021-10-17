@@ -5,7 +5,6 @@
 #include "FontLibrary.h"
 #include "Graphics/AllocatorManager.h"
 #include "Graphics/Texture.h"
-#include "ARC/src/FileSystemHelpers.h"
 
 using namespace gear;
 using namespace graphics;
@@ -132,7 +131,7 @@ Ref<FontLibrary::Font> FontLibrary::LoadGeneratedFont(const GenerateInfo& GI)
 	std::string filepathPNG = filepath + ".png";
 	std::string filepathBIN = filepath + ".bin";
 
-	if (arc::FileExist(filepathPNG) && arc::FileExist(filepathBIN))
+	if (std::filesystem::exists(filepathPNG) && std::filesystem::exists(filepathBIN))
 	{
 		result = CreateRef<Font>();
 		Texture::DataTypeDataParameters data;

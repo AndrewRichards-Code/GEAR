@@ -1,20 +1,38 @@
 #include "gear_core_common.h"
 
 #include "Components.h"
-#include "Core/TypeLibrary.h"
+#include "Scene.h"
 
 using namespace gear;
 using namespace scene;
+using namespace objects;
 using namespace nlohmann;
+
+//Helper
+template<typename T>
+bool FindByValue(std::map<core::UUID, Ref<T>>& map, Ref<T> value, core::UUID outUUID)
+{
+	for (const auto& entry : map)
+	{
+		if (entry.second == value)
+		{
+			outUUID = entry.first;
+			return true;
+		}
+	}
+	return false;
+}
+
+//References
 
 template <typename T>
 static void LoadReference(const json& references, core::UUID uuid, T& saveData, std::function<void(const json&, T&)> saveDataFunction)
 {
 	const json& reference = references[uuid.AsString().c_str()];
 	bool valid = true;
-	valid |= reference["uuid"] == uuid.AsUint64_t();
-	valid |= reference["type"]["name"] == typeid(T).name();
-	valid |= reference["type"]["hash_code"] == typeid(T).hash_code();
+	valid |= (reference["uuid"] == uuid.AsUint64_t());
+	valid |= (std::string(reference["type"]["name"]).compare(typeid(T).name()) == 0);
+	valid |= (reference["type"]["hash_code"] == typeid(T).hash_code());
 	if (!valid)
 	{
 		GEAR_ASSERT(ErrorCode::SCENE | ErrorCode::INVALID_VALUE, "UUID, typeid::name() or typeid::hash_code() was incorrect.");
@@ -22,82 +40,83 @@ static void LoadReference(const json& references, core::UUID uuid, T& saveData, 
 	const json& data = reference["data"];
 	saveDataFunction(data, saveData);
 }
-
 template <typename T>
-static void SaveReference(ordered_json& references, core::UUID uuid, const T& saveData, std::function<void(ordered_json&, const T&)> saveDataFunction)
+static void SaveReference(json& references, core::UUID uuid, const T& saveData, std::function<void(json&, const T&)> saveDataFunction)
 {
-	ordered_json& reference = references[uuid.AsString().c_str()];
+	json& reference = references[uuid.AsString().c_str()];
 	reference["uuid"] = uuid.AsUint64_t();
 	reference["type"]["name"] = typeid(T).name();
 	reference["type"]["hash_code"] = typeid(T).hash_code();
-	ordered_json& data = reference["data"];
+	json& data = reference["data"];
 	saveDataFunction(data, saveData);
 }
 
-bool UUIDComponent::Load(json& references, json& entity, const Ref<graphics::Window>& window)
+//Components
+
+GEAR_SCENE_COMPONENTS_DEFAULTS_DEFINITION(UUIDComponent);
+void UUIDComponent::Load(LoadSaveParameters& lsp)
 {
-	const json& component = entity["UUIDComponent"];
+	const json& component = lsp.entity["UUIDComponent"];
 	uuid = core::UUID(component["uuid"]);
-	return true;
 }
-void UUIDComponent::Save(ordered_json& references, ordered_json& entity)
+void UUIDComponent::Save(LoadSaveParameters& lsp)
 {
-	ordered_json& component = entity["UUIDComponent"];
+	json& component = lsp.entity["UUIDComponent"];
 	component["uuid"] = uuid.AsUint64_t();
 }
 
-bool NameComponent::Load(json& references, json& entity, const Ref<graphics::Window>& window)
+GEAR_SCENE_COMPONENTS_DEFAULTS_DEFINITION(NameComponent);
+void NameComponent::Load(LoadSaveParameters& lsp)
 {
-	const json& component = entity["NameComponent"];
+	const json& component = lsp.entity["NameComponent"];
 	name = component["name"];
-	return true;
 }
-void NameComponent::Save(ordered_json& references, ordered_json& entity)
+void NameComponent::Save(LoadSaveParameters& lsp)
 {
-	ordered_json& component = entity["NameComponent"];
+	json& component = lsp.entity["NameComponent"];
 	component["name"] = name;
 }
 
+GEAR_SCENE_COMPONENTS_DEFAULTS_DEFINITION(TransformComponent);
+
 void TransformComponent::Load(const json& component, Transform& transform)
 {
-	transform.translation.x = component["translation"][0];
-	transform.translation.y = component["translation"][1];
-	transform.translation.z = component["translation"][2];
-	transform.orientation.s = component["orientation"][0];
-	transform.orientation.i = component["orientation"][1];
-	transform.orientation.j = component["orientation"][2];
-	transform.orientation.k = component["orientation"][3];
-	transform.scale.x = component["scale"][0];
-	transform.scale.y = component["scale"][1];
-	transform.scale.z = component["scale"][2];
+	transform.translation.x = component["transform"]["translation"][0];
+	transform.translation.y = component["transform"]["translation"][1];
+	transform.translation.z = component["transform"]["translation"][2];
+	transform.orientation.s = component["transform"]["orientation"][0];
+	transform.orientation.i = component["transform"]["orientation"][1];
+	transform.orientation.j = component["transform"]["orientation"][2];
+	transform.orientation.k = component["transform"]["orientation"][3];
+	transform.scale.x = component["transform"]["scale"][0];
+	transform.scale.y = component["transform"]["scale"][1];
+	transform.scale.z = component["transform"]["scale"][2];
 }
-void TransformComponent::Save(ordered_json& component, const Transform& transform)
+void TransformComponent::Save(json& component, const Transform& transform)
 {
-	component["translation"] = { transform.translation.x, transform.translation.y, transform.translation.z };
-	component["orientation"] = { transform.orientation.s, transform.orientation.i, transform.orientation.j, transform.orientation.k };
-	component["scale"] = { transform.scale.x, transform.scale.y, transform.scale.z };
+	component["transform"]["translation"] = { transform.translation.x, transform.translation.y, transform.translation.z };
+	component["transform"]["orientation"] = { transform.orientation.s, transform.orientation.i, transform.orientation.j, transform.orientation.k };
+	component["transform"]["scale"] = { transform.scale.x, transform.scale.y, transform.scale.z };
 }
-bool TransformComponent::Load(json& references, json& entity, const Ref<graphics::Window>& window)
+void TransformComponent::Load(LoadSaveParameters& lsp)
 {
-	const json& component = entity["TransformComponent"];
-	Load(component, transform); 
-	return true;
+	const json& component = lsp.entity["TransformComponent"];
+	Load(component, transform);
 }
-void TransformComponent::Save(ordered_json& references, ordered_json& entity)
+void TransformComponent::Save(LoadSaveParameters& lsp)
 {
-	ordered_json& component = entity["TransformComponent"];
+	json& component = lsp.entity["TransformComponent"];
 	Save(component, transform);
 }
 
-bool CameraComponent::Load(json& references, json& entity, const Ref<graphics::Window>& window)
+GEAR_SCENE_COMPONENTS_DEFAULTS_DEFINITION(CameraComponent);
+void CameraComponent::Load(LoadSaveParameters& lsp)
 {
-	const json& component = entity["CameraComponent"];
-	if (component.empty())
-		return false;
+	const json& component = lsp.entity["CameraComponent"];
 
 	Camera::CreateInfo cameraCI;
 	cameraCI.debugName = component["debugName"];
-	cameraCI.device = window->GetDevice();
+	cameraCI.device = lsp.window->GetDevice();
 	TransformComponent::Load(component, cameraCI.transform);
 	cameraCI.projectionType = component["projectionType"];
 	cameraCI.orthographicsParams.left = component["orthographicsParams"]["left"];
@@ -114,11 +133,10 @@ bool CameraComponent::Load(json& references, json& entity, const Ref<graphics::W
 	cameraCI.flipY = component["flipY"];
 
 	camera = CreateRef<Camera>(&cameraCI);
-	return true;
 }
-void CameraComponent::Save(ordered_json& references, ordered_json& entity)
+void CameraComponent::Save(LoadSaveParameters& lsp)
 {
-	ordered_json& component = entity["CameraComponent"];
+	json& component = lsp.entity["CameraComponent"];
 
 	Camera::CreateInfo& cameraCI = GetCreateInfo();
 	component["debugName"] = cameraCI.debugName;
@@ -138,15 +156,14 @@ void CameraComponent::Save(ordered_json& references, ordered_json& entity)
 	component["flipY"] = cameraCI.flipY;
 }
 
-bool LightComponent::Load(json& references, json& entity, const Ref<graphics::Window>& window)
+GEAR_SCENE_COMPONENTS_DEFAULTS_DEFINITION(LightComponent);
+void LightComponent::Load(LoadSaveParameters& lsp)
 {
-	const json& component = entity["LightComponent"];
-	if (component.empty())
-		return false;
+	const json& component = lsp.entity["LightComponent"];
 
 	Light::CreateInfo lightCI;
 	lightCI.debugName = component["debugName"];
-	lightCI.device = window->GetDevice();
+	lightCI.device = lsp.window->GetDevice();
 	lightCI.type = component["type"];
 	lightCI.colour.r = component["colour"][0];
 	lightCI.colour.g = component["colour"][1];
@@ -155,28 +172,130 @@ bool LightComponent::Load(json& references, json& entity, const Ref<graphics::Wi
 	TransformComponent::Load(component, lightCI.transform);
 
 	light = CreateRef<Light>(&lightCI);
-	return true;
 }
-void LightComponent::Save(ordered_json& references, ordered_json& entity)
+void LightComponent::Save(LoadSaveParameters& lsp)
 {
-	ordered_json& component = entity["LightComponent"];
+	json& component = lsp.entity["LightComponent"];
 
 	Light::CreateInfo& lightCI = GetCreateInfo();
 	component["debugName"] = lightCI.debugName;
 	component["type"] = lightCI.type;
-	component["colour"][0] = { lightCI.colour.r, lightCI.colour.g, lightCI.colour.b, lightCI.colour.a };
+	component["colour"] = { lightCI.colour.r, lightCI.colour.g, lightCI.colour.b, lightCI.colour.a };
 	TransformComponent::Save(component, lightCI.transform);
 }
 
-bool SkyboxComponent::Load(json& references, json& entity, const Ref<graphics::Window>& window)
+GEAR_SCENE_COMPONENTS_DEFAULTS_DEFINITION(ModelComponent);
+void ModelComponent::Load(LoadSaveParameters& lsp)
 {
-	const json& component = entity["SkyboxComponent"];
-	if (component.empty())
-		return false;
+	const json& component = lsp.entity["ModelComponent"];
+
+	Ref<Mesh> mesh;
+	core::UUID uuid = core::UUID(component["mesh"]["uuid"]);
+	if (lsp.scene->s_Meshes.find(uuid) != lsp.scene->s_Meshes.end())
+		mesh = lsp.scene->s_Meshes.at(uuid);
+	else
+	{
+		Mesh::CreateInfo meshCI;
+		LoadReference<Mesh::CreateInfo>(lsp.references, uuid, meshCI,
+			[&](const json& data, Mesh::CreateInfo& CI)
+			{
+				CI.debugName = data["debugName"];
+				CI.device = lsp.window->GetDevice();
+				CI.filepath = data["filepath"];
+			});
+
+		mesh = CreateRef<Mesh>(&meshCI);
+	}
+
+	Ref<Material> material;
+	size_t i = 0;
+	for (auto& materialUUID : component["mesh"]["material"])
+	{
+		core::UUID uuid = core::UUID(materialUUID);
+		if (lsp.scene->s_Materials.find(uuid) != lsp.scene->s_Materials.end())
+			material = lsp.scene->s_Materials.at(uuid);
+		else
+		{
+			Material::CreateInfo materialCI;
+			LoadReference<Material::CreateInfo>(lsp.references, uuid, materialCI,
+				[&](const json& data, Material::CreateInfo& CI)
+				{
+					CI.debugName = data["debugName"];
+					CI.device = lsp.window->GetDevice();
+					CI.filepath = data["filepath"];
+				});
+			
+			material = CreateRef<Material>(&materialCI);
+		}
+		mesh->SetOverrideMaterial(i, material);
+		i++;
+	}
+
+	Model::CreateInfo modelCI;
+	modelCI.debugName = component["debugName"];
+	modelCI.device = lsp.window->GetDevice();
+	modelCI.pMesh = mesh;
+	TransformComponent::Load(component, modelCI.transform);
+	modelCI.renderPipelineName = component["renderPipelineName"];
+
+	model = CreateRef<Model>(&modelCI);
+}
+void ModelComponent::Save(LoadSaveParameters& lsp)
+{
+	json& component = lsp.entity["ModelComponent"];
+	
+	Model::CreateInfo& modelCI = GetCreateInfo();
+	Mesh::CreateInfo& meshCI = modelCI.pMesh->m_CI;
+
+	core::UUID uuid;
+	if (!FindByValue(lsp.scene->s_Meshes, modelCI.pMesh, uuid))
+		lsp.scene->s_Meshes.insert({ uuid, modelCI.pMesh });
+
+	SaveReference<Mesh::CreateInfo>(lsp.references, uuid, meshCI,
+		[](json& data, const Mesh::CreateInfo& CI)
+		{
+			data["debugName"] = CI.debugName;
+			data["filepath"] = CI.filepath;
+		});
+
+	component["debugName"] = modelCI.debugName;
+	component["mesh"]["uuid"] = uuid.AsUint64_t();
+	TransformComponent::Save(component, modelCI.transform);
+	component["renderPipelineName"] = modelCI.renderPipelineName;
+
+	for (auto& material : modelCI.pMesh->GetMaterials())
+	{
+		core::UUID uuid;
+		if (!FindByValue(lsp.scene->s_Materials, material, uuid))
+			lsp.scene->s_Materials.insert({ uuid, material });
+
+		Material::CreateInfo& materialCI = material->m_CI;
+		if (materialCI.filepath.empty())
+		{
+			materialCI.filepath = std::string("res/assets/") + materialCI.debugName + std::string(".gaf");
+			core::AssetFile assetFile(materialCI.filepath);
+			material->SaveToAssetFile(assetFile);
+			assetFile.Save();
+		}
+		SaveReference<Material::CreateInfo>(lsp.references, uuid, materialCI,
+			[](json& data, const Material::CreateInfo& CI)
+			{
+				data["debugName"] = CI.debugName;
+				data["filepath"] = CI.filepath;
+			});
+		
+		component["mesh"]["material"].push_back(uuid.AsUint64_t());
+	}
+}
+
+GEAR_SCENE_COMPONENTS_DEFAULTS_DEFINITION(SkyboxComponent);
+void SkyboxComponent::Load(LoadSaveParameters& lsp)
+{
+	const json& component = lsp.entity["SkyboxComponent"];
 
 	Skybox::CreateInfo skyboxCI;
 	skyboxCI.debugName = component["debugName"];
-	skyboxCI.device = window->GetDevice();
+	skyboxCI.device = lsp.window->GetDevice();
 	for(const auto& filepath : component["filepaths"])
 		skyboxCI.filepaths.push_back(filepath);
 	skyboxCI.generatedCubemapSize = component["generatedCubemapSize"];
@@ -185,11 +304,10 @@ bool SkyboxComponent::Load(json& references, json& entity, const Ref<graphics::W
 	skyboxCI.gammaSpace = component["gammaSpace"];
 
 	skybox = CreateRef<Skybox>(&skyboxCI);
-	return true;
 }
-void SkyboxComponent::Save(ordered_json& references, ordered_json& entity)
+void SkyboxComponent::Save(LoadSaveParameters& lsp)
 {
-	ordered_json& component = entity["SkyboxComponent"];
+	json& component = lsp.entity["SkyboxComponent"];
 
 	Skybox::CreateInfo& skyboxCI = GetCreateInfo();
 	component["debugName"] = skyboxCI.debugName;
@@ -201,29 +319,27 @@ void SkyboxComponent::Save(ordered_json& references, ordered_json& entity)
 	component["gammaSpace"] = skyboxCI.gammaSpace;
 }
 
-static core::TypeLibrary<FontLibrary::Font> s_Fonts;
-bool TextComponent::Load(json& references, json& entity, const Ref<graphics::Window>& window)
+GEAR_SCENE_COMPONENTS_DEFAULTS_DEFINITION(TextComponent);
+void TextComponent::Load(LoadSaveParameters& lsp)
 {
-	const json& component = entity["TextComponent"];
-	if (component.empty())
-		return false;
+	const json& component = lsp.entity["TextComponent"];
 
 	Text::CreateInfo textCI;
-	textCI.device = window->GetDevice();
-	textCI.viewportHeight = window->GetWidth();
-	textCI.viewportWidth = window->GetHeight();
+	textCI.device = lsp.window->GetDevice();
+	textCI.viewportHeight = lsp.window->GetWidth();
+	textCI.viewportWidth = lsp.window->GetHeight();
 	text = CreateRef<Text>(&textCI);
 
 	for (auto& line : component["lines"])
 	{
 		Ref<FontLibrary::Font> font;
 		core::UUID uuid = core::UUID(line["font"]);
-		if (s_Fonts.Has(uuid))
-			font = s_Fonts.Get(uuid);
+		if (lsp.scene->s_Fonts.find(uuid) != lsp.scene->s_Fonts.end())
+			font = lsp.scene->s_Fonts.at(uuid);
 		else
 		{
 			FontLibrary::LoadInfo loadInfo;
-			LoadReference<FontLibrary::LoadInfo>(references, uuid, loadInfo,
+			LoadReference<FontLibrary::LoadInfo>(lsp.references, uuid, loadInfo,
 				[](const json& data, FontLibrary::LoadInfo& loadInfo)
 				{
 					loadInfo.GI.filepath = data["GI"]["filepath"];
@@ -237,7 +353,6 @@ bool TextComponent::Load(json& references, json& entity, const Ref<graphics::Win
 			font = fontLib->LoadFont(&loadInfo);
 		}
 
-
 		text->AddLine(
 			font,
 			line["text"],
@@ -246,22 +361,21 @@ bool TextComponent::Load(json& references, json& entity, const Ref<graphics::Win
 			{ line["backgroundColour"][0], line["backgroundColour"][1], line["backgroundColour"][2], line["backgroundColour"][3] }
 		);
 	}
-	return true;
 }
-void TextComponent::Save(ordered_json& references, ordered_json& entity)
+void TextComponent::Save(LoadSaveParameters& lsp)
 {
-	ordered_json& lines = entity["TextComponent"]["lines"];
+	json& lines = lsp.entity["TextComponent"]["lines"];
 
 	size_t idx = 0;
 	for (auto& line : text->GetLines())
 	{
 		core::UUID uuid;
-		if (!s_Fonts.FindUUID(line.font, uuid))
+		if (!FindByValue(lsp.scene->s_Fonts, line.font, uuid))
 		{
-			s_Fonts.Insert(uuid, line.font);
+			lsp.scene->s_Fonts.insert({ uuid, line.font });
 
-			SaveReference<FontLibrary::LoadInfo>(references, uuid, line.font->loadInfo,
-				[](ordered_json& data, const FontLibrary::LoadInfo& loadInfo)
+			SaveReference<FontLibrary::LoadInfo>(lsp.references, uuid, line.font->loadInfo,
+				[](json& data, const FontLibrary::LoadInfo& loadInfo)
 				{
 					data["GI"]["filepath"] = loadInfo.GI.filepath;
 					data["GI"]["fontHeightPx"] = loadInfo.GI.fontHeightPx;
@@ -271,7 +385,7 @@ void TextComponent::Save(ordered_json& references, ordered_json& entity)
 				});
 		}
 
-		ordered_json& _line = lines[std::to_string(idx).c_str()];
+		json& _line = lines[std::to_string(idx).c_str()];
 		_line["font"] = uuid.AsUint64_t();
 		_line["text"] = line.text;
 		_line["position"] = { line.position.x, line.position.y };

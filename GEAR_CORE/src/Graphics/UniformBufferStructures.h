@@ -79,7 +79,7 @@ namespace gear
 					roughness(1),
 					ambientOcclusion(1),
 					pad(0),
-					emissive(1, 1, 1, 1) {}
+					emissive(0, 0, 0, 1) {}
 			#endif	
 
 			};

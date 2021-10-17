@@ -1,9 +1,9 @@
 #include "gear_core_common.h"
 #include "RenderPipeline.h"
-#include "ARC/src/FileSystemHelpers.h"
 #include "Utils/ModelLoader.h"
 
 #include "Core/EnumStringMaps.h"
+#include "Core/JsonFileHelper.h"
 
 using namespace gear;
 using namespace core;
@@ -28,7 +28,7 @@ RenderPipeline::RenderPipeline(CreateInfo* pCreateInfo)
 		}
 		else if (s_ShaderBuildMode == ShaderBuildMode::INCREMENTAL)
 		{
-			if (arc::FileLastWriteTime(shaderCI.binaryFilepath) < arc::FileLastWriteTime(shaderCI.recompileArguments.hlslFilepath))
+			if (std::filesystem::last_write_time(shaderCI.binaryFilepath) < std::filesystem::last_write_time(shaderCI.recompileArguments.hlslFilepath))
 			{
 				m_Shaders.back()->Recompile();
 			}
@@ -56,36 +56,14 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 	std::string finalFilePath = projectDirectory + pLoadInfo->filepath;
 	std::string relativePathFromCwdToProjDir = std::filesystem::path(projectDirectory).lexically_relative(std::filesystem::current_path()).string();
 	
-	json pipeline_grpf_json;
-	std::ifstream pipeline_grpf(finalFilePath, std::ios::binary);
-	if (pipeline_grpf.is_open())
-	{
-		pipeline_grpf >> pipeline_grpf_json;
-	}
-	else
-	{
-		GEAR_WARN(ErrorCode::GRAPHICS | ErrorCode::NO_FILE, "Unable to open %s.", finalFilePath.c_str());
-		return;
-	}
-
-	if (pipeline_grpf_json.empty())
-	{
-		GEAR_WARN(ErrorCode::GRAPHICS | ErrorCode::LOAD_FAILED, "%s is not valid.", finalFilePath.c_str());
-		return;
-	}
-
-	std::string fileType = pipeline_grpf_json["fileType"];
-	if (fileType.compare("GEAR_RENDER_PIPELINE_FILE") != 0)
-	{
-		GEAR_WARN(ErrorCode::GRAPHICS | ErrorCode::NOT_SUPPORTED, "%s is not valid.", finalFilePath.c_str());
-		return;
-	}
-
+	json pipeline_grpf;
+	core::LoadJsonFile(finalFilePath, ".grpf", "GEAR_RENDER_PIPELINE_FILE", pipeline_grpf);
+	
 	RenderPipeline::CreateInfo rpCI = {};
-	rpCI.debugName = pipeline_grpf_json["debugName"];
+	rpCI.debugName = pipeline_grpf["debugName"];
 
 	//Shaders
-	for (auto& shader : pipeline_grpf_json["shaders"])
+	for (auto& shader : pipeline_grpf["shaders"])
 	{
 		Shader::CreateInfo shaderCI;
 		shaderCI.debugName = shader["debugName"];
@@ -97,7 +75,7 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 		shaderCI.binaryFilepath = projectDirectory + std::string(shader["binaryFilepath"]);
 		shaderCI.binaryCode = {};
 
-		auto& recompileArgs = shader["recompileArguments"];
+		json& recompileArgs = shader["recompileArguments"];
 		shaderCI.recompileArguments.mscDirectory = relativePathFromCwdToProjDir + std::string(recompileArgs["mscDirectory"]);
 		shaderCI.recompileArguments.hlslFilepath = relativePathFromCwdToProjDir + std::string(recompileArgs["hlslFilepath"]);
 		shaderCI.recompileArguments.outputDirectory = relativePathFromCwdToProjDir + std::string(recompileArgs["outputDirectory"]);
@@ -127,11 +105,13 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 	}
 
 	//InputAssembly
-	rpCI.inputAssemblyState.topology = PrimitiveTopologyStrings[pipeline_grpf_json["inputAssemblyState"]["topology"]];
-	rpCI.inputAssemblyState.primitiveRestartEnable = pipeline_grpf_json["inputAssemblyState"]["primitiveRestartEnable"];
+	json& inputAssemblyState = pipeline_grpf["inputAssemblyState"];
+	rpCI.inputAssemblyState.topology = PrimitiveTopologyStrings[inputAssemblyState["topology"]];
+	rpCI.inputAssemblyState.primitiveRestartEnable = inputAssemblyState["primitiveRestartEnable"];
 
 	//ViewportState
-	for (auto& viewport : pipeline_grpf_json["viewportState"]["viewports"])
+	json& viewportState = pipeline_grpf["viewportState"];
+	for (auto& viewport : viewportState["viewports"])
 	{
 		rpCI.viewportState.viewports.push_back({
 			viewport["x"],
@@ -142,7 +122,7 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 			viewport["maxDepth"]
 			});
 	}
-	for (auto& scissor : pipeline_grpf_json["viewportState"]["scissors"])
+	for (auto& scissor : viewportState["scissors"])
 	{
 		rpCI.viewportState.scissors.push_back({
 			{
@@ -157,59 +137,65 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 	}
 
 	//RasterisationState
-	rpCI.rasterisationState.depthClampEnable = pipeline_grpf_json["rasterisationState"]["depthClampEnable"];
-	rpCI.rasterisationState.rasteriserDiscardEnable = pipeline_grpf_json["rasterisationState"]["depthClampEnable"];
-	rpCI.rasterisationState.polygonMode = PolygonModeStrings[pipeline_grpf_json["rasterisationState"]["polygonMode"]];
-	rpCI.rasterisationState.cullMode = CullModeBitStrings[pipeline_grpf_json["rasterisationState"]["cullMode"]];
-	rpCI.rasterisationState.frontFace = FrontFaceStrings[pipeline_grpf_json["rasterisationState"]["frontFace"]];
-	rpCI.rasterisationState.depthBiasEnable = pipeline_grpf_json["rasterisationState"]["depthBiasEnable"];
-	rpCI.rasterisationState.depthBiasConstantFactor = pipeline_grpf_json["rasterisationState"]["depthBiasConstantFactor"];
-	rpCI.rasterisationState.depthBiasClamp = pipeline_grpf_json["rasterisationState"]["depthBiasClamp"];
-	rpCI.rasterisationState.depthBiasSlopeFactor = pipeline_grpf_json["rasterisationState"]["depthBiasSlopeFactor"];
-	rpCI.rasterisationState.lineWidth = pipeline_grpf_json["rasterisationState"]["lineWidth"];
+	json& rasterisationState = pipeline_grpf["rasterisationState"];
+	rpCI.rasterisationState.depthClampEnable = rasterisationState["depthClampEnable"];
+	rpCI.rasterisationState.rasteriserDiscardEnable = rasterisationState["depthClampEnable"];
+	rpCI.rasterisationState.polygonMode = PolygonModeStrings[rasterisationState["polygonMode"]];
+	rpCI.rasterisationState.cullMode = CullModeBitStrings[rasterisationState["cullMode"]];
+	rpCI.rasterisationState.frontFace = FrontFaceStrings[rasterisationState["frontFace"]];
+	rpCI.rasterisationState.depthBiasEnable = rasterisationState["depthBiasEnable"];
+	rpCI.rasterisationState.depthBiasConstantFactor = rasterisationState["depthBiasConstantFactor"];
+	rpCI.rasterisationState.depthBiasClamp = rasterisationState["depthBiasClamp"];
+	rpCI.rasterisationState.depthBiasSlopeFactor = rasterisationState["depthBiasSlopeFactor"];
+	rpCI.rasterisationState.lineWidth = rasterisationState["lineWidth"];
 
 	//MultisampleState
-	rpCI.multisampleState.rasterisationSamples = std::string(pipeline_grpf_json["multisampleState"]["rasterisationSamples"]).compare("FRAMEBUFFER_SAMPLE_COUNT") == 0 ? pLoadInfo->samples : SampleCountBitStrings[pipeline_grpf_json["multisampleState"]["rasterisationSamples"]];
-	rpCI.multisampleState.sampleShadingEnable = pipeline_grpf_json["multisampleState"]["sampleShadingEnable"];
-	rpCI.multisampleState.minSampleShading = pipeline_grpf_json["multisampleState"]["minSampleShading"];
-	rpCI.multisampleState.alphaToCoverageEnable = pipeline_grpf_json["multisampleState"]["alphaToCoverageEnable"];
-	rpCI.multisampleState.alphaToOneEnable = pipeline_grpf_json["multisampleState"]["alphaToOneEnable"];
+	json& multisampleState = pipeline_grpf["multisampleState"];
+	rpCI.multisampleState.rasterisationSamples = std::string(multisampleState["rasterisationSamples"]).compare("FRAMEBUFFER_SAMPLE_COUNT") == 0 ? pLoadInfo->samples : SampleCountBitStrings[multisampleState["rasterisationSamples"]];
+	rpCI.multisampleState.sampleShadingEnable = multisampleState["sampleShadingEnable"];
+	rpCI.multisampleState.minSampleShading = multisampleState["minSampleShading"];
+	rpCI.multisampleState.alphaToCoverageEnable = multisampleState["alphaToCoverageEnable"];
+	rpCI.multisampleState.alphaToOneEnable = multisampleState["alphaToOneEnable"];
 
 	//DepthStencilState
-	rpCI.depthStencilState.depthTestEnable = pipeline_grpf_json["depthStencilState"]["depthTestEnable"];
-	rpCI.depthStencilState.depthWriteEnable = pipeline_grpf_json["depthStencilState"]["depthWriteEnable"];
-	rpCI.depthStencilState.depthCompareOp = CompareOpStrings[pipeline_grpf_json["depthStencilState"]["depthCompareOp"]];
-	rpCI.depthStencilState.depthBoundsTestEnable = pipeline_grpf_json["depthStencilState"]["depthBoundsTestEnable"];
-	rpCI.depthStencilState.stencilTestEnable = pipeline_grpf_json["depthStencilState"]["stencilTestEnable"];
+	json& depthStencilState = pipeline_grpf["depthStencilState"];
+	rpCI.depthStencilState.depthTestEnable = depthStencilState["depthTestEnable"];
+	rpCI.depthStencilState.depthWriteEnable = depthStencilState["depthWriteEnable"];
+	rpCI.depthStencilState.depthCompareOp = CompareOpStrings[depthStencilState["depthCompareOp"]];
+	rpCI.depthStencilState.depthBoundsTestEnable = depthStencilState["depthBoundsTestEnable"];
+	rpCI.depthStencilState.stencilTestEnable = depthStencilState["stencilTestEnable"];
 	if (rpCI.depthStencilState.stencilTestEnable)
 	{
-		rpCI.depthStencilState.front.failOp = StencilOpStrings[pipeline_grpf_json["depthStencilState"]["front"]["failOp"]];
-		rpCI.depthStencilState.front.passOp = StencilOpStrings[pipeline_grpf_json["depthStencilState"]["front"]["passOp"]];
-		rpCI.depthStencilState.front.depthFailOp = StencilOpStrings[pipeline_grpf_json["depthStencilState"]["front"]["depthFailOp"]];
-		rpCI.depthStencilState.front.compareOp = CompareOpStrings[pipeline_grpf_json["depthStencilState"]["front"]["compareOp"]];
-		rpCI.depthStencilState.front.compareMask = pipeline_grpf_json["depthStencilState"]["front"]["compareMask"];
-		rpCI.depthStencilState.front.writeMask = pipeline_grpf_json["depthStencilState"]["front"]["writeMask"];
-		rpCI.depthStencilState.front.reference = pipeline_grpf_json["depthStencilState"]["front"]["reference"];
-		rpCI.depthStencilState.back.failOp = StencilOpStrings[pipeline_grpf_json["depthStencilState"]["back"]["failOp"]];
-		rpCI.depthStencilState.back.passOp = StencilOpStrings[pipeline_grpf_json["depthStencilState"]["back"]["passOp"]];
-		rpCI.depthStencilState.back.depthFailOp = StencilOpStrings[pipeline_grpf_json["depthStencilState"]["back"]["depthFailOp"]];
-		rpCI.depthStencilState.back.compareOp = CompareOpStrings[pipeline_grpf_json["depthStencilState"]["back"]["compareOp"]];
-		rpCI.depthStencilState.back.compareMask = pipeline_grpf_json["depthStencilState"]["back"]["compareMask"];
-		rpCI.depthStencilState.back.writeMask = pipeline_grpf_json["depthStencilState"]["back"]["writeMask"];
-		rpCI.depthStencilState.back.reference = pipeline_grpf_json["depthStencilState"]["back"]["reference"];
+		json& front = depthStencilState["front"];
+		rpCI.depthStencilState.front.failOp = StencilOpStrings[front["failOp"]];
+		rpCI.depthStencilState.front.passOp = StencilOpStrings[front["passOp"]];
+		rpCI.depthStencilState.front.depthFailOp = StencilOpStrings[front["depthFailOp"]];
+		rpCI.depthStencilState.front.compareOp = CompareOpStrings[front["compareOp"]];
+		rpCI.depthStencilState.front.compareMask = front["compareMask"];
+		rpCI.depthStencilState.front.writeMask = front["writeMask"];
+		rpCI.depthStencilState.front.reference = front["reference"];
+		json& back = depthStencilState["back"];
+		rpCI.depthStencilState.back.failOp = StencilOpStrings[back["failOp"]];
+		rpCI.depthStencilState.back.passOp = StencilOpStrings[back["passOp"]];
+		rpCI.depthStencilState.back.depthFailOp = StencilOpStrings[back["depthFailOp"]];
+		rpCI.depthStencilState.back.compareOp = CompareOpStrings[back["compareOp"]];
+		rpCI.depthStencilState.back.compareMask = back["compareMask"];
+		rpCI.depthStencilState.back.writeMask = back["writeMask"];
+		rpCI.depthStencilState.back.reference = back["reference"];
 	}
 	else
 	{
 		rpCI.depthStencilState.front = {};
 		rpCI.depthStencilState.back = {};
 	}
-	rpCI.depthStencilState.minDepthBounds = pipeline_grpf_json["depthStencilState"]["minDepthBounds"];
-	rpCI.depthStencilState.maxDepthBounds = pipeline_grpf_json["depthStencilState"]["maxDepthBounds"];
+	rpCI.depthStencilState.minDepthBounds = depthStencilState["minDepthBounds"];
+	rpCI.depthStencilState.maxDepthBounds = depthStencilState["maxDepthBounds"];
 
 	//ColourBlendState
-	rpCI.colourBlendState.logicOpEnable = pipeline_grpf_json["colourBlendState"]["logicOpEnable"];
-	rpCI.colourBlendState.logicOp = LogicOpStrings[pipeline_grpf_json["colourBlendState"]["logicOp"]];
-	for (auto& attachment : pipeline_grpf_json["colourBlendState"]["attachments"])
+	json& colourBlendState = pipeline_grpf["colourBlendState"];
+	rpCI.colourBlendState.logicOpEnable = colourBlendState["logicOpEnable"];
+	rpCI.colourBlendState.logicOp = LogicOpStrings[colourBlendState["logicOp"]];
+	for (auto& attachment : colourBlendState["attachments"])
 	{
 		ColourComponentBit ccb = ColourComponentBit(0);
 		for (auto& cc : attachment["colourWriteMask"])
@@ -226,10 +212,10 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 			ccb
 			});
 	}
-	rpCI.colourBlendState.blendConstants[0] = pipeline_grpf_json["colourBlendState"]["blendConstants"][0];
-	rpCI.colourBlendState.blendConstants[1] = pipeline_grpf_json["colourBlendState"]["blendConstants"][1];
-	rpCI.colourBlendState.blendConstants[2] = pipeline_grpf_json["colourBlendState"]["blendConstants"][2];
-	rpCI.colourBlendState.blendConstants[3] = pipeline_grpf_json["colourBlendState"]["blendConstants"][3];
+	rpCI.colourBlendState.blendConstants[0] = colourBlendState["blendConstants"][0];
+	rpCI.colourBlendState.blendConstants[1] = colourBlendState["blendConstants"][1];
+	rpCI.colourBlendState.blendConstants[2] = colourBlendState["blendConstants"][2];
+	rpCI.colourBlendState.blendConstants[3] = colourBlendState["blendConstants"][3];
 
 	//RenderPass
 	rpCI.renderPass = pLoadInfo->renderPass;
@@ -353,7 +339,7 @@ void RenderPipeline::RecompileShaders()
 		}
 		else if (s_ShaderBuildMode == ShaderBuildMode::INCREMENTAL)
 		{
-			if (arc::FileLastWriteTime(shader->GetCreateInfo().binaryFilepath) < arc::FileLastWriteTime(shader->GetCreateInfo().recompileArguments.hlslFilepath))
+			if (std::filesystem::last_write_time(shader->GetCreateInfo().binaryFilepath) < std::filesystem::last_write_time(shader->GetCreateInfo().recompileArguments.hlslFilepath))
 			{
 				shader->Recompile();
 			}

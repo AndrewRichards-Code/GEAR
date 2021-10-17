@@ -1,0 +1,67 @@
+{
+    "fileType": "GEAR_ASSET_FILE",
+    "material": {
+        "debugName": "defaultMat",
+        "pbrConstants": {
+            "albedo": [
+                0.550000011920929,
+                0.550000011920929,
+                0.550000011920929,
+                1.0
+            ],
+            "ambientOcclusion": 1.0,
+            "emissive": [
+                0.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "fresnel": [
+                0.8999999761581421,
+                0.8999999761581421,
+                0.8999999761581421,
+                1.0
+            ],
+            "metallic": 1.0,
+            "roughness": 0.75
+        },
+        "textures": {
+            "albedo": {
+                "debugName": "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img/drone\\Totally_LP_defaultMat_BaseColor.png",
+                "filepath": "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img/drone\\Totally_LP_defaultMat_BaseColor.png",
+                "linear": false,
+                "textureType": "albedo"
+            },
+            "ambientOcclusion": {
+                "debugName": "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img/drone\\Totally_LP_defaultMat_Occlusion.png",
+                "filepath": "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img/drone\\Totally_LP_defaultMat_Occlusion.png",
+                "linear": false,
+                "textureType": "ambientOcclusion"
+            },
+            "emissive": {
+                "debugName": "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img/drone\\Totally_LP_defaultMat_Emissive.png",
+                "filepath": "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img/drone\\Totally_LP_defaultMat_Emissive.png",
+                "linear": false,
+                "textureType": "emissive"
+            },
+            "metallic": {
+                "debugName": "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img/drone\\Totally_LP_defaultMat_Metallic.png",
+                "filepath": "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img/drone\\Totally_LP_defaultMat_Metallic.png",
+                "linear": false,
+                "textureType": "metallic"
+            },
+            "normal": {
+                "debugName": "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img/drone\\Totally_LP_defaultMat_Normal.png",
+                "filepath": "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img/drone\\Totally_LP_defaultMat_Normal.png",
+                "linear": false,
+                "textureType": "normal"
+            },
+            "roughness": {
+                "debugName": "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img/drone\\Totally_LP_defaultMat_Roughness.png",
+                "filepath": "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img/drone\\Totally_LP_defaultMat_Roughness.png",
+                "linear": false,
+                "textureType": "roughness"
+            }
+        }
+    }
+}

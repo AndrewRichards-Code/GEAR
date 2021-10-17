@@ -19,7 +19,7 @@ ContentBrowserPanel::ContentBrowserPanel(CreateInfo* pCreateInfo)
 
 	gear::graphics::Texture::CreateInfo tCI;
 	tCI.debugName = "GEARBOX: FolderTexture";
-	tCI.device = m_CI.uiContext->GetCreateInfo().window->GetDevice();
+	tCI.device = m_CI.uiContext->GetDevice();
 	tCI.dataType = Texture::DataType::FILE;
 	tCI.file.filepaths = { m_FolderTextureFilepath };
 	tCI.mipLevels = 1;
@@ -37,19 +37,19 @@ ContentBrowserPanel::ContentBrowserPanel(CreateInfo* pCreateInfo)
 	for (auto& fileExt : m_FileExtTextureFilepath)
 	{
 		tCI.debugName = "GEARBOX: FileTexture: " + arc::ToUpper(fileExt.extension);
-		std::string filepath = "icons/" + fileExt.filename;
+		std::string filepath = fileExt.filename;
 		tCI.file.filepaths = { filepath };
 		fileExt.texture = CreateRef<Texture>(&tCI);
 	}
 
 	{
-		CommandPool::CreateInfo cmdPoolCI = { "ContentBrowser", m_CI.uiContext->GetCreateInfo().window->GetContext(), CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT, CommandPool::QueueType::GRAPHICS };
+		CommandPool::CreateInfo cmdPoolCI = { "ContentBrowser", m_CI.uiContext->GetContext(), CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT, CommandPool::QueueType::GRAPHICS };
 		Ref<CommandPool> cmdPool = CommandPool::Create(&cmdPoolCI);
 
 		CommandBuffer::CreateInfo cmdBufferCI = { "ContentBrowser", cmdPool, CommandBuffer::Level::PRIMARY, 1, false };
 		Ref<CommandBuffer> cmdBuffer = CommandBuffer::Create(&cmdBufferCI);
 
-		Fence::CreateInfo fenceCI = { "ContentBrowser", m_CI.uiContext->GetCreateInfo().window->GetDevice(), false, UINT64_MAX };
+		Fence::CreateInfo fenceCI = { "ContentBrowser", m_CI.uiContext->GetDevice(), false, UINT64_MAX };
 		Ref<Fence> fence = Fence::Create(&fenceCI);
 
 		cmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
@@ -79,10 +79,10 @@ ContentBrowserPanel::ContentBrowserPanel(CreateInfo* pCreateInfo)
 		fence->Wait();
 	}
 
-	m_FolderTextureID = GetTextureID(m_FolderTexture->GetTextureImageView(), m_CI.uiContext, false, 0);
-	m_FileTextureID = GetTextureID(m_FileTexture->GetTextureImageView(), m_CI.uiContext, false, 0);
+	m_FolderTextureID = GetTextureID(m_FolderTexture->GetTextureImageView(), m_CI.uiContext, false);
+	m_FileTextureID = GetTextureID(m_FileTexture->GetTextureImageView(), m_CI.uiContext, false);
 	for (auto& fileExt : m_FileExtTextureFilepath)
-		fileExt.id= GetTextureID(fileExt.texture->GetTextureImageView(), m_CI.uiContext, false, 0);
+		fileExt.id= GetTextureID(fileExt.texture->GetTextureImageView(), m_CI.uiContext, false);
 	
 }
 
@@ -105,16 +105,15 @@ void ContentBrowserPanel::Draw()
 			m_CI.currentPath = m_CI.currentPath.parent_path();
 		}
 		static float iconSize = 128.0f;
-		//DrawFloat("Icon Size", iconSize, 32.0f, 256.0f, 100.0f, 1.0f);
 
 		std::string currentPathStr = m_CI.currentPath.generic_string();
 		DrawInputText("Current Path", currentPathStr);
 		m_CI.currentPath = currentPathStr;
 
 		//Order the directory entries to be folder first
-		std::filesystem::directory_iterator dirIt(m_CI.currentPath);
+		std::filesystem::directory_iterator directory_it(m_CI.currentPath);
 		std::vector<std::filesystem::directory_entry> directories;
-		std::copy(dirIt, std::filesystem::directory_iterator(), std::back_inserter(directories));
+		std::copy(directory_it, std::filesystem::directory_iterator(), std::back_inserter(directories));
 		std::sort(directories.begin(), directories.end(), 
 			[](const std::filesystem::directory_entry& de1, const std::filesystem::directory_entry& de2) 
 			{
@@ -134,7 +133,6 @@ void ContentBrowserPanel::Draw()
 			const std::string& pathStr = path.generic_u8string();
 			const std::string& pathExtStr = path.extension().generic_string();
 
-			//ImGui::SetColumnWidth(i++, iconSize + 16);
 			ImGui::PushID(pathStr.c_str());
 
 			//Get icon texture

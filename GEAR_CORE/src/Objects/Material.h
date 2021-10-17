@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/AssetFile.h"
 #include "gear_core_common.h"
 #include "Graphics/RenderPipeline.h"
 #include "Graphics/Texture.h"
@@ -29,8 +30,9 @@ namespace objects
 			void*											device;
 			std::map<TextureType, Ref<graphics::Texture>>	pbrTextures;
 			graphics::UniformBufferStructures::PBRConstants	pbrConstants;
+			std::string										filepath; //Optional
 		};
-	
+
 	private:
 		static Ref<graphics::Texture> s_WhiteTexture;
 		static Ref<graphics::Texture> s_BlueNormalTexture;
@@ -69,6 +71,7 @@ namespace objects
 	
 		//Update material based current Material::CreateInfo m_CI.
 		void Update();
+		void SetDefaultPBRTextures();
 
 		void AddProperties(const Properties& properties);
 		
@@ -91,6 +94,10 @@ namespace objects
 	private:
 		void InitialiseUB();
 		void CreateDefaultColourTextures();
+
+	public:
+		void LoadFromAssetFile(const core::AssetFile& inAssetFile);
+		void SaveToAssetFile(core::AssetFile& outAssetFile);
 	};
 }
 }

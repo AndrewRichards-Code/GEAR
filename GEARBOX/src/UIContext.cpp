@@ -13,7 +13,6 @@
 #include "directx12/D3D12Swapchain.h"
 
 using namespace gearbox;
-using namespace imgui;
 using namespace panels;
 
 using namespace miru;
@@ -116,6 +115,28 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 		VkResult res = vkCreateDescriptorPool(vkContext->m_Device, &m_VulkanDescriptorPoolCI, nullptr, &m_VulkanDescriptorPool);
 		GEAR_ASSERT(res, "GEARBOX: Failed to Create VkDescriptorPool for ImGui.");
 
+		//Create Default Sampler
+		m_VulkanSamplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		m_VulkanSamplerCI.pNext = nullptr;
+		m_VulkanSamplerCI.flags = 0;
+		m_VulkanSamplerCI.magFilter = VK_FILTER_LINEAR;
+		m_VulkanSamplerCI.minFilter = VK_FILTER_LINEAR;
+		m_VulkanSamplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+		m_VulkanSamplerCI.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		m_VulkanSamplerCI.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		m_VulkanSamplerCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		m_VulkanSamplerCI.mipLodBias = 0.0f;
+		m_VulkanSamplerCI.anisotropyEnable = false;
+		m_VulkanSamplerCI.maxAnisotropy = 1.0f;
+		m_VulkanSamplerCI.compareEnable = false;
+		m_VulkanSamplerCI.compareOp = VK_COMPARE_OP_NEVER;
+		m_VulkanSamplerCI.minLod = 0;
+		m_VulkanSamplerCI.maxLod = 0;
+		m_VulkanSamplerCI.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+		m_VulkanSamplerCI.unnormalizedCoordinates = false;
+		res = vkCreateSampler(vkContext->m_Device, &m_VulkanSamplerCI, nullptr, &m_VulkanSampler);
+		GEAR_ASSERT(res, "GEARBOX: Failed to Create VkDescriptorPool for ImGui.");
+
 		ImGui_ImplVulkan_InitInfo imGuiVulkanInitInfo = {};
 		imGuiVulkanInitInfo.Instance = vkContext->m_Instance;
 		imGuiVulkanInitInfo.PhysicalDevice = vkContext->m_PhysicalDevices.m_PhysicalDevices[0];
@@ -204,6 +225,7 @@ void UIContext::ShutDown()
 	if (m_API == GraphicsAPI::API::VULKAN)
 	{
 		VkDevice device = ref_cast<vulkan::Context>(m_CI.window->GetContext())->m_Device;
+		vkDestroySampler(device, m_VulkanSampler, nullptr);
 		vkDestroyDescriptorPool(device, m_VulkanDescriptorPool, nullptr);
 	}
 	else if (m_API == GraphicsAPI::API::D3D12)
