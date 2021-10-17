@@ -11,17 +11,23 @@
 
 //Core
 #include "Core/Application.h"
+#include "Core/AssetFile.h"
 //#include "Core/EntryPoint.h"
 #include "Core/EnumStringMaps.h"
+#include "Core/FileDialog.h"
+#include "Core/JsonFileHelper.h"
 #include "Core/PlatformMacros.h"
 #include "Core/Sequencer.h"
 #include "Core/Timer.h"
+#include "Core/UUID.h"
 
 //Graphics
 #include "Graphics/AllocatorManager.h"
-#include "Graphics/Framebuffer.h"
+#include "Graphics/Colour.h"
+#include "Graphics/FrameGraph.h"
 #include "Graphics/ImageProcessing.h"
 #include "Graphics/Indexbuffer.h"
+#include "Graphics/PostProcessing.h"
 #include "Graphics/Renderer.h"
 #include "Graphics/RenderPipeline.h"
 #include "Graphics/RenderSurface.h"
@@ -40,11 +46,12 @@
 #include "Objects/FontLibrary.h"
 #include "Objects/Light.h"
 #include "Objects/Material.h"
+#include "Objects/Mesh.h"
 #include "Objects/Model.h"
+//#include "Objects/Probe.h"
 #include "Objects/Skybox.h"
 #include "Objects/Text.h"
 #include "Objects/Transform.h"
-//#include "objects/probe.h"
 
 //Scene
 #include "Scene/Components.h"

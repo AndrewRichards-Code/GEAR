@@ -1,7 +1,7 @@
 #include "gearbox_common.h"
 #include "UIContext.h"
 #include "Panels/Panels.h"
-#include "Core/FileDialog.h"
+#include "ComponentUI/ComponentUI.h"
 
 #include "vulkan/VKContext.h"
 #include "vulkan/VKCommandPoolBuffer.h"
@@ -468,6 +468,49 @@ void UIContext::DrawMenuBar()
 			ImGui::EndPopup();
 		}
 	};
+	auto GEARBOXOptions = [&]()
+	{
+		if (!ImGui::IsPopupOpen("GEARBOX Options"))
+			ImGui::OpenPopup("GEARBOX Options");
+
+		if (ImGui::BeginPopupModal("GEARBOX Options"))
+		{
+			static GraphicsAPI::API api;
+			static debug::GraphicsDebugger::DebuggerType graphicsDebugger;
+
+			nlohmann::json data;
+			std::string configFilepath = (std::filesystem::current_path() / std::filesystem::path("config.gbcf")).string();
+			static bool loaded = false;
+			if (std::filesystem::exists(configFilepath) && !loaded)
+			{
+				gear::core::LoadJsonFile(configFilepath, ".gbcf", "GEARBOX_CONFIG_FILE", data);
+
+				api = (GraphicsAPI::API)data["options"]["api"];
+				graphicsDebugger = (debug::GraphicsDebugger::DebuggerType)data["options"]["graphicsDebugger"];
+				loaded = true;
+			}
+
+			componentui::DrawDropDownMenu("API", { "Unknown", "D3D12", "Vulkan" }, api, 130.0f);
+			componentui::DrawDropDownMenu("Graphics Debugger", { "None", "PIX", "RenderDoc" }, graphicsDebugger, 130.0f);
+
+			if (ImGui::Button("Save Options and Exit", ImVec2(160, 0)))
+			{
+				data["options"]["api"] = api;
+				data["options"]["graphicsDebugger"] = graphicsDebugger;
+				gear::core::SaveJsonFile(configFilepath, ".gbcf", "GEARBOX_CONFIG_FILE", data);
+
+				Exit();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Close", ImVec2(90, 0)))
+			{
+				loaded = false;
+				ImGui::CloseCurrentPopup();
+				PopupWindow = nullptr;
+			}
+			ImGui::EndPopup();
+		}
+	};
 
 	
 	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_N }))
@@ -496,6 +539,14 @@ void UIContext::DrawMenuBar()
 			
 			ImGui::EndMenu();
 		}
+		if (ImGui::BeginMenu("Settings"))
+		{
+			if (ImGui::MenuItem("GEARBOX Options"))
+			{
+				PopupWindow = GEARBOXOptions;
+			}
+			ImGui::EndMenu();
+		}
 		if (ImGui::BeginMenu("Help"))
 		{
 			if (ImGui::MenuItem("About", nullptr, false))
@@ -510,6 +561,8 @@ void UIContext::DrawMenuBar()
 
 	if (PopupWindow)
 		PopupWindow();
+
+	
 }
 
 static ImVec4 operator+(ImVec4& a, ImVec4& b)
