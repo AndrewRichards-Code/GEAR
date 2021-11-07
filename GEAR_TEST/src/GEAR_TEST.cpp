@@ -45,8 +45,8 @@ void GEAR_TEST::Run()
 	Ref<Scene> activeScene = CreateRef<Scene>(&sceneCI);
 
 	Window::CreateInfo windowCI;
-	windowCI.api = GraphicsAPI::API::D3D12;
-	//windowCI.api = GraphicsAPI::API::VULKAN;
+	//windowCI.api = GraphicsAPI::API::D3D12;
+	windowCI.api = GraphicsAPI::API::VULKAN;
 	windowCI.title = "GEAR_TEST";
 	windowCI.width = 1920;
 	windowCI.height = 1080;
@@ -312,7 +312,6 @@ void GEAR_TEST::Run()
 	bool initMouse = true;
 	core::Timer timer;
 
-	bool windowResize = false;
 	while (!window->Closed())
 	{
 		ref_cast<Animator>(sequencer)->Update();
@@ -407,7 +406,6 @@ void GEAR_TEST::Run()
 		m_Renderer->SubmitRenderSurface(window->GetRenderSurface());
 		m_Renderer->Execute();
 
-		m_Renderer->Present(windowResize);
 		window->Update();
 		window->CalculateFPS();
 	}

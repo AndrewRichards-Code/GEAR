@@ -29,7 +29,6 @@ FontLibrary::~FontLibrary()
 Ref<FontLibrary::Font> FontLibrary::LoadFont(LoadInfo* pLoadInfo)
 {
 	Ref<FontLibrary::Font> result;
-	result->loadInfo = *pLoadInfo;
 
 	if (pLoadInfo->regenerateTextureAtlas)
 	{
@@ -37,6 +36,7 @@ Ref<FontLibrary::Font> FontLibrary::LoadFont(LoadInfo* pLoadInfo)
 	}
 	result = LoadGeneratedFont(pLoadInfo->GI);
 	
+	result->loadInfo = *pLoadInfo;
 	return std::move(result);
 }
 
