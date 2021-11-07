@@ -58,9 +58,9 @@ namespace graphics
 		//Present Synchronisation Primitives
 		std::vector<Ref<miru::crossplatform::Fence>> m_DrawFences;
 		miru::crossplatform::Fence::CreateInfo m_DrawFenceCI;
-		std::vector<Ref<miru::crossplatform::Semaphore>>m_AcquireSemaphores;
+		Ref<miru::crossplatform::Semaphore> m_AcquireSemaphore;
 		miru::crossplatform::Semaphore::CreateInfo m_AcquireSemaphoreCI;
-		std::vector<Ref<miru::crossplatform::Semaphore>>m_SubmitSemaphores;
+		Ref<miru::crossplatform::Semaphore> m_SubmitSemaphore;
 		miru::crossplatform::Semaphore::CreateInfo m_SubmitSemaphoreCI;
 
 		//Renderering Objects
@@ -97,9 +97,11 @@ namespace graphics
 		void SubmitTextLine(const Ref<objects::Model>& obj);
 
 	private:
+		void AcquireNextImage();
 		void Upload();
 		void BuildDescriptorSetandPools();
 		void Draw();
+		void Present();
 
 	public:
 		void Execute();
@@ -116,7 +118,6 @@ namespace graphics
 		typedef void(Renderer::*PFN_RendererFunction)(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets);
 
 	public:
-		void Present(bool& windowResize);
 
 		void ResizeRenderPipelineViewports(uint32_t width, uint32_t height);
 		void RecompileRenderPipelineShaders();

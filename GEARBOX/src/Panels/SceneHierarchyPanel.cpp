@@ -22,7 +22,22 @@ void SceneHierarchyPanel::Draw()
 	if (ImGui::Begin("Scene Hierarchy", &m_Open))
 	{
 		Ref<Scene>& scene = m_CI.scene;
+		Scene::State state = scene->GetState();
 		entt::registry& reg = scene->GetRegistry();
+
+		float iconHeight = 32.0f;
+		float width = ImGui::GetContentRegionAvailWidth();
+		ImGui::SameLine(width / 2.0f - iconHeight / 2.0f);
+		std::string buttonStr = state == Scene::State::EDIT ? ">" : "X";
+		if (ImGui::Button(buttonStr.c_str(), { iconHeight, iconHeight }))
+		{
+			if (state == Scene::State::EDIT)
+				scene->Play();
+			else if (state == Scene::State::PLAY)
+				scene->Stop();
+		}
+
+		
 
 		reg.each([&](entt::entity entityID)
 		{

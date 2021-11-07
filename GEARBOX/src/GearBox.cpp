@@ -49,7 +49,7 @@ void GEARBOX::Run()
 	mainWindowCI.height = 1080;
 	mainWindowCI.fullscreen = false;
 	mainWindowCI.fullscreenMonitorIndex = 0;
-	mainWindowCI.maximised = false;
+	mainWindowCI.maximised = true;
 	mainWindowCI.vSync = true;
 	mainWindowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_4_BIT;
 	mainWindowCI.graphicsDebugger = graphicsDebugger;
@@ -87,7 +87,6 @@ void GEARBOX::Run()
 	ContentBrowserPanel::CreateInfo contentBrowserCI = { uiContext, std::filesystem::current_path() };
 	editorPanels.emplace_back(CreateRef<ContentBrowserPanel>(&contentBrowserCI));
 
-	bool windowResize = false;
 	core::Timer timer;
 	while (!mainWindow->Closed())
 	{
@@ -107,7 +106,6 @@ void GEARBOX::Run()
 		renderer->SubmitRenderSurface(mainWindow->GetRenderSurface());
 		renderer->SetUIFunction(UIDraw, ImGui::GetDrawData(), uiContext.get());
 		renderer->Execute();
-		renderer->Present(windowResize);
 
 		mainWindow->Update();
 		mainWindow->CalculateFPS();

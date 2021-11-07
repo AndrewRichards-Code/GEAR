@@ -46,7 +46,7 @@ ContentBrowserPanel::ContentBrowserPanel(CreateInfo* pCreateInfo)
 		CommandPool::CreateInfo cmdPoolCI = { "ContentBrowser", m_CI.uiContext->GetContext(), CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT, CommandPool::QueueType::GRAPHICS };
 		Ref<CommandPool> cmdPool = CommandPool::Create(&cmdPoolCI);
 
-		CommandBuffer::CreateInfo cmdBufferCI = { "ContentBrowser", cmdPool, CommandBuffer::Level::PRIMARY, 1, false };
+		CommandBuffer::CreateInfo cmdBufferCI = { "ContentBrowser", cmdPool, CommandBuffer::Level::PRIMARY, 1 };
 		Ref<CommandBuffer> cmdBuffer = CommandBuffer::Create(&cmdBufferCI);
 
 		Fence::CreateInfo fenceCI = { "ContentBrowser", m_CI.uiContext->GetDevice(), false, UINT64_MAX };

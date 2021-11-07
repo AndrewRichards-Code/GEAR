@@ -22,6 +22,12 @@ namespace scene
 			std::string debugName;
 			std::string nativeScriptDir;
 		};
+		enum class State : uint32_t
+		{
+			STOP,
+			EDIT = STOP,
+			PLAY,
+		};
 	
 	public:
 		CreateInfo m_CI;
@@ -47,14 +53,15 @@ namespace scene
 		void SaveEntity(nlohmann::json& references, nlohmann::json& entity, Entity entityID);
 		void SaveToFile(const std::string& filepath);
 
-		inline void Play() { m_Playing = true; }
-		inline void Stop() { m_Playing = false; }
+		inline const State& GetState() const { return m_State; }
+		inline void Play() { m_State = State::PLAY; }
+		inline void Stop() { m_State = State::STOP; }
 		inline const std::string& GetFilepath() const { return m_Filepath; }
 	
 	private:
 		core::UUID m_UUID;
 		entt::registry m_Registry;
-		bool m_Playing = false;
+		State m_State = State::STOP;
 		std::string m_Filepath;
 
 	public:

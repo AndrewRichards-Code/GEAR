@@ -1,7 +1,7 @@
 {
     "fileType": "GEARBOX_CONFIG_FILE",
     "options": {
-        "api": 1,
-        "graphicsDebugger": 1
+        "api": 2,
+        "graphicsDebugger": 0
     }
 }

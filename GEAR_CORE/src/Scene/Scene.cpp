@@ -45,7 +45,7 @@ void Scene::DestroyEntity(Entity entity)
 
 void Scene::OnUpdate(Ref<graphics::Renderer>& renderer, core::Timer& timer)
 {
-	if (m_Playing)
+	if (m_State == State::PLAY)
 	{
 		auto& vNativeScriptComponents = m_Registry.view<NativeScriptComponent>();
 		for (auto& entity : vNativeScriptComponents)

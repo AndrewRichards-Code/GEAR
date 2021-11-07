@@ -58,7 +58,6 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 		cmd.cmdBufferCI.pCommandPool = cmd.cmdPool;
 		cmd.cmdBufferCI.level = CommandBuffer::Level::PRIMARY;
 		cmd.cmdBufferCI.commandBufferCount = cmdBufferCount;
-		cmd.cmdBufferCI.allocateNewCommandPoolPerBuffer = GraphicsAPI::IsD3D12();
 		cmd.cmdBuffer = CommandBuffer::Create(&cmd.cmdBufferCI);
 	}
 
@@ -73,15 +72,16 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 		m_DrawFenceCI.signaled = true;
 		m_DrawFenceCI.timeout = UINT64_MAX;
 		m_DrawFences.emplace_back(Fence::Create(&m_DrawFenceCI));
-
-		m_AcquireSemaphoreCI.debugName = "GEAR_CORE_Seamphore_Renderer_Acquire_" + std::to_string(i);
-		m_AcquireSemaphoreCI.device = m_Device;
-		m_AcquireSemaphores.emplace_back(Semaphore::Create(&m_AcquireSemaphoreCI));
-
-		m_SubmitSemaphoreCI.debugName = "GEAR_CORE_Seamphore_Renderer_Submit_" + std::to_string(i);
-		m_SubmitSemaphoreCI.device = m_Device;
-		m_SubmitSemaphores.emplace_back(Semaphore::Create(&m_SubmitSemaphoreCI));
 	}
+
+	m_AcquireSemaphoreCI.debugName = "GEAR_CORE_Seamphore_Renderer_Acquire";
+	m_AcquireSemaphoreCI.device = m_Device;
+	m_AcquireSemaphore = Semaphore::Create(&m_AcquireSemaphoreCI);
+
+	m_SubmitSemaphoreCI.debugName = "GEAR_CORE_Seamphore_Renderer_Submit";
+	m_SubmitSemaphoreCI.device = m_Device;
+	m_SubmitSemaphore = Semaphore::Create(&m_SubmitSemaphoreCI);
+
 	SubmitRenderSurface(m_CI.window->GetRenderSurface());
 	InitialiseRenderPipelines(m_RenderSurface);
 
@@ -186,6 +186,17 @@ void Renderer::SubmitModel(const Ref<Model>& obj)
 void Renderer::SubmitTextLine(const Ref<Model>& obj)
 {
 	m_TextQueue.push_back(obj);
+}
+
+void Renderer::AcquireNextImage()
+{
+	if (m_CI.shouldPresent)
+	{
+		m_CI.window->GetSwapchain()->AcquireNextImage(m_AcquireSemaphore, m_FrameIndex);
+	}
+
+	m_DrawFences[m_FrameIndex]->Wait();
+	m_DrawFences[m_FrameIndex]->Reset();
 }
 
 void Renderer::Upload()
@@ -1073,9 +1084,32 @@ void Renderer::Draw()
 	m_TextQueue.clear();
 }
 
+void Renderer::Present()
+{
+	const Ref<CommandBuffer>& graphicsCmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::GRAPHICS].cmdBuffer;
+	const Ref<CommandPool>& graphicsCmdPool = m_CommandPoolAndBuffers[CommandPool::QueueType::GRAPHICS].cmdPool;
+	if (m_CI.shouldPresent)
+	{
+		graphicsCmdBuffer->Submit({ m_FrameIndex }, { m_AcquireSemaphore }, { crossplatform::PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT }, { m_SubmitSemaphore }, m_DrawFences[m_FrameIndex]);
+		m_CI.window->GetSwapchain()->Present(graphicsCmdPool, m_SubmitSemaphore, m_FrameIndex);
+	}
+	else
+	{
+		graphicsCmdBuffer->Submit({ m_FrameIndex }, {}, {}, {}, m_DrawFences[m_FrameIndex]); 
+		
+		//Increment m_FrameIndex as AcquireNextImage() will not update it.
+		m_FrameIndex = (m_FrameIndex + 1) % m_SwapchainImageCount;
+	}
+
+	m_FrameCount++;
+}
+
 void Renderer::Execute()
 {
-	m_DrawFences[m_FrameIndex]->Wait();
+	//Acquire Next Image
+	{
+		AcquireNextImage();
+	}
 	//Record Upload CmdBuffers
 	{
 		Upload();
@@ -1084,6 +1118,10 @@ void Renderer::Execute()
 	{
 		BuildDescriptorSetandPools();
 		Draw();
+	}
+	//Present CmdBuffers
+	{
+		Present();
 	}
 }
 
@@ -1180,18 +1218,6 @@ void Renderer::DrawExternalUI(const Ref<miru::crossplatform::CommandBuffer>& cmd
 	{
 		m_UI_PFN(cmdBuffer, frameIndex, m_DrawData, m_UI_this);
 	}
-}
-
-void Renderer::Present(bool& windowResize)
-{
-	const Ref<CommandBuffer>& graphicsCmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::GRAPHICS].cmdBuffer;
-	if (m_CI.shouldPresent)
-		graphicsCmdBuffer->Present({ 0, 1 }, m_CI.window->GetSwapchain(), m_DrawFences, m_AcquireSemaphores, m_SubmitSemaphores, windowResize);
-	else
-		graphicsCmdBuffer->Submit({ m_FrameIndex }, {}, {}, {}, m_DrawFences[m_FrameIndex]); //Otherwise submit the commandbuffer to draw anyway.
-	
-	m_FrameIndex = (m_FrameIndex + 1) % m_SwapchainImageCount;
-	m_FrameCount++;
 }
 
 void Renderer::ResizeRenderPipelineViewports(uint32_t width, uint32_t height)

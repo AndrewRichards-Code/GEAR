@@ -167,6 +167,8 @@ void PostProcessing::BloomPreFilter(const Ref<miru::crossplatform::CommandBuffer
 		uint32_t width = std::max(IRI.image->GetCreateInfo().width / 8, uint32_t(1));
 		uint32_t height = std::max(IRI.image->GetCreateInfo().height / 8, uint32_t(1));
 		uint32_t depth = 1;
+		width += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
+		height += 1;	//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
 		cmdBuffer->Dispatch(frameIndex, width, height, depth);
 	}
 }
@@ -273,9 +275,11 @@ void PostProcessing::BloomDownsample(const Ref<miru::crossplatform::CommandBuffe
 			cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
 
 			cmdBuffer->BindDescriptorSets(frameIndex, { m_DescSets[i - 1] }, s_BloomDownsample->GetPipeline());
-			uint32_t width = 1 + std::max((IRI.image->GetCreateInfo().width >> i) / 8, uint32_t(1));	//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
-			uint32_t height = 1 + std::max((IRI.image->GetCreateInfo().height >> i) / 8, uint32_t(1));	//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
+			uint32_t width = std::max((IRI.image->GetCreateInfo().width >> i) / 8, uint32_t(1));
+			uint32_t height = std::max((IRI.image->GetCreateInfo().height >> i) / 8, uint32_t(1));
 			uint32_t depth = 1;
+			width += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
+			height += 1;	//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
 			cmdBuffer->Dispatch(frameIndex, width, height, depth);
 
 			barrierCI.type = Barrier::Type::IMAGE;
@@ -368,9 +372,11 @@ void PostProcessing::BloomUpsample(const Ref<miru::crossplatform::CommandBuffer>
 			cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
 
 			cmdBuffer->BindDescriptorSets(frameIndex, { m_DescSets[i - 1] }, s_BloomUpsample->GetPipeline());
-			uint32_t width = 1 + std::max((IRI.image->GetCreateInfo().width >> (i - 1)) / 8, uint32_t(1));	//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
-			uint32_t height = 1 + std::max((IRI.image->GetCreateInfo().height >> (i - 1)) / 8, uint32_t(1));	//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
+			uint32_t width = std::max((IRI.image->GetCreateInfo().width >> (i - 1)) / 8, uint32_t(1));
+			uint32_t height = std::max((IRI.image->GetCreateInfo().height >> (i - 1)) / 8, uint32_t(1));
 			uint32_t depth = 1;
+			width += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
+			height += 1;	//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
 			cmdBuffer->Dispatch(frameIndex, width, height, depth);
 
 			barrierCI.type = Barrier::Type::IMAGE;

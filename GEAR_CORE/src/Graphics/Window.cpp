@@ -253,7 +253,7 @@ bool Window::Init()
 
 	m_ContextCI.applicationName = m_CI.title;
 	m_ContextCI.api_version_major = GraphicsAPI::IsD3D12() ? 12 : 1;
-	m_ContextCI.api_version_minor = GraphicsAPI::IsD3D12() ? 1 : 2;
+	m_ContextCI.api_version_minor = 2;
 #ifdef _DEBUG
 	m_ContextCI.instanceLayers = { "VK_LAYER_KHRONOS_validation" };
 	m_ContextCI.instanceExtensions = { "VK_KHR_surface", "VK_KHR_win32_surface" };
