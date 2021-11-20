@@ -247,7 +247,7 @@ bool Window::Init()
 	glfwGetWindowSize(m_Window, (int*)&m_CurrentWidth, (int*)&m_CurrentHeight);
 
 	//Set up miru objects.
-	GraphicsAPI::SetAPI(m_CI.api);
+	GraphicsAPI::SetAPI(m_CI.api, true);
 	GraphicsAPI::AllowSetName();
 	GraphicsAPI::LoadGraphicsDebugger(m_CI.graphicsDebugger);
 

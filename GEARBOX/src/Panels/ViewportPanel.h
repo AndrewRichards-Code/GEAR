@@ -1,5 +1,4 @@
 #pragma once
-#include "Panel.h"
 #include "UIContext.h"
 
 namespace gearbox
@@ -13,7 +12,6 @@ namespace gearbox
 			struct CreateInfo
 			{
 				Ref<gear::graphics::Renderer>	renderer;
-				Ref<UIContext>					uiContext;
 			};
 
 			//Methods

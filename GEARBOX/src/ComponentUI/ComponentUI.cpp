@@ -233,7 +233,7 @@ ComponentSettingsBit gearbox::componentui::DrawComponentSetting()
 	return result;
 }
 
-ImTextureID gearbox::componentui::GetTextureID(const Ref<miru::crossplatform::ImageView>& imageView, Ref<UIContext>& uiContext, bool resized)
+ImTextureID gearbox::componentui::GetTextureID(const Ref<miru::crossplatform::ImageView>& imageView, UIContext* uiContext, bool resized)
 {
 
 	bool found = uiContext->m_TextureIDs.find(imageView) != uiContext->m_TextureIDs.end();

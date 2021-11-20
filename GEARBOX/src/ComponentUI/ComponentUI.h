@@ -23,19 +23,17 @@ namespace componentui
 
 	inline void BeginColumnLabel(const std::string& label, float width)
 	{
-		ImGui::PushID(label.c_str());
+		ImGui::BeginTable(label.c_str(), 2);
 
-		ImGui::Columns(2);
-
-		ImGui::SetColumnWidth(0, width);
+		ImGui::TableSetupColumn("##", ImGuiTableColumnFlags_::ImGuiTableColumnFlags_WidthFixed, width);
+		ImGui::TableNextColumn();
 		ImGui::Text(label.c_str());
 
-		ImGui::NextColumn();
+		ImGui::TableNextColumn();
 	}
 	inline void EndColumnLabel()
 	{	
-		ImGui::Columns(1);
-		ImGui::PopID();
+		ImGui::EndTable();
 	}
 
 	void DrawStaticText(const std::string& label, const std::string& name, float width = DefaultWidth);
@@ -111,6 +109,6 @@ namespace componentui
 		}
 	}
 
-	ImTextureID GetTextureID(const Ref<miru::crossplatform::ImageView>& imageView, Ref<gearbox::UIContext>& uiContext, bool resized);
+	ImTextureID GetTextureID(const Ref<miru::crossplatform::ImageView>& imageView, gearbox::UIContext* uiContext, bool resized);
 }
 }

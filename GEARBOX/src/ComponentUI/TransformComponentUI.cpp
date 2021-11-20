@@ -59,12 +59,12 @@ void gearbox::componentui::DrawTransformComponentUI(gear::scene::Entity entity)
 
 	}
 
-	if (ImGui::TreeNodeEx("Options", (TreeNodeFlags & ~ImGuiTreeNodeFlags_DefaultOpen), "Options"))
+	if (DrawTreeNode("Options", false))
 	{
 		DrawCheckbox("Radians", radians);
 		DrawCheckbox("Quaternion", quaternion);
 		DrawCheckbox("Scale Lock", scaleLock);
 
-		ImGui::TreePop();
+		EndDrawTreeNode();
 	}
 }

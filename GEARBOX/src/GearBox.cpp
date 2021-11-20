@@ -3,7 +3,6 @@
 
 #include "Panels/Panels.h"
 
-
 using namespace gearbox;
 using namespace panels;
 
@@ -20,6 +19,8 @@ using namespace miru::crossplatform;
 
 using namespace mars;
 
+GEARBOX* GEARBOX::s_App = nullptr;
+
 Ref<Application> CreateApplication(int argc, char** argv)
 {
 	return CreateRef<GEARBOX>();
@@ -27,23 +28,20 @@ Ref<Application> CreateApplication(int argc, char** argv)
 
 void GEARBOX::Run()
 {
-	GraphicsAPI::API api;
-	debug::GraphicsDebugger::DebuggerType graphicsDebugger;
+	s_App = this;
 
-	std::string configFilepath = (std::filesystem::current_path() / std::filesystem::path("config.gbcf")).string();
-	if (std::filesystem::exists(configFilepath))
-	{
-		nlohmann::json data;
-		gear::core::LoadJsonFile(configFilepath, ".gbcf", "GEARBOX_CONFIG_FILE", data);
+	while (m_AllowReRun)
+		InternalRun();
+	
+	s_App = nullptr;
+}
 
-		api = (GraphicsAPI::API)data["options"]["api"];
-		graphicsDebugger = (debug::GraphicsDebugger::DebuggerType)data["options"]["graphicsDebugger"];
-		if (api == GraphicsAPI::API::UNKNOWN)
-			api = GraphicsAPI::API::VULKAN;
-	}
+void GEARBOX::InternalRun()
+{
+	m_AllowReRun = false;
 
 	Window::CreateInfo mainWindowCI;
-	mainWindowCI.api = api;
+	mainWindowCI.api = GraphicsAPI::API::VULKAN;;
 	mainWindowCI.title = "GEARBOX";
 	mainWindowCI.width = 1920;
 	mainWindowCI.height = 1080;
@@ -52,12 +50,29 @@ void GEARBOX::Run()
 	mainWindowCI.maximised = true;
 	mainWindowCI.vSync = true;
 	mainWindowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_4_BIT;
-	mainWindowCI.graphicsDebugger = graphicsDebugger;
+	mainWindowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::NONE;
+
+	nlohmann::json data;
+	std::string configFilepath = (std::filesystem::current_path() / std::filesystem::path("config.gbcf")).string();
+	if (std::filesystem::exists(configFilepath))
+	{
+		gear::core::LoadJsonFile(configFilepath, ".gbcf", "GEARBOX_CONFIG_FILE", data);
+
+		mainWindowCI.api = (GraphicsAPI::API)data["options"]["api"];
+		mainWindowCI.graphicsDebugger = (debug::GraphicsDebugger::DebuggerType)data["options"]["graphicsDebugger"];
+		mainWindowCI.width = (uint32_t)data["options"]["windowedWidth"];
+		mainWindowCI.height = (uint32_t)data["options"]["windowedHeight"];
+		mainWindowCI.fullscreen = (bool)data["options"]["fullscreen"];
+		mainWindowCI.fullscreenMonitorIndex = (uint32_t)data["options"]["fullscreenMonitorIndex"];
+		mainWindowCI.maximised = (bool)data["options"]["maximised"];
+	}
+
 	Ref<Window> mainWindow = CreateRef<Window>(&mainWindowCI);
 
 	AllocatorManager::CreateInfo mbmCI;
 	mbmCI.pContext = mainWindow->GetContext();
 	mbmCI.defaultBlockSize = Allocator::BlockSize::BLOCK_SIZE_128MB;
+	mbmCI.forceInitialisation = true;
 	AllocatorManager::Initialise(&mbmCI);
 
 	Scene::CreateInfo sceneCI;
@@ -65,36 +80,73 @@ void GEARBOX::Run()
 	sceneCI.nativeScriptDir = "res/scripts/";
 	Ref<Scene> activeScene = CreateRef<Scene>(&sceneCI);
 	
-	Renderer::CreateInfo rendererCI;
-	rendererCI.window = mainWindow;
-	rendererCI.shouldCopyToSwapchian = false;
-	rendererCI.shouldDrawExternalUI = true;
-	rendererCI.shouldPresent = true;
-	Ref<Renderer> renderer = CreateRef<Renderer>(&rendererCI);
+	Renderer::CreateInfo mainRendererCI;
+	mainRendererCI.window = mainWindow;
+	mainRendererCI.shouldCopyToSwapchian = false;
+	mainRendererCI.shouldDrawExternalUI = true;
+	mainRendererCI.shouldPresent = true;
+	Ref<Renderer> mainRenderer = CreateRef<Renderer>(&mainRendererCI);
 
 	UIContext::CreateInfo uiContextCI;
 	uiContextCI.window = mainWindow;
-	Ref<UIContext>uiContext = CreateRef<UIContext>(&uiContextCI);
+	Scope<UIContext> uiContext =CreateScope<UIContext>(&uiContextCI);
 
-	std::vector<Ref<Panel>>& editorPanels = uiContext->GetEditorPanels();
+	for (const Panel::Type& panelType : data["panels"])
+	{
+		std::vector<Ref<Panel>>& editorPanels = uiContext->GetEditorPanels();
 
-	ViewportPanel::CreateInfo mainViewportCI = { renderer, uiContext };
-	editorPanels.emplace_back(CreateRef<ViewportPanel>(&mainViewportCI));
-	SceneHierarchyPanel::CreateInfo sceneHierarchyPanelCI = { activeScene, ref_cast<ViewportPanel>(editorPanels.back()) };
-	editorPanels.emplace_back(CreateRef<SceneHierarchyPanel>(&sceneHierarchyPanelCI));
-	PropertiesPanel::CreateInfo propertiesCI = { ref_cast<SceneHierarchyPanel>(editorPanels.back()) };
-	editorPanels.emplace_back(CreateRef<PropertiesPanel>(&propertiesCI));
-	ContentBrowserPanel::CreateInfo contentBrowserCI = { uiContext, std::filesystem::current_path() };
-	editorPanels.emplace_back(CreateRef<ContentBrowserPanel>(&contentBrowserCI));
+		switch (panelType)
+		{
+		default:
+		case Panel::Type::UNKNOWN:
+			break;
+		case Panel::Type::CONTENT_BROWSER:
+		{
+			ContentBrowserPanel::CreateInfo contentBrowserCI = { std::filesystem::current_path() };
+			editorPanels.emplace_back(CreateRef<ContentBrowserPanel>(&contentBrowserCI));
+			break;
+		}
+		case Panel::Type::CONTENT_EDITOR:
+		{
+			ContentEditorPanel::CreateInfo contentEditorCI = { std::filesystem::current_path() };
+			editorPanels.emplace_back(CreateRef<ContentEditorPanel>(&contentEditorCI));
+			break;
+		}
+		case Panel::Type::PROJECT:
+		{
+			editorPanels.emplace_back(CreateRef<ProjectPanel>());
+			break;
+		}
+		case Panel::Type::PROPERTIES:
+		{
+			PropertiesPanel::CreateInfo propertiesCI = { 0 };
+			editorPanels.emplace_back(CreateRef<PropertiesPanel>(&propertiesCI));
+			break;
+		}
+		case Panel::Type::SCENE_HIERARCHY:
+		{
+			SceneHierarchyPanel::CreateInfo sceneHierarchyPanelCI = { activeScene };
+			editorPanels.emplace_back(CreateRef<SceneHierarchyPanel>(&sceneHierarchyPanelCI));
+			break;
+		}
+		case Panel::Type::VIEWPORT:
+		{
+			ViewportPanel::CreateInfo mainViewportCI = { mainRenderer };
+			editorPanels.emplace_back(CreateRef<ViewportPanel>(&mainViewportCI));
+			break;
+		}
+		}
+	}
 
 	core::Timer timer;
 	while (!mainWindow->Closed())
 	{
+		uiContext->Update(timer);
 		uiContext->Draw();
 
 		if (mainWindow->Resized())
 		{
-			renderer->ResizeRenderPipelineViewports(mainWindow->GetRenderSurface()->GetWidth(), mainWindow->GetRenderSurface()->GetHeight());
+			mainRenderer->ResizeRenderPipelineViewports(mainWindow->GetRenderSurface()->GetWidth(), mainWindow->GetRenderSurface()->GetHeight());
 			mainWindow->Resized() = false;
 		}
 
@@ -102,13 +154,31 @@ void GEARBOX::Run()
 		{
 			UIContext::RenderDrawData(cmdBuffer, frameIndex, (ImDrawData*)drawData, (UIContext*)_this);
 		};
-		uiContext->GetPanel<SceneHierarchyPanel>()->GetScene()->OnUpdate(renderer, timer);
-		renderer->SubmitRenderSurface(mainWindow->GetRenderSurface());
-		renderer->SetUIFunction(UIDraw, ImGui::GetDrawData(), uiContext.get());
-		renderer->Execute();
+
+		for (auto& panel : uiContext->GetEditorPanelsByType<ViewportPanel>())
+		{
+			if (panel->GetCreateInfo().renderer != mainRenderer)
+			{
+				panel->GetCreateInfo().renderer->Execute();
+			}
+		}
+
+		mainRenderer->SetUIFunction(UIDraw, ImGui::GetDrawData(), uiContext.get());
+		mainRenderer->Execute();
 
 		mainWindow->Update();
 		mainWindow->CalculateFPS();
 	}
 	mainWindow->GetContext()->DeviceWaitIdle();
+
+	if (std::filesystem::exists(configFilepath))
+	{
+		gear::core::LoadJsonFile(configFilepath, ".gbcf", "GEARBOX_CONFIG_FILE", data);
+		data["panels"].clear();
+		for (const auto& panel : uiContext->GetEditorPanels())
+		{
+			data["panels"].push_back(static_cast<uint32_t>(panel->GetPanelType()));
+		}
+		gear::core::SaveJsonFile(configFilepath, ".gbcf", "GEARBOX_CONFIG_FILE", data);
+	}
 }

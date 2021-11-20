@@ -30,8 +30,8 @@ namespace core
 		AssetFile(const std::string& filepath);
 		~AssetFile();
 
-		static std::string FileDialog_Open(const Ref<graphics::Window>& window);
-		static std::string FileDialog_Save(const Ref<graphics::Window>& window);
+		static std::string FileDialog_Open();
+		static std::string FileDialog_Save();
 
 		void Load();
 		void Save();

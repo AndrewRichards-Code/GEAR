@@ -1,5 +1,4 @@
 #pragma once
-#include "Panel.h"
 #include "ViewportPanel.h"
 
 namespace gearbox
@@ -13,7 +12,6 @@ namespace panels
 		struct CreateInfo
 		{
 			Ref<gear::scene::Scene> scene;
-			Ref<ViewportPanel>		viewport;
 		};
 
 		//Methods
@@ -21,6 +19,7 @@ namespace panels
 		SceneHierarchyPanel(CreateInfo* pCreateInfo);
 		~SceneHierarchyPanel();
 
+		void Update(gear::core::Timer timer) override;
 		void Draw() override;
 
 	private:

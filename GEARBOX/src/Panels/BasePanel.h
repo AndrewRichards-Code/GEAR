@@ -11,11 +11,12 @@ namespace panels
 		enum class Type : uint32_t
 		{
 			UNKNOWN,
-			VIEWPORT,
-			SCENE_HIERARCHY,
-			PROPERTIES,
 			CONTENT_BROWSER,
-			CONTENT_EDITOR
+			CONTENT_EDITOR,
+			PROJECT,
+			PROPERTIES,
+			SCENE_HIERARCHY,
+			VIEWPORT,
 		};
 
 	protected:
@@ -23,6 +24,7 @@ namespace panels
 		virtual ~Panel() = default;
 
 	public:
+		virtual void Update(gear::core::Timer timer) {};
 		virtual void Draw() = 0;
 		inline const bool& IsOpen() const { return m_Open; }
 		inline const Type& GetPanelType() const { return m_Type; }

@@ -1,5 +1,4 @@
 #pragma once
-#include "Panel.h"
 #include "SceneHierarchyPanel.h"
 
 namespace gearbox
@@ -12,7 +11,7 @@ namespace panels
 	public:
 		struct CreateInfo
 		{
-			Ref<SceneHierarchyPanel> sceneHeirarchyPanel;
+			void* null;
 		};
 
 		//Methods

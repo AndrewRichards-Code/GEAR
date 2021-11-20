@@ -1,11 +1,16 @@
 #include "gearbox_common.h"
 #include "SceneHierarchyPanel.h"
+#include "Panels.h"
+
+#include "ComponentUI/ComponentUI.h"
+
 
 using namespace gear;
 using namespace scene;
 
 using namespace gearbox;
 using namespace panels;
+using namespace componentui;
 
 SceneHierarchyPanel::SceneHierarchyPanel(CreateInfo* pCreateInfo)
 {
@@ -17,14 +22,24 @@ SceneHierarchyPanel::~SceneHierarchyPanel()
 {
 }
 
+void SceneHierarchyPanel::Update(gear::core::Timer timer)
+{
+	Ref<ViewportPanel> viewport = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
+	if (viewport)
+		m_CI.scene->OnUpdate(viewport->GetCreateInfo().renderer, timer);
+}
+
 void SceneHierarchyPanel::Draw()
 {
-	if (ImGui::Begin("Scene Hierarchy", &m_Open))
+	std::string id = UIContext::GetUIContext()->GetUniqueIDString("Scene Hierarchy", this);
+	if (ImGui::Begin(id.c_str(), &m_Open))
 	{
 		Ref<Scene>& scene = m_CI.scene;
 		Scene::State state = scene->GetState();
 		entt::registry& reg = scene->GetRegistry();
 
+		DrawStaticText("Controls", "");
+		ImGui::NewLine();
 		float iconHeight = 32.0f;
 		float width = ImGui::GetContentRegionAvailWidth();
 		ImGui::SameLine(width / 2.0f - iconHeight / 2.0f);
@@ -36,9 +51,12 @@ void SceneHierarchyPanel::Draw()
 			else if (state == Scene::State::PLAY)
 				scene->Stop();
 		}
+		ImGui::Separator();
 
-		
+		DrawInputText("Name", scene->m_CI.debugName);
+		ImGui::NewLine();
 
+		ImGui::Text("Entities");
 		reg.each([&](entt::entity entityID)
 		{
 			Entity entity;
@@ -115,7 +133,7 @@ void SceneHierarchyPanel::SetScene(const Ref<gear::scene::Scene>& scene)
 
 void SceneHierarchyPanel::UpdateWindowTitle()
 {
-	const Ref<gear::graphics::Window>& window = m_CI.viewport->GetCreateInfo().uiContext->GetCreateInfo().window;
+	const Ref<gear::graphics::Window>& window = UIContext::GetUIContext()->GetWindow();
 	std::string newTitle = window->GetCreateInfo().title + " - " + (m_CI.scene ? m_CI.scene->m_CI.debugName : "");
 
 	glfwSetWindowTitle(window->GetGLFWwindow(), newTitle.c_str());

@@ -1,7 +1,10 @@
 #include "gearbox_common.h"
 #include "ContentBrowserPanel.h"
 #include "ContentEditorPanel.h"
+#include "Panels.h"
+
 #include "ComponentUI/ComponentUI.h"
+
 
 using namespace gearbox;
 using namespace panels;
@@ -19,7 +22,7 @@ ContentBrowserPanel::ContentBrowserPanel(CreateInfo* pCreateInfo)
 
 	gear::graphics::Texture::CreateInfo tCI;
 	tCI.debugName = "GEARBOX: FolderTexture";
-	tCI.device = m_CI.uiContext->GetDevice();
+	tCI.device = UIContext::GetUIContext()->GetDevice();
 	tCI.dataType = Texture::DataType::FILE;
 	tCI.file.filepaths = { m_FolderTextureFilepath };
 	tCI.mipLevels = 1;
@@ -43,13 +46,13 @@ ContentBrowserPanel::ContentBrowserPanel(CreateInfo* pCreateInfo)
 	}
 
 	{
-		CommandPool::CreateInfo cmdPoolCI = { "ContentBrowser", m_CI.uiContext->GetContext(), CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT, CommandPool::QueueType::GRAPHICS };
+		CommandPool::CreateInfo cmdPoolCI = { "ContentBrowser", UIContext::GetUIContext()->GetContext(), CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT, CommandPool::QueueType::GRAPHICS };
 		Ref<CommandPool> cmdPool = CommandPool::Create(&cmdPoolCI);
 
 		CommandBuffer::CreateInfo cmdBufferCI = { "ContentBrowser", cmdPool, CommandBuffer::Level::PRIMARY, 1 };
 		Ref<CommandBuffer> cmdBuffer = CommandBuffer::Create(&cmdBufferCI);
 
-		Fence::CreateInfo fenceCI = { "ContentBrowser", m_CI.uiContext->GetDevice(), false, UINT64_MAX };
+		Fence::CreateInfo fenceCI = { "ContentBrowser", UIContext::GetUIContext()->GetDevice(), false, UINT64_MAX };
 		Ref<Fence> fence = Fence::Create(&fenceCI);
 
 		cmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
@@ -79,16 +82,16 @@ ContentBrowserPanel::ContentBrowserPanel(CreateInfo* pCreateInfo)
 		fence->Wait();
 	}
 
-	m_FolderTextureID = GetTextureID(m_FolderTexture->GetTextureImageView(), m_CI.uiContext, false);
-	m_FileTextureID = GetTextureID(m_FileTexture->GetTextureImageView(), m_CI.uiContext, false);
+	m_FolderTextureID = GetTextureID(m_FolderTexture->GetTextureImageView(), UIContext::GetUIContext(), false);
+	m_FileTextureID = GetTextureID(m_FileTexture->GetTextureImageView(), UIContext::GetUIContext(), false);
 	for (auto& fileExt : m_FileExtTextureFilepath)
-		fileExt.id= GetTextureID(fileExt.texture->GetTextureImageView(), m_CI.uiContext, false);
+		fileExt.id= GetTextureID(fileExt.texture->GetTextureImageView(), UIContext::GetUIContext(), false);
 	
 }
 
 ContentBrowserPanel::~ContentBrowserPanel()
 {
-	m_CI.uiContext->GetCreateInfo().window->GetContext()->DeviceWaitIdle();
+	UIContext::GetUIContext()->GetWindow()->GetContext()->DeviceWaitIdle();
 	for (auto& fileExt : m_FileExtTextureFilepath)
 	{
 		fileExt.texture = nullptr; //Call the destructor.
@@ -97,105 +100,120 @@ ContentBrowserPanel::~ContentBrowserPanel()
 
 void ContentBrowserPanel::Draw()
 {
-	if (ImGui::Begin("Content Browser", &m_Open))
+	std::string id = UIContext::GetUIContext()->GetUniqueIDString<ContentBrowserPanel>("Content Browser", this);
+	if (ImGui::Begin(id.c_str(), &m_Open))
 	{
-		
+		if (ImGui::ImageButton(m_FolderTextureID, { ImGui::GetTextLineHeight(), ImGui::GetTextLineHeight() }))
+		{
+			m_CI.currentPath = core::FolderDialog_Browse();
+		}
+		ImGui::SameLine();
+
 		if (ImGui::Button("/\\"))
 		{
 			m_CI.currentPath = m_CI.currentPath.parent_path();
 		}
-		static float iconSize = 128.0f;
+		ImGui::SameLine();
 
 		std::string currentPathStr = m_CI.currentPath.generic_string();
 		DrawInputText("Current Path", currentPathStr);
-		m_CI.currentPath = currentPathStr;
 
-		//Order the directory entries to be folder first
-		std::filesystem::directory_iterator directory_it(m_CI.currentPath);
-		std::vector<std::filesystem::directory_entry> directories;
-		std::copy(directory_it, std::filesystem::directory_iterator(), std::back_inserter(directories));
-		std::sort(directories.begin(), directories.end(), 
-			[](const std::filesystem::directory_entry& de1, const std::filesystem::directory_entry& de2) 
-			{
-				bool a = de1.is_directory(); 
-				bool b = de2.is_directory(); 
-				return a == b ? false : a && !b ? true : !a && b ? false : false;
-			});
-
-		//Calculate number of coloumns
-		uint32_t iconsPerRow = std::max(uint32_t(ImGui::GetContentRegionAvailWidth() / iconSize), uint32_t(1));
-		ImGui::Columns(static_cast<int>(iconsPerRow), 0, false);
-		int i = 0;
-
-		for (auto& directory : directories)
+		if (std::filesystem::exists(std::filesystem::path(currentPathStr)))
 		{
-			const std::filesystem::path& path = directory.path().lexically_relative(m_CI.currentPath);
-			const std::string& pathStr = path.generic_u8string();
-			const std::string& pathExtStr = path.extension().generic_string();
+			m_CI.currentPath = currentPathStr;
 
-			ImGui::PushID(pathStr.c_str());
-
-			//Get icon texture
-			ImTextureID imageID = 0;
-			for (auto& fileExt : m_FileExtTextureFilepath)
-			{
-				bool found = fileExt.extension.compare(pathExtStr) == 0;
-				if (found)
+			//Order the directory entries to be folder first
+			std::filesystem::directory_iterator directory_it(m_CI.currentPath);
+			std::vector<std::filesystem::directory_entry> directories;
+			std::copy(directory_it, std::filesystem::directory_iterator(), std::back_inserter(directories));
+			std::sort(directories.begin(), directories.end(), 
+				[](const std::filesystem::directory_entry& de1, const std::filesystem::directory_entry& de2) 
 				{
-					imageID = fileExt.id;
-					break;
-				}
-				else
-				{
-					continue;
-				}
-			}
-			if (m_FolderTextureID && m_FileTextureID && imageID == 0)
+					bool a = de1.is_directory(); 
+					bool b = de2.is_directory(); 
+					return a == b ? false : a && !b ? true : !a && b ? false : false;
+				});
+
+			//Calculate number of coloumns
+			static float iconSize = 128.0f;
+			uint32_t iconsPerRow = std::max(uint32_t(ImGui::GetContentRegionAvailWidth() / iconSize), uint32_t(1));
+			if (ImGui::BeginTable("##ContentBrowserPanel", static_cast<int>(iconsPerRow)))
 			{
-				imageID = directory.is_directory() ? m_FolderTextureID : m_FileTextureID;
-			}
-
-			//Draw icon
-			ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
-			if (imageID != 0)
-				ImGui::ImageButton(imageID, ImVec2(iconSize, iconSize));
-			else
-				ImGui::Button(pathStr.c_str(), ImVec2(iconSize, iconSize));
-
-			//DragDrop operations
-			if (ImGui::BeginDragDropSource())
-			{
-				std::string fullpath = directory.path().string();
-				ImGui::SetDragDropPayload(pathExtStr.c_str(), (const void*)(fullpath.c_str()), fullpath.size() + 1);
-				ImGui::EndDragDropSource();
-			}
-			ImGui::PopStyleColor();
-
-			//Double click icon
-			if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-			{
-				if (directory.is_directory())
+				uint32_t i = 0;
+				for (auto& directory : directories)
 				{
-					m_CI.currentPath /= path;
-				}
-				else
-				{
-					ContentEditorPanel::CreateInfo contentEditorCI;
-					contentEditorCI.uiContext = m_CI.uiContext;
-					contentEditorCI.currentFilepath = path;
-					contentEditorCI.currentFilepathFull = directory.path();
-					contentEditorCI.filepathExt = pathExtStr;
-					m_CI.uiContext->GetEditorPanels().emplace_back(CreateRef<ContentEditorPanel>(&contentEditorCI));
-				}
-			}
+					if(i % iconsPerRow == 0)
+						ImGui::TableNextRow();
+					ImGui::TableNextColumn();
+					i++;
 
-			//Icon name wrapped
-			ImGui::TextWrapped(pathStr.c_str());
-			ImGui::NextColumn();
-			ImGui::PopID();
+					const std::filesystem::path& path = directory.path().lexically_relative(m_CI.currentPath);
+					const std::string& pathStr = path.generic_u8string();
+					const std::string& pathExtStr = path.extension().generic_string();
+
+					ImGui::PushID(pathStr.c_str());
+
+					//Get icon texture
+					ImTextureID imageID = 0;
+					for (auto& fileExt : m_FileExtTextureFilepath)
+					{
+						bool found = fileExt.extension.compare(pathExtStr) == 0;
+						if (found)
+						{
+							imageID = fileExt.id;
+							break;
+						}
+						else
+						{
+							continue;
+						}
+					}
+					if (m_FolderTextureID && m_FileTextureID && imageID == 0)
+					{
+						imageID = directory.is_directory() ? m_FolderTextureID : m_FileTextureID;
+					}
+
+					//Draw icon
+					ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
+					if (imageID != 0)
+						ImGui::ImageButton(imageID, ImVec2(iconSize, iconSize));
+					else
+						ImGui::Button(pathStr.c_str(), ImVec2(iconSize, iconSize));
+
+					//DragDrop operations
+					if (ImGui::BeginDragDropSource())
+					{
+						std::string fullpath = directory.path().string();
+						ImGui::SetDragDropPayload(pathExtStr.c_str(), (const void*)(fullpath.c_str()), fullpath.size() + 1);
+						ImGui::EndDragDropSource();
+					}
+					ImGui::PopStyleColor();
+
+					//Double click icon
+					if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+					{
+						if (directory.is_directory())
+						{
+							m_CI.currentPath /= path;
+						}
+						else
+						{
+							ContentEditorPanel::CreateInfo contentEditorCI;
+							contentEditorCI.currentFilepathFull = directory.path();
+							contentEditorCI.filepathExt = pathExtStr;
+							UIContext::GetUIContext()->GetEditorPanels().emplace_back(CreateRef<ContentEditorPanel>(&contentEditorCI));
+						}
+					}
+
+					//Icon name wrapped
+					ImGui::TextWrapped(pathStr.c_str());
+					ImGui::PopID();
+				}
+
+				ImGui::EndTable();
+			}
 		}
 
-		ImGui::Columns(1);
 	}
 	ImGui::End();
 }

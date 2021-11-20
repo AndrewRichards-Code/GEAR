@@ -1,7 +1,6 @@
 #include "gearbox_common.h"
 #include "UIContext.h"
-#include "Panels/Panels.h"
-#include "ComponentUI/ComponentUI.h"
+#include "MenuBar.h"
 
 #include "vulkan/VKContext.h"
 #include "vulkan/VKCommandPoolBuffer.h"
@@ -18,15 +17,26 @@ using namespace panels;
 using namespace miru;
 using namespace miru::crossplatform;
 
+UIContext* UIContext::s_UIContext = nullptr;
+
 UIContext::UIContext(CreateInfo* pCreateInfo)
 	:m_CI(*pCreateInfo)
 {
+	s_UIContext = this;
 	Initialise(m_CI.window);
 }
 
 UIContext::~UIContext()
 {
 	ShutDown();
+}
+
+void UIContext::Update(gear::core::Timer timer)
+{
+	for (auto& panel : m_EditorPanels)
+	{
+		panel->Update(timer);
+	}
 }
 
 void UIContext::Draw()
@@ -321,7 +331,11 @@ void UIContext::BeginDockspace()
 		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 	}
 
-	DrawMenuBar();
+	if (!m_MenuBar)
+	{
+		m_MenuBar = CreateRef<MenuBar>();
+	}
+	m_MenuBar->Draw();
 }
 
 void UIContext::EndDockspace()
@@ -367,202 +381,6 @@ ID3D12GraphicsCommandList* UIContext::GetID3D12GraphicsCommandList(const Ref<Com
 VkCommandBuffer UIContext::GetVkCommandBuffer(const Ref<CommandBuffer> cmdBuffer, uint32_t index)
 {
 	return ref_cast<vulkan::CommandBuffer>(cmdBuffer)->m_CmdBuffers[index];
-}
-
-bool UIContext::ShortcutPressed(const std::vector<uint32_t>& keycodes)
-{
-	m_CI.window->Update();
-
-	bool result = true;
-	for (const auto& keycode : keycodes)
-	{
-		result &= m_CI.window->IsKeyPressed(static_cast<unsigned int>(keycode));
-	}
-	return result;
-}
-
-void UIContext::DrawMenuBar()
-{
-	static std::function<void()> PopupWindow = nullptr;
-	bool saveToSaveAs = false;
-
-	auto NewScene = [&]()
-	{
-		Ref<SceneHierarchyPanel> sceneHierarchyPanel = GetPanel<SceneHierarchyPanel>();
-		if (sceneHierarchyPanel)
-		{
-			gear::scene::Scene::CreateInfo sceneCI;
-			sceneCI.debugName = "DefaultScene";
-			sceneCI.nativeScriptDir = "res/scripts/";
-			sceneHierarchyPanel->SetScene(CreateRef<gear::scene::Scene>(&sceneCI));
-			sceneHierarchyPanel->UpdateWindowTitle();
-		}
-	};
-	auto OpenScene = [&]()
-	{
-		Ref<SceneHierarchyPanel> sceneHierarchyPanel = GetPanel<SceneHierarchyPanel>();
-		if (sceneHierarchyPanel)
-		{
-			void* window = (void*)glfwGetWin32Window(m_CI.window->GetGLFWwindow());
-			std::string filepath = gear::core::FileDialog_Open(window, "GEAR Scene file (*.gsf)\0*.gsf\0");
-
-			if (!filepath.empty())
-			{
-				sceneHierarchyPanel->GetScene()->LoadFromFile(filepath, m_CI.window);
-				sceneHierarchyPanel->UpdateWindowTitle();
-			}
-		}
-	};
-	auto SaveScene = [&]()
-	{
-		Ref<SceneHierarchyPanel> sceneHierarchyPanel = GetPanel<SceneHierarchyPanel>();
-		if (sceneHierarchyPanel)
-		{
-			if (!sceneHierarchyPanel->GetScene()->GetFilepath().empty())
-			{
-				sceneHierarchyPanel->GetScene()->SaveToFile("");
-				sceneHierarchyPanel->UpdateWindowTitle();
-			}
-			else
-			{
-				saveToSaveAs = true;
-			}
-		}
-	};
-	auto SaveSceneAs = [&]()
-	{
-		Ref<SceneHierarchyPanel> sceneHierarchyPanel = GetPanel<SceneHierarchyPanel>();
-		if (sceneHierarchyPanel)
-		{
-			void* window = (void*)glfwGetWin32Window(m_CI.window->GetGLFWwindow());
-			std::string filepath = gear::core::FileDialog_Save(window, "GEAR Scene file (*.gsf)\0*.gsf\0");
-
-			if (!filepath.empty())
-			{
-				sceneHierarchyPanel->GetScene()->SaveToFile(filepath);
-				sceneHierarchyPanel->UpdateWindowTitle();
-			}
-		}
-	};
-	auto Exit = [&]()
-	{
-		m_CI.window->Close();
-	};
-	auto About = [&]()
-	{
-		if (!ImGui::IsPopupOpen("Version"))
-			ImGui::OpenPopup("Version");
-
-		if (ImGui::BeginPopupModal("Version"))
-		{
-			ImGui::Text("GEARBOX - Version: %d.%d.%d %s", GEAR_VERSION_MAJOR, GEAR_VERSION_MINOR, GEAR_VERSION_PATCH, GEAR_VERSION_TYPE_STR);
-			std::string gpu = "GPU: " + m_CI.window->GetDeviceName();
-			ImGui::Text(gpu.c_str());
-			std::string api = "API: " + m_CI.window->GetGraphicsAPIVersion();
-			ImGui::Text(api.c_str());
-			if (ImGui::Button("Close", ImVec2(80, 0)))
-			{
-				ImGui::CloseCurrentPopup();
-				PopupWindow = nullptr;
-			}
-			ImGui::EndPopup();
-		}
-	};
-	auto GEARBOXOptions = [&]()
-	{
-		if (!ImGui::IsPopupOpen("GEARBOX Options"))
-			ImGui::OpenPopup("GEARBOX Options");
-
-		if (ImGui::BeginPopupModal("GEARBOX Options"))
-		{
-			static GraphicsAPI::API api;
-			static debug::GraphicsDebugger::DebuggerType graphicsDebugger;
-
-			nlohmann::json data;
-			std::string configFilepath = (std::filesystem::current_path() / std::filesystem::path("config.gbcf")).string();
-			static bool loaded = false;
-			if (std::filesystem::exists(configFilepath) && !loaded)
-			{
-				gear::core::LoadJsonFile(configFilepath, ".gbcf", "GEARBOX_CONFIG_FILE", data);
-
-				api = (GraphicsAPI::API)data["options"]["api"];
-				graphicsDebugger = (debug::GraphicsDebugger::DebuggerType)data["options"]["graphicsDebugger"];
-				loaded = true;
-			}
-
-			componentui::DrawDropDownMenu("API", { "Unknown", "D3D12", "Vulkan" }, api, 130.0f);
-			componentui::DrawDropDownMenu("Graphics Debugger", { "None", "PIX", "RenderDoc" }, graphicsDebugger, 130.0f);
-
-			if (ImGui::Button("Save Options and Exit", ImVec2(160, 0)))
-			{
-				data["options"]["api"] = api;
-				data["options"]["graphicsDebugger"] = graphicsDebugger;
-				gear::core::SaveJsonFile(configFilepath, ".gbcf", "GEARBOX_CONFIG_FILE", data);
-
-				Exit();
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Close", ImVec2(90, 0)))
-			{
-				loaded = false;
-				ImGui::CloseCurrentPopup();
-				PopupWindow = nullptr;
-			}
-			ImGui::EndPopup();
-		}
-	};
-
-	
-	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_N }))
-		NewScene();
-	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_O }))
-		OpenScene();
-	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_S }))
-		SaveScene();
-	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_S }) || saveToSaveAs)
-		SaveSceneAs();
-
-	if (ImGui::BeginMenuBar())
-	{
-		if (ImGui::BeginMenu("File"))
-		{
-			if (ImGui::MenuItem("New Scene", "Ctrl+N"))
-				NewScene();
-			if (ImGui::MenuItem("Open Scene", "Ctrl+O"))
-				OpenScene();
-			if (ImGui::MenuItem("Save Scene", "Ctrl+S"))
-				SaveScene();
-			if (ImGui::MenuItem("Save Scene As", "Ctrl+Shift+S") || saveToSaveAs)
-				SaveScene();
-			if (ImGui::MenuItem("Exit", "Alt+F4"))
-				Exit();
-			
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("Settings"))
-		{
-			if (ImGui::MenuItem("GEARBOX Options"))
-			{
-				PopupWindow = GEARBOXOptions;
-			}
-			ImGui::EndMenu();
-		}
-		if (ImGui::BeginMenu("Help"))
-		{
-			if (ImGui::MenuItem("About", nullptr, false))
-			{
-				PopupWindow = About;
-			}
-			ImGui::EndMenu();
-		}
-		
-		ImGui::EndMenuBar();
-	}
-
-	if (PopupWindow)
-		PopupWindow();
-
-	
 }
 
 static ImVec4 operator+(ImVec4& a, ImVec4& b)

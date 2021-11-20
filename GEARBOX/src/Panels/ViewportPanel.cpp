@@ -31,7 +31,8 @@ ViewportPanel::~ViewportPanel()
 
 void ViewportPanel::Draw()
 {
-	if (ImGui::Begin("Viewport", &m_Open))
+	std::string id = UIContext::GetUIContext()->GetUniqueIDString("Viewport", this);
+	if (ImGui::Begin(id.c_str(), &m_Open))
 	{
 		UpdateCameraTransform();
 
@@ -65,7 +66,7 @@ void ViewportPanel::Draw()
 		uint32_t width = colourImageView->GetCreateInfo().pImage->GetCreateInfo().width;
 		uint32_t height = colourImageView->GetCreateInfo().pImage->GetCreateInfo().height;
 		
-		m_ImageID = componentui::GetTextureID(colourImageView, m_CI.uiContext, resized);
+		m_ImageID = componentui::GetTextureID(colourImageView, UIContext::GetUIContext(), resized);
 		ImGui::Image(m_ImageID, ImVec2(static_cast<float>(width), static_cast<float>(height)));
 
 		if (ImGui::BeginDragDropTarget())
@@ -76,10 +77,10 @@ void ViewportPanel::Draw()
 				std::string filepath = (char*)payload->Data;
 				if (std::filesystem::exists(filepath))
 				{
-					Ref<SceneHierarchyPanel> sceneHierarchyPanel = m_CI.uiContext->GetPanel<SceneHierarchyPanel>();
+					Ref<SceneHierarchyPanel> sceneHierarchyPanel = UIContext::GetUIContext()->GetEditorPanelsByType<SceneHierarchyPanel>()[0];
 					if (sceneHierarchyPanel)
 					{
-						sceneHierarchyPanel->GetScene()->LoadFromFile(filepath, m_CI.uiContext->GetCreateInfo().window);
+						sceneHierarchyPanel->GetScene()->LoadFromFile(filepath, UIContext::GetUIContext()->GetWindow());
 						sceneHierarchyPanel->UpdateWindowTitle();
 					}
 				}

@@ -1,5 +1,7 @@
 #include "gearbox_common.h"
 #include "ContentEditorPanel.h"
+#include "Panels.h"
+
 #include "ComponentUI/ComponentUI.h"
 #include "ComponentUI/ModelComponentUI.h"
 #include "Core/AssetFile.h"
@@ -28,14 +30,25 @@ ContentEditorPanel::~ContentEditorPanel()
 
 void ContentEditorPanel::Draw()
 {
-	std::string title = "Content Editor: " + m_CI.currentFilepath.string();
-	if (ImGui::Begin(title.c_str(), &m_Open))
+	std::string id = UIContext::GetUIContext()->GetUniqueIDString("Content Editor", this);
+	if (ImGui::Begin(id.c_str(), &m_Open))
 	{
 		open = ImGui::Button("Open");
+		if (open)
+		{
+			m_CI.currentFilepathFull = core::FileDialog_Open("", "");
+		}
+		open = std::filesystem::exists(m_CI.currentFilepathFull);
 		ImGui::SameLine();
 		close = ImGui::Button("Close");
 		if (close)
 			open = close;
+		
+		ImGui::SameLine();
+		ImGui::Text(m_CI.currentFilepathFull.string().c_str());
+
+		if (m_CI.filepathExt.empty())
+			m_CI.filepathExt = m_CI.currentFilepathFull.extension().string();
 
 		ContentType contentType = GetContextTypeFromExtension(m_CI.filepathExt);
 		if (contentType == ContentType::TEXT)
@@ -81,7 +94,7 @@ void ContentEditorPanel::Draw()
 					AssetFile assetFile = AssetFile(m_CI.currentFilepathFull.string());
 					if (assetFile.Contains(AssetFile::Type::MATERIAL))
 					{
-						Material::CreateInfo materialCI = { m_CI.currentFilepath.string(), m_CI.uiContext->GetDevice(), {}, {} };
+						Material::CreateInfo materialCI = { m_CI.currentFilepathFull.string(), UIContext::GetUIContext()->GetDevice(), {}, {}};
 						material = CreateRef<Material>(&materialCI);
 
 						material->LoadFromAssetFile(assetFile);
@@ -98,7 +111,7 @@ void ContentEditorPanel::Draw()
 			}
 			
 			if(material)
-				DrawMaterialUI(material, m_CI.uiContext, false);
+				DrawMaterialUI(material, UIContext::GetUIContext(), false);
 		}
 			
 		/*if (ImGui::BeginDragDropTarget())

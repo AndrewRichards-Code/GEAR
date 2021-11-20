@@ -8,8 +8,15 @@
                     "debugName": "Model-Drone",
                     "mesh": {
                         "material": [
+                            2862631183184781989,
+                            7456405487952200633,
+                            8209238101002364476,
+                            3468523970122714955,
+                            10104268866166801675,
+                            12772112378442639125,
+                            3379047113324328290
                         ],
-                        "uuid": 12479521206861207107
+                        "uuid": 15018403886449436564
                     },
                     "renderPipelineName": "PBROpaque",
                     "transform": {
@@ -20,9 +27,9 @@
                             0.5000000676685942
                         ],
                         "scale": [
-                            0.009999999776482582,
-                            0.009999999776482582,
-                            0.009999999776482582
+                            0.0,
+                            0.0,
+                            0.0
                         ],
                         "translation": [
                             0.0,
@@ -43,9 +50,9 @@
                             0.5000000676685942
                         ],
                         "scale": [
-                            0.009999999776482582,
-                            0.009999999776482582,
-                            0.009999999776482582
+                            0.0,
+                            0.0,
+                            0.0
                         ],
                         "translation": [
                             0.0,
@@ -63,8 +70,9 @@
                     "debugName": "Sphere",
                     "mesh": {
                         "material": [
+                            3013370995202073888
                         ],
-                        "uuid": 5182918752097057605
+                        "uuid": 8242943410571440643
                     },
                     "renderPipelineName": "PBROpaque",
                     "transform": {
@@ -75,9 +83,9 @@
                             6.970046849264955e-17
                         ],
                         "scale": [
-                            1.0,
-                            1.0,
-                            1.0
+                            0.0,
+                            0.0,
+                            0.0
                         ],
                         "translation": [
                             2.0399999618530273,
@@ -98,9 +106,9 @@
                             6.970046849264955e-17
                         ],
                         "scale": [
-                            1.0,
-                            1.0,
-                            1.0
+                            0.0,
+                            0.0,
+                            0.0
                         ],
                         "translation": [
                             2.0399999618530273,
@@ -168,13 +176,69 @@
                     "uuid": 13548267898940117083
                 }
             },
+            "3201678994658933944": {
+                "ModelComponent": {
+                    "debugName": "Model-Cube",
+                    "mesh": {
+                        "material": [
+                            16817743147903813800
+                        ],
+                        "uuid": 8212377042472811013
+                    },
+                    "renderPipelineName": "PBROpaque",
+                    "transform": {
+                        "orientation": [
+                            0.7071067657322372,
+                            -0.7071067966408575,
+                            0.0,
+                            0.0
+                        ],
+                        "scale": [
+                            2.200000047683716,
+                            2.200000047683716,
+                            2.200000047683716
+                        ],
+                        "translation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "NameComponent": {
+                    "name": "VS Logo"
+                },
+                "TransformComponent": {
+                    "transform": {
+                        "orientation": [
+                            0.7071067657322372,
+                            -0.7071067966408575,
+                            0.0,
+                            0.0
+                        ],
+                        "scale": [
+                            2.200000047683716,
+                            2.200000047683716,
+                            2.200000047683716
+                        ],
+                        "translation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "UUIDComponent": {
+                    "uuid": 3201678994658933944
+                }
+            },
             "8077919658766236766": {
                 "CameraComponent": {
                     "debugName": "Camera",
                     "flipX": false,
                     "flipY": false,
                     "orthographicsParams": {
-                        "bottom": 1.6241872310638428,
+                        "bottom": 2.609900951385498,
                         "far": 0.0,
                         "left": -11828.0625,
                         "near": 3000.0,
@@ -182,7 +246,7 @@
                         "top": 0.0010000000474974513
                     },
                     "perspectiveParams": {
-                        "aspectRatio": 1.6241872310638428,
+                        "aspectRatio": 2.609900951385498,
                         "horizonalFOV": 1.3089969389957474,
                         "zFar": 3000.0,
                         "zNear": 0.0010000000474974513
@@ -190,10 +254,10 @@
                     "projectionType": 0,
                     "transform": {
                         "orientation": [
-                            0.9662261759931307,
-                            -0.09596961420472866,
-                            0.23798751866618464,
-                            0.023637913067775115
+                            0.9639254261220683,
+                            -0.10743737530174102,
+                            -0.24202744060982628,
+                            -0.026975938454833162
                         ],
                         "scale": [
                             1.0,
@@ -201,9 +265,9 @@
                             1.0
                         ],
                         "translation": [
-                            1.5121634006500244,
-                            1.5771247148513794,
-                            2.963871955871582
+                            -1.118820071220398,
+                            1.8385523557662964,
+                            1.812761902809143
                         ]
                     }
                 },
@@ -236,7 +300,29 @@
             }
         },
         "references": {
-            "12479521206861207107": {
+            "10104268866166801675": {
+                "data": {
+                    "debugName": "defaultMat",
+                    "filepath": "res/assets/defaultMat.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 10104268866166801675
+            },
+            "12772112378442639125": {
+                "data": {
+                    "debugName": "defaultMat",
+                    "filepath": "res/assets/defaultMat.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 12772112378442639125
+            },
+            "15018403886449436564": {
                 "data": {
                     "debugName": "Mesh-Drone",
                     "filepath": "../GEAR_TEST/res/obj/Drone_Animated_03.fbx"
@@ -245,10 +331,97 @@
                     "hash_code": 3736462184517488487,
                     "name": "struct gear::objects::Mesh::CreateInfo"
                 },
-                "uuid": 12479521206861207107
+                "uuid": 15018403886449436564
             },
-           
-            "5182918752097057605": {
+            "16817743147903813800": {
+                "data": {
+                    "debugName": "Material.003",
+                    "filepath": "res/assets/Material.003.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 16817743147903813800
+            },
+            "2862631183184781989": {
+                "data": {
+                    "debugName": "defaultMat",
+                    "filepath": "res/assets/defaultMat.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 2862631183184781989
+            },
+            "3013370995202073888": {
+                "data": {
+                    "debugName": "DefaultMaterial",
+                    "filepath": "res/assets/DefaultMaterial.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 3013370995202073888
+            },
+            "3379047113324328290": {
+                "data": {
+                    "debugName": "defaultMat",
+                    "filepath": "res/assets/defaultMat.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 3379047113324328290
+            },
+            "3468523970122714955": {
+                "data": {
+                    "debugName": "defaultMat",
+                    "filepath": "res/assets/defaultMat.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 3468523970122714955
+            },
+            "7456405487952200633": {
+                "data": {
+                    "debugName": "defaultMat",
+                    "filepath": "res/assets/defaultMat.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 7456405487952200633
+            },
+            "8209238101002364476": {
+                "data": {
+                    "debugName": "defaultMat",
+                    "filepath": "res/assets/defaultMat.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 8209238101002364476
+            },
+            "8212377042472811013": {
+                "data": {
+                    "debugName": "Mesh-Cube",
+                    "filepath": "D:/Users/Andrew/Downloads/VisualStudioSwag-main/VisualStudioSwag-main/2022 Launch Swag/Visual Studio 2022 3D Product Icon/FBX\\VisualStudio.fbx"
+                },
+                "type": {
+                    "hash_code": 3736462184517488487,
+                    "name": "struct gear::objects::Mesh::CreateInfo"
+                },
+                "uuid": 8212377042472811013
+            },
+            "8242943410571440643": {
                 "data": {
                     "debugName": "Mesh-Sphere",
                     "filepath": "res/obj/sphere.fbx"
@@ -257,7 +430,7 @@
                     "hash_code": 3736462184517488487,
                     "name": "struct gear::objects::Mesh::CreateInfo"
                 },
-                "uuid": 5182918752097057605
+                "uuid": 8242943410571440643
             }
         },
         "uuid": 7089646094366150252

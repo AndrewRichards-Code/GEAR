@@ -100,6 +100,9 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 Renderer::~Renderer()
 {
 	m_Context->DeviceWaitIdle();
+	s_RenderPipelines.clear();
+	ImageProcessing::ClearState();
+	PostProcessing::ClearState();
 }
 
 void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface)

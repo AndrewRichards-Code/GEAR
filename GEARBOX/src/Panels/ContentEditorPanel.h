@@ -1,5 +1,4 @@
 #pragma once
-#include "Panel.h"
 #include "UIContext.h"
 #include "Objects/Material.h"
 
@@ -34,8 +33,6 @@ namespace gearbox
 
 			struct CreateInfo
 			{
-				Ref<UIContext>	uiContext;
-				std::filesystem::path	currentFilepath;
 				std::filesystem::path	currentFilepathFull;
 				std::string				filepathExt;
 			};

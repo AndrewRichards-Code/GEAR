@@ -18,8 +18,9 @@ namespace graphics
 
 		struct CreateInfo
 		{
-			Ref<miru::crossplatform::Context>		pContext;
+			Ref<miru::crossplatform::Context>			pContext;
 			miru::crossplatform::Allocator::BlockSize	defaultBlockSize;
+			bool										forceInitialisation = false;
 		};
 
 	private:

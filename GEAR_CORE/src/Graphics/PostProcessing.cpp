@@ -4,8 +4,8 @@
 #include "AllocatorManager.h"
 #include "RenderPipeline.h"
 #include "Texture.h"
-#include "UniformBuffer.h"
-#include "UniformBufferStructures.h"
+
+
 
 using namespace gear;
 using namespace graphics;
@@ -20,10 +20,9 @@ Ref<RenderPipeline> PostProcessing::s_BloomUpsample;
 std::array<std::vector<Ref<ImageView>>, 2>		PostProcessing::s_ImageViews;
 std::array<std::vector<Ref<DescriptorSet>>, 2>	PostProcessing::s_DescSets;
 
-typedef UniformBufferStructures::BloomInfo BloomInfoUB;
-static std::array<Ref<Uniformbuffer<BloomInfoUB>>, 2> m_BloomInfoUBs;
+std::array<Ref<Uniformbuffer<PostProcessing::BloomInfoUB>>, 2> PostProcessing::s_BloomInfoUBs;
 
-static std::array<Ref<Sampler>, 2> s_Samplers;
+std::array<Ref<Sampler>, 2> PostProcessing::s_Samplers;
 
 PostProcessing::PostProcessing()
 {
@@ -63,7 +62,7 @@ void PostProcessing::BloomPreFilter(const Ref<miru::crossplatform::CommandBuffer
 
 	void* device = cmdBuffer->GetCreateInfo().pCommandPool->GetCreateInfo().pContext->GetDevice();
 	uint32_t minSize = std::min(IRI.image->GetCreateInfo().width, IRI.image->GetCreateInfo().height);
-	uint32_t levels = static_cast<uint32_t>(log2(static_cast<double>(minSize / 8)));
+	uint32_t levels = std::max(static_cast<uint32_t>(log2(static_cast<double>(minSize / 8))), uint32_t(1));
 
 	//Input
 	ImageView::CreateInfo inputImageViewCI;
@@ -94,10 +93,10 @@ void PostProcessing::BloomPreFilter(const Ref<miru::crossplatform::CommandBuffer
 	ubCI.debugName = "GEAR_CORE_Buffer_BloomInfoUB";
 	ubCI.device = device;
 	ubCI.data = zero;
-	m_BloomInfoUBs[frameIndex] = CreateRef<Uniformbuffer<BloomInfoUB>>(&ubCI);
-	m_BloomInfoUBs[frameIndex]->threshold = 3.0f;
-	m_BloomInfoUBs[frameIndex]->upsampleScale = 2.0f;
-	m_BloomInfoUBs[frameIndex]->SubmitData();
+	s_BloomInfoUBs[frameIndex] = CreateRef<Uniformbuffer<BloomInfoUB>>(&ubCI);
+	s_BloomInfoUBs[frameIndex]->threshold = 3.0f;
+	s_BloomInfoUBs[frameIndex]->upsampleScale = 2.0f;
+	s_BloomInfoUBs[frameIndex]->SubmitData();
 
 	//Descriptor Pool and Set
 	DescriptorPool::CreateInfo m_DescPoolCI;
@@ -114,14 +113,14 @@ void PostProcessing::BloomPreFilter(const Ref<miru::crossplatform::CommandBuffer
 	Ref<DescriptorSet> m_DescSet = DescriptorSet::Create(&m_DescSetCI);
 	m_DescSet->AddImage(0, 0, { { nullptr, inputImageView, Image::Layout::GENERAL } });
 	m_DescSet->AddImage(0, 1, { { nullptr, outputImageView, Image::Layout::GENERAL} });
-	m_DescSet->AddBuffer(0, 2, { { m_BloomInfoUBs[frameIndex]->GetBufferView() } });
+	m_DescSet->AddBuffer(0, 2, { { s_BloomInfoUBs[frameIndex]->GetBufferView() } });
 	m_DescSet->Update();
 
 	SaveImageViewsAndDescriptorSets({ inputImageView, outputImageView }, { m_DescSet }, frameIndex);
 
 	//Record Compute CommandBuffer
 	{
-		m_BloomInfoUBs[frameIndex]->Upload(cmdBuffer, frameIndex, true);
+		s_BloomInfoUBs[frameIndex]->Upload(cmdBuffer, frameIndex, true);
 
 		std::vector<Ref<Barrier>> barriers;
 		barriers.clear();
@@ -154,9 +153,9 @@ void PostProcessing::BloomPreFilter(const Ref<miru::crossplatform::CommandBuffer
 			barrierCI.dstAccess = Barrier::AccessBit::UNIFORM_READ_BIT;
 			barrierCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
 			barrierCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
-			barrierCI.pBuffer = m_BloomInfoUBs[frameIndex]->GetBuffer();
+			barrierCI.pBuffer = s_BloomInfoUBs[frameIndex]->GetBuffer();
 			barrierCI.offset = 0;
-			barrierCI.size = m_BloomInfoUBs[frameIndex]->GetSize();
+			barrierCI.size = s_BloomInfoUBs[frameIndex]->GetSize();
 			barriers.emplace_back(Barrier::Create(&barrierCI));
 		}
 
@@ -342,7 +341,7 @@ void PostProcessing::BloomUpsample(const Ref<miru::crossplatform::CommandBuffer>
 		m_DescSets.emplace_back(DescriptorSet::Create(&m_DescSetCI));
 		m_DescSets[i]->AddImage(0, 0, { { s_Samplers[frameIndex],	m_ImageViews[i + 1], Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
 		m_DescSets[i]->AddImage(0, 1, { { nullptr,					m_ImageViews[i + 0], m_ImageLayout } });
-		m_DescSets[i]->AddBuffer(0, 2, { { m_BloomInfoUBs[frameIndex]->GetBufferView() } });
+		m_DescSets[i]->AddBuffer(0, 2, { { s_BloomInfoUBs[frameIndex]->GetBufferView() } });
 		m_DescSets[i]->Update();
 	}
 

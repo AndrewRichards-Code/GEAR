@@ -15,7 +15,10 @@ bool AllocatorManager::s_Initialised = false;
 
 void AllocatorManager::Initialise(CreateInfo* pCreateInfo)
 {
-	if (s_Initialised)
+	if (pCreateInfo->forceInitialisation)
+		s_Initialised = false;
+
+	if (s_Initialised) 
 		return;
 
 	s_CI = *pCreateInfo;

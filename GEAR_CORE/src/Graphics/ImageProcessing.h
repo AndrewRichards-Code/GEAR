@@ -65,6 +65,18 @@ namespace graphics
 		}
 		static std::vector<Ref<miru::crossplatform::ImageView>> s_ImageViews;
 		static std::vector<Ref<miru::crossplatform::DescriptorSet>> s_DescSets;
+
+		static void ClearState()
+		{
+			s_PipelineMipMap = nullptr;
+			s_PipelineMipMapArray = nullptr;
+			s_PipelineEquirectangularToCube = nullptr;
+			s_PipelineDiffuseIrradiance = nullptr;
+			s_PipelineSpecularIrradiance = nullptr;
+			s_PipelineSpecularBRDF_LUT = nullptr;
+			
+			ClearImageViewsAndDescriptorSets();
+		}
 	};
 }
 }

@@ -9,6 +9,9 @@
 #include "Audio/AudioSource.h"
 #include "Audio/AudioListener.h"
 
+//Build
+#include "Build/Project.h"
+
 //Core
 #include "Core/Application.h"
 #include "Core/AssetFile.h"

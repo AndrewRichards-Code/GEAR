@@ -1,6 +1,7 @@
 #pragma once
 #include "gear_core_common.h"
 #include "ImageProcessing.h"
+#include "UniformBuffer.h"
 
 namespace gear
 {
@@ -48,6 +49,25 @@ namespace graphics
 		}
 		static std::array<std::vector<Ref<miru::crossplatform::ImageView>>, 2> s_ImageViews;
 		static std::array<std::vector<Ref<miru::crossplatform::DescriptorSet>>, 2> s_DescSets;
+
+		typedef gear::graphics::UniformBufferStructures::BloomInfo BloomInfoUB;
+		static std::array<Ref<Uniformbuffer<BloomInfoUB>>, 2> s_BloomInfoUBs;
+		static std::array<Ref<miru::crossplatform::Sampler>, 2> s_Samplers;
+
+		static void ClearState()
+		{
+			s_BloomPreFilter = nullptr;
+			s_BloomDownsample = nullptr;
+			s_BloomUpsample = nullptr;
+			
+			ClearImageViewsAndDescriptorSets(0);
+			ClearImageViewsAndDescriptorSets(1);
+
+			s_BloomInfoUBs[0] = nullptr;
+			s_BloomInfoUBs[1] = nullptr;
+			s_Samplers[0] = nullptr;
+			s_Samplers[1] = nullptr;
+		}
 	};
 }
 }

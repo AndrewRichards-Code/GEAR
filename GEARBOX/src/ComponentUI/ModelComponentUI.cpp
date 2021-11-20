@@ -12,7 +12,7 @@ using namespace componentui;
 
 using namespace mars;
 
-void gearbox::componentui::DrawModelComponentUI(Entity entity, Ref<UIContext>& uiContext)
+void gearbox::componentui::DrawModelComponentUI(Entity entity, UIContext* uiContext)
 {
 	Ref<Model>& model = entity.GetComponent<ModelComponent>().model;
 	Model::CreateInfo& CI = model->m_CI;
@@ -53,7 +53,7 @@ void gearbox::componentui::AddModelComponent(Entity entity, void* device)
 	}
 }
 
-void gearbox::componentui::DrawMeshUI(Ref<Mesh>& mesh, Ref<UIContext>& uiContext)
+void gearbox::componentui::DrawMeshUI(Ref<Mesh>& mesh, UIContext* uiContext)
 {
 	Mesh::CreateInfo& CI = mesh->m_CI;
 
@@ -134,7 +134,7 @@ void gearbox::componentui::DrawMeshUI(Ref<Mesh>& mesh, Ref<UIContext>& uiContext
 	}
 }
 
-void gearbox::componentui::DrawMaterialUI(Ref<objects::Material>& material, Ref<UIContext>& uiContext, bool fileFunctions)
+void gearbox::componentui::DrawMaterialUI(Ref<objects::Material>& material, UIContext* uiContext, bool fileFunctions)
 {
 	if (DrawTreeNode("Material", false))
 	{
@@ -242,7 +242,7 @@ void gearbox::componentui::DrawMaterialUI(Ref<objects::Material>& material, Ref<
 			}
 			if (ImGui::Button("Open"))
 			{
-				std::string filepath = core::AssetFile::FileDialog_Open(uiContext->GetCreateInfo().window);
+				std::string filepath = core::AssetFile::FileDialog_Open();
 				if (!filepath.empty())
 				{
 					core::AssetFile assetFile(filepath);
@@ -252,7 +252,7 @@ void gearbox::componentui::DrawMaterialUI(Ref<objects::Material>& material, Ref<
 			ImGui::SameLine();
 			if (ImGui::Button("Save"))
 			{
-				std::string filepath = core::AssetFile::FileDialog_Save(uiContext->GetCreateInfo().window);
+				std::string filepath = core::AssetFile::FileDialog_Save();
 				if (!filepath.empty())
 				{
 					core::AssetFile assetFile(filepath);

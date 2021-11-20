@@ -31,16 +31,14 @@ AssetFile::~AssetFile()
 {
 }
 
-std::string AssetFile::FileDialog_Open(const Ref<graphics::Window>& window)
+std::string AssetFile::FileDialog_Open()
 {
-	void* _window = (void*)glfwGetWin32Window(window->GetGLFWwindow());
-	return core::FileDialog_Open(_window, "GEAR Asset file (*.gaf)\0*.gaf\0");
+	return core::FileDialog_Open("GEAR Asset file", "*.gaf");
 }
 
-std::string AssetFile::FileDialog_Save(const Ref<graphics::Window>& window)
+std::string AssetFile::FileDialog_Save()
 {
-	void* _window = (void*)glfwGetWin32Window(window->GetGLFWwindow());
-	return core::FileDialog_Save(_window, "GEAR Asset file (*.gaf)\0*.gaf\0");
+	return core::FileDialog_Save("GEAR Asset file", "*.gaf");
 }
 
 void AssetFile::Load()

@@ -117,8 +117,6 @@ namespace graphics
 	public:
 		typedef void(Renderer::*PFN_RendererFunction)(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets);
 
-	public:
-
 		void ResizeRenderPipelineViewports(uint32_t width, uint32_t height);
 		void RecompileRenderPipelineShaders();
 		void ReloadTextures();

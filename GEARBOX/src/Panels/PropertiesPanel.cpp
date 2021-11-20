@@ -1,5 +1,6 @@
 #include "gearbox_common.h"
 #include "PropertiesPanel.h"
+#include "Panels.h"
 
 #include "ComponentUI/NameComponentUI.h"
 #include "ComponentUI/TransformComponentUI.h"
@@ -29,19 +30,24 @@ PropertiesPanel::~PropertiesPanel()
 
 void PropertiesPanel::Draw()
 {
-	if (ImGui::Begin("Properties", &m_Open))
+	std::string id = UIContext::GetUIContext()->GetUniqueIDString("Properties", this);
+	if (ImGui::Begin(id.c_str(), &m_Open))
 	{
-		Entity& entity = m_CI.sceneHeirarchyPanel->GetSelectedEntity();
-		Ref<UIContext>& uiContext = m_CI.sceneHeirarchyPanel->GetCreateInfo().viewport->GetCreateInfo().uiContext;
-		void* device = m_CI.sceneHeirarchyPanel->GetCreateInfo().viewport->GetCreateInfo().renderer->GetDevice();
-		const float& screenRatio = m_CI.sceneHeirarchyPanel->GetCreateInfo().viewport->GetCreateInfo().renderer->GetRenderSurface()->GetRatio();
+		Ref<SceneHierarchyPanel> sceneHierarchyPanel = UIContext::GetUIContext()->GetEditorPanelsByType<SceneHierarchyPanel>()[0];
+		Ref<ViewportPanel> viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
+		if (!sceneHierarchyPanel || !viewportPanel)
+			return;
+
+		Entity& entity = sceneHierarchyPanel->GetSelectedEntity();
+		void* device = viewportPanel->GetCreateInfo().renderer->GetDevice();
+		const float& screenRatio = viewportPanel->GetCreateInfo().renderer->GetRenderSurface()->GetRatio();
 		if (entity)
 		{
 			DrawComponentUI<NameComponent>("Name", entity, true, DrawNameComponentUI, entity);
-			DrawComponentUI<TransformComponent>("Name", entity, true, DrawTransformComponentUI, entity);
+			DrawComponentUI<TransformComponent>("Transform", entity, true, DrawTransformComponentUI, entity);
 			DrawComponentUI<CameraComponent>("Camera", entity, true, DrawCameraComponentUI, entity, screenRatio);
 			DrawComponentUI<SkyboxComponent>("Skybox", entity, true, DrawSkyboxComponentUI, entity);
-			DrawComponentUI<ModelComponent>("Model", entity, true, DrawModelComponentUI, entity, uiContext);
+			DrawComponentUI<ModelComponent>("Model", entity, true, DrawModelComponentUI, entity, UIContext::GetUIContext());
 			
 			if (ImGui::Button("Add Component"))
 				ImGui::OpenPopup("AddComponents");

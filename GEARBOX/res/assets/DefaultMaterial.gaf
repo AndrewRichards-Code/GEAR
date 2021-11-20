@@ -1,12 +1,12 @@
 {
     "fileType": "GEAR_ASSET_FILE",
     "material": {
-        "debugName": "defaultMat",
+        "debugName": "DefaultMaterial",
         "pbrConstants": {
             "albedo": [
-                0.550000011920929,
-                0.550000011920929,
-                0.550000011920929,
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
                 1.0
             ],
             "ambientOcclusion": 1.0,
@@ -17,13 +17,13 @@
                 1.0
             ],
             "fresnel": [
-                0.8999999761581421,
-                0.8999999761581421,
-                0.8999999761581421,
+                0.0,
+                0.0,
+                0.0,
                 1.0
             ],
             "metallic": 1.0,
-            "roughness": 0.75
+            "roughness": 3355444.0
         },
         "textures": null
     }

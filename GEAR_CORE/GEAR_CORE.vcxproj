@@ -179,6 +179,7 @@
     <ClCompile Include="dep\STBI\stb_image_write.cpp" />
     <ClCompile Include="dep\STBI\stb_image.cpp" />
     <ClCompile Include="src\Animation\Animator.cpp" />
+    <ClCompile Include="src\Build\Project.cpp" />
     <ClCompile Include="src\Core\Application.cpp" />
     <ClCompile Include="src\Core\AssetFile.cpp" />
     <ClCompile Include="src\Core\FileDialog.cpp" />
@@ -226,6 +227,7 @@
     <ClInclude Include="dep\STBI\stb_image_write.h" />
     <ClInclude Include="src\Animation\Animation.h" />
     <ClInclude Include="src\Animation\Animator.h" />
+    <ClInclude Include="src\Build\Project.h" />
     <ClInclude Include="src\Core\Application.h" />
     <ClInclude Include="src\Core\AssetFile.h" />
     <ClInclude Include="src\Core\FileDialog.h" />

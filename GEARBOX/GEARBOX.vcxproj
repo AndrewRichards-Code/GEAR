@@ -96,6 +96,7 @@
   <ItemGroup>
     <ClInclude Include="src\ComponentUI\CameraComponentUI.h" />
     <ClInclude Include="src\ComponentUI\ComponentUI.h" />
+    <ClInclude Include="src\MenuBar.h" />
     <ClInclude Include="src\ComponentUI\ModelComponentUI.h" />
     <ClInclude Include="src\ComponentUI\NameComponentUI.h" />
     <ClInclude Include="src\ComponentUI\SkyboxComponentUI.h" />
@@ -104,8 +105,9 @@
     <ClInclude Include="src\gearbox_common.h" />
     <ClInclude Include="src\Panels\ContentBrowserPanel.h" />
     <ClInclude Include="src\Panels\ContentEditorPanel.h" />
-    <ClInclude Include="src\Panels\Panel.h" />
+    <ClInclude Include="src\Panels\BasePanel.h" />
     <ClInclude Include="src\Panels\Panels.h" />
+    <ClInclude Include="src\Panels\ProjectPanel.h" />
     <ClInclude Include="src\Panels\PropertiesPanel.h" />
     <ClInclude Include="src\Panels\SceneHierarchyPanel.h" />
     <ClInclude Include="src\Panels\ViewportPanel.h" />
@@ -123,8 +125,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\MenuBar.cpp" />
     <ClCompile Include="src\Panels\ContentBrowserPanel.cpp" />
     <ClCompile Include="src\Panels\ContentEditorPanel.cpp" />
+    <ClCompile Include="src\Panels\ProjectPanel.cpp" />
     <ClCompile Include="src\Panels\PropertiesPanel.cpp" />
     <ClCompile Include="src\Panels\SceneHierarchyPanel.cpp" />
     <ClCompile Include="src\Panels\ViewportPanel.cpp" />
