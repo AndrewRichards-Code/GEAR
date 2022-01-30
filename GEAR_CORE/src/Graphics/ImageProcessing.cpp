@@ -141,7 +141,7 @@ void ImageProcessing::GenerateMipMaps(const Ref<miru::crossplatform::CommandBuff
 			TRI.texture->TransitionSubResources(barriers, { preDispatch });
 			cmdBuffer->PipelineBarrier(0, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
 
-			cmdBuffer->BindDescriptorSets(0, { m_DescSets[i - 1] }, pipeline->GetPipeline());
+			cmdBuffer->BindDescriptorSets(0, { m_DescSets[i - 1] }, 0, pipeline->GetPipeline());
 			uint32_t width = std::max((TRI.texture->GetWidth() >> i) / 8, uint32_t(1));
 			uint32_t height = std::max((TRI.texture->GetHeight() >> i) / 8, uint32_t(1));
 			uint32_t depth = layers;
@@ -266,7 +266,7 @@ void ImageProcessing::EquirectangularToCube(const Ref<miru::crossplatform::Comma
 			cmdBuffer->PipelineBarrier(0, environmentCubemapTRI.srcStage, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
 		}
 
-		cmdBuffer->BindDescriptorSets(0, { m_DescSet }, s_PipelineEquirectangularToCube->GetPipeline());
+		cmdBuffer->BindDescriptorSets(0, { m_DescSet }, 0, s_PipelineEquirectangularToCube->GetPipeline());
 		uint32_t width = std::max(environmentCubemapTRI.texture->GetWidth() / 32, uint32_t(1));
 		uint32_t height = std::max(environmentCubemapTRI.texture->GetHeight() / 32, uint32_t(1));
 		uint32_t depth = 6;
@@ -388,7 +388,7 @@ void ImageProcessing::DiffuseIrradiance(const Ref<miru::crossplatform::CommandBu
 		diffuseIrradianceTRI.texture->TransitionSubResources(barriers, { diffuseCubePreDispatch });
 		cmdBuffer->PipelineBarrier(0, diffuseIrradianceTRI.srcStage, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
 
-		cmdBuffer->BindDescriptorSets(0, { m_DescSet }, s_PipelineDiffuseIrradiance->GetPipeline());
+		cmdBuffer->BindDescriptorSets(0, { m_DescSet }, 0, s_PipelineDiffuseIrradiance->GetPipeline());
 		uint32_t width = std::max(diffuseIrradianceTRI.texture->GetWidth() / 32, uint32_t(1));
 		uint32_t height = std::max(diffuseIrradianceTRI.texture->GetHeight() / 32, uint32_t(1));
 		uint32_t depth = 6;
@@ -547,7 +547,7 @@ void ImageProcessing::SpecularIrradiance(const Ref<miru::crossplatform::CommandB
 				cmdBuffer->PipelineBarrier(0, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, { b });
 			};
 
-			cmdBuffer->BindDescriptorSets(0, { m_DescSets[i] }, s_PipelineSpecularIrradiance->GetPipeline());
+			cmdBuffer->BindDescriptorSets(0, { m_DescSets[i] }, 0, s_PipelineSpecularIrradiance->GetPipeline());
 			uint32_t width = std::max((specularIrradianceTRI.texture->GetWidth() >> i) / 32, uint32_t(1));
 			uint32_t height = std::max((specularIrradianceTRI.texture->GetHeight() >> i) / 32, uint32_t(1));
 			uint32_t depth = 6;
@@ -643,7 +643,7 @@ void ImageProcessing::SpecularBRDF_LUT(const Ref<miru::crossplatform::CommandBuf
 		cmdBuffer->PipelineBarrier(0, TRI.srcStage, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
 
 		cmdBuffer->BindPipeline(0, s_PipelineSpecularBRDF_LUT->GetPipeline());
-		cmdBuffer->BindDescriptorSets(0, { m_DescSet }, s_PipelineSpecularBRDF_LUT->GetPipeline());
+		cmdBuffer->BindDescriptorSets(0, { m_DescSet }, 0, s_PipelineSpecularBRDF_LUT->GetPipeline());
 
 		uint32_t width = std::max(TRI.texture->GetWidth() / 32, uint32_t(1));
 		uint32_t height = std::max(TRI.texture->GetHeight() / 32, uint32_t(1));

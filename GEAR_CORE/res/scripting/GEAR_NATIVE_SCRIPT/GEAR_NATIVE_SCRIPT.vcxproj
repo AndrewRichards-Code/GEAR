@@ -65,7 +65,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -73,7 +73,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>GEAR_CORE.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)GEAR_CORE\lib\x64\$(Configuration);$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep;$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)GEAR_CORE\lib\x64\$(Configuration);$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE\dep\SPIRV-Cross\build;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep;$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -87,7 +87,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -97,7 +97,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>GEAR_CORE.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)GEAR_CORE\lib\x64\$(Configuration);$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep;$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)GEAR_CORE\lib\x64\$(Configuration);$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE\dep\SPIRV-Cross\build;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep;$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

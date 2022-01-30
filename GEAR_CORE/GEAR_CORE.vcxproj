@@ -94,7 +94,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep\ENTT;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\GLFW\include;$(ProjectDir)dep\JSON;$(ProjectDir)dep\MARS\MARS\src;$(ProjectDir)dep\MIRU\MIRU_CORE\dep;$(ProjectDir)dep\MIRU\MIRU_CORE\redist;$(ProjectDir)dep\MIRU\MIRU_CORE\src;$(ProjectDir)dep\OPENAL\include;$(ProjectDir)dep\STBI;$(VULKAN_SDK)\Include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep\ENTT;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\GLFW\include;$(ProjectDir)dep\JSON;$(ProjectDir)dep\MARS\MARS\src;$(ProjectDir)dep\MIRU\MIRU_CORE\dep;$(ProjectDir)dep\MIRU\MIRU_CORE\redist;$(ProjectDir)dep\MIRU\MIRU_CORE\src;$(ProjectDir)dep\MIRU\MIRU_SHADER_CORE\dep;$(ProjectDir)dep\MIRU\MIRU_SHADER_CORE\redist;$(ProjectDir)dep\MIRU\MIRU_SHADER_CORE\src;$(ProjectDir)dep\OPENAL\include;$(ProjectDir)dep\STBI;$(VULKAN_SDK)\Include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;PROJECT_DIR=R"($(ProjectDir))";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>gear_core_common.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -135,7 +135,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep\ENTT;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\GLFW\include;$(ProjectDir)dep\JSON;$(ProjectDir)dep\MARS\MARS\src;$(ProjectDir)dep\MIRU\MIRU_CORE\dep;$(ProjectDir)dep\MIRU\MIRU_CORE\redist;$(ProjectDir)dep\MIRU\MIRU_CORE\src;$(ProjectDir)dep\OPENAL\include;$(ProjectDir)dep\STBI;$(VULKAN_SDK)\Include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)dep\ASSIMP\include;$(ProjectDir)dep\ENTT;$(ProjectDir)dep\FREETYPE\include;$(ProjectDir)dep\GLFW\include;$(ProjectDir)dep\JSON;$(ProjectDir)dep\MARS\MARS\src;$(ProjectDir)dep\MIRU\MIRU_CORE\dep;$(ProjectDir)dep\MIRU\MIRU_CORE\redist;$(ProjectDir)dep\MIRU\MIRU_CORE\src;$(ProjectDir)dep\MIRU\MIRU_SHADER_CORE\dep;$(ProjectDir)dep\MIRU\MIRU_SHADER_CORE\redist;$(ProjectDir)dep\MIRU\MIRU_SHADER_CORE\src;$(ProjectDir)dep\OPENAL\include;$(ProjectDir)dep\STBI;$(VULKAN_SDK)\Include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GLEW_STATIC;PROJECT_DIR=R"($(ProjectDir))";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>gear_core_common.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>

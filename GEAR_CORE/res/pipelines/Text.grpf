@@ -12,7 +12,6 @@
 			],
 			"binaryFilepath": "res/shaders/bin/Text_vs_6_4_vs_main.spv",
 			"recompileArguments": {
-				"mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
 				"hlslFilepath": "res/shaders/HLSL/Text.hlsl",
 				"outputDirectory": "res/shaders/bin",
 				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
@@ -22,7 +21,7 @@
 				"cso": true,
 				"spv": true,
 				"dxcLocation": "",
-				"dxcArguments": "",
+				"dxcArguments": [],
 				"nologo": false,
 				"nooutput": false
 			}
@@ -37,7 +36,6 @@
 			],
 			"binaryFilepath": "res/shaders/bin/Text_ps_6_4_ps_main.spv",
 			"recompileArguments": {
-				"mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
 				"hlslFilepath": "res/shaders/HLSL/Text.hlsl",
 				"outputDirectory": "res/shaders/bin",
 				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
@@ -47,7 +45,7 @@
 				"cso": true,
 				"spv": true,
 				"dxcLocation": "",
-				"dxcArguments": "",
+				"dxcArguments": [],
 				"nologo": false,
 				"nooutput": false
 			}

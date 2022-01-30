@@ -12,7 +12,6 @@
       ],
       "binaryFilepath": "res/shaders/bin/SpecularIrradiance_cs_6_4_main.spv",
       "recompileArguments": {
-        "mscDirectory": "dep/MIRU/MIRU_SHADER_COMPILER/exe/x64/Debug",
         "hlslFilepath": "res/shaders/HLSL/PBR/SpecularIrradiance.hlsl",
         "outputDirectory": "res/shaders/bin",
         "includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
@@ -22,7 +21,7 @@
         "cso": true,
         "spv": true,
         "dxcLocation": "",
-        "dxcArguments": "",
+        "dxcArguments": [],
         "nologo": false,
         "nooutput": false
       }

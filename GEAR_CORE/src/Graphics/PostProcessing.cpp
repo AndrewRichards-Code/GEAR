@@ -162,7 +162,7 @@ void PostProcessing::BloomPreFilter(const Ref<miru::crossplatform::CommandBuffer
 		cmdBuffer->PipelineBarrier(frameIndex, IRI.srcStage, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
 
 		cmdBuffer->BindPipeline(frameIndex, s_BloomPreFilter->GetPipeline());
-		cmdBuffer->BindDescriptorSets(frameIndex, { m_DescSet }, s_BloomPreFilter->GetPipeline());
+		cmdBuffer->BindDescriptorSets(frameIndex, { m_DescSet }, 0, s_BloomPreFilter->GetPipeline());
 		uint32_t width = std::max(IRI.image->GetCreateInfo().width / 8, uint32_t(1));
 		uint32_t height = std::max(IRI.image->GetCreateInfo().height / 8, uint32_t(1));
 		uint32_t depth = 1;
@@ -273,7 +273,7 @@ void PostProcessing::BloomDownsample(const Ref<miru::crossplatform::CommandBuffe
 			barriers.emplace_back(Barrier::Create(&barrierCI));
 			cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
 
-			cmdBuffer->BindDescriptorSets(frameIndex, { m_DescSets[i - 1] }, s_BloomDownsample->GetPipeline());
+			cmdBuffer->BindDescriptorSets(frameIndex, { m_DescSets[i - 1] }, 0, s_BloomDownsample->GetPipeline());
 			uint32_t width = std::max((IRI.image->GetCreateInfo().width >> i) / 8, uint32_t(1));
 			uint32_t height = std::max((IRI.image->GetCreateInfo().height >> i) / 8, uint32_t(1));
 			uint32_t depth = 1;
@@ -370,7 +370,7 @@ void PostProcessing::BloomUpsample(const Ref<miru::crossplatform::CommandBuffer>
 			barriers.emplace_back(Barrier::Create(&barrierCI));
 			cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
 
-			cmdBuffer->BindDescriptorSets(frameIndex, { m_DescSets[i - 1] }, s_BloomUpsample->GetPipeline());
+			cmdBuffer->BindDescriptorSets(frameIndex, { m_DescSets[i - 1] }, 0, s_BloomUpsample->GetPipeline());
 			uint32_t width = std::max((IRI.image->GetCreateInfo().width >> (i - 1)) / 8, uint32_t(1));
 			uint32_t height = std::max((IRI.image->GetCreateInfo().height >> (i - 1)) / 8, uint32_t(1));
 			uint32_t depth = 1;

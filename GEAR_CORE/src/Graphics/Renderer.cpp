@@ -1136,18 +1136,12 @@ void Renderer::MainRenderLoop(const Ref<miru::crossplatform::CommandBuffer>& cmd
 		const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
 
 		cmdBuffer->BindPipeline(frameIndex, pipeline);
+		cmdBuffer->BindDescriptorSets(frameIndex, {descPoolAndSets.setPerRenderPipeline.at(renderPipeline), descPoolAndSets.setPerModel.at(model) }, 0, pipeline);
 
 		for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
 		{
 			Ref<objects::Material> material = model->GetMesh()->GetMaterials()[i];
-			cmdBuffer->BindDescriptorSets(frameIndex,
-				{
-					descPoolAndSets.setPerRenderPipeline.at(renderPipeline),
-					descPoolAndSets.setPerModel.at(model),
-					descPoolAndSets.setPerMaterial.at(material)
-				},
-				pipeline);
-
+			cmdBuffer->BindDescriptorSets(frameIndex, {descPoolAndSets.setPerMaterial.at(material)}, 2, pipeline);
 
 			cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[i]->GetVertexBufferView() });
 			cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetIndexBufferView());
@@ -1163,7 +1157,7 @@ void Renderer::HDRMapping(const Ref<miru::crossplatform::CommandBuffer>& cmdBuff
 	const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
 
 	cmdBuffer->BindPipeline(frameIndex, pipeline);
-	cmdBuffer->BindDescriptorSets(frameIndex, { descPoolAndSets.setPerRenderPipeline.at(renderPipeline) }, pipeline);
+	cmdBuffer->BindDescriptorSets(frameIndex, { descPoolAndSets.setPerRenderPipeline.at(renderPipeline) }, 0, pipeline);
 	cmdBuffer->Draw(frameIndex, 3);
 }
 
@@ -1175,17 +1169,12 @@ void Renderer::DrawTextLines(const Ref<miru::crossplatform::CommandBuffer>& cmdB
 		const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
 
 		cmdBuffer->BindPipeline(frameIndex, pipeline);
+		cmdBuffer->BindDescriptorSets(frameIndex, { descPoolAndSets.setPerRenderPipeline.at(renderPipeline), descPoolAndSets.setPerModel.at(model) }, 0, pipeline);
 
 		for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
 		{
 			Ref<objects::Material> material = model->GetMesh()->GetMaterials()[i];
-			cmdBuffer->BindDescriptorSets(frameIndex, 
-				{ 
-					descPoolAndSets.setPerRenderPipeline.at(renderPipeline),
-					descPoolAndSets.setPerModel.at(model),
-					descPoolAndSets.setPerMaterial.at(material)
-				},
-				pipeline);
+			cmdBuffer->BindDescriptorSets(frameIndex, { descPoolAndSets.setPerMaterial.at(material) }, 2, pipeline);
 
 			cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[i]->GetVertexBufferView() });
 			cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetIndexBufferView());
@@ -1201,7 +1190,7 @@ void Renderer::DrawCoordinateAxes(const Ref<miru::crossplatform::CommandBuffer>&
 	const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
 
 	cmdBuffer->BindPipeline(frameIndex, pipeline);
-	cmdBuffer->BindDescriptorSets(frameIndex, { descPoolAndSets.setPerRenderPipeline.at(renderPipeline) }, pipeline);
+	cmdBuffer->BindDescriptorSets(frameIndex, { descPoolAndSets.setPerRenderPipeline.at(renderPipeline) }, 0, pipeline);
 	cmdBuffer->Draw(frameIndex, 6);
 }
 
@@ -1211,7 +1200,7 @@ void Renderer::CopyToSwapchain(const Ref<miru::crossplatform::CommandBuffer>& cm
 	const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
 
 	cmdBuffer->BindPipeline(frameIndex, pipeline);
-	cmdBuffer->BindDescriptorSets(m_FrameIndex, { descPoolAndSets.setPerRenderPipeline.at(renderPipeline) }, pipeline);
+	cmdBuffer->BindDescriptorSets(m_FrameIndex, { descPoolAndSets.setPerRenderPipeline.at(renderPipeline) }, 0, pipeline);
 	cmdBuffer->Draw(frameIndex, 3);
 }
 

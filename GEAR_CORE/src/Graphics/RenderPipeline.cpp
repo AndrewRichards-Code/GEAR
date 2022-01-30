@@ -76,7 +76,6 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 		shaderCI.binaryCode = {};
 
 		json& recompileArgs = shader["recompileArguments"];
-		shaderCI.recompileArguments.mscDirectory = relativePathFromCwdToProjDir + std::string(recompileArgs["mscDirectory"]);
 		shaderCI.recompileArguments.hlslFilepath = relativePathFromCwdToProjDir + std::string(recompileArgs["hlslFilepath"]);
 		shaderCI.recompileArguments.outputDirectory = relativePathFromCwdToProjDir + std::string(recompileArgs["outputDirectory"]);
 		for (auto& includeDir : recompileArgs["includeDirectories"])
@@ -88,7 +87,8 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 		shaderCI.recompileArguments.cso = recompileArgs["cso"];
 		shaderCI.recompileArguments.spv = recompileArgs["spv"];
 		shaderCI.recompileArguments.dxcLocation = recompileArgs["dxcLocation"];
-		shaderCI.recompileArguments.dxcArguments = recompileArgs["dxcArguments"];
+		for (auto& dxcArguments : recompileArgs["dxcArguments"])
+			shaderCI.recompileArguments.dxcArguments.push_back(dxcArguments);
 		shaderCI.recompileArguments.nologo = recompileArgs["nologo"];
 		shaderCI.recompileArguments.nooutput = recompileArgs["nooutput"];
 

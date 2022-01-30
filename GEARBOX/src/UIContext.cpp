@@ -149,7 +149,7 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 
 		ImGui_ImplVulkan_InitInfo imGuiVulkanInitInfo = {};
 		imGuiVulkanInitInfo.Instance = vkContext->m_Instance;
-		imGuiVulkanInitInfo.PhysicalDevice = vkContext->m_PhysicalDevices.m_PhysicalDevices[0];
+		imGuiVulkanInitInfo.PhysicalDevice = vkContext->m_PhysicalDevices.m_PDIs[0].m_PhysicalDevice;
 		imGuiVulkanInitInfo.Device = vkContext->m_Device;
 		imGuiVulkanInitInfo.Queue = vkContext->m_Queues[0][0];
 		imGuiVulkanInitInfo.DescriptorPool = m_VulkanDescriptorPool;

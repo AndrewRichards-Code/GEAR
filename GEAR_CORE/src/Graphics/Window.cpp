@@ -75,6 +75,7 @@ void Window::CalculateFPS()
 std::string Window::GetGraphicsAPIVersion() const
 {
 	std::string result("");
+	const Context::ResultInfo& resultInfo = m_Context->GetResultInfo();
 	switch (GraphicsAPI::GetAPI())
 	{
 	case GraphicsAPI::API::UNKNOWN:
@@ -84,18 +85,16 @@ std::string Window::GetGraphicsAPIVersion() const
 	case GraphicsAPI::API::D3D12:
 	{
 		result += "D3D12: ";
-		result += "D3D_FEATURE_LEVEL_" + std::to_string(m_ContextCI.api_version_major)
-			+ "_" + std::to_string(m_ContextCI.api_version_minor);
+		result += "D3D_FEATURE_LEVEL_" + std::to_string(resultInfo.apiVersionMajor)
+			+ "_" + std::to_string(resultInfo.apiVersionMinor);
 		break;
 	}
 	case GraphicsAPI::API::VULKAN:
 	{
-		uint32_t version = ref_cast<vulkan::Context>(m_Context)->m_PhysicalDevices.m_PhysicalDeviceProperties[0].apiVersion;
-
 		result += "VULKAN: ";
-		result += std::to_string(m_ContextCI.api_version_major)
-			+ "." + std::to_string(m_ContextCI.api_version_minor)
-			+ "." + std::to_string(VK_VERSION_PATCH(version));
+		result += std::to_string(resultInfo.apiVersionMajor)
+			+ "." + std::to_string(resultInfo.apiVersionMinor)
+			+ "." + std::to_string(resultInfo.apiVersionPatch);
 		break;
 	}
 	}
@@ -114,12 +113,12 @@ std::string Window::GetDeviceName() const
 	}
 	case GraphicsAPI::API::D3D12:
 	{
-		result = arc::ToString(&ref_cast<d3d12::Context>(m_Context)->m_PhysicalDevices.m_AdapterDescs[0].Description[0]);
+		result = arc::ToString(&ref_cast<d3d12::Context>(m_Context)->m_PhysicalDevices.m_PDIs[0].m_AdapterDesc.Description[0]);
 		break;
 	}
 	case GraphicsAPI::API::VULKAN:
 	{
-		result = &ref_cast<vulkan::Context>(m_Context)->m_PhysicalDevices.m_PhysicalDeviceProperties[0].deviceName[0];
+		result = &ref_cast<vulkan::Context>(m_Context)->m_PhysicalDevices.m_PDIs[0].m_Properties.deviceName[0];
 		break;
 	}
 	}
@@ -252,19 +251,12 @@ bool Window::Init()
 	GraphicsAPI::LoadGraphicsDebugger(m_CI.graphicsDebugger);
 
 	m_ContextCI.applicationName = m_CI.title;
-	m_ContextCI.api_version_major = GraphicsAPI::IsD3D12() ? 12 : 1;
-	m_ContextCI.api_version_minor = 2;
 #ifdef _DEBUG
-	m_ContextCI.instanceLayers = { "VK_LAYER_KHRONOS_validation" };
-	m_ContextCI.instanceExtensions = { "VK_KHR_surface", "VK_KHR_win32_surface" };
-	m_ContextCI.deviceLayers = { "VK_LAYER_KHRONOS_validation" };
-	m_ContextCI.deviceExtensions = { "VK_KHR_swapchain" };
+	m_ContextCI.debugValidationLayers = true;
 #else
-	m_ContextCI.instanceLayers = {};
-	m_ContextCI.instanceExtensions = { "VK_KHR_surface", "VK_KHR_win32_surface" };
-	m_ContextCI.deviceLayers = {};
-	m_ContextCI.deviceExtensions = { "VK_KHR_swapchain" };
+	m_ContextCI.debugValidationLayers = false;
 #endif
+	m_ContextCI.extensions = Context::ExtensionsBit::NONE;
 	m_ContextCI.deviceDebugName = "GEAR_CORE_Context";
 	m_Context = Context::Create(&m_ContextCI);
 

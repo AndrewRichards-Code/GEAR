@@ -1,10 +1,10 @@
 {
     "fileType": "GEARBOX_CONFIG_FILE",
     "options": {
-        "api": 1,
+        "api": 2,
         "fullscreen": false,
         "fullscreenMonitorIndex": 0,
-        "graphicsDebugger": 1,
+        "graphicsDebugger": 2,
         "maximised": false,
         "windowedHeight": 1080,
         "windowedWidth": 1920
