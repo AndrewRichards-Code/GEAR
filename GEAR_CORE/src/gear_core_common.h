@@ -57,9 +57,9 @@
 //Dependencies
 
 //Assimp
-#include "assimp/Importer.hpp"
-#include "assimp/scene.h"
-#include "assimp/postprocess.h"
+#include "ASSIMP/include/assimp/Importer.hpp"
+#include "ASSIMP/include/assimp/scene.h"
+#include "ASSIMP/include/assimp/postprocess.h"
 #ifdef _DEBUG
 #pragma comment(lib, "ASSIMP/lib/Debug/assimp-vc142-mtd.lib")
 #else
@@ -67,52 +67,38 @@
 #endif
 
 //FreeType
-#include "ft2build.h"
+#include "FREETYPE/include/ft2build.h"
 #include FT_FREETYPE_H
 #pragma comment(lib, "FREETYPE/win64/freetype.lib")
 
 //GLFW
-#include "GLFW/glfw3.h"
+#include "GLFW/include/GLFW/glfw3.h"
 #define GLFW_EXPOSE_NATIVE_WIN32
-#include "GLFW/glfw3native.h"
-#pragma comment(lib, "GLFW/lib-vc2019/glfw3.lib")
+#include "GLFW/include/GLFW/glfw3native.h"
 
 //JSON
-#include "json.hpp"
+#include "JSON/json.hpp"
 
 //MARS
-#include "mars.h"
-#ifdef _DEBUG
-#pragma comment(lib, "MARS/MARS/lib/x64/Debug/MARS.lib")
-#else
-#pragma comment(lib, "MARS/MARS/lib/x64/Release/MARS.lib")
-#endif
+#include "MARS/MARS/src/mars.h"
 
 //MIRU
-#include "miru_core.h"
-#ifdef _DEBUG
-#pragma comment(lib, "MIRU/MIRU_CORE/lib/x64/Debug/MIRU_CORE.lib")
-#else
-#pragma comment(lib, "MIRU/MIRU_CORE/lib/x64/Release/MIRU_CORE.lib")
-#endif
+#include "MIRU/MIRU_CORE/src/miru_core.h"
 
 //OpenAL
-#include "AL/al.h"
-#include "AL/alc.h"
-#pragma comment(lib, "OPENAL/libs/Win64/OpenAL32.lib")
+#include "OPENAL/include/AL/al.h"
+#include "OPENAL/include/AL/alc.h"
 
 //XAudio2
 #if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
 #define XAUDIO2_HELPER_FUNCTIONS
 #include <xaudio2.h>
 #include <x3daudio.h>
-#pragma comment(lib,"xaudio2.lib") 
 #endif
 
 //XInput
 #if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
 #include <xinput.h>
-#pragma comment(lib,"xinput.lib") 
 #endif
 
 //GEAR Helpers

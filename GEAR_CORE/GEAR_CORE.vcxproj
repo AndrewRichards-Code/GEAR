@@ -29,7 +29,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
@@ -41,7 +41,7 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -73,16 +73,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(ProjectDir)lib\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)lib\intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)bin\int\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">
     <OutDir>$(ProjectDir)lib\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)lib\intermediates\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(ProjectDir)lib\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(ProjectDir)lib\intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)bin\int\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">
     <OutDir>$(ProjectDir)lib\$(Platform)\$(Configuration)\</OutDir>
@@ -107,6 +107,10 @@
       <AdditionalDependencies>
       </AdditionalDependencies>
     </Lib>
+    <Link>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Platform)\$(Configuration)\;$(ProjectDir)..\External</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ASSIMP/lib/Release/assimp-vc142-mt.lib;FREETYPE/win64/freetype.lib;GLFW/lib-vc2019/glfw3.lib;MARS.lib;MIRU_CORE.lib;OPENAL/libs/Win64/OpenAL32.lib;xaudio2.lib;xinput.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">
     <ClCompile>
@@ -144,6 +148,8 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Platform)\$(Configuration)\;$(ProjectDir)..\External</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ASSIMP/lib/Release/assimp-vc142-mt.lib;FREETYPE/win64/freetype.lib;GLFW/lib-vc2019/glfw3.lib;MARS.lib;MIRU_CORE.lib;OPENAL/libs/Win64/OpenAL32.lib;xaudio2.lib;xinput.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>$(ProjectDir)dep;$(VULKAN_SDK)\Lib;</AdditionalLibraryDirectories>
@@ -279,9 +285,6 @@
     <ClInclude Include="src\Utils\FileUtils.h" />
     <ClInclude Include="src\gear_core.h" />
     <ClInclude Include="src\gear_core_common.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
