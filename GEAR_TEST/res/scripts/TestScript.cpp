@@ -24,7 +24,7 @@ public:
 			return;
 
 		mars::Vec3& pos = cameraComponent->GetCreateInfo().transform.translation;
-		pos.z -= 1.0f * deltaTime;
+		pos.z += 1.0f * deltaTime;
 	}
 };
 
