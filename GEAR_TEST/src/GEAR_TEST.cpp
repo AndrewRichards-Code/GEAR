@@ -244,6 +244,7 @@ void GEAR_TEST::Run()
 		{ Material::TextureType::AMBIENT_OCCLUSION, droneAO.get() },
 		{ Material::TextureType::EMISSIVE, droneEmissive.get() },
 	};
+	matCI.pbrConstants = UniformBufferStructures::DefaultPBRConstants();
 	Ref<Material> droneMaterial = CreateRef<Material>(&matCI);
 
 	meshCI.debugName = "Drone Mesh";

@@ -6,7 +6,7 @@ namespace gear
 {
 namespace core 
 {
-	class Timer
+	class GEAR_API Timer
 	{
 	public:
 		Timer();

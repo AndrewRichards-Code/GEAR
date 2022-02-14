@@ -10,7 +10,7 @@ namespace gear
 {
 namespace objects 
 {
-	class Material
+	class GEAR_API Material
 	{
 	public:
 		enum class TextureType : uint32_t

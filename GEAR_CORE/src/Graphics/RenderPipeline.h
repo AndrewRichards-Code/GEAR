@@ -6,7 +6,7 @@ namespace gear
 {
 namespace graphics 
 {
-	class RenderPipeline
+	class GEAR_API RenderPipeline
 	{
 	public:
 		enum class ShaderBuildMode : uint32_t

@@ -103,6 +103,7 @@ Renderer::~Renderer()
 	s_RenderPipelines.clear();
 	ImageProcessing::ClearState();
 	PostProcessing::ClearState();
+	//m_UIContext = nullptr;
 }
 
 void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface)
@@ -189,6 +190,11 @@ void Renderer::SubmitModel(const Ref<Model>& obj)
 void Renderer::SubmitTextLine(const Ref<Model>& obj)
 {
 	m_TextQueue.push_back(obj);
+}
+
+void Renderer::SubmitUIContext(ui::UIContext* uiContext)
+{
+	m_UIContext = uiContext;
 }
 
 void Renderer::AcquireNextImage()
@@ -1206,9 +1212,9 @@ void Renderer::CopyToSwapchain(const Ref<miru::crossplatform::CommandBuffer>& cm
 
 void Renderer::DrawExternalUI(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets)
 {
-	if (m_UI_PFN && m_DrawData && m_UI_this)
+	if (m_UIContext)
 	{
-		m_UI_PFN(cmdBuffer, frameIndex, m_DrawData, m_UI_this);
+		m_UIContext->RenderDrawData(cmdBuffer, frameIndex);
 	}
 }
 

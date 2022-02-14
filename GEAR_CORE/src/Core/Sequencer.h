@@ -20,7 +20,7 @@ namespace core
 		uint32_t	framesPerSecond;
 	};
 
-	class Sequencer
+	class GEAR_API Sequencer
 	{
 	protected:
 		Timer m_Timer;

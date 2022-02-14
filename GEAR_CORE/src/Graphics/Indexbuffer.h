@@ -6,7 +6,7 @@ namespace gear
 {
 namespace graphics 
 {
-	class Indexbuffer
+	class GEAR_API Indexbuffer
 	{
 	public:
 		struct CreateInfo

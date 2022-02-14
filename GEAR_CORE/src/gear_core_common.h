@@ -56,25 +56,33 @@
 
 //Dependencies
 
+//ARC
+#include "ARC/src/ExportAttributes.h"
+
 //Assimp
 #include "ASSIMP/include/assimp/Importer.hpp"
 #include "ASSIMP/include/assimp/scene.h"
 #include "ASSIMP/include/assimp/postprocess.h"
-#ifdef _DEBUG
-#pragma comment(lib, "ASSIMP/lib/Debug/assimp-vc142-mtd.lib")
-#else
-#pragma comment(lib, "ASSIMP/lib/Release/assimp-vc142-mt.lib")
-#endif
+
+//ENTT
+#include "ENTT/entt.hpp"
 
 //FreeType
 #include "FREETYPE/include/ft2build.h"
 #include FT_FREETYPE_H
-#pragma comment(lib, "FREETYPE/win64/freetype.lib")
 
 //GLFW
 #include "GLFW/include/GLFW/glfw3.h"
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include "GLFW/include/GLFW/glfw3native.h"
+
+//ImGui
+#include "imgui/imgui.h"
+#include "imgui/imgui_internal.h"
+#include "imgui/misc/cpp/imgui_stdlib.h"
+#include "imgui/backends/imgui_impl_glfw.h"
+#include "imgui/backends/imgui_impl_vulkan_with_textures.h"
+#include "imgui/backends/imgui_impl_dx12.h"
 
 //JSON
 #include "JSON/json.hpp"
@@ -99,6 +107,13 @@
 //XInput
 #if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
 #include <xinput.h>
+#endif
+
+//GEAR API
+#ifdef GEAR_BUILD_DLL
+#define GEAR_API ARC_EXPORT
+#else
+#define GEAR_API ARC_IMPORT
 #endif
 
 //GEAR Helpers

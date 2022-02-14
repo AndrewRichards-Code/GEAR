@@ -1,11 +1,6 @@
 #include "gearbox_common.h"
 #include "GEARBOX.h"
 
-#include "Panels/Panels.h"
-
-using namespace gearbox;
-using namespace panels;
-
 using namespace gear;
 using namespace animation;
 using namespace audio;
@@ -13,6 +8,8 @@ using namespace core;
 using namespace graphics;
 using namespace objects;
 using namespace scene;
+using namespace ui;
+using namespace panels;
 
 using namespace miru;
 using namespace miru::crossplatform;
@@ -89,7 +86,8 @@ void GEARBOX::InternalRun()
 
 	UIContext::CreateInfo uiContextCI;
 	uiContextCI.window = mainWindow;
-	Scope<UIContext> uiContext =CreateScope<UIContext>(&uiContextCI);
+	Scope<UIContext> uiContext = CreateScope<UIContext>(&uiContextCI);
+	mainRenderer->SubmitUIContext(uiContext.get());
 
 	for (const Panel::Type& panelType : data["panels"])
 	{
@@ -119,8 +117,7 @@ void GEARBOX::InternalRun()
 		}
 		case Panel::Type::PROPERTIES:
 		{
-			PropertiesPanel::CreateInfo propertiesCI = { 0 };
-			editorPanels.emplace_back(CreateRef<PropertiesPanel>(&propertiesCI));
+			editorPanels.emplace_back(CreateRef<PropertiesPanel>());
 			break;
 		}
 		case Panel::Type::SCENE_HIERARCHY:
@@ -150,20 +147,14 @@ void GEARBOX::InternalRun()
 			mainWindow->Resized() = false;
 		}
 
-		Renderer::PFN_UIFunction UIDraw = [](const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, void* drawData, void* _this) -> void
-		{
-			UIContext::RenderDrawData(cmdBuffer, frameIndex, (ImDrawData*)drawData, (UIContext*)_this);
-		};
-
 		for (auto& panel : uiContext->GetEditorPanelsByType<ViewportPanel>())
 		{
-			if (panel->GetCreateInfo().renderer != mainRenderer)
+			if (panel && panel->GetCreateInfo().renderer != mainRenderer)
 			{
 				panel->GetCreateInfo().renderer->Execute();
 			}
 		}
 
-		mainRenderer->SetUIFunction(UIDraw, ImGui::GetDrawData(), uiContext.get());
 		mainRenderer->Execute();
 
 		mainWindow->Update();

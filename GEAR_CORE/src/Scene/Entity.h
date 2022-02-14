@@ -5,7 +5,7 @@ namespace gear
 {
 namespace scene
 {
-	class Entity
+	class GEAR_API Entity
 	{
 	public:
 		struct CreateInfo
@@ -19,13 +19,17 @@ namespace scene
 	
 	public:
 		Entity() = default;
-		Entity(CreateInfo* pCreateInfo);
-		~Entity();
+		Entity(CreateInfo* pCreateInfo)
+		{
+			m_CI = *pCreateInfo;
+			m_Entity = m_CI.pScene->m_Registry.create();
+		}
+		~Entity() = default;
 
 		template<typename T>
 		bool HasComponent()
 		{
-			return m_CI.pScene->m_Registry.has<T>(m_Entity);
+			return m_CI.pScene->m_Registry.all_of<T>(m_Entity);
 		}
 		
 		template<typename T, typename... Args>
@@ -33,8 +37,7 @@ namespace scene
 		{
 			if (HasComponent<T>())
 			{
-				GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::SCENE | ErrorCode::INVALID_COMPONENT,
-					"Entity(0x%x) already has a %s.", m_Entity, typeid(T).name());
+				GEAR_ASSERT(ErrorCode::SCENE | ErrorCode::INVALID_COMPONENT, "Entity(0x%x) already has a %s.", m_Entity, typeid(T).name());
 			}
 			T& component = m_CI.pScene->m_Registry.emplace<T>(m_Entity, std::forward<Args>(args)...);
 
@@ -52,8 +55,7 @@ namespace scene
 		{
 			if (!HasComponent<T>())
 			{
-				GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::SCENE | ErrorCode::INVALID_COMPONENT,
-					"Entity(0x%x) does not have a %s.", m_Entity, typeid(T).name());
+				GEAR_ASSERT(ErrorCode::SCENE | ErrorCode::INVALID_COMPONENT, "Entity(0x%x) does not have a %s.", m_Entity, typeid(T).name());
 			}
 			return m_CI.pScene->m_Registry.get<T>(m_Entity);
 		}
@@ -63,8 +65,7 @@ namespace scene
 		{
 			if (!HasComponent<T>())
 			{
-				GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::SCENE | ErrorCode::INVALID_COMPONENT,
-					"Entity(0x%x) does not have a %s.", m_Entity, typeid(T).name());
+				GEAR_ASSERT(ErrorCode::SCENE | ErrorCode::INVALID_COMPONENT, "Entity(0x%x) does not have a %s.", m_Entity, typeid(T).name());
 			}
 			m_CI.pScene->m_Registry.remove<T>(m_Entity);
 		}

@@ -11,7 +11,7 @@ namespace gear
 {
 namespace objects 
 {
-	class Model
+	class GEAR_API Model
 	{
 	public:
 		struct CreateInfo

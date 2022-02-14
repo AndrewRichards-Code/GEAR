@@ -6,15 +6,15 @@ using namespace gear;
 using namespace scene;
 
 #ifdef _DEBUG
-std::string NativeScriptManager::s_BuildScriptPath = std::filesystem::current_path().string() + "\\..\\GEAR_CORE\\res\\scripting\\GEAR_NATIVE_SCRIPT\\dll\\x64\\Debug\\";
+std::string NativeScriptManager::s_BuildScriptPath = std::filesystem::current_path().string() + "\\..\\bin\\x64\\Debug\\";
 #else
-std::string NativeScriptManager::s_BuildScriptPath = std::filesystem::current_path().string() + "\\..\\GEAR_CORE\\res\\scripting\\GEAR_NATIVE_SCRIPT\\dll\\x64\\Release\\";
+std::string NativeScriptManager::s_BuildScriptPath = std::filesystem::current_path().string() + "\\..\\bin\\x64\\Release\\";
 #endif
 
 void NativeScriptManager::Build(const std::string& nativeScriptDir)
 {
-	std::string msBuildDir = "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\MSBuild\\Current\\Bin";
-	std::string vcxprojDir = std::filesystem::current_path().string() + "\\..\\GEAR_CORE\\res\\scripting\\GEAR_NATIVE_SCRIPT\\";
+	std::string msBuildDir = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Msbuild\\Current\\Bin";
+	std::string vcxprojDir = std::filesystem::current_path().string() + "\\..\\GEAR_NATIVE_SCRIPT\\";
 	std::string solutionDir = std::filesystem::current_path().string() + "\\..\\";
 	std::string _nativeScriptDir = std::filesystem::current_path().string() + "\\" + nativeScriptDir;
 
@@ -46,7 +46,7 @@ DynamicLibrary::LibraryHandle NativeScriptManager::Load()
 		return DynamicLibrary::LibraryHandle(0);
 
 	std::string dllFullpath = s_BuildScriptPath + "GEAR_NATIVE_SCRIPT.dll";
-	return DynamicLibrary::Load(dllFullpath.c_str());;
+	return DynamicLibrary::Load(dllFullpath.c_str());
 }
 
 void NativeScriptManager::Unload(DynamicLibrary::LibraryHandle& libraryHandle)

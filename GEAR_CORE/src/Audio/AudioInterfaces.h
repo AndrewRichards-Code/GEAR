@@ -9,7 +9,7 @@ namespace gear
 {
 namespace audio
 {
-	class AudioListenerInterface
+	class GEAR_API AudioListenerInterface
 	{
 	public:
 		enum class API

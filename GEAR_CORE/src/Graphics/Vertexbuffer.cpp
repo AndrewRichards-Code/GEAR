@@ -17,7 +17,7 @@ Vertexbuffer::Vertexbuffer(CreateInfo* pCreateInfo)
 	m_VertexBufferUploadCI.usage = Buffer::UsageBit::TRANSFER_SRC_BIT;
 	m_VertexBufferUploadCI.size = m_CI.size;
 	m_VertexBufferUploadCI.data = m_CI.data;
-	m_VertexBufferUploadCI.pAllocator = AllocatorManager::GetAllocator(AllocatorManager::AllocatorType::CPU);
+	m_VertexBufferUploadCI.pAllocator = AllocatorManager::GetCPUAllocator();
 	m_VertexBufferUpload = Buffer::Create(&m_VertexBufferUploadCI);
 
 	m_VertexBufferCI.debugName = "GEAR_CORE_VertexBuffer: " + m_CI.debugName;
@@ -25,7 +25,7 @@ Vertexbuffer::Vertexbuffer(CreateInfo* pCreateInfo)
 	m_VertexBufferCI.usage = Buffer::UsageBit::TRANSFER_DST_BIT | Buffer::UsageBit::VERTEX_BIT;
 	m_VertexBufferCI.size = m_CI.size;
 	m_VertexBufferCI.data = nullptr;
-	m_VertexBufferCI.pAllocator = AllocatorManager::GetAllocator(AllocatorManager::AllocatorType::GPU);
+	m_VertexBufferCI.pAllocator = AllocatorManager::GetGPUAllocator();
 	m_VertexBuffer = Buffer::Create(&m_VertexBufferCI);
 
 	m_VertexBufferViewCI.debugName = "GEAR_CORE_VertexBufferViewUsage: " + m_CI.debugName;

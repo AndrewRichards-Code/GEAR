@@ -7,12 +7,12 @@ namespace gear
 {
 namespace audio 
 {
-	class AudioSource
+	class GEAR_API AudioSource
 	{
 	public:
 		struct CreateInfo
 		{
-			std::string					filepath;
+			std::string			filepath;
 			Ref<AudioListener>	pAudioListener;
 		};
 

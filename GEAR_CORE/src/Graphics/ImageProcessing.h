@@ -8,7 +8,7 @@ namespace graphics
 	class Texture;
 	class RenderPipeline;
 
-	class ImageProcessing
+	class GEAR_API ImageProcessing
 	{
 	public:
 		struct TextureResourceInfo

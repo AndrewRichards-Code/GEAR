@@ -18,7 +18,7 @@ namespace gear
 	{
 		class Renderer;
 
-		class GPUTask
+		class GEAR_API GPUTask
 		{
 		public:
 			enum class Task : uint32_t

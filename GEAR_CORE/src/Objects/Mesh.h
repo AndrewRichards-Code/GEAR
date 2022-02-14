@@ -9,7 +9,7 @@ namespace gear
 {
 namespace objects 
 {
-	class Mesh
+	class GEAR_API Mesh
 	{
 	public:
 		struct CreateInfo

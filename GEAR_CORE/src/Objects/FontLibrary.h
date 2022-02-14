@@ -12,7 +12,7 @@ namespace graphics
 
 namespace objects
 {
-	class FontLibrary
+	class GEAR_API FontLibrary
 	{
 	private:
 		constexpr static size_t s_NumCaracters = 512;

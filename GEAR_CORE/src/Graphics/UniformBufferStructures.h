@@ -70,19 +70,23 @@ namespace gear
 				GEAR_FLOAT		ambientOcclusion;
 				GEAR_FLOAT		pad;
 				GEAR_FLOAT4		emissive;
+			};
 				
 			#ifdef __cplusplus
-				PBRConstants() :
-					fresnel(1, 1, 1, 1),
-					albedo(1, 1, 1, 1),
-					metallic(1),
-					roughness(1),
-					ambientOcclusion(1),
-					pad(0),
-					emissive(0, 0, 0, 1) {}
+			static PBRConstants DefaultPBRConstants()
+			{
+				PBRConstants pbrConstants;
+				pbrConstants.fresnel = mars::Vec4(1, 1, 1, 1);
+				pbrConstants.albedo = mars::Vec4(1, 1, 1, 1);
+				pbrConstants.metallic = 1.0f;
+				pbrConstants.roughness = 1.0f;
+				pbrConstants.ambientOcclusion = 1.0f;
+				pbrConstants.pad = 0.0f;
+				pbrConstants.emissive = mars::Vec4(0, 0, 0, 1);
+				return pbrConstants;
+			}
 			#endif	
 
-			};
 #ifdef __cplusplus
 		};
 

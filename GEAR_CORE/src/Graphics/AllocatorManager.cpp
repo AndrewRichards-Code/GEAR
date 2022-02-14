@@ -61,6 +61,16 @@ Ref<Allocator> AllocatorManager::GetAllocator(AllocatorType type)
 	}
 }
 
+Ref<Allocator> AllocatorManager::GetCPUAllocator()
+{
+	return GetAllocator(AllocatorManager::AllocatorType::CPU);
+}
+
+Ref<Allocator> AllocatorManager::GetGPUAllocator()
+{
+	return GetAllocator(AllocatorManager::AllocatorType::GPU);
+}
+
 void AllocatorManager::PrintMemoryBlockStatus()
 {
 	/*if (GraphicsAPI::IsD3D12())

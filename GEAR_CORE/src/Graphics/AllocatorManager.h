@@ -1,12 +1,11 @@
 #pragma once
-
 #include "gear_core_common.h"
 
 namespace gear 
 {
 namespace graphics
 {
-	class AllocatorManager
+	class GEAR_API AllocatorManager
 	{
 	public:
 		enum class AllocatorType : uint32_t
@@ -32,6 +31,8 @@ namespace graphics
 	public:
 		static void Initialise(CreateInfo* pCreateInfo);
 		static Ref<miru::crossplatform::Allocator> GetAllocator(AllocatorType type);
+		static Ref<miru::crossplatform::Allocator> GetCPUAllocator();
+		static Ref<miru::crossplatform::Allocator> GetGPUAllocator();
 		static void PrintMemoryBlockStatus();
 		static const CreateInfo& GetCreateInfo() { return s_CI; }
 	};

@@ -6,7 +6,7 @@ namespace gear
 {
 namespace objects
 {
-	class Skybox
+	class GEAR_API Skybox
 	{
 	public:
 		struct CreateInfo

@@ -9,7 +9,7 @@ namespace gear
 {
 namespace input 
 {
-	class InputManager
+	class GEAR_API InputManager
 	{
 	private:
 		int m_Type;

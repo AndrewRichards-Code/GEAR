@@ -15,7 +15,7 @@ namespace objects
 
 namespace animation
 {
-	class Animator final : public core::Sequencer
+	class GEAR_API Animator final : public core::Sequencer
 	{
 	public:
 		struct CreateInfo

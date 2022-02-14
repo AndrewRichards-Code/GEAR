@@ -4,6 +4,8 @@
 using namespace gear;
 using namespace input;
 
+InputInterface::API InputInterface::s_API = InputInterface::API::UNKNOWN;
+
 InputInterface::InputInterface(CreateInfo* pCreateInfo)
 	:m_CI(*pCreateInfo)
 {
@@ -12,7 +14,7 @@ InputInterface::InputInterface(CreateInfo* pCreateInfo)
 
 	if (FAILED(CoInitializeEx(nullptr, COINIT_MULTITHREADED)))
 	{
-		GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::INPUT | ErrorCode::INIT_FAILED, "Failed to CoInitialise XInput.");
+		GEAR_ASSERT(ErrorCode::INPUT | ErrorCode::INIT_FAILED, "Failed to CoInitialise XInput.");
 	}
 
 	XINPUT_STATE state;

@@ -9,7 +9,7 @@ namespace gear
 namespace graphics
 {
 	template<typename T>
-	class Uniformbuffer : public T
+	class GEAR_API Uniformbuffer : public T
 	{
 	public:
 		struct CreateInfo
@@ -40,7 +40,7 @@ namespace graphics
 			m_UniformBufferUploadCI.usage = miru::crossplatform::Buffer::UsageBit::TRANSFER_SRC_BIT;
 			m_UniformBufferUploadCI.size = GetSize();
 			m_UniformBufferUploadCI.data = m_CI.data;
-			m_UniformBufferUploadCI.pAllocator = AllocatorManager::GetAllocator(AllocatorManager::AllocatorType::CPU);
+			m_UniformBufferUploadCI.pAllocator = AllocatorManager::GetCPUAllocator();
 			m_UniformBufferUpload = miru::crossplatform::Buffer::Create(&m_UniformBufferUploadCI);
 
 			m_UniformBufferCI.debugName = "GEAR_CORE_UniformBuffer: " + m_CI.debugName;
@@ -48,7 +48,7 @@ namespace graphics
 			m_UniformBufferCI.usage = miru::crossplatform::Buffer::UsageBit::TRANSFER_DST_BIT | miru::crossplatform::Buffer::UsageBit::UNIFORM_BIT;
 			m_UniformBufferCI.size = GetSize();
 			m_UniformBufferCI.data = nullptr;
-			m_UniformBufferCI.pAllocator = AllocatorManager::GetAllocator(AllocatorManager::AllocatorType::GPU);
+			m_UniformBufferCI.pAllocator = AllocatorManager::GetGPUAllocator();
 			m_UniformBuffer = miru::crossplatform::Buffer::Create(&m_UniformBufferCI);
 
 			m_UniformBufferViewCI.debugName = "GEAR_CORE_UniformBufferViewUsage: " + m_CI.debugName;

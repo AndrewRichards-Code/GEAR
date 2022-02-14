@@ -10,7 +10,7 @@ namespace graphics
 
 namespace core
 {
-	class AssetFile
+	class GEAR_API AssetFile
 	{
 		//enum/structs
 	public:

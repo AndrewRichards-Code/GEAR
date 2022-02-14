@@ -7,7 +7,7 @@ namespace gear
 {
 namespace graphics
 {
-	class PostProcessing
+	class GEAR_API PostProcessing
 	{
 	public:
 		struct ImageResourceInfo

@@ -5,7 +5,7 @@ namespace gear
 {
 namespace core
 {
-	void LoadJsonFile(std::string& filepath, const std::string& fileExt, const std::string& fileTypeString, nlohmann::json& jsonData);
-	void SaveJsonFile(std::string& filepath, const std::string& fileExt, const std::string& fileTypeString, nlohmann::json& jsonData);
+	GEAR_API void LoadJsonFile(std::string& filepath, const std::string& fileExt, const std::string& fileTypeString, nlohmann::json& jsonData);
+	GEAR_API void SaveJsonFile(std::string& filepath, const std::string& fileExt, const std::string& fileTypeString, nlohmann::json& jsonData);
 }
 }

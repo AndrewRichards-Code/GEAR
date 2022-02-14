@@ -14,7 +14,7 @@
       "recompileArguments": {
         "hlslFilepath": "res/shaders/HLSL/Cube.hlsl",
         "outputDirectory": "res/shaders/bin",
-        "includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
+        "includeDirectories": [ "../External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
         "entryPoint": "vs_main",
         "shaderModel": "vs_6_4",
         "macros": [],
@@ -38,7 +38,7 @@
       "recompileArguments": {
         "hlslFilepath": "res/shaders/HLSL/Cube.hlsl",
         "outputDirectory": "res/shaders/bin",
-        "includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
+        "includeDirectories": [ "../External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
         "entryPoint": "ps_main",
         "shaderModel": "ps_6_4",
         "macros": [],

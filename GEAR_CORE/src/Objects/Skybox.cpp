@@ -1,7 +1,7 @@
 #include "gear_core_common.h"
 #include "Skybox.h"
 #include "Graphics/ImageProcessing.h"
-#include "stb_image.h"
+#include "STBI/stb_image.h"
 
 using namespace gear;
 using namespace graphics;

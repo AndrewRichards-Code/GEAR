@@ -12,7 +12,7 @@ namespace gear
 {
 namespace graphics 
 {
-	class Window
+	class GEAR_API Window
 	{
 	public:
 		struct CreateInfo

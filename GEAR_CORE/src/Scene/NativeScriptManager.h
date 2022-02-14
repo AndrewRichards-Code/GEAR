@@ -10,7 +10,7 @@ namespace scene
 	
 	typedef std::string ScriptingLibrary;
 
-	class NativeScriptManager
+	class GEAR_API NativeScriptManager
 	{
 	public:
 		static void Build(const std::string& nativeScriptDir);

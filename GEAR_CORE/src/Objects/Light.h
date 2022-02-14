@@ -9,7 +9,7 @@ namespace gear
 namespace objects 
 {
 	//TODO: Add Shadow mapping.
-	class Light
+	class GEAR_API Light
 	{
 	public:
 		enum class LightType : uint32_t

@@ -5,7 +5,7 @@ namespace gear
 {
 namespace core
 {
-	class UUID
+	class GEAR_API UUID
 	{
 	private:
 		uint64_t m_UUID;

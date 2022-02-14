@@ -33,7 +33,9 @@ Light::~Light()
 {
 	s_UB->lights[m_LightID].valid = Vec4(0, 0, 0, 0);
 	s_NumOfLights--;
-	s_UB = nullptr;
+	
+	if(!s_NumOfLights)
+		s_UB = nullptr;
 }
 
 void Light::Update()

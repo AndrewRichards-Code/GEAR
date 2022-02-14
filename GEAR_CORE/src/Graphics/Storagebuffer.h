@@ -7,7 +7,7 @@ namespace gear
 namespace graphics 
 {
 	template<typename T>
-	class Storagebuffer : public T
+	class GEAR_API Storagebuffer : public T
 	{
 	public:
 		struct CreateInfo
@@ -36,7 +36,7 @@ namespace graphics
 			m_ShaderStorageBufferUploadCI.usage = miru::crossplatform::Buffer::UsageBit::TRANSFER_SRC_BIT | miru::crossplatform::Buffer::UsageBit::TRANSFER_DST_BIT;
 			m_ShaderStorageBufferUploadCI.size = GetSize();
 			m_ShaderStorageBufferUploadCI.data = m_CI.data;
-			m_ShaderStorageBufferUploadCI.pAllocator = AllocatorManager::GetAllocator(AllocatorManager::AllocatorType::CPU);
+			m_ShaderStorageBufferUploadCI.pAllocator = AllocatorManager::GetCPUAllocator();
 			m_ShaderStorageBufferUpload = miru::crossplatform::Buffer::Create(&m_ShaderStorageBufferUploadCI);
 
 			m_ShaderStorageBufferCI.debugName = "GEAR_CORE_ShaderStorageBuffer: " + m_CI.debugName;
@@ -44,7 +44,7 @@ namespace graphics
 			m_ShaderStorageBufferCI.usage = miru::crossplatform::Buffer::UsageBit::TRANSFER_SRC_BIT | miru::crossplatform::Buffer::UsageBit::TRANSFER_DST_BIT | miru::crossplatform::Buffer::UsageBit::STORAGE_BIT;
 			m_ShaderStorageBufferCI.size = GetSize();
 			m_ShaderStorageBufferCI.data = nullptr;
-			m_ShaderStorageBufferCI.pAllocator = AllocatorManager::GetAllocator(AllocatorManager::AllocatorType::GPU);
+			m_ShaderStorageBufferCI.pAllocator = AllocatorManager::GetGPUAllocator();
 			m_ShaderStorageBuffer = miru::crossplatform::Buffer::Create(&m_ShaderStorageBufferCI);
 
 			m_ShaderStorageBufferViewCI.debugName = "GEAR_CORE_ShaderStorageViewUsage: " + m_CI.debugName;

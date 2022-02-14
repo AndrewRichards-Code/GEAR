@@ -11,7 +11,7 @@ namespace gear
 {
 namespace objects 
 {
-	class Camera
+	class GEAR_API Camera
 	{
 	public:
 		enum class ProjectionType : uint32_t

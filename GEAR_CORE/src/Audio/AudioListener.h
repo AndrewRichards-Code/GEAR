@@ -8,7 +8,7 @@ namespace gear
 {
 namespace audio 
 {
-	class AudioListener
+	class GEAR_API AudioListener
 	{
 	public:
 		struct CreateInfo

@@ -40,7 +40,7 @@ void Camera::DefineProjection()
 	}
 	else
 	{
-		GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::OBJECTS | ErrorCode::INVALID_VALUE, "Unknown projection type.");
+		GEAR_ASSERT(ErrorCode::OBJECTS | ErrorCode::INVALID_VALUE, "Unknown projection type.");
 		throw;
 	}
 	if (m_CI.flipX)

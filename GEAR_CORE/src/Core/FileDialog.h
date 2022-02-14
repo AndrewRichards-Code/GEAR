@@ -5,9 +5,9 @@ namespace gear
 {
 namespace core
 {
-	std::string FileDialog_Open(const char* filterName, const char* filterSpec);
-	std::string FileDialog_Save(const char* filterName, const char* filterSpec);
+	GEAR_API std::string FileDialog_Open(const char* filterName, const char* filterSpec);
+	GEAR_API std::string FileDialog_Save(const char* filterName, const char* filterSpec);
 
-	std::string FolderDialog_Browse();
+	GEAR_API std::string FolderDialog_Browse();
 }
 }

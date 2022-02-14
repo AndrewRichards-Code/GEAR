@@ -10,7 +10,7 @@ namespace gear
 		class Material;
 	}
 		
-	class ModelLoader
+	class GEAR_API ModelLoader
 	{
 	public:
 		struct Vertex

@@ -63,6 +63,12 @@
 #include "Scene/NativeScriptManager.h"
 #include "Scene/Scene.h"
 
+//UI
+#include "UI/MenuBar.h"
+#include "UI/UIContext.h"
+#include "UI/ComponentUI/ComponentUIs.h"
+#include "UI/Panels/Panels.h"
+
 //Utils
 #include "Utils/FileUtils.h"
 #include "Utils/ModelLoader.h"

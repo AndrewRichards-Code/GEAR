@@ -7,12 +7,13 @@
 #include "Objects/Light.h"
 #include "Objects/Skybox.h"
 #include "Objects/Model.h"
+#include "UI/UIContext.h"
 
 namespace gear 
 {
 namespace graphics 
 {
-	class Renderer
+	class GEAR_API Renderer
 	{
 	public:
 		struct CreateInfo
@@ -70,6 +71,7 @@ namespace graphics
 		Ref<objects::Skybox> m_Skybox;
 		std::vector<Ref<objects::Model>> m_ModelQueue;
 		std::vector<Ref<objects::Model>> m_TextQueue;
+		ui::UIContext* m_UIContext = nullptr;
 
 		//Default Objects
 		Ref<objects::Light> m_DefaultLight;
@@ -95,6 +97,7 @@ namespace graphics
 		void SubmitSkybox(const Ref<objects::Skybox>& skybox);
 		void SubmitModel(const Ref<objects::Model>& obj);
 		void SubmitTextLine(const Ref<objects::Model>& obj);
+		void SubmitUIContext(ui::UIContext* uiContext);
 
 	private:
 		void AcquireNextImage();
@@ -120,12 +123,6 @@ namespace graphics
 		void ResizeRenderPipelineViewports(uint32_t width, uint32_t height);
 		void RecompileRenderPipelineShaders();
 		void ReloadTextures();
-
-		typedef void(*PFN_UIFunction)(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, void* drawData, void* _this);
-		PFN_UIFunction m_UI_PFN = nullptr;
-		void* m_DrawData = nullptr;
-		void* m_UI_this = nullptr;
-		void SetUIFunction(PFN_UIFunction pfn, void* drawData, void* _this) { m_UI_PFN = pfn; m_DrawData = drawData; m_UI_this = _this; }
 
 		inline Ref<miru::crossplatform::Context> GetContext() { return m_Context; }
 		inline void* GetDevice() { return m_Device; }

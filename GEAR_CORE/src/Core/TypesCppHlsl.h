@@ -3,7 +3,7 @@
 
 //CPP
 #ifdef __cplusplus
-#include "mars.h"
+#include "MARS/MARS/src/mars.h"
 
 #define GEAR_FLOAT		float
 #define GEAR_FLOAT2		mars::Vec2

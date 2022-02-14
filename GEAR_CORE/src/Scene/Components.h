@@ -34,7 +34,7 @@ namespace scene
 	const std::string gear::scene::_struct::s_StructName = #_struct;
 
 
-	struct UUIDComponent
+	struct GEAR_API UUIDComponent
 	{
 		core::UUID uuid;
 
@@ -44,7 +44,7 @@ namespace scene
 		operator const core::UUID&() const { return uuid; }
 	};
 
-	struct NameComponent
+	struct GEAR_API NameComponent
 	{
 		std::string name;
 
@@ -54,7 +54,7 @@ namespace scene
 		operator std::string&() { return name; }
 	};
 
-	struct TransformComponent
+	struct GEAR_API TransformComponent
 	{
 		objects::Transform transform;
 
@@ -68,7 +68,7 @@ namespace scene
 		static void Save(nlohmann::json& parent, const objects::Transform& transform);
 	};
 
-	struct CameraComponent
+	struct GEAR_API CameraComponent
 	{
 		Ref<objects::Camera> camera;
 
@@ -82,7 +82,7 @@ namespace scene
 		operator Ref<objects::Camera>&() { return camera; }
 	};
 
-	struct LightComponent
+	struct GEAR_API LightComponent
 	{
 		Ref<objects::Light> light;
 
@@ -96,7 +96,7 @@ namespace scene
 		operator Ref<objects::Light>&() { return light; }
 	};
 
-	struct ModelComponent
+	struct GEAR_API ModelComponent
 	{
 		Ref<objects::Model> model;
 
@@ -110,7 +110,7 @@ namespace scene
 		operator Ref<objects::Model>&() { return model; }
 	};
 
-	struct SkyboxComponent
+	struct GEAR_API SkyboxComponent
 	{
 		Ref<objects::Skybox> skybox;
 
@@ -124,7 +124,7 @@ namespace scene
 		operator Ref<objects::Skybox>& () { return skybox; }
 	};
 
-	struct TextComponent
+	struct GEAR_API TextComponent
 	{
 		Ref<objects::Text> text;
 
@@ -140,7 +140,7 @@ namespace scene
 
 	class Entity;
 	class INativeScript;
-	struct NativeScriptComponent
+	struct GEAR_API NativeScriptComponent
 	{
 		INativeScript* pNativeScript = nullptr;
 		std::string nativeScriptName;

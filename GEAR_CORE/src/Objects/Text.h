@@ -11,7 +11,7 @@ namespace gear
 {
 namespace objects 
 {
-	class Text
+	class GEAR_API Text
 	{
 	public:
 		struct CreateInfo

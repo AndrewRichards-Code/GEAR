@@ -59,7 +59,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GEAR_NO_CONSOLE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)dep\imgui;$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\DATE;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)..\GEAR_CORE\src;$(ProjectDir)..\External;$(ProjectDir)..\External\ASSIMP\include;$(ProjectDir)..\External\FREETYPE\include;$(ProjectDir)..\External\MIRU\External\;$(ProjectDir)..\External\MIRU\MIRU_CORE\src;$(ProjectDir)..\External\MIRU\MIRU_SHADER_CORE\src;$(ProjectDir)..\External\imgui;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>gearbox_common.h</PrecompiledHeaderFile>
@@ -67,9 +67,12 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE\dep\SPIRV-Cross\build;$(ProjectDir)dep\imgui\lib\x64\$(Configuration);$(SolutionDir)GEAR_CORE\lib\x64\$(Configuration);$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep;$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ImGui.lib;GEAR_CORE.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>GEAR_CORE.lib;MIRU_CORE.lib;MARS.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>..\External\CopyExternalDLLsToBin.bat $(Platform) $(Configuration)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -79,7 +82,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>GEAR_NO_CONSOLE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)dep\imgui;$(SolutionDir)GEAR_CORE\dep\ASSIMP\include;$(SolutionDir)GEAR_CORE\dep\DATE;$(SolutionDir)GEAR_CORE\dep\ENTT;$(SolutionDir)GEAR_CORE\dep\FREETYPE\include;$(SolutionDir)GEAR_CORE\dep\GLFW\include;$(SolutionDir)GEAR_CORE\dep\JSON;$(SolutionDir)GEAR_CORE\dep\MARS\MARS\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\src;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE\dep;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE\redist;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE\src;$(SolutionDir)GEAR_CORE\dep\OPENAL\include;$(SolutionDir)GEAR_CORE\dep\STBI;$(VULKAN_SDK)\Include;$(SolutionDir)GEAR_CORE\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)..\GEAR_CORE\src;$(ProjectDir)..\External;$(ProjectDir)..\External\ASSIMP\include;$(ProjectDir)..\External\FREETYPE\include;$(ProjectDir)..\External\MIRU\External\;$(ProjectDir)..\External\MIRU\MIRU_CORE\src;$(ProjectDir)..\External\MIRU\MIRU_SHADER_CORE\src;$(ProjectDir)..\External\imgui;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>gearbox_common.h</PrecompiledHeaderFile>
@@ -89,50 +92,23 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE;$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_SHADER_CORE\dep\SPIRV-Cross\build;$(ProjectDir)dep\imgui\lib\x64\$(Configuration);$(SolutionDir)GEAR_CORE\lib\x64\$(Configuration);$(SolutionDir)GEAR_CORE\dep\MIRU\MIRU_CORE\redist;$(SolutionDir)GEAR_CORE\dep;$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ImGui.lib;GEAR_CORE.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)bin\$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>GEAR_CORE.lib;MIRU_CORE.lib;MARS.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>..\External\CopyExternalDLLsToBin.bat $(Platform) $(Configuration)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\ComponentUI\CameraComponentUI.h" />
-    <ClInclude Include="src\ComponentUI\ComponentUI.h" />
-    <ClInclude Include="src\MenuBar.h" />
-    <ClInclude Include="src\ComponentUI\ModelComponentUI.h" />
-    <ClInclude Include="src\ComponentUI\NameComponentUI.h" />
-    <ClInclude Include="src\ComponentUI\SkyboxComponentUI.h" />
-    <ClInclude Include="src\ComponentUI\TransformComponentUI.h" />
-    <ClInclude Include="src\GEARBOX.h" />
+    <ClInclude Include="src\gearbox.h" />
     <ClInclude Include="src\gearbox_common.h" />
-    <ClInclude Include="src\Panels\ContentBrowserPanel.h" />
-    <ClInclude Include="src\Panels\ContentEditorPanel.h" />
-    <ClInclude Include="src\Panels\BasePanel.h" />
-    <ClInclude Include="src\Panels\Panels.h" />
-    <ClInclude Include="src\Panels\ProjectPanel.h" />
-    <ClInclude Include="src\Panels\PropertiesPanel.h" />
-    <ClInclude Include="src\Panels\SceneHierarchyPanel.h" />
-    <ClInclude Include="src\Panels\ViewportPanel.h" />
-    <ClInclude Include="src\UIContext.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\ComponentUI\CameraComponentUI.cpp" />
-    <ClCompile Include="src\ComponentUI\ComponentUI.cpp" />
-    <ClCompile Include="src\ComponentUI\ModelComponentUI.cpp" />
-    <ClCompile Include="src\ComponentUI\NameComponentUI.cpp" />
-    <ClCompile Include="src\ComponentUI\SkyboxComponentUI.cpp" />
-    <ClCompile Include="src\ComponentUI\TransformComponentUI.cpp" />
-    <ClCompile Include="src\GEARBOX.cpp" />
+    <ClCompile Include="src\gearbox.cpp" />
     <ClCompile Include="src\gearbox_common.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src\MenuBar.cpp" />
-    <ClCompile Include="src\Panels\ContentBrowserPanel.cpp" />
-    <ClCompile Include="src\Panels\ContentEditorPanel.cpp" />
-    <ClCompile Include="src\Panels\ProjectPanel.cpp" />
-    <ClCompile Include="src\Panels\PropertiesPanel.cpp" />
-    <ClCompile Include="src\Panels\SceneHierarchyPanel.cpp" />
-    <ClCompile Include="src\Panels\ViewportPanel.cpp" />
-    <ClCompile Include="src\UIContext.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -33,7 +33,7 @@ namespace graphics
 	typedef mars::Vec3 Colour_CIE_xyY;
 
 	//Base Colour implementation
-	class Colour_Base
+	class GEAR_API Colour_Base
 	{
 	protected:
 		ColourSpace m_ColourSpace;
@@ -59,7 +59,7 @@ namespace graphics
 	};
 
 	//XYZ FP32 : CIE XYZ Colour Space : Linear Gamma Space
-	class Colour_CIE_XYZ final : public Colour_Base
+	class GEAR_API Colour_CIE_XYZ final : public Colour_Base
 	{
 	public:
 		float x;
@@ -86,7 +86,7 @@ namespace graphics
 	};
 
 	//RGBA UINT8 : sRGB Colour Space : sRGB Gamma Space
-	class Colour_sRGB final : public Colour_Base
+	class GEAR_API Colour_sRGB final : public Colour_Base
 	{
 	public:
 		//RGBA UINT8 : sRGB Colour Space : Linear Gamma Space
@@ -132,7 +132,7 @@ namespace graphics
 	};
 
 	//RGBA UINT8 : Rec 709 Colour Space : Rec 709 Gamma Space
-	class Colour_Rec709 final : public Colour_Base
+	class GEAR_API Colour_Rec709 final : public Colour_Base
 	{
 	public:
 		//RGBA UINT8 : Rec 709 Colour Space : Linear Gamma Space
@@ -178,7 +178,7 @@ namespace graphics
 	};
 
 	//RGBA UINT10:10:10:2 : Rec 2020 Colour Space : Rec 2020 Gamma Space
-	class Colour_Rec2020 final : public Colour_Base
+	class GEAR_API Colour_Rec2020 final : public Colour_Base
 	{
 	public:
 		//RGBA UINT10:10:10:2 : Rec 2020 Colour Space : Linear Gamma Space

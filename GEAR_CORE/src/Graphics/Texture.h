@@ -6,7 +6,7 @@ namespace gear
 {
 namespace graphics 
 {
-	class Texture
+	class GEAR_API Texture
 	{
 	public:
 		enum class DataType : uint32_t

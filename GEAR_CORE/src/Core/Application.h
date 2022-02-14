@@ -5,7 +5,7 @@ namespace gear
 {
 namespace core
 {
-	class Application
+	class GEAR_API Application
 	{
 	public:
 		Application() = default;

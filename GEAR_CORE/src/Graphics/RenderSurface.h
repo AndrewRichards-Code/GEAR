@@ -6,7 +6,7 @@ namespace gear
 {
 namespace graphics 
 {
-	class RenderSurface
+	class GEAR_API RenderSurface
 	{
 	public:
 		struct CreateInfo

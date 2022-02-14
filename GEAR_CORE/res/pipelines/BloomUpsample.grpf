@@ -14,7 +14,7 @@
 			"recompileArguments": {
 				"hlslFilepath": "res/shaders/HLSL/PostProcess/Bloom.hlsl",
 				"outputDirectory": "res/shaders/bin",
-				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
+				"includeDirectories": [ "../External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
 				"entryPoint": "upsample",
 				"shaderModel": "cs_6_4",
 				"macros": [],

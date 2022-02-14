@@ -1,7 +1,5 @@
 #pragma once
 #include "gear_core_common.h"
-#include "entt.hpp"
-
 #include "Components.h"
 
 namespace gear
@@ -14,7 +12,7 @@ namespace scene
 	class Entity;
 	class INativeScript;
 
-	class Scene
+	class GEAR_API Scene
 	{
 	public:
 		struct CreateInfo

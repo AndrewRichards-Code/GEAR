@@ -5,7 +5,7 @@ namespace gear
 {
 namespace input
 {
-	class InputInterface 
+	class GEAR_API InputInterface
 	{
 	public:
 		enum class API : uint32_t

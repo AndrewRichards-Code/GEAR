@@ -14,7 +14,7 @@
 			"recompileArguments": {
 				"hlslFilepath": "res/shaders/HLSL/Mipmap.hlsl",
 				"outputDirectory": "res/shaders/bin",
-				"includeDirectories": [ "dep/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
+				"includeDirectories": [ "../External/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
 				"entryPoint": "mipmap_array",
 				"shaderModel": "cs_6_4",
 				"macros": [],

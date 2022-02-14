@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "stb_image.h"
+#include "STBI/stb_image.h"
 #include "Texture.h"
 #include "Graphics/AllocatorManager.h"
 #include "ImageProcessing.h"
@@ -19,7 +19,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_DepthTexture = m_CI.format >= Image::Format::D16_UNORM;
 	if (m_Cubemap && m_CI.arrayLayers % 6 != 0)
 	{
-		GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "For TYPE_CUBE or TYPE_CUBE_ARRAY, arrayLayers must be a multiple of 6");
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "For TYPE_CUBE or TYPE_CUBE_ARRAY, arrayLayers must be a multiple of 6");
 	}
 
 	//Load data
@@ -46,7 +46,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_TextureUploadBufferCI.imageDimension = { m_Width, m_Height, 4 };
 	m_TextureUploadBufferCI.size = imageData.size();
 	m_TextureUploadBufferCI.data = imageData.data();
-	m_TextureUploadBufferCI.pAllocator = AllocatorManager::GetAllocator(AllocatorManager::AllocatorType::CPU);
+	m_TextureUploadBufferCI.pAllocator = AllocatorManager::GetCPUAllocator();
 	m_TextureUploadBuffer = Buffer::Create(&m_TextureUploadBufferCI);
 
 	//Image
@@ -64,7 +64,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_TextureCI.layout = Image::Layout::UNKNOWN;
 	m_TextureCI.size = 0;
 	m_TextureCI.data = nullptr;
-	m_TextureCI.pAllocator = AllocatorManager::GetAllocator(AllocatorManager::AllocatorType::GPU);
+	m_TextureCI.pAllocator = AllocatorManager::GetGPUAllocator();
 	m_Texture = Image::Create(&m_TextureCI);
 
 	//ImageView
@@ -299,7 +299,7 @@ void Texture::LoadImageData(std::vector<uint8_t>& imageData)
 				}
 				else
 				{
-					GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Unknown ColourSpace.");
+					GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Unknown ColourSpace.");
 				}
 			}
 		}
@@ -330,11 +330,11 @@ void Texture::LoadImageData(std::vector<uint8_t>& imageData)
 	}
 	else
 	{
-		GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Unknown Texture::CreateInfo::DataType and/or invalid parameters.");
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Unknown Texture::CreateInfo::DataType and/or invalid parameters.");
 	}
 
 	if (m_Width == 0 && m_Height == 0 && m_Depth == 0)
 	{
-		GEAR_ASSERT(/*Level::ERROR,*/ ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Invalid extent for Texture creation.");
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Invalid extent for Texture creation.");
 	}
 }

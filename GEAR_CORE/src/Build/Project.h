@@ -6,7 +6,7 @@ namespace gear
 {
 namespace build
 {
-	class Project
+	class GEAR_API Project
 	{
 		//enums/structs
 	public:

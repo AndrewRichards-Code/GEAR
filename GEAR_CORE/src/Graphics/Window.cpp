@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "stb_image.h"
+#include "STBI/stb_image.h"
 #include "Window.h"
 
 #include "ARC/src/StringConversion.h"

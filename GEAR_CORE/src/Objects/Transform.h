@@ -1,11 +1,11 @@
 #pragma once
-#include "mars.h"
+#include "MARS/MARS/src/mars.h"
 
 namespace gear
 {
 namespace objects
 {
-	struct Transform
+	struct GEAR_API Transform
 	{
 		mars::Vec3 translation;
 		mars::Quat orientation;
