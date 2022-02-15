@@ -59,9 +59,9 @@ namespace objects
 	public:
 		CreateInfo m_CI;
 
-		mars::Vec3 m_Direction;
-		mars::Vec3 m_Up;
-		mars::Vec3 m_Right;
+		mars::float3 m_Direction;
+		mars::float3 m_Up;
+		mars::float3 m_Right;
 
 	public:
 		Camera(CreateInfo* pCreateInfo);

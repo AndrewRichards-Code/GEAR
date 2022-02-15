@@ -15,16 +15,16 @@ namespace gear
 	public:
 		struct Vertex
 		{
-			mars::Vec4 position;
-			mars::Vec2 texCoord;
-			mars::Vec4 normal;
-			mars::Vec4 tangent;
-			mars::Vec4 binormal;
-			mars::Vec4 colour;
+			mars::float4 position;
+			mars::float2 texCoord;
+			mars::float4 normal;
+			mars::float4 tangent;
+			mars::float4 binormal;
+			mars::float4 colour;
 		};
 		struct Bone
 		{
-			mars::Mat4								transform;
+			mars::float4x4							transform;
 			std::vector<std::pair<uint32_t, float>> vertexIDsAndWeights;
 		};
 
@@ -40,7 +40,7 @@ namespace gear
 		struct Node
 		{
 			std::string			name;
-			mars::Mat4			transform;
+			mars::float4x4		transform;
 			size_t				meshIndex = ~0;
 			size_t				animationIndex = ~0;
 			size_t				nodeAnimationIndex = ~0;
@@ -70,7 +70,7 @@ namespace gear
 		static std::vector<std::string> GetMaterialFilePath(aiMaterial* material, aiTextureType type);
 		static void AddMaterialProperties(aiMaterial* aiMaterial, Ref<objects::Material> material);
 
-		inline static void Convert_aiMatrix4x4ToMat4(const aiMatrix4x4& in, mars::Mat4& out)
+		inline static void Convert_aiMatrix4x4ToMat4(const aiMatrix4x4& in, mars::float4x4& out)
 		{
 			memcpy_s((void* const)out.GetData(), out.GetSize(), &in.a1, sizeof(aiMatrix4x4));
 		}

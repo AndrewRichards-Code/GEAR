@@ -100,26 +100,18 @@ void Animator::Update(const core::Sequence* sequences, size_t sequenceCount)
 	}
 }
 
-Vec3 Animator::InterpolateTranslation(const Vec3& start, const Vec3& end, float t)
+float3 Animator::InterpolateTranslation(const float3& start, const float3& end, float t)
 {
 	return (start + (end - start) * t);
 }
 
-Quat Animator::InterpolateRotation(const Quat& start, const Quat& end, float t)
+Quaternion Animator::InterpolateRotation(const Quaternion& start, const Quaternion& end, float t)
 {
-	Quat q_start = Quat::Normalise(start);
-	Quat q_end	= Quat::Normalise(end);
+	Quaternion q_start = Quaternion::Normalise(start);
+	Quaternion q_end	= Quaternion::Normalise(end);
 
-	Vec4 v_start(
-		static_cast<float>(q_start.i), 
-		static_cast<float>(q_start.j), 
-		static_cast<float>(q_start.k), 
-		static_cast<float>(q_start.s));
-	Vec4 v_end(
-		static_cast<float>(q_end.i), 
-		static_cast<float>(q_end.j), 
-		static_cast<float>(q_end.k), 
-		static_cast<float>(q_end.s));
+	double4 v_start(q_start.i, q_start.j, q_start.k, q_start.s);
+	double4 v_end(q_end.i, q_end.j, q_end.k, q_end.s);
 
 	float dot = v_start.Dot(v_end);
 	if (dot < 0.0f)
@@ -132,18 +124,18 @@ Quat Animator::InterpolateRotation(const Quat& start, const Quat& end, float t)
 	if (dot > 1.0)
 		dot = 1.0;
 
-	float theta = acos(dot);
+	double theta = acos(dot);
 
-	float a = sin((1 - t) * theta);
-	float b = sin(t * theta);
-	float c = sin(theta);
-	 
-	Quat result (v_start * (a / c) + v_end * (b / c));
+	double a = sin((1 - t) * theta);
+	double b = sin(t * theta);
+	double c = sin(theta);
+
+	Quaternion result(v_start * (a / c) + v_end * (b / c));
 	result.Normalise();
 	return result;
 }
 
-Vec3 Animator::InterpolateScale(const Vec3& start, const Vec3& end, float t)
+float3 Animator::InterpolateScale(const float3& start, const float3& end, float t)
 {
 	return (start + (end - start) * t);
 }

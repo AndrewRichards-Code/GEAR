@@ -19,7 +19,7 @@ namespace objects
 			std::string			debugName;
 			void*				device;
 			Ref<Mesh>			pMesh;
-			mars::Vec2			materialTextureScaling = mars::Vec2(1.0f, 1.0f);
+			mars::float2		materialTextureScaling = mars::float2(1.0f, 1.0f);
 			Transform			transform;
 			std::string			renderPipelineName;
 		};
@@ -43,7 +43,7 @@ namespace objects
 	
 		inline Ref<graphics::Uniformbuffer<ModelUB>>& GetUB() { return m_UB; }
 		inline const Ref<graphics::Uniformbuffer<ModelUB>>& GetUB() const { return m_UB; }
-		inline const mars::Mat4& GetModlMatrix() const { return m_UB->modl; }
+		inline const mars::float4x4& GetModlMatrix() const { return m_UB->modl; }
 	
 		inline std::string GetDebugName() const { return "GEAR_CORE_Model: " + m_CI.debugName; }
 	

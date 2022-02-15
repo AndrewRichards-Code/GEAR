@@ -17,7 +17,7 @@ Colour_CIE_xyY Colour_Base::D65 = Colour_Base_D65;
 
 void Colour_Base::ConstructTransformationMatrices()
 {
-	Mat3 primariesMatrix = Mat3(
+	float3x3 primariesMatrix = float3x3(
 		Colour_Base_xyY_To_XYZ(m_PrimaryR),
 		Colour_Base_xyY_To_XYZ(m_PrimaryG),
 		Colour_Base_xyY_To_XYZ(m_PrimaryB));
@@ -48,7 +48,7 @@ Colour_CIE_XYZ::Colour_CIE_XYZ()
 Colour_CIE_XYZ::Colour_CIE_XYZ(float X, float Y, float Z)
 	:x(X), y(Y), z(Z) { Initialise(); }
 
-Colour_CIE_XYZ::Colour_CIE_XYZ(const Vec3& colour)
+Colour_CIE_XYZ::Colour_CIE_XYZ(const float3& colour)
 	:x(colour.r), y(colour.g), z(colour.b) { Initialise(); }
 
 Colour_sRGB Colour_CIE_XYZ::ToSRGB()
@@ -147,7 +147,7 @@ Colour_sRGB::Colour_sRGB()
 Colour_sRGB::Colour_sRGB(uint8_t R, uint8_t G, uint8_t B, uint8_t A)
 	: r(R), g(G), b(B), a(A) { Initialise(); }
 
-Colour_sRGB::Colour_sRGB(const mars::Vec4& RGBA)
+Colour_sRGB::Colour_sRGB(const mars::float4& RGBA)
 {
 	r = std::clamp(static_cast<uint8_t>(RGBA.r * 255.0f), static_cast<uint8_t>(0), static_cast<uint8_t>(255)),
 	g = std::clamp(static_cast<uint8_t>(RGBA.g * 255.0f), static_cast<uint8_t>(0), static_cast<uint8_t>(255)),
@@ -158,13 +158,13 @@ Colour_sRGB::Colour_sRGB(const mars::Vec4& RGBA)
 
 Colour_CIE_XYZ Colour_sRGB::ToCIE_XYZ()
 {
-	Vec3 xyz = RGB_To_XYZ * Linearise();
+	float3 xyz = RGB_To_XYZ * Linearise();
 	return Colour_CIE_XYZ(xyz);
 }
 
 Colour_sRGB Colour_sRGB::FromCIE_XYZ(const Colour_CIE_XYZ& XYZ)
 {
-	Vec3 rgb = XYZ_To_RGB * XYZ;
+	float3 rgb = XYZ_To_RGB * XYZ;
 	Colour_Linear_sRGB lsRGB = Colour_Linear_sRGB(rgb, 1.0f);
 	Colour_sRGB result; 
 	result.GammaCorrection(lsRGB);
@@ -175,12 +175,12 @@ Colour_sRGB Colour_sRGB::FromCIE_XYZ(const Colour_CIE_XYZ& XYZ)
 
 float Colour_sRGB::GetLuminance()
 {
-	return colour::GetLuminance(uint32_t(m_ColourSpace), this->operator mars::Vec3());
+	return colour::GetLuminance(uint32_t(m_ColourSpace), this->operator mars::float3());
 }
 
 Colour_sRGB::Colour_Linear_sRGB Colour_sRGB::Linearise()
 {
-	return Colour_Linear_sRGB(colour::Linearise(uint32_t(m_ColourSpace), this->operator mars::Vec3()), static_cast<float>(a) * s_OneOver255);
+	return Colour_Linear_sRGB(colour::Linearise(uint32_t(m_ColourSpace), this->operator mars::float3()), static_cast<float>(a) * s_OneOver255);
 }
 
 Colour_sRGB::Colour_Linear_sRGB Colour_sRGB::Linearise_LUT()
@@ -190,7 +190,7 @@ Colour_sRGB::Colour_Linear_sRGB Colour_sRGB::Linearise_LUT()
 
 Colour_sRGB Colour_sRGB::GammaCorrection(const Colour_Linear_sRGB& lsRGB)
 {
-	*this = Colour_sRGB(Vec4(colour::GammaCorrection(uint32_t(m_ColourSpace), Vec3(lsRGB.r, lsRGB.g, lsRGB.b)), 1.0f));
+	*this = Colour_sRGB(float4(colour::GammaCorrection(uint32_t(m_ColourSpace), float3(lsRGB.r, lsRGB.g, lsRGB.b)), 1.0f));
 	return *this;
 }
 
@@ -216,7 +216,7 @@ Colour_Rec709::Colour_Rec709()
 Colour_Rec709::Colour_Rec709(uint8_t R, uint8_t G, uint8_t B, uint8_t A)
 	:r(R), g(G), b(B), a(A) { Initialise(); }
 
-Colour_Rec709::Colour_Rec709(const mars::Vec4& RGBA)
+Colour_Rec709::Colour_Rec709(const mars::float4& RGBA)
 {
 	r = std::clamp(static_cast<uint8_t>(RGBA.r * 255.0f), static_cast<uint8_t>(0), static_cast<uint8_t>(255)),
 	g = std::clamp(static_cast<uint8_t>(RGBA.g * 255.0f), static_cast<uint8_t>(0), static_cast<uint8_t>(255)),
@@ -227,13 +227,13 @@ Colour_Rec709::Colour_Rec709(const mars::Vec4& RGBA)
 
 Colour_CIE_XYZ Colour_Rec709::ToCIE_XYZ()
 {
-	Vec3 xyz = RGB_To_XYZ * Linearise();
+	float3 xyz = RGB_To_XYZ * Linearise();
 	return Colour_CIE_XYZ(xyz);
 }
 
 Colour_Rec709 Colour_Rec709::FromCIE_XYZ(const Colour_CIE_XYZ& XYZ)
 {
-	Vec3 rgb = XYZ_To_RGB * XYZ;
+	float3 rgb = XYZ_To_RGB * XYZ;
 	Colour_Linear_Rec709 lRec709 = Colour_Linear_Rec709(rgb, 1.0f);
 	Colour_Rec709 result;
 	result.GammaCorrection(lRec709);
@@ -244,7 +244,7 @@ Colour_Rec709 Colour_Rec709::FromCIE_XYZ(const Colour_CIE_XYZ& XYZ)
 
 Colour_Rec709::Colour_Linear_Rec709 Colour_Rec709::Linearise()
 {
-	return Colour_Linear_Rec709(colour::Linearise(uint32_t(m_ColourSpace), this->operator mars::Vec3()), static_cast<float>(a) * s_OneOver255);
+	return Colour_Linear_Rec709(colour::Linearise(uint32_t(m_ColourSpace), this->operator mars::float3()), static_cast<float>(a) * s_OneOver255);
 };
 
 Colour_Rec709::Colour_Linear_Rec709 Colour_Rec709::Linearise_LUT()
@@ -255,13 +255,13 @@ Colour_Rec709::Colour_Linear_Rec709 Colour_Rec709::Linearise_LUT()
 
 Colour_Rec709 Colour_Rec709::GammaCorrection(const Colour_Linear_Rec709& lRec709)
 {
-	*this = Colour_Rec709(Vec4(colour::GammaCorrection(uint32_t(m_ColourSpace), Vec3(lRec709.r, lRec709.g, lRec709.b)), 1.0f));
+	*this = Colour_Rec709(float4(colour::GammaCorrection(uint32_t(m_ColourSpace), float3(lRec709.r, lRec709.g, lRec709.b)), 1.0f));
 	return *this;
 }
 
 float Colour_Rec709::GetLuminance()
 {
-	return colour::GetLuminance(uint32_t(m_ColourSpace), this->operator mars::Vec3());
+	return colour::GetLuminance(uint32_t(m_ColourSpace), this->operator mars::float3());
 }
 
 void Colour_Rec709::Initialise()
@@ -286,7 +286,7 @@ Colour_Rec2020::Colour_Rec2020()
 Colour_Rec2020::Colour_Rec2020(uint32_t R, uint32_t G, uint32_t B, uint32_t A)
 	:r(R), g(G), b(B), a(A) { Initialise(); }
 
-Colour_Rec2020::Colour_Rec2020(const mars::Vec4& RGBA)
+Colour_Rec2020::Colour_Rec2020(const mars::float4& RGBA)
 {
 	r = std::clamp(static_cast<uint32_t>(RGBA.r * 1023.0f), static_cast<uint32_t>(0), static_cast<uint32_t>(1023)),
 	g = std::clamp(static_cast<uint32_t>(RGBA.g * 1023.0f), static_cast<uint32_t>(0), static_cast<uint32_t>(1023)),
@@ -297,13 +297,13 @@ Colour_Rec2020::Colour_Rec2020(const mars::Vec4& RGBA)
 
 Colour_CIE_XYZ Colour_Rec2020::ToCIE_XYZ()
 {
-	Vec3 xyz = RGB_To_XYZ * Linearise();
+	float3 xyz = RGB_To_XYZ * Linearise();
 	return Colour_CIE_XYZ(xyz);
 }
 
 Colour_Rec2020 Colour_Rec2020::FromCIE_XYZ(const Colour_CIE_XYZ& XYZ)
 {
-	Vec3 rgb = XYZ_To_RGB * XYZ;
+	float3 rgb = XYZ_To_RGB * XYZ;
 	Colour_Linear_Rec2020 lRec709 = Colour_Linear_Rec2020(rgb, 1.0f);
 	Colour_Rec2020 result;
 	result.GammaCorrection(lRec709);
@@ -314,7 +314,7 @@ Colour_Rec2020 Colour_Rec2020::FromCIE_XYZ(const Colour_CIE_XYZ& XYZ)
 
 Colour_Rec2020::Colour_Linear_Rec2020 Colour_Rec2020::Linearise()
 {
-	return Colour_Linear_Rec2020(colour::Linearise(uint32_t(m_ColourSpace), this->operator mars::Vec3()), static_cast<float>(a) * s_OneOver3);
+	return Colour_Linear_Rec2020(colour::Linearise(uint32_t(m_ColourSpace), this->operator mars::float3()), static_cast<float>(a) * s_OneOver3);
 };
 
 Colour_Rec2020::Colour_Linear_Rec2020 Colour_Rec2020::Linearise_LUT()
@@ -324,13 +324,13 @@ Colour_Rec2020::Colour_Linear_Rec2020 Colour_Rec2020::Linearise_LUT()
 }
 Colour_Rec2020 Colour_Rec2020::GammaCorrection(const Colour_Linear_Rec2020& lRec2020)
 {
-	*this = Colour_Rec2020(Vec4(colour::GammaCorrection(uint32_t(m_ColourSpace), Vec3(lRec2020.r, lRec2020.g, lRec2020.b)), 1.0f));
+	*this = Colour_Rec2020(float4(colour::GammaCorrection(uint32_t(m_ColourSpace), float3(lRec2020.r, lRec2020.g, lRec2020.b)), 1.0f));
 	return *this;
 }
 
 float Colour_Rec2020::GetLuminance()
 {
-	return colour::GetLuminance(uint32_t(m_ColourSpace), this->operator mars::Vec3());
+	return colour::GetLuminance(uint32_t(m_ColourSpace), this->operator mars::float3());
 }
 
 void Colour_Rec2020::Initialise()

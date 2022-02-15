@@ -24,9 +24,9 @@ namespace audio
 	
 		std::thread m_AudioStreamThread;
 		
-		mars::Vec3 m_Position;
-		mars::Vec3 m_Velocity = { 0.0f, 0.0f, 0.0f };
-		mars::Vec3 m_Direction;
+		mars::float3 m_Position;
+		mars::float3 m_Velocity = { 0.0f, 0.0f, 0.0f };
+		mars::float3 m_Direction;
 
 		bool m_Looped;
 

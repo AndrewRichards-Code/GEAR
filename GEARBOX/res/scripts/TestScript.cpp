@@ -10,7 +10,7 @@ public:
 	~TestScript() = default;
 
 	bool first = true;
-	mars::Vec3 initPos;
+	mars::float3 initPos;
 
 	void OnCreate()
 	{
@@ -31,7 +31,7 @@ public:
 		if (!cameraComponent)
 			return;
 
-		mars::Vec3& pos = cameraComponent->GetCreateInfo().transform.translation;
+		mars::float3& pos = cameraComponent->GetCreateInfo().transform.translation;
 		if (first)
 		{
 			initPos = pos;

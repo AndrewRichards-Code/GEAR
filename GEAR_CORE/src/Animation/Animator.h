@@ -42,9 +42,9 @@ namespace animation
 	private:
 		void Update(const core::Sequence* sequences, size_t sequenceCount) override;
 
-		mars::Vec3 InterpolateTranslation(const mars::Vec3& start, const mars::Vec3& end, float t);
-		mars::Quat InterpolateRotation(const mars::Quat& start, const mars::Quat& end, float t);
-		mars::Vec3 InterpolateScale(const mars::Vec3& start, const mars::Vec3& end, float t);
+		mars::float3 InterpolateTranslation(const mars::float3& start, const mars::float3& end, float t);
+		mars::Quaternion InterpolateRotation(const mars::Quaternion& start, const mars::Quaternion& end, float t);
+		mars::float3 InterpolateScale(const mars::float3& start, const mars::float3& end, float t);
 	};
 }
 }

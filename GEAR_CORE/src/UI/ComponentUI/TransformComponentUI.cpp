@@ -17,37 +17,37 @@ void gear::ui::componentui::DrawTransformComponentUI(gear::scene::Entity entity)
 	objects::Transform& transform = entity.GetComponent<TransformComponent>().transform;
 
 	//Translation
-	DrawVec3("Translation", transform.translation);
+	DrawFloat3("Translation", transform.translation);
 	
 	//Rotation
 	static bool radians = false;
 	static bool quaternion = false;
 	if (quaternion)
 	{
-		DrawQuat("Rotation", transform.orientation);
+		DrawQuaternion("Rotation", transform.orientation);
 		transform.orientation.Normalise();
 	}
 	else
 	{
-		mars::Vec3 ea = Quat::ToEulerAngles(transform.orientation);
+		float3 ea = Quaternion::ToEulerAngles<float>(transform.orientation);
 		if (!radians)
 		{
-			Vec3 _ea = Vec3(RadToDeg(ea.x), RadToDeg(ea.y), RadToDeg(ea.z));
+			float3 _ea = float3(RadToDeg(ea.x), RadToDeg(ea.y), RadToDeg(ea.z));
 			ea = _ea;
 		}
-		DrawVec3("Rotation", ea);
+		DrawFloat3("Rotation", ea);
 		if (!radians)
 		{
-			Vec3 _ea = Vec3(DegToRad(ea.x), DegToRad(ea.y), DegToRad(ea.z));
+			float3 _ea = float3(DegToRad(ea.x), DegToRad(ea.y), DegToRad(ea.z));
 			ea = _ea;
 		}
 
-		transform.orientation = Quat::FromEulerAngles(ea);
+		transform.orientation = Quaternion::FromEulerAngles(ea);
 		transform.orientation.Normalise();
 	}
 
 	//Scale
-	DrawVec3("Scale", transform.scale, 1.0f);
+	DrawFloat3("Scale", transform.scale, 1.0f);
 	static bool scaleLock = false;
 	if (scaleLock)
 	{

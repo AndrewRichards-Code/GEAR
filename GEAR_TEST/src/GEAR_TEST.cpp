@@ -80,10 +80,10 @@ void GEAR_TEST::Run()
 	textEntity.AddComponent<TextComponent>(std::move(CreateRef<Text>(&fontRendererCI)));
 	uint32_t textRowHeight = 20, render_doc_offset = 40;
 	auto& text = textEntity.GetComponent<TextComponent>().text;
-	text->AddLine(font, window->GetDeviceName(), { 0, render_doc_offset + 0 * textRowHeight }, Vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	text->AddLine(font, window->GetGraphicsAPIVersion(), { 0, render_doc_offset + 1 * textRowHeight }, GraphicsAPI::IsD3D12() ? Vec4(0.0f, 1.0f, 0.0f, 1.0) : Vec4(1.0f, 0.0f, 0.0f, 1.0f));
-	text->AddLine(font, "FPS: " + window->GetFPSString<uint32_t>(), { 0, render_doc_offset + 2 * textRowHeight }, Vec4(1.0f, 1.0f, 1.0f, 1.0f));
-	text->AddLine(font, "MSAA: " + window->GetAntiAliasingValue() + "x", { 0, render_doc_offset + 3 * textRowHeight }, Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	text->AddLine(font, window->GetDeviceName(), { 0, render_doc_offset + 0 * textRowHeight }, float4(1.0f, 1.0f, 1.0f, 1.0f));
+	text->AddLine(font, window->GetGraphicsAPIVersion(), { 0, render_doc_offset + 1 * textRowHeight }, GraphicsAPI::IsD3D12() ? float4(0.0f, 1.0f, 0.0f, 1.0) : float4(1.0f, 0.0f, 0.0f, 1.0f));
+	text->AddLine(font, "FPS: " + window->GetFPSString<uint32_t>(), { 0, render_doc_offset + 2 * textRowHeight }, float4(1.0f, 1.0f, 1.0f, 1.0f));
+	text->AddLine(font, "MSAA: " + window->GetAntiAliasingValue() + "x", { 0, render_doc_offset + 3 * textRowHeight }, float4(1.0f, 1.0f, 1.0f, 1.0f));
 
 	Skybox::CreateInfo skyboxCI;
 	skyboxCI.debugName = "Skybox-HDR";
@@ -91,9 +91,9 @@ void GEAR_TEST::Run()
 	//skyboxCI.filepaths = { "res/img/snowy_park_01_2k.hdr" };
 	skyboxCI.filepaths = { "res/img/kloppenheim_06_2k.hdr" };
 	skyboxCI.generatedCubemapSize = 1024;
-	skyboxCI.transform.translation = Vec3(0, 0, 0);
-	skyboxCI.transform.orientation = Quat(1, 0, 0, 0);
-	skyboxCI.transform.scale = Vec3(500.0f, 500.0f, 500.0f);
+	skyboxCI.transform.translation = float3(0, 0, 0);
+	skyboxCI.transform.orientation = Quaternion(1, 0, 0, 0);
+	skyboxCI.transform.scale = float3(500.0f, 500.0f, 500.0f);
 	Entity skyboxEntity = activeScene->CreateEntity();
 	skyboxEntity.AddComponent<SkyboxComponent>(std::move(CreateRef<Skybox>(&skyboxCI)));
 
@@ -257,9 +257,9 @@ void GEAR_TEST::Run()
 	modelCI.debugName = "Drone Model";
 	modelCI.device = window->GetDevice();
 	modelCI.pMesh = droneMesh;
-	modelCI.transform.translation = Vec3(0.0, 0.5, -1.0);
-	modelCI.transform.orientation = Quat(sqrtf(2) / 2, -sqrtf(2) / 2, 0, 0);
-	modelCI.transform.scale = Vec3(0.01f, 0.01f, 0.01f);
+	modelCI.transform.translation = float3(0.0, 0.5, -1.0);
+	modelCI.transform.orientation = Quaternion(sqrtf(2) / 2, -sqrtf(2) / 2, 0, 0);
+	modelCI.transform.scale = float3(0.01f, 0.01f, 0.01f);
 	modelCI.renderPipelineName = "PBROpaque";
 	Entity drone = activeScene->CreateEntity();
 	drone.AddComponent<ModelComponent>(CreateRef<Model>(&modelCI));
@@ -268,19 +268,19 @@ void GEAR_TEST::Run()
 	lightCI.debugName = "Main";
 	lightCI.device = window->GetDevice();
 	lightCI.type = Light::LightType::POINT;
-	lightCI.colour = Vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	lightCI.transform.translation = Vec3(0.0f, 2.0f, 0.0f);
-	lightCI.transform.orientation = Quat(1, 0, 0, 0);
-	lightCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
+	lightCI.colour = float4(1.0f, 1.0f, 1.0f, 1.0f);
+	lightCI.transform.translation = float3(0.0f, 2.0f, 0.0f);
+	lightCI.transform.orientation = Quaternion(1, 0, 0, 0);
+	lightCI.transform.scale = float3(1.0f, 1.0f, 1.0f);
 	Entity lightEntity = activeScene->CreateEntity();
 	lightEntity.AddComponent<LightComponent>(std::move(CreateRef<Light>(&lightCI)));
 
 	Camera::CreateInfo cameraCI;
 	cameraCI.debugName = "Main";
 	cameraCI.device = window->GetDevice();
-	cameraCI.transform.translation = Vec3(0, 1, 0);
-	cameraCI.transform.orientation = Quat(1, 0, 0, 0);
-	cameraCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
+	cameraCI.transform.translation = float3(0, 1, 0);
+	cameraCI.transform.orientation = Quaternion(1, 0, 0, 0);
+	cameraCI.transform.scale = float3(1.0f, 1.0f, 1.0f);
 	cameraCI.projectionType = Camera::ProjectionType::PERSPECTIVE;
 	cameraCI.perspectiveParams = { DegToRad(90.0), window->GetRatio(), 0.01f, 3000.0f };
 	cameraCI.flipX = false;
@@ -385,9 +385,9 @@ void GEAR_TEST::Run()
 		//Camera Update
 		auto& camera = cameraEntity.GetComponent<CameraComponent>().camera;
 		if (window->IsKeyPressed(GLFW_KEY_D))
-			camera->m_CI.transform.translation += Vec3::Normalise(camera->m_Right) * (float)timer;
+			camera->m_CI.transform.translation += camera->m_Right.Normalise() * (float)timer;
 		if (window->IsKeyPressed(GLFW_KEY_A))
-			camera->m_CI.transform.translation -= Vec3::Normalise(camera->m_Right) * (float)timer;
+			camera->m_CI.transform.translation -= camera->m_Right.Normalise() * (float)timer;
 		if (window->IsKeyPressed(GLFW_KEY_W))
 			camera->m_CI.transform.translation += camera->m_Direction * (float)timer;
 		if (window->IsKeyPressed(GLFW_KEY_S))
@@ -395,7 +395,7 @@ void GEAR_TEST::Run()
 
 		double fov = 0.0;
 		window->GetScrollPosition(fov);
-		camera->m_CI.transform.orientation = Quat::FromEulerAngles(Vec3((float)pitch, (float)-yaw, (float)roll));
+		camera->m_CI.transform.orientation = Quaternion::FromEulerAngles(float3((float)pitch, (float)-yaw, (float)roll));
 		camera->m_CI.perspectiveParams.horizonalFOV = DegToRad(90.0 - fov);
 		camera->m_CI.perspectiveParams.aspectRatio = window->GetRatio();
 		camera->m_CI.transform.translation.y = 1.0f;

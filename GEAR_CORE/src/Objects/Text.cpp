@@ -19,9 +19,9 @@ Text::~Text()
 {
 }
 
-void Text::AddLine(const Ref<FontLibrary::Font>& font, const std::string& text, const Uint2& position, const Vec4& colour, const Vec4& backgroundColour)
+void Text::AddLine(const Ref<FontLibrary::Font>& font, const std::string& text, const uint2& position, const float4& colour, const float4& backgroundColour)
 {
-	Uint2 _position = position;
+	uint2 _position = position;
 	_position.y += font->fontHeightPx;
 	m_Lines.push_back({ font, text, _position, _position , colour, backgroundColour, {} });
 	GenerateLine(m_Lines.size() - 1);
@@ -130,32 +130,32 @@ void Text::GenerateLine(size_t lineIndex, bool update)
 			{
 			case 0:
 			{
-				vertex.position = Vec4(pos_x + 0.0f, pos_y + h, 0.0f, 1.0f);
-				vertex.texCoord = Vec2(x + 0.0f, y + 0.0f) * (1.0f / textureSize);
+				vertex.position = float4(pos_x + 0.0f, pos_y + h, 0.0f, 1.0f);
+				vertex.texCoord = float2(x + 0.0f, y + 0.0f) * (1.0f / textureSize);
 				break;
 			}
 			case 1:
 			{
-				vertex.position = Vec4(pos_x + 0.0f, pos_y + 0.0f, 0.0f, 1.0f);
-				vertex.texCoord = Vec2(x + 0.0f, y + h) * (1.0f / textureSize);
+				vertex.position = float4(pos_x + 0.0f, pos_y + 0.0f, 0.0f, 1.0f);
+				vertex.texCoord = float2(x + 0.0f, y + h) * (1.0f / textureSize);
 				break;
 			}
 			case 2:
 			{
-				vertex.position = Vec4(pos_x + w, pos_y + h, 0.0f, 1.0f);
-				vertex.texCoord = Vec2(x + w, y + 0.0f) * (1.0f / textureSize);
+				vertex.position = float4(pos_x + w, pos_y + h, 0.0f, 1.0f);
+				vertex.texCoord = float2(x + w, y + 0.0f) * (1.0f / textureSize);
 				break;
 			}
 			case 3:
 			{
-				vertex.position = Vec4(pos_x + w, pos_y + 0.0f, 0.0f, 1.0f);
-				vertex.texCoord = Vec2(x + w, y + h) * (1.0f / textureSize);
+				vertex.position = float4(pos_x + w, pos_y + 0.0f, 0.0f, 1.0f);
+				vertex.texCoord = float2(x + w, y + h) * (1.0f / textureSize);
 				break;
 			}
 			}
-			vertex.normal = Vec4(0.0f, 0.0f, 1.0f, 0.0f);
-			vertex.tangent = Vec4(1.0f, 0.0f, 0.0f, 0.0f);
-			vertex.binormal = Vec4(1.0f, 0.0f, 0.0f, 0.0f);
+			vertex.normal = float4(0.0f, 0.0f, 1.0f, 0.0f);
+			vertex.tangent = float4(1.0f, 0.0f, 0.0f, 0.0f);
+			vertex.binormal = float4(1.0f, 0.0f, 0.0f, 0.0f);
 			vertex.colour = line.colour;
 			meshData.vertices.push_back(vertex);
 		}
@@ -179,22 +179,22 @@ void Text::GenerateLine(size_t lineIndex, bool update)
 		{
 		case 0:
 		{
-			vertex.position = Vec4(static_cast<float>(line.initPosition.x), static_cast<float>(line.initPosition.y), 0.0f, 1.0f);
+			vertex.position = float4(static_cast<float>(line.initPosition.x), static_cast<float>(line.initPosition.y), 0.0f, 1.0f);
 			break;
 		}
 		case 1:
 		{
-			vertex.position = Vec4(static_cast<float>(line.initPosition.x), static_cast<float>(line.position.y - background_height), 0.0f, 1.0f);
+			vertex.position = float4(static_cast<float>(line.initPosition.x), static_cast<float>(line.position.y - background_height), 0.0f, 1.0f);
 			break;
 		}
 		case 2:
 		{
-			vertex.position = Vec4(static_cast<float>(line.position.x + 2), static_cast<float>(line.position.y), 0.0f, 1.0f);
+			vertex.position = float4(static_cast<float>(line.position.x + 2), static_cast<float>(line.position.y), 0.0f, 1.0f);
 			break;
 		}
 		case 3:
 		{
-			vertex.position = Vec4(static_cast<float>(line.position.x + 2), static_cast<float>(line.position.y - background_height), 0.0f, 1.0f);
+			vertex.position = float4(static_cast<float>(line.position.x + 2), static_cast<float>(line.position.y - background_height), 0.0f, 1.0f);
 			break;
 		}
 		}
@@ -203,10 +203,10 @@ void Text::GenerateLine(size_t lineIndex, bool update)
 		if (GraphicsAPI::IsD3D12())
 			vertex.position.y += static_cast<float>(m_CI.viewportHeight);
 
-		vertex.texCoord = Vec2(-1.0f, -1.0f);
-		vertex.normal = Vec4(0.0f, 0.0f, 1.0f, 0.0f);
-		vertex.tangent = Vec4(1.0f, 0.0f, 0.0f, 0.0f);
-		vertex.binormal = Vec4(1.0f, 0.0f, 0.0f, 0.0f);
+		vertex.texCoord = float2(-1.0f, -1.0f);
+		vertex.normal = float4(0.0f, 0.0f, 1.0f, 0.0f);
+		vertex.tangent = float4(1.0f, 0.0f, 0.0f, 0.0f);
+		vertex.binormal = float4(1.0f, 0.0f, 0.0f, 0.0f);
 		vertex.colour = line.backgroundColour;
 	}
 	meshData.indices.push_back(0 + (4 * charIndex));

@@ -44,9 +44,9 @@ void gear::ui::componentui::AddModelComponent(Entity entity, void* device)
 		modelCI.debugName = "Model-Cube";
 		modelCI.device = device;
 		modelCI.pMesh = CreateRef<Mesh>(&meshCI);
-		modelCI.transform.translation = Vec3(0, 0, 0);
-		modelCI.transform.orientation = Quat(1, 0, 0, 0);
-		modelCI.transform.scale = Vec3(1.0f, 1.0f, 1.0f);
+		modelCI.transform.translation = float3(0, 0, 0);
+		modelCI.transform.orientation = Quaternion(1, 0, 0, 0);
+		modelCI.transform.scale = float3(1.0f, 1.0f, 1.0f);
 		modelCI.renderPipelineName = "PBROpaque";
 		entity.AddComponent<ModelComponent>(&modelCI);
 

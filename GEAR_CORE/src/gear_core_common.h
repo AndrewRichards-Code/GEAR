@@ -88,7 +88,7 @@
 #include "JSON/json.hpp"
 
 //MARS
-#include "MARS/MARS/src/mars.h"
+#include "MARS/src/mars.h"
 
 //MIRU
 #include "MIRU/MIRU_CORE/src/miru_core.h"

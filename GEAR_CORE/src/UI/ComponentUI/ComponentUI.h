@@ -66,11 +66,11 @@ namespace componentui
 
 	bool DrawFloat(const std::string& label, float& value, float minValue, float maxValue = DefaultMaximumF, float width = DefaultWidth, float speed = DefaultSpeed);
 	bool DrawDouble(const std::string& label, double& value, double minValue, double maxValue = DefaultMaximumD, float width = DefaultWidth, float speed = DefaultSpeed);
-	bool DrawVec3(const std::string& label, mars::Vec3& value, float resetValue = 0.0f, float width = DefaultWidth, float speed = DefaultSpeed);
-	bool DrawQuat(const std::string& label, mars::Quat& value, float width = DefaultWidth, float speed = 0.001f);
+	bool DrawFloat3(const std::string& label, mars::float3& value, float resetValue = 0.0f, float width = DefaultWidth, float speed = DefaultSpeed);
+	bool DrawQuaternion(const std::string& label, mars::Quaternion& value, float width = DefaultWidth, float speed = 0.001f);
 
-	bool DrawColourPicker3(const std::string& label, mars::Vec3& value, float width = DefaultWidth);
-	bool DrawColourPicker4(const std::string& label, mars::Vec4& value, float width = DefaultWidth);
+	bool DrawColourPicker3(const std::string& label, mars::float3& value, float width = DefaultWidth);
+	bool DrawColourPicker4(const std::string& label, mars::float4& value, float width = DefaultWidth);
 
 	template<typename T>
 	void DrawStaticNumber(const std::string& label, const T& value, float width = DefaultWidth)

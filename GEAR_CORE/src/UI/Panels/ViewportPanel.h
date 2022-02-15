@@ -25,7 +25,7 @@ namespace panels
 
 	private:
 		void UpdateCameraTransform();
-		mars::Vec2 GetMousePositionInViewport();
+		mars::float2 GetMousePositionInViewport();
 
 	public:
 		inline CreateInfo& GetCreateInfo() { return m_CI; }
@@ -44,7 +44,7 @@ namespace panels
 		float m_Roll = 0;
 		float m_Pitch = 0;
 		float m_Yaw = 0;
-		mars::Vec2 m_InitialMousePosition;
+		mars::float2 m_InitialMousePosition;
 	};
 }
 }

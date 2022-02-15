@@ -41,7 +41,7 @@ bool gear::ui::componentui::DrawCheckbox(const std::string& label, bool& value, 
 bool gear::ui::componentui::DrawUint32(const std::string& label, uint32_t& value, uint32_t minValue, uint32_t maxValue, bool powerOf2, float width, float speed)
 {
 	BeginColumnLabel(label, width);
-	uint32_t _value = powerOf2 ? mars::Utility::NextPowerOf2(value) : value;
+	uint32_t _value = powerOf2 ? Utility::NextPowerOf2(value) : value;
 	float _speed = powerOf2 ? float(_value / 2) : speed;
 	bool ret = ImGui::DragScalar("##label", ImGuiDataType_U32, (void*)&_value, _speed, (const void*)&minValue, (const void*)&maxValue, "%u");
 	value = _value;
@@ -65,7 +65,7 @@ bool gear::ui::componentui::DrawDouble(const std::string& label, double& value, 
 	return ret;
 }
 
-bool gear::ui::componentui::DrawVec3(const std::string& label, Vec3& value, float resetValue, float width, float speed)
+bool gear::ui::componentui::DrawFloat3(const std::string& label, float3& value, float resetValue, float width, float speed)
 {
 	float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 	ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
@@ -123,7 +123,7 @@ bool gear::ui::componentui::DrawVec3(const std::string& label, Vec3& value, floa
 	return ret;
 }
 
-bool gear::ui::componentui::DrawQuat(const std::string& label, Quat& value, float width, float speed)
+bool gear::ui::componentui::DrawQuaternion(const std::string& label, Quaternion& value, float width, float speed)
 {
 	float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 	ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
@@ -197,7 +197,7 @@ bool gear::ui::componentui::DrawQuat(const std::string& label, Quat& value, floa
 	return ret;
 }
 
-bool gear::ui::componentui::DrawColourPicker3(const std::string& label, mars::Vec3& value, float width)
+bool gear::ui::componentui::DrawColourPicker3(const std::string& label, float3& value, float width)
 {
 	BeginColumnLabel(label, width);
 	bool ret = ImGui::ColorPicker3("##ColorPicker3", &value.x, ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float | ImGuiColorEditFlags_InputRGB);
@@ -205,7 +205,7 @@ bool gear::ui::componentui::DrawColourPicker3(const std::string& label, mars::Ve
 	return ret;
 }
 
-bool gear::ui::componentui::DrawColourPicker4(const std::string& label, mars::Vec4& value, float width)
+bool gear::ui::componentui::DrawColourPicker4(const std::string& label, float4& value, float width)
 {
 	BeginColumnLabel(label, width);
 	bool ret = ImGui::ColorPicker4("##ColorPicker4", &value.x, ImGuiColorEditFlags_NoSmallPreview | ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float | ImGuiColorEditFlags_InputRGB);

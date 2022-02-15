@@ -517,20 +517,20 @@ void AudioSourceInterface::XAudio2_CreateIXAudio2SourceVoiceAndX3DAUDIO()
 	xAudio2MasteringVoice->GetChannelMask(&channelMask);
 	X3DAudioInitialize(static_cast<UINT32>(channelMask), X3DAUDIO_SPEED_OF_SOUND, m_X3DAudioHandle);
 
-	auto ToX3DAUDIO_VECTOR = [](const mars::Vec3& other) -> X3DAUDIO_VECTOR
+	auto ToX3DAUDIO_VECTOR = [](const mars::float3& other) -> X3DAUDIO_VECTOR
 	{
 		return X3DAUDIO_VECTOR(other.x, other.y, other.z);
 	};
 
-	m_X3DAudioListener.OrientFront = ToX3DAUDIO_VECTOR(mars::Vec3(m_CI.pAudioListener->m_Transform.orientation.ToMat4() * mars::Vec4(0.0f, 0.0f, -1.0f, 0.0f))); 
-	m_X3DAudioListener.OrientTop = ToX3DAUDIO_VECTOR(mars::Vec3(m_CI.pAudioListener->m_Transform.orientation.ToMat4() * mars::Vec4(0.0f, +1.0f, 0.0f, 0.0f)));
+	m_X3DAudioListener.OrientFront = ToX3DAUDIO_VECTOR(mars::float3(m_CI.pAudioListener->m_Transform.orientation.ToRotationMatrix4<float>() * mars::float4(0.0f, 0.0f, -1.0f, 0.0f)));
+	m_X3DAudioListener.OrientTop = ToX3DAUDIO_VECTOR(mars::float3(m_CI.pAudioListener->m_Transform.orientation.ToRotationMatrix4<float>() * mars::float4(0.0f, +1.0f, 0.0f, 0.0f)));
 	m_X3DAudioListener.Position = ToX3DAUDIO_VECTOR(m_CI.pAudioListener->m_Transform.translation);
 	m_X3DAudioListener.Velocity = { 0.0f, 0.0f, 0.0f };
 	m_X3DAudioListener.pCone = nullptr;
 
 	m_X3DAudioEmitter.pCone = nullptr;									
-	m_X3DAudioEmitter.OrientFront = ToX3DAUDIO_VECTOR(mars::Vec3(m_Transform.orientation.ToMat4() * mars::Vec4(0.0f, 0.0f, -1.0f, 0.0f)));
-	m_X3DAudioEmitter.OrientTop = ToX3DAUDIO_VECTOR(mars::Vec3(m_Transform.orientation.ToMat4() * mars::Vec4(0.0f, +1.0f, 0.0f, 0.0f)));
+	m_X3DAudioEmitter.OrientFront = ToX3DAUDIO_VECTOR(mars::float3(m_Transform.orientation.ToRotationMatrix4<float>() * mars::float4(0.0f, 0.0f, -1.0f, 0.0f)));
+	m_X3DAudioEmitter.OrientTop = ToX3DAUDIO_VECTOR(mars::float3(m_Transform.orientation.ToRotationMatrix4<float>() * mars::float4(0.0f, +1.0f, 0.0f, 0.0f)));
 	m_X3DAudioEmitter.Position = ToX3DAUDIO_VECTOR(m_Transform.translation);
 	m_X3DAudioEmitter.Velocity = { 0.0f, 0.0f, 0.0f };
 	m_X3DAudioEmitter.InnerRadius;						

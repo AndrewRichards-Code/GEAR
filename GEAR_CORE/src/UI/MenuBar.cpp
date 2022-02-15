@@ -316,14 +316,14 @@ void MenuBar::DrawItemGEARBOXOptions()
 		GLFWmonitor** monitors = glfwGetMonitors((int*)&monitorCount);
 
 		std::vector<std::string> monitorNames;
-		std::vector<mars::Int4> monitorRects;
+		std::vector<mars::int4> monitorRects;
 		monitorNames.resize(monitorCount);
 		monitorRects.resize(monitorCount);
 		for (uint32_t i = 0; i < monitorCount; i++)
 		{
 			GLFWmonitor*& monitor = monitors[i];
 			std::string& monitorName = monitorNames[i];
-			mars::Int4& monitorRect = monitorRects[i];
+			mars::int4& monitorRect = monitorRects[i];
 
 			monitorName = glfwGetWin32Adapter(monitor);
 			monitorName = arc::ToLower(monitorName.substr(4));

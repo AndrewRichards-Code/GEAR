@@ -31,7 +31,7 @@ Light::Light(CreateInfo* pCreateInfo)
 
 Light::~Light()
 {
-	s_UB->lights[m_LightID].valid = Vec4(0, 0, 0, 0);
+	s_UB->lights[m_LightID].valid = float4(0, 0, 0, 0);
 	s_NumOfLights--;
 	
 	if(!s_NumOfLights)
@@ -41,9 +41,9 @@ Light::~Light()
 void Light::Update()
 {
 	s_UB->lights[m_LightID].colour = m_CI.colour;
-	s_UB->lights[m_LightID].position = Vec4(m_CI.transform.translation, 1.0f);
-	s_UB->lights[m_LightID].direction = m_CI.transform.orientation.ToMat4() * Vec4(0, 0, -1, 0);
-	s_UB->lights[m_LightID].valid = Vec4(1, 1, 1, 1);
+	s_UB->lights[m_LightID].position = float4(m_CI.transform.translation, 1.0f);
+	s_UB->lights[m_LightID].direction = m_CI.transform.orientation.ToRotationMatrix4<float>() * float4(0, 0, -1, 0);
+	s_UB->lights[m_LightID].valid = float4(1, 1, 1, 1);
 	s_UB->SubmitData();
 }
 

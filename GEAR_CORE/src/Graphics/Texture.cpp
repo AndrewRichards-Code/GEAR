@@ -278,7 +278,7 @@ void Texture::LoadImageData(std::vector<uint8_t>& imageData)
 					std::vector<float> linearImageData(m_Width * m_Height * 4);
 					for (size_t i = 0; i < linearImageData.size(); i += 4)
 					{
-						mars::Vec4 linearData = Colour_sRGB(stbiBuffer[i + 0], stbiBuffer[i + 1], stbiBuffer[i + 2], stbiBuffer[i + 3]).Linearise_LUT();
+						Colour_sRGB::Colour_Linear_sRGB linearData = Colour_sRGB(stbiBuffer[i + 0], stbiBuffer[i + 1], stbiBuffer[i + 2], stbiBuffer[i + 3]).Linearise_LUT();
 						linearImageData[i + 0] = linearData.r;
 						linearImageData[i + 1] = linearData.g;
 						linearImageData[i + 2] = linearData.b;

@@ -22,11 +22,11 @@ namespace objects
 
 		struct CreateInfo
 		{
-			std::string debugName;
-			void*		device;
-			LightType	type;
-			mars::Vec4	colour;
-			Transform	transform;
+			std::string		debugName;
+			void*			device;
+			LightType		type;
+			mars::float4	colour;
+			Transform		transform;
 		};
 
 	private:

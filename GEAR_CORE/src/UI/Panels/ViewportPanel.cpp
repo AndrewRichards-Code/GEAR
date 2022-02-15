@@ -113,19 +113,19 @@ void ViewportPanel::UpdateCameraTransform()
 		//Main update
 		if (ImGui::IsMouseDown(ImGuiMouseButton_::ImGuiMouseButton_Right))
 		{
-			const Vec2& mouse = GetMousePositionInViewport();
-			Vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
+			const float2& mouse = GetMousePositionInViewport();
+			float2 delta = (mouse - m_InitialMousePosition) * 0.003f;
 			m_InitialMousePosition = mouse;
 
 			m_Yaw += delta.x;
 			m_Pitch += delta.y;
 
-			camera->m_CI.transform.orientation = Quat::FromEulerAngles(Vec3(m_Pitch, -m_Yaw, m_Roll));
+			camera->m_CI.transform.orientation = Quaternion::FromEulerAngles(float3(m_Pitch, -m_Yaw, m_Roll));
 		}
 		if (ImGui::IsMouseDown(ImGuiMouseButton_::ImGuiMouseButton_Middle))
 		{
-			const Vec2& mouse = GetMousePositionInViewport();
-			Vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
+			const float2& mouse = GetMousePositionInViewport();
+			float2 delta = (mouse - m_InitialMousePosition) * 0.003f;
 			m_InitialMousePosition = mouse;
 
 			float x_offset = delta.x;
@@ -140,10 +140,10 @@ void ViewportPanel::UpdateCameraTransform()
 	camera->Update();
 }
 
-Vec2 ViewportPanel::GetMousePositionInViewport()
+float2 ViewportPanel::GetMousePositionInViewport()
 {
 	double mousePosition_x, mousePosition_y;
 	m_CI.renderer->GetWindow()->GetMousePosition(mousePosition_x, mousePosition_y);
 
-	return std::move(Vec2((float)mousePosition_x, (float)mousePosition_y));
+	return float2((float)mousePosition_x, (float)mousePosition_y);
 }

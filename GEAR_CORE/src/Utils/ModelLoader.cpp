@@ -8,6 +8,8 @@
 using namespace gear;
 using namespace animation;
 
+using namespace mars;
+
 void* ModelLoader::m_Device = nullptr;
 
 ModelLoader::ModelData ModelLoader::LoadModelData(const std::string& filepath)
@@ -110,24 +112,24 @@ std::vector<ModelLoader::MeshData> ModelLoader::ProcessMeshes(aiNode* node, cons
 			Vertex vertex = {};
 			if (mesh->HasPositions())
 			{
-				vertex.position = mars::Vec4(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, 1.0f);
+				vertex.position = float4(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, 1.0f);
 			}
 			if (mesh->HasTextureCoords(0))
 			{
-				vertex.texCoord = mars::Vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
+				vertex.texCoord = float2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
 			}
 			if (mesh->HasNormals())
 			{
-				vertex.normal = mars::Vec4(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z, 0.0f);
+				vertex.normal = float4(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z, 0.0f);
 			}
 			if (mesh->HasTangentsAndBitangents())
 			{
-				vertex.tangent = mars::Vec4(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z, 0.0f);
-				vertex.binormal = mars::Vec4(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z, 0.0f);
+				vertex.tangent = float4(mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z, 0.0f);
+				vertex.binormal = float4(mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z, 0.0f);
 			}
 			if (mesh->HasVertexColors(0))
 			{
-				vertex.colour = mars::Vec4(mesh->mColors[0][i].r, mesh->mColors[0][i].g, mesh->mColors[0][i].b, mesh->mColors[0][i].a);
+				vertex.colour = float4(mesh->mColors[0][i].r, mesh->mColors[0][i].g, mesh->mColors[0][i].b, mesh->mColors[0][i].a);
 			}
 			meshData.vertices.push_back(vertex);
 		}
@@ -145,7 +147,7 @@ std::vector<ModelLoader::MeshData> ModelLoader::ProcessMeshes(aiNode* node, cons
 		meshData.bones.reserve(mesh->mNumBones);
 		for (unsigned int i = 0; i < mesh->mNumBones; i++)
 		{
-			mars::Mat4 transform;
+			float4x4 transform;
 			aiMatrix4x4 aiTransform = mesh->mBones[i]->mOffsetMatrix;
 			Convert_aiMatrix4x4ToMat4(aiTransform, transform);
 
@@ -264,7 +266,7 @@ std::vector<animation::Animation> ModelLoader::ProcessAnimations(const aiScene* 
 				for (unsigned int k = 0; k < nodeAnim->mNumPositionKeys; k++)
 				{
 					double timepoint = nodeAnim->mPositionKeys[k].mTime;
-					mars::Vec3 translation = mars::Vec3(
+					float3 translation = float3(
 						nodeAnim->mPositionKeys[k].mValue.x,
 						nodeAnim->mPositionKeys[k].mValue.y,
 						nodeAnim->mPositionKeys[k].mValue.z);
@@ -282,7 +284,7 @@ std::vector<animation::Animation> ModelLoader::ProcessAnimations(const aiScene* 
 				for (unsigned int k = 0; k < nodeAnim->mNumRotationKeys; k++)
 				{
 					double timepoint = nodeAnim->mRotationKeys[k].mTime;
-					mars::Quat orientation = mars::Quat(
+					Quaternion orientation = Quaternion(
 						nodeAnim->mRotationKeys[k].mValue.w,
 						nodeAnim->mRotationKeys[k].mValue.x,
 						nodeAnim->mRotationKeys[k].mValue.y,
@@ -301,7 +303,7 @@ std::vector<animation::Animation> ModelLoader::ProcessAnimations(const aiScene* 
 				for (unsigned int k = 0; k < nodeAnim->mNumScalingKeys; k++)
 				{
 					double timepoint = nodeAnim->mScalingKeys[k].mTime;
-					mars::Vec3 scale = mars::Vec3(
+					float3 scale = float3(
 						nodeAnim->mScalingKeys[k].mValue.x,
 						nodeAnim->mScalingKeys[k].mValue.y,
 						nodeAnim->mScalingKeys[k].mValue.z);
@@ -394,12 +396,12 @@ void ModelLoader::AddMaterialProperties(aiMaterial* aiMaterial, Ref<objects::Mat
 		reflectivity,
 		shininessStrength,
 		refractiveIndex,
-		mars::Vec4(colourDiffuse.r, colourDiffuse.g, colourDiffuse.b, 1),
-		mars::Vec4(colourAmbient.r, colourAmbient.g, colourAmbient.b, 1),
-		mars::Vec4(colourSpecular.r, colourSpecular.g, colourSpecular.b, 1),
-		mars::Vec4(colourEmissive.r, colourEmissive.g, colourEmissive.b, 1),
-		mars::Vec4(colourTransparent.r, colourTransparent.g, colourTransparent.b, 1),
-		mars::Vec4(colourReflective.r, colourReflective.g, colourReflective.b, 1)
+		float4(colourDiffuse.r, colourDiffuse.g, colourDiffuse.b, 1),
+		float4(colourAmbient.r, colourAmbient.g, colourAmbient.b, 1),
+		float4(colourSpecular.r, colourSpecular.g, colourSpecular.b, 1),
+		float4(colourEmissive.r, colourEmissive.g, colourEmissive.b, 1),
+		float4(colourTransparent.r, colourTransparent.g, colourTransparent.b, 1),
+		float4(colourReflective.r, colourReflective.g, colourReflective.b, 1)
 		});
 	material->Update();
 }

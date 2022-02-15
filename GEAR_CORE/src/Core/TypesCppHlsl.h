@@ -3,39 +3,39 @@
 
 //CPP
 #ifdef __cplusplus
-#include "MARS/MARS/src/mars.h"
+#include "MARS/src/mars.h"
 
 #define GEAR_FLOAT		float
-#define GEAR_FLOAT2		mars::Vec2
-#define GEAR_FLOAT3		mars::Vec3
-#define GEAR_FLOAT4		mars::Vec4
-#define GEAR_FLOAT2X2	mars::Mat2
-#define GEAR_FLOAT3X3	mars::Mat3
-#define GEAR_FLOAT4X4	mars::Mat4
+#define GEAR_FLOAT2		mars::float2
+#define GEAR_FLOAT3		mars::float3
+#define GEAR_FLOAT4		mars::float4
+#define GEAR_FLOAT2X2	mars::float2x2
+#define GEAR_FLOAT3X3	mars::float3x3
+#define GEAR_FLOAT4X4	mars::float4x4
 
 #define GEAR_DOUBLE		double
-#define GEAR_DOUBLE2	mars::Double2
-#define GEAR_DOUBLE3	mars::Double3
-#define GEAR_DOUBLE4	mars::Double4
-#define GEAR_DOUBLE2X2	mars::DMat2
-#define GEAR_DOUBLE3X3	mars::DMat3
-#define GEAR_DOUBLE4X4	mars::DMat4
+#define GEAR_DOUBLE2	mars::double2
+#define GEAR_DOUBLE3	mars::double3
+#define GEAR_DOUBLE4	mars::double4
+#define GEAR_DOUBLE2X2	mars::double2x2
+#define GEAR_DOUBLE3X3	mars::double3x3
+#define GEAR_DOUBLE4X4	mars::double4x4
 
 #define GEAR_INT		int32_t
-#define GEAR_INT2		mars::Int2
-#define GEAR_INT3		mars::Int3
-#define GEAR_INT4		mars::Int4
-#define GEAR_INT2X2		mars::IMat2
-#define GEAR_INT3X3		mars::IMat3
-#define GEAR_INT4X4		mars::IMat4
+#define GEAR_INT2		mars::int2
+#define GEAR_INT3		mars::int3
+#define GEAR_INT4		mars::int4
+#define GEAR_INT2X2		mars::int2x2
+#define GEAR_INT3X3		mars::int3x3
+#define GEAR_INT4X4		mars::int4x4
 
 #define GEAR_UINT		uint32_t
-#define GEAR_UINT2		mars::Uint2
-#define GEAR_UINT3		mars::Uint3
-#define GEAR_UINT4		mars::Uint4
-#define GEAR_UINT2X2	mars::UIMat2
-#define GEAR_UINT3X3	mars::UIMat3
-#define GEAR_UINT4X4	mars::UIMat4
+#define GEAR_UINT2		mars::uint2
+#define GEAR_UINT3		mars::uint3
+#define GEAR_UINT4		mars::uint4
+#define GEAR_UINT2X2	mars::uint2x2
+#define GEAR_UINT3X3	mars::uint3x3
+#define GEAR_UINT4X4	mars::uint4x4
 
 template<typename T>
 T saturate(T value)

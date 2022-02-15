@@ -31,12 +31,12 @@ void Camera::DefineProjection()
 	if (m_CI.projectionType == ProjectionType::ORTHOGRAPHIC)
 	{
 		OrthographicParameters& op = m_CI.orthographicsParams;
-		m_UB->proj= Mat4::Orthographic(op.left, op.right, op.bottom, op.top, op.near, op.far);
+		m_UB->proj= float4x4::Orthographic(op.left, op.right, op.bottom, op.top, op.near, op.far);
 	}
 	else if (m_CI.projectionType == ProjectionType::PERSPECTIVE)
 	{
 		PerspectiveParameters& pp = m_CI.perspectiveParams;
-		m_UB->proj = Mat4::Perspective(pp.horizonalFOV, pp.aspectRatio, pp.zNear, pp.zFar);
+		m_UB->proj = float4x4::Perspective(pp.horizonalFOV, pp.aspectRatio, pp.zNear, pp.zFar);
 	}
 	else
 	{
@@ -54,13 +54,13 @@ void Camera::DefineProjection()
 
 void Camera::DefineView()
 {
-	const Mat4& orientation = m_CI.transform.orientation.ToMat4();
+	const float4x4& orientation = m_CI.transform.orientation.ToRotationMatrix4<float>();
 
-	m_Direction	= -Vec3(orientation * Vec4(0, 0, 1, 0));
-	m_Up		= +Vec3(orientation * Vec4(0, 1, 0, 0));
-	m_Right		= +Vec3(orientation * Vec4(1, 0, 0, 0));
+	m_Direction	= -float3(orientation * float4(0, 0, 1, 0));
+	m_Up		= +float3(orientation * float4(0, 1, 0, 0));
+	m_Right		= +float3(orientation * float4(1, 0, 0, 0));
 
-	Mat4 transform = TransformToMat4(m_CI.transform);
+	float4x4 transform = TransformToMat4(m_CI.transform);
 	transform.Inverse();
 	m_UB->view = transform;
 }
@@ -68,7 +68,7 @@ void Camera::DefineView()
 
 void Camera::SetPosition()
 {
-	m_UB->cameraPosition = Vec4(m_CI.transform.translation, 1.0f);
+	m_UB->cameraPosition = float4(m_CI.transform.translation, 1.0f);
 }
 
 void Camera::InitialiseUB()

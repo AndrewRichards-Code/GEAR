@@ -45,21 +45,21 @@ namespace objects
 		struct Properties
 		{
 			std::string name;
-			int			twoSided;
-			int			shadingModel;
-			int			wireframe;
-			int			blendFunc;
-			float		opacity;
-			float		shininess;
-			float		reflectivity;
-			float		shininessStrength;
-			float		refractiveIndex;
-			mars::Vec4	colourDiffuse;
-			mars::Vec4	colourAmbient;
-			mars::Vec4	colourSpecular;
-			mars::Vec4	colourEmissive;
-			mars::Vec4	colourTransparent;
-			mars::Vec4	colourReflective;
+			int				twoSided;
+			int				shadingModel;
+			int				wireframe;
+			int				blendFunc;
+			float			opacity;
+			float			shininess;
+			float			reflectivity;
+			float			shininessStrength;
+			float			refractiveIndex;
+			mars::float4	colourDiffuse;
+			mars::float4	colourAmbient;
+			mars::float4	colourSpecular;
+			mars::float4	colourEmissive;
+			mars::float4	colourTransparent;
+			mars::float4	colourReflective;
 		} m_Properties;
 	
 	public:

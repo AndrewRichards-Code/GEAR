@@ -26,10 +26,10 @@ namespace objects
 		{
 			Ref<FontLibrary::Font>	font;
 			std::string				text;
-			mars::Uint2				initPosition;
-			mars::Uint2				position;
-			mars::Vec4				colour;
-			mars::Vec4				backgroundColour;
+			mars::uint2				initPosition;
+			mars::uint2				position;
+			mars::float4			colour;
+			mars::float4			backgroundColour;
 			Ref<Model>				model;
 		};
 		std::vector<Line> m_Lines;
@@ -43,8 +43,8 @@ namespace objects
 	public:
 		Text(CreateInfo* pCreateInfo);
 		~Text();
-		void AddLine(const Ref<FontLibrary::Font>& font, const std::string& text, const mars::Uint2& position, const mars::Vec4& colour, 
-			const mars::Vec4& backgroudColour = mars::Vec4(0.0f, 0.0f, 0.0f, 0.5f));
+		void AddLine(const Ref<FontLibrary::Font>& font, const std::string& text, const mars::uint2& position, const mars::float4& colour,
+			const mars::float4& backgroudColour = mars::float4(0.0f, 0.0f, 0.0f, 0.5f));
 		void UpdateLine(const std::string& text, size_t lineIndex, bool force = true);
 
 		inline const std::vector<Line>& GetLines() const { return m_Lines; }

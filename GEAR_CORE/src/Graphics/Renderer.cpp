@@ -90,10 +90,10 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 	lightCI.debugName = "GEAR_CORE_Light_Renderer";
 	lightCI.device = m_Device;
 	lightCI.type = Light::LightType::POINT;
-	lightCI.colour = mars::Vec4(1.0f, 1.0f, 1.0f, 1.0f);
-	lightCI.transform.translation = mars::Vec3(0.0f, 2.0f, 0.0f);
-	lightCI.transform.orientation = mars::Quat(1, 0, 0, 0);
-	lightCI.transform.scale = mars::Vec3(1.0f, 1.0f, 1.0f);
+	lightCI.colour = mars::float4(1.0f, 1.0f, 1.0f, 1.0f);
+	lightCI.transform.translation = mars::float3(0.0f, 2.0f, 0.0f);
+	lightCI.transform.orientation = mars::Quaternion(1, 0, 0, 0);
+	lightCI.transform.scale = mars::float3(1.0f, 1.0f, 1.0f);
 	m_DefaultLight = CreateRef<Light>(&lightCI);
 }
 

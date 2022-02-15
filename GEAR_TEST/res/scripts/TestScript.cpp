@@ -23,7 +23,7 @@ public:
 		if (!cameraComponent)
 			return;
 
-		mars::Vec3& pos = cameraComponent->GetCreateInfo().transform.translation;
+		mars::float3& pos = cameraComponent->GetCreateInfo().transform.translation;
 		pos.z += 1.0f * deltaTime;
 	}
 };

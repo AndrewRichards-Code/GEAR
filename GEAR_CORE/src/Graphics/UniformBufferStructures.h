@@ -76,13 +76,13 @@ namespace gear
 			static PBRConstants DefaultPBRConstants()
 			{
 				PBRConstants pbrConstants;
-				pbrConstants.fresnel = mars::Vec4(1, 1, 1, 1);
-				pbrConstants.albedo = mars::Vec4(1, 1, 1, 1);
+				pbrConstants.fresnel = mars::float4(1, 1, 1, 1);
+				pbrConstants.albedo = mars::float4(1, 1, 1, 1);
 				pbrConstants.metallic = 1.0f;
 				pbrConstants.roughness = 1.0f;
 				pbrConstants.ambientOcclusion = 1.0f;
 				pbrConstants.pad = 0.0f;
-				pbrConstants.emissive = mars::Vec4(0, 0, 0, 1);
+				pbrConstants.emissive = mars::float4(0, 0, 0, 1);
 				return pbrConstants;
 			}
 			#endif	
