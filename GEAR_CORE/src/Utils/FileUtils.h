@@ -108,7 +108,7 @@ namespace file_utils
 			result->bufferQueue.push_back(stream.tellg());
 			stream.seekg(result->buffer1.size(), std::ios_base::cur);
 		}
-		return std::move(result);
+		return result;
 	}
 
 	static void get_next_wav_block(Ref<WavData>& input)

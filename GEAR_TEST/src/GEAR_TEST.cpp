@@ -91,11 +91,11 @@ void GEAR_TEST::Run()
 	//skyboxCI.filepaths = { "res/img/snowy_park_01_2k.hdr" };
 	skyboxCI.filepaths = { "res/img/kloppenheim_06_2k.hdr" };
 	skyboxCI.generatedCubemapSize = 1024;
-	skyboxCI.transform.translation = float3(0, 0, 0);
-	skyboxCI.transform.orientation = Quaternion(1, 0, 0, 0);
-	skyboxCI.transform.scale = float3(500.0f, 500.0f, 500.0f);
 	Entity skyboxEntity = activeScene->CreateEntity();
-	skyboxEntity.AddComponent<SkyboxComponent>(std::move(CreateRef<Skybox>(&skyboxCI)));
+	skyboxEntity.AddComponent<SkyboxComponent>(CreateRef<Skybox>(&skyboxCI));
+	skyboxEntity.GetComponent<TransformComponent>().transform.translation = float3(0, 0, 0);
+	skyboxEntity.GetComponent<TransformComponent>().transform.orientation = Quaternion(1, 0, 0, 0);
+	skyboxEntity.GetComponent<TransformComponent>().transform.scale = float3(500.0f, 500.0f, 500.0f);
 
 	auto LoadTexture = [](Ref<Window> window, const std::string& filepath, const std::string& debugName, bool linear = false) -> Ref<graphics::Texture>
 	{
@@ -112,7 +112,7 @@ void GEAR_TEST::Run()
 		texCI.usage = miru::crossplatform::Image::UsageBit(0);
 		texCI.generateMipMaps = true;
 		texCI.gammaSpace = linear ? GammaSpace::LINEAR : GammaSpace::SRGB;
-		return std::move(CreateRef<Texture>(&texCI));
+		return CreateRef<Texture>(&texCI);
 	};
 
 	//std::future<Ref<graphics::Texture>> rustIronAlbedo = std::async(std::launch::async, LoadTexture, window, std::string("res/img/rustediron2-Unreal-Engine/rustediron2_basecolor.png"), std::string("UE4 Rust Iron: Albedo"));
@@ -257,36 +257,36 @@ void GEAR_TEST::Run()
 	modelCI.debugName = "Drone Model";
 	modelCI.device = window->GetDevice();
 	modelCI.pMesh = droneMesh;
-	modelCI.transform.translation = float3(0.0, 0.5, -1.0);
-	modelCI.transform.orientation = Quaternion(sqrtf(2) / 2, -sqrtf(2) / 2, 0, 0);
-	modelCI.transform.scale = float3(0.01f, 0.01f, 0.01f);
 	modelCI.renderPipelineName = "PBROpaque";
 	Entity drone = activeScene->CreateEntity();
 	drone.AddComponent<ModelComponent>(CreateRef<Model>(&modelCI));
+	drone.GetComponent<TransformComponent>().transform.translation = float3(0.0, 0.5, -1.0);
+	drone.GetComponent<TransformComponent>().transform.orientation = Quaternion(sqrtf(2) / 2, -sqrtf(2) / 2, 0, 0);
+	drone.GetComponent<TransformComponent>().transform.scale = float3(0.01f, 0.01f, 0.01f);
 
 	Light::CreateInfo lightCI;
 	lightCI.debugName = "Main";
 	lightCI.device = window->GetDevice();
 	lightCI.type = Light::LightType::POINT;
 	lightCI.colour = float4(1.0f, 1.0f, 1.0f, 1.0f);
-	lightCI.transform.translation = float3(0.0f, 2.0f, 0.0f);
-	lightCI.transform.orientation = Quaternion(1, 0, 0, 0);
-	lightCI.transform.scale = float3(1.0f, 1.0f, 1.0f);
 	Entity lightEntity = activeScene->CreateEntity();
-	lightEntity.AddComponent<LightComponent>(std::move(CreateRef<Light>(&lightCI)));
+	lightEntity.AddComponent<LightComponent>(CreateRef<Light>(&lightCI));
+	lightEntity.GetComponent<TransformComponent>().transform.translation = float3(0.0f, 2.0f, 0.0f);
+	lightEntity.GetComponent<TransformComponent>().transform.orientation = Quaternion(1, 0, 0, 0);
+	lightEntity.GetComponent<TransformComponent>().transform.scale = float3(1.0f, 1.0f, 1.0f);
 
 	Camera::CreateInfo cameraCI;
 	cameraCI.debugName = "Main";
 	cameraCI.device = window->GetDevice();
-	cameraCI.transform.translation = float3(0, 1, 0);
-	cameraCI.transform.orientation = Quaternion(1, 0, 0, 0);
-	cameraCI.transform.scale = float3(1.0f, 1.0f, 1.0f);
 	cameraCI.projectionType = Camera::ProjectionType::PERSPECTIVE;
 	cameraCI.perspectiveParams = { DegToRad(90.0), window->GetRatio(), 0.01f, 3000.0f };
 	cameraCI.flipX = false;
 	cameraCI.flipY = false;
 	Entity cameraEntity = activeScene->CreateEntity();
-	cameraEntity.AddComponent<CameraComponent>(std::move(CreateRef<Camera>(&cameraCI)));
+	cameraEntity.AddComponent<CameraComponent>(CreateRef<Camera>(&cameraCI));
+	cameraEntity.GetComponent<TransformComponent>().transform.translation = float3(0, 1, 0);
+	cameraEntity.GetComponent<TransformComponent>().transform.orientation = Quaternion(1, 0, 0, 0);
+	cameraEntity.GetComponent<TransformComponent>().transform.scale = float3(1.0f, 1.0f, 1.0f);
 	cameraEntity.AddComponent<NativeScriptComponent>("TestScript");
 
 	Animator::CreateInfo animatorCI;
@@ -330,7 +330,7 @@ void GEAR_TEST::Run()
 			m_Renderer->ResizeRenderPipelineViewports(window->GetWidth(), window->GetHeight());
 			text->m_CI.viewportWidth = (uint32_t)window->GetWidth();
 			text->m_CI.viewportHeight = (uint32_t)window->GetHeight();
-			text->Update();
+			text->Update(Transform());
 			window->Resized() = false;
 		}
 
@@ -384,22 +384,22 @@ void GEAR_TEST::Run()
 
 		//Camera Update
 		auto& camera = cameraEntity.GetComponent<CameraComponent>().camera;
+		auto& cameraTransform = cameraEntity.GetComponent<TransformComponent>().transform;
 		if (window->IsKeyPressed(GLFW_KEY_D))
-			camera->m_CI.transform.translation += camera->m_Right.Normalise() * (float)timer;
+			cameraTransform.translation += camera->m_Right.Normalise() * (float)timer;
 		if (window->IsKeyPressed(GLFW_KEY_A))
-			camera->m_CI.transform.translation -= camera->m_Right.Normalise() * (float)timer;
+			cameraTransform.translation -= camera->m_Right.Normalise() * (float)timer;
 		if (window->IsKeyPressed(GLFW_KEY_W))
-			camera->m_CI.transform.translation += camera->m_Direction * (float)timer;
+			cameraTransform.translation += camera->m_Direction * (float)timer;
 		if (window->IsKeyPressed(GLFW_KEY_S))
-			camera->m_CI.transform.translation -= camera->m_Direction * (float)timer;
+			cameraTransform.translation -= camera->m_Direction * (float)timer;
 
 		double fov = 0.0;
 		window->GetScrollPosition(fov);
-		camera->m_CI.transform.orientation = Quaternion::FromEulerAngles(float3((float)pitch, (float)-yaw, (float)roll));
+		cameraTransform.orientation = Quaternion::FromEulerAngles(float3((float)pitch, (float)-yaw, (float)roll));
 		camera->m_CI.perspectiveParams.horizonalFOV = DegToRad(90.0 - fov);
 		camera->m_CI.perspectiveParams.aspectRatio = window->GetRatio();
-		camera->m_CI.transform.translation.y = 1.0f;
-		camera->Update();
+		cameraTransform.translation.y = 1.0f;
 
 		//Update Scene
 		activeScene->OnUpdate(m_Renderer, timer);

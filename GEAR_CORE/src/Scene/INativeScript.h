@@ -30,26 +30,14 @@ namespace scene
 		virtual void OnDestroy() {}
 		virtual void OnUpdate(float deltaTime) {}
 
-		CameraComponent*& GetCameraComponent() { return m_CameraComponent; }
-		LightComponent*& GetLightComponent() { return m_LightComponent; }
-		ModelComponent*& GetModelComponent() { return m_ModelComponent;  }
-	
-	private:
-		//This function can not be called by a GEAR_NATIVE_SCRIPT.dll
-		void SetComponents(NativeScriptComponent& nsc)
-		{
-			if (nsc.entity->HasComponent<CameraComponent>())
-				m_CameraComponent = &(nsc.entity->GetComponent<CameraComponent>());
-			if (nsc.entity->HasComponent<LightComponent>())
-				m_LightComponent = &(nsc.entity->GetComponent<LightComponent>());
-			if (nsc.entity->HasComponent<ModelComponent>())
-				m_ModelComponent = &(nsc.entity->GetComponent<ModelComponent>());
-		};
+		Entity& GetEntity() { return m_Entity; }
 
 	private:
-		CameraComponent* m_CameraComponent = nullptr;
-		LightComponent* m_LightComponent = nullptr;
-		ModelComponent* m_ModelComponent = nullptr;
+		//This function can not be called by a GEAR_NATIVE_SCRIPT.dll
+		void SetEntity(const Entity& entity) { m_Entity = entity; }
+
+	private:
+		Entity m_Entity;
 		
 		friend class gear::scene::Scene;
 	};

@@ -47,12 +47,7 @@ void gear::ui::componentui::DrawCameraComponentUI(gear::scene::Entity entity, fl
 	DrawCheckbox("Flip X", CI.flipX);
 	DrawCheckbox("Flip Y", CI.flipY);
 
-	if (ImGui::IsWindowFocused())
-		CI.transform = entity.GetComponent<TransformComponent>().transform; //Properties panel focused
-	else
-		entity.GetComponent<TransformComponent>().transform = CI.transform; //Any other panel focused , i.e. ViewportPanel
-
-	camera->Update();
+	camera->Update(entity.GetComponent<TransformComponent>());
 }
 
 void gear::ui::componentui::AddCameraComponent(gear::scene::Entity entity, float screenRatio, void* device)
@@ -62,13 +57,10 @@ void gear::ui::componentui::AddCameraComponent(gear::scene::Entity entity, float
 		Camera::CreateInfo cameraCI;
 		cameraCI.debugName = entity.GetComponent<NameComponent>();
 		cameraCI.device = device;
-		cameraCI.transform = entity.GetComponent<TransformComponent>();
 		cameraCI.projectionType = Camera::ProjectionType::PERSPECTIVE;
 		cameraCI.perspectiveParams = { DegToRad(90.0), screenRatio, 0.001f, 3000.0f };
 		cameraCI.flipX = false;
 		cameraCI.flipY = false;
 		entity.AddComponent<CameraComponent>(&cameraCI);
-
-		entity.GetComponent<TransformComponent>().transform = cameraCI.transform;
 	}
 }

@@ -215,7 +215,7 @@
     <ClCompile Include="src\Graphics\Window.cpp" />
     <ClCompile Include="src\Input\InputInterfaces.cpp" />
     <ClCompile Include="src\Objects\Camera.cpp" />
-    <ClCompile Include="src\Objects\FontLibrary.cpp" />
+    <ClCompile Include="src\Core\FontLibrary.cpp" />
     <ClCompile Include="src\Objects\Text.cpp" />
     <ClCompile Include="src\Objects\Light.cpp" />
     <ClCompile Include="src\Objects\Material.cpp" />
@@ -280,7 +280,8 @@
     <ClInclude Include="src\Input\InputInterfaces.h" />
     <ClInclude Include="src\Input\InputManager.h" />
     <ClInclude Include="src\Objects\Camera.h" />
-    <ClInclude Include="src\Objects\FontLibrary.h" />
+    <ClInclude Include="src\Core\FontLibrary.h" />
+    <ClInclude Include="src\Objects\ObjectInterface.h" />
     <ClInclude Include="src\Objects\Text.h" />
     <ClInclude Include="src\Objects\Light.h" />
     <ClInclude Include="src\Objects\Material.h" />

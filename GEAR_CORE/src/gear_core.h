@@ -18,6 +18,7 @@
 //#include "Core/EntryPoint.h"
 #include "Core/EnumStringMaps.h"
 #include "Core/FileDialog.h"
+#include "Core/FontLibrary.h"
 #include "Core/JsonFileHelper.h"
 #include "Core/PlatformMacros.h"
 #include "Core/Sequencer.h"
@@ -46,7 +47,6 @@
 
 //Objects
 #include "Objects/Camera.h"
-#include "Objects/FontLibrary.h"
 #include "Objects/Light.h"
 #include "Objects/Material.h"
 #include "Objects/Mesh.h"

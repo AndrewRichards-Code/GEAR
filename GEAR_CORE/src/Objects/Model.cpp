@@ -11,21 +11,21 @@ Model::Model(CreateInfo* pCreateInfo)
 	m_CI = *pCreateInfo;
 	
 	InitialiseUB();
-	Update();
+	Update(Transform());
 }
 
 Model::~Model()
 {
 }
 
-void Model::Update()
+void Model::Update(const Transform& transform)
 {
 	m_UB->texCoordScale0.x = m_CI.materialTextureScaling.x;
 	m_UB->texCoordScale0.y = m_CI.materialTextureScaling.y;
 	m_UB->texCoordScale1.x = m_CI.materialTextureScaling.x;
 	m_UB->texCoordScale1.y = m_CI.materialTextureScaling.y;
 
-	m_UB->modl = TransformToMat4(m_CI.transform);
+	m_UB->modl = TransformToMatrix4(transform);
 	m_UB->SubmitData();
 }
 

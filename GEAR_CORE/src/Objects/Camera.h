@@ -1,6 +1,6 @@
 #pragma once
-
 #include "gear_core_common.h"
+#include "ObjectInterface.h"
 #include "Graphics/Uniformbuffer.h"
 #include "Transform.h"
 
@@ -11,7 +11,7 @@ namespace gear
 {
 namespace objects 
 {
-	class GEAR_API Camera
+	class GEAR_API Camera : public ObjectInterface
 	{
 	public:
 		enum class ProjectionType : uint32_t
@@ -37,11 +37,8 @@ namespace objects
 			float	zFar;
 		};
 
-		struct CreateInfo
+		struct CreateInfo : public ObjectInterface::CreateInfo
 		{
-			std::string		debugName;
-			void*			device;
-			Transform		transform;
 			ProjectionType	projectionType;
 			union
 			{
@@ -68,14 +65,14 @@ namespace objects
 		~Camera();
 
 		//Update the camera from the current state of Camera::CreateInfo m_CI.
-		void Update();
+		void Update(const Transform& transform) override;
 
 		const Ref<graphics::Uniformbuffer<CameraUB>>& GetUB() const { return m_UB; };
 
 	private:
 		void DefineProjection();
-		void DefineView();
-		void SetPosition();
+		void DefineView(const Transform& transform);
+		void SetPosition(const Transform& transform);
 		void InitialiseUB();
 	};
 }

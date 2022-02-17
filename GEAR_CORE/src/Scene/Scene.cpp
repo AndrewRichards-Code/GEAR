@@ -11,6 +11,7 @@
 using namespace arc;
 using namespace gear;
 using namespace scene;
+using namespace objects;
 
 static DynamicLibrary::LibraryHandle s_NativeScriptLibrary = 0;
 
@@ -57,7 +58,7 @@ void Scene::OnUpdate(Ref<graphics::Renderer>& renderer, core::Timer& timer)
 				nativeScript = NativeScriptManager::LoadScript(s_NativeScriptLibrary, nativeScriptComponent.nativeScriptName);
 				if (nativeScript)
 				{
-					nativeScript->SetComponents(nativeScriptComponent);
+					nativeScript->SetEntity(*nativeScriptComponent.entity);
 					nativeScript->OnCreate();
 				}
 			}
@@ -69,52 +70,51 @@ void Scene::OnUpdate(Ref<graphics::Renderer>& renderer, core::Timer& timer)
 		}
 	}
 
-	auto& vCameraComponents = m_Registry.view<CameraComponent>();
-	if (!vCameraComponents.empty())
+	renderer->SubmitCamera(nullptr);
+	auto& vCameraComponents = m_Registry.view<TransformComponent, CameraComponent>();
+	for (auto& entity : vCameraComponents)
 	{
-		for (auto& entity : vCameraComponents)
-		{
-			renderer->SubmitCamera(vCameraComponents.get<CameraComponent>(entity));
-		}
-	}
-	else
-	{
-		renderer->SubmitCamera(nullptr);
+		Ref<Camera>& camera = vCameraComponents.get<CameraComponent>(entity);
+		const Transform& transform = vCameraComponents.get<TransformComponent>(entity);
+		camera->Update(transform);
+		renderer->SubmitCamera(camera);
 	}
 
-	std::vector<Ref<objects::Light>> lights;
-	auto& vLightComponents = m_Registry.view<LightComponent>();
+	auto& vLightComponents = m_Registry.view<TransformComponent, LightComponent>();
 	for (auto& entity : vLightComponents)
 	{
-		lights.push_back(vLightComponents.get<LightComponent>(entity));
+		Ref<Light>& light = vLightComponents.get<LightComponent>(entity);
+		const Transform& transform = vLightComponents.get<TransformComponent>(entity);
+		light->Update(transform);
+		renderer->SubmitLight(light);
 	}
-	renderer->SubmitLights(lights);
 
-	auto& vModelComponents = m_Registry.view<ModelComponent>();
+	auto& vModelComponents = m_Registry.view<TransformComponent, ModelComponent>();
 	for (auto& entity : vModelComponents)
 	{
-		renderer->SubmitModel(vModelComponents.get<ModelComponent>(entity));
+		Ref<Model>& model = vModelComponents.get<ModelComponent>(entity);
+		const Transform& transform = vModelComponents.get<TransformComponent>(entity);
+		model->Update(transform);
+		renderer->SubmitModel(model);
 	}
 
-	auto& vSkyboxComponent = m_Registry.view<SkyboxComponent>();
-	if (!vSkyboxComponent.empty())
+	renderer->SubmitSkybox(nullptr);
+	auto& vSkyboxComponent = m_Registry.view<TransformComponent, SkyboxComponent>();
+	for (auto& entity : vSkyboxComponent)
 	{
-		for (auto& entity : vSkyboxComponent)
-		{
-			renderer->SubmitSkybox(vSkyboxComponent.get<SkyboxComponent>(entity));
-		}
-	}
-	else
-	{
-		renderer->SubmitSkybox(nullptr);
+		Ref<Skybox>& skybox = vSkyboxComponent.get<SkyboxComponent>(entity);
+		const Transform& transform = vSkyboxComponent.get<TransformComponent>(entity);
+		skybox->Update(transform);
+		renderer->SubmitSkybox(skybox);
 	}
 
-	auto& vTextComponent = m_Registry.view<TextComponent>();
+	auto& vTextComponent = m_Registry.view<TransformComponent, TextComponent>();
 	for (auto& entity : vTextComponent)
 	{
-		const Ref<objects::Text>& text = vTextComponent.get<TextComponent>(entity).text;
+		Ref<Text>& text = vTextComponent.get<TextComponent>(entity);
+		const Transform& transform = vTextComponent.get<TransformComponent>(entity);
+		text->Update(transform);
 		renderer->SubmitTextCamera(text->GetCamera());
-
 		for (auto& line : text->GetLines())
 		{
 			renderer->SubmitTextLine(line.model);

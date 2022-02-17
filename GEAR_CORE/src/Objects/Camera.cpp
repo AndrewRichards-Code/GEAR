@@ -11,18 +11,18 @@ Camera::Camera(CreateInfo* pCreateInfo)
 	m_CI = *pCreateInfo;
 
 	InitialiseUB();
-	Update();
+	Update(Transform());
 }
 
 Camera::~Camera()
 {
 }
 
-void Camera::Update()
+void Camera::Update(const Transform& transform)
 {
 	DefineProjection();
-	DefineView();
-	SetPosition();
+	DefineView(transform);
+	SetPosition(transform);
 	m_UB->SubmitData();
 }
 
@@ -52,23 +52,21 @@ void Camera::DefineProjection()
 		m_UB->proj.f *= -1;
 }
 
-void Camera::DefineView()
+void Camera::DefineView(const Transform& transform)
 {
-	const float4x4& orientation = m_CI.transform.orientation.ToRotationMatrix4<float>();
+	const float4x4& orientation = transform.orientation.ToRotationMatrix4<float>();
 
 	m_Direction	= -float3(orientation * float4(0, 0, 1, 0));
 	m_Up		= +float3(orientation * float4(0, 1, 0, 0));
 	m_Right		= +float3(orientation * float4(1, 0, 0, 0));
 
-	float4x4 transform = TransformToMat4(m_CI.transform);
-	transform.Inverse();
-	m_UB->view = transform;
+	m_UB->view = TransformToMatrix4(transform).Inverse();
 }
 
 
-void Camera::SetPosition()
+void Camera::SetPosition(const Transform& transform)
 {
-	m_UB->cameraPosition = float4(m_CI.transform.translation, 1.0f);
+	m_UB->cameraPosition = float4(transform.translation, 1.0f);
 }
 
 void Camera::InitialiseUB()

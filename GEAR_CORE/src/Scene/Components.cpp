@@ -6,6 +6,7 @@
 using namespace gear;
 using namespace scene;
 using namespace objects;
+using namespace core;
 using namespace nlohmann;
 
 //Helper
@@ -78,9 +79,9 @@ void NameComponent::Save(LoadSaveParameters& lsp)
 }
 
 GEAR_SCENE_COMPONENTS_DEFAULTS_DEFINITION(TransformComponent);
-
-void TransformComponent::Load(const json& component, Transform& transform)
+void TransformComponent::Load(LoadSaveParameters& lsp)
 {
+	const json& component = lsp.entity["TransformComponent"];
 	transform.translation.x = component["transform"]["translation"][0];
 	transform.translation.y = component["transform"]["translation"][1];
 	transform.translation.z = component["transform"]["translation"][2];
@@ -92,21 +93,12 @@ void TransformComponent::Load(const json& component, Transform& transform)
 	transform.scale.y = component["transform"]["scale"][1];
 	transform.scale.z = component["transform"]["scale"][2];
 }
-void TransformComponent::Save(json& component, const Transform& transform)
-{
-	component["transform"]["translation"] = { transform.translation.x, transform.translation.y, transform.translation.z };
-	component["transform"]["orientation"] = { transform.orientation.s, transform.orientation.i, transform.orientation.j, transform.orientation.k };
-	component["transform"]["scale"] = { transform.scale.x, transform.scale.y, transform.scale.z };
-}
-void TransformComponent::Load(LoadSaveParameters& lsp)
-{
-	const json& component = lsp.entity["TransformComponent"];
-	Load(component, transform);
-}
 void TransformComponent::Save(LoadSaveParameters& lsp)
 {
 	json& component = lsp.entity["TransformComponent"];
-	Save(component, transform);
+	component["transform"]["translation"] = { transform.translation.x, transform.translation.y, transform.translation.z };
+	component["transform"]["orientation"] = { transform.orientation.s, transform.orientation.i, transform.orientation.j, transform.orientation.k };
+	component["transform"]["scale"] = { transform.scale.x, transform.scale.y, transform.scale.z };
 }
 
 GEAR_SCENE_COMPONENTS_DEFAULTS_DEFINITION(CameraComponent);
@@ -117,7 +109,6 @@ void CameraComponent::Load(LoadSaveParameters& lsp)
 	Camera::CreateInfo cameraCI;
 	cameraCI.debugName = component["debugName"];
 	cameraCI.device = lsp.window->GetDevice();
-	TransformComponent::Load(component, cameraCI.transform);
 	cameraCI.projectionType = component["projectionType"];
 	cameraCI.orthographicsParams.left = component["orthographicsParams"]["left"];
 	cameraCI.orthographicsParams.right = component["orthographicsParams"]["right"];
@@ -140,7 +131,6 @@ void CameraComponent::Save(LoadSaveParameters& lsp)
 
 	Camera::CreateInfo& cameraCI = GetCreateInfo();
 	component["debugName"] = cameraCI.debugName;
-	TransformComponent::Save(component, cameraCI.transform);
 	component["projectionType"] = cameraCI.projectionType;
 	component["orthographicsParams"]["left"] = cameraCI.orthographicsParams.left;
 	component["orthographicsParams"]["right"] = cameraCI.orthographicsParams.right;
@@ -169,7 +159,6 @@ void LightComponent::Load(LoadSaveParameters& lsp)
 	lightCI.colour.g = component["colour"][1];
 	lightCI.colour.b = component["colour"][2];
 	lightCI.colour.a = component["colour"][3];
-	TransformComponent::Load(component, lightCI.transform);
 
 	light = CreateRef<Light>(&lightCI);
 }
@@ -181,7 +170,6 @@ void LightComponent::Save(LoadSaveParameters& lsp)
 	component["debugName"] = lightCI.debugName;
 	component["type"] = lightCI.type;
 	component["colour"] = { lightCI.colour.r, lightCI.colour.g, lightCI.colour.b, lightCI.colour.a };
-	TransformComponent::Save(component, lightCI.transform);
 }
 
 GEAR_SCENE_COMPONENTS_DEFAULTS_DEFINITION(ModelComponent);
@@ -235,7 +223,6 @@ void ModelComponent::Load(LoadSaveParameters& lsp)
 	modelCI.debugName = component["debugName"];
 	modelCI.device = lsp.window->GetDevice();
 	modelCI.pMesh = mesh;
-	TransformComponent::Load(component, modelCI.transform);
 	modelCI.renderPipelineName = component["renderPipelineName"];
 
 	model = CreateRef<Model>(&modelCI);
@@ -260,7 +247,6 @@ void ModelComponent::Save(LoadSaveParameters& lsp)
 
 	component["debugName"] = modelCI.debugName;
 	component["mesh"]["uuid"] = uuid.AsUint64_t();
-	TransformComponent::Save(component, modelCI.transform);
 	component["renderPipelineName"] = modelCI.renderPipelineName;
 
 	for (auto& material : modelCI.pMesh->GetMaterials())
@@ -299,7 +285,6 @@ void SkyboxComponent::Load(LoadSaveParameters& lsp)
 	for(const auto& filepath : component["filepaths"])
 		skyboxCI.filepaths.push_back(filepath);
 	skyboxCI.generatedCubemapSize = component["generatedCubemapSize"];
-	TransformComponent::Load(component, skyboxCI.transform);
 	skyboxCI.exposure = component["exposure"];
 	skyboxCI.gammaSpace = component["gammaSpace"];
 
@@ -314,7 +299,6 @@ void SkyboxComponent::Save(LoadSaveParameters& lsp)
 	for (const auto& filepath : skyboxCI.filepaths)
 		component["filepaths"].push_back(filepath);
 	component["generatedCubemapSize"] = skyboxCI.generatedCubemapSize;
-	TransformComponent::Save(component, skyboxCI.transform);
 	component["exposure"] = skyboxCI.exposure;
 	component["gammaSpace"] = skyboxCI.gammaSpace;
 }

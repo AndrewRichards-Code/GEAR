@@ -1,5 +1,4 @@
 #pragma once
-
 #include "gear_core_common.h"
 #include "Graphics/Vertexbuffer.h"
 #include "Graphics/Indexbuffer.h"

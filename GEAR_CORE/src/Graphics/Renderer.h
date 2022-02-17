@@ -93,7 +93,7 @@ namespace graphics
 		void SubmitRenderSurface(const Ref<RenderSurface>& renderSurface);
 		void SubmitCamera(const Ref<objects::Camera>& camera);
 		void SubmitTextCamera(const Ref<objects::Camera>& fontCamera);
-		void SubmitLights(const std::vector<Ref<objects::Light>>& lights);
+		void SubmitLight(const Ref<objects::Light>& lights);
 		void SubmitSkybox(const Ref<objects::Skybox>& skybox);
 		void SubmitModel(const Ref<objects::Model>& obj);
 		void SubmitTextLine(const Ref<objects::Model>& obj);

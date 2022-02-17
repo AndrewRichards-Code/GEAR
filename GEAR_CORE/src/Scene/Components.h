@@ -62,10 +62,7 @@ namespace scene
 		TransformComponent(const objects::Transform& _transform) : transform(_transform) {}
 
 		operator objects::Transform&() { return transform; }
-		operator mars::float4x4() { return objects::TransformToMat4(transform); }
-
-		static void Load(const nlohmann::json& parent, objects::Transform& transform);
-		static void Save(nlohmann::json& parent, const objects::Transform& transform);
+		operator mars::float4x4() { return objects::TransformToMatrix4(transform); }
 	};
 
 	struct GEAR_API CameraComponent

@@ -16,14 +16,14 @@ namespace objects
 		{};
 	};
 
-	inline mars::float4x4 TransformToMat4(const Transform& transform)
+	inline mars::float4x4 TransformToMatrix4(const Transform& transform)
 	{
 		return mars::float4x4::Translation(transform.translation)
 			* mars::Quaternion::ToRotationMatrix4<float>(transform.orientation)
 			* mars::float4x4::Scale(transform.scale);
 	}
 	
-	inline Transform Mat4ToTransform(const mars::float4x4 matrix)
+	inline Transform Matrix4ToTransform(const mars::float4x4 matrix)
 	{
 		Transform result;
 

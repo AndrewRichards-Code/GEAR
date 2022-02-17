@@ -91,9 +91,6 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 	lightCI.device = m_Device;
 	lightCI.type = Light::LightType::POINT;
 	lightCI.colour = mars::float4(1.0f, 1.0f, 1.0f, 1.0f);
-	lightCI.transform.translation = mars::float3(0.0f, 2.0f, 0.0f);
-	lightCI.transform.orientation = mars::Quaternion(1, 0, 0, 0);
-	lightCI.transform.scale = mars::float3(1.0f, 1.0f, 1.0f);
 	m_DefaultLight = CreateRef<Light>(&lightCI);
 }
 
@@ -162,12 +159,15 @@ void Renderer::SubmitCamera(const Ref<objects::Camera>& camera)
 
 void Renderer::SubmitTextCamera(const Ref<Camera>& textCamera)
 {
-	m_TextCamera = textCamera;
+	if (m_TextCamera != textCamera)
+	{
+		m_TextCamera = textCamera;
+	}
 }
 
-void Renderer::SubmitLights(const std::vector<Ref<Light>>& lights)
+void Renderer::SubmitLight(const Ref<Light>& light)
 { 
-	m_Lights = lights; 
+	m_Lights.push_back(light); 
 }
 
 void Renderer::SubmitSkybox(const Ref<Skybox>& skybox)
@@ -1091,6 +1091,7 @@ void Renderer::Draw()
 
 	m_ModelQueue.clear();
 	m_TextQueue.clear();
+	m_Lights.clear();
 }
 
 void Renderer::Present()

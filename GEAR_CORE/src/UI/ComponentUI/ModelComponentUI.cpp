@@ -24,12 +24,7 @@ void gear::ui::componentui::DrawModelComponentUI(Entity entity, UIContext* uiCon
 	DrawFloat("Scaling Y", CI.materialTextureScaling.y, 0.0f);
 	DrawInputText("Render Pipeline", CI.renderPipelineName);
 
-	if (ImGui::IsWindowFocused())
-		CI.transform = entity.GetComponent<TransformComponent>().transform; //Properties panel focused
-	else
-		entity.GetComponent<TransformComponent>().transform = CI.transform; //Any other panel focused , i.e. ViewportPanel
-
-	model->Update();
+	model->Update(entity.GetComponent<TransformComponent>());
 }
 
 void gear::ui::componentui::AddModelComponent(Entity entity, void* device)
@@ -44,13 +39,13 @@ void gear::ui::componentui::AddModelComponent(Entity entity, void* device)
 		modelCI.debugName = "Model-Cube";
 		modelCI.device = device;
 		modelCI.pMesh = CreateRef<Mesh>(&meshCI);
-		modelCI.transform.translation = float3(0, 0, 0);
-		modelCI.transform.orientation = Quaternion(1, 0, 0, 0);
-		modelCI.transform.scale = float3(1.0f, 1.0f, 1.0f);
 		modelCI.renderPipelineName = "PBROpaque";
 		entity.AddComponent<ModelComponent>(&modelCI);
 
-		entity.GetComponent<TransformComponent>().transform = modelCI.transform;
+		Transform& transform = entity.GetComponent<TransformComponent>();
+		transform.translation = float3(0, 0, 0);
+		transform.orientation = Quaternion(1, 0, 0, 0);
+		transform.scale = float3(1.0f, 1.0f, 1.0f);
 	}
 }
 
@@ -82,12 +77,13 @@ void gear::ui::componentui::DrawMeshUI(Ref<Mesh>& mesh, UIContext* uiContext)
 		}
 		auto& data = CI.data;
 		
+		size_t id = 1;
 		if (DrawTreeNode("Sub Meshes: " + std::to_string(data.meshes.size()), false))
 		{
 			for (size_t i = 0; i < data.meshes.size(); i++)
 			{
 				auto& subMesh = data.meshes[i];
-				if (DrawTreeNode("Sub Mesh: " + std::to_string(i), false))
+				if (DrawTreeNode("Sub Mesh: " + std::to_string(i), false, (void*)id++))
 				{
 					DrawStaticText("Name", subMesh.meshName);
 					DrawStaticNumber("Vertices", subMesh.vertices.size());
@@ -104,15 +100,16 @@ void gear::ui::componentui::DrawMeshUI(Ref<Mesh>& mesh, UIContext* uiContext)
 			for (size_t i = 0; i < data.animations.size(); i++)
 			{
 				const auto& animation = data.animations[i];
-				if (DrawTreeNode("Animation: " + std::to_string(i), false))
+				if (DrawTreeNode("Animation: " + std::to_string(i), false, (void*)id++))
 				{
 					DrawEnum("Type", { "Animation", "Audio" }, animation.sequenceType);
 					DrawStaticNumber("Duration", animation.duration);
 					DrawStaticNumber("Frames Per Second", animation.framesPerSecond);
+
 					for (size_t j = 0; j < animation.nodeAnimations.size(); j++)
 					{
 						const auto& nodeAnimation = animation.nodeAnimations[j];
-						if (DrawTreeNode("Node Animation: " + std::to_string(j), false))
+						if (DrawTreeNode("Node Animation: " + std::to_string(j), false, (void*)id++))
 						{
 							DrawStaticText("Name", nodeAnimation.name);
 							DrawEnum("Type", { "Translation", "Rotation", "Scale" }, nodeAnimation.type);

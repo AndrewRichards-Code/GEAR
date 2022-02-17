@@ -65,7 +65,7 @@ namespace scene
 	public:
 		std::map<core::UUID, Ref<objects::Mesh>> s_Meshes;
 		std::map<core::UUID, Ref<objects::Material>> s_Materials;
-		std::map<core::UUID, Ref<objects::FontLibrary::Font>> s_Fonts;
+		std::map<core::UUID, Ref<core::FontLibrary::Font>> s_Fonts;
 
 		friend class Entity;
 	};

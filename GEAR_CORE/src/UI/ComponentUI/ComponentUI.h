@@ -14,9 +14,9 @@ namespace componentui
 	constexpr float DefaultMaximumF = FLT_MAX;
 	constexpr double DefaultMaximumD = DBL_MAX;
 
-	inline bool DrawTreeNode(const std::string& label, bool defaultOpen = true)
+	inline bool DrawTreeNode(const std::string& label, bool defaultOpen = true, void* ptr_id = nullptr)
 	{
-		return ImGui::TreeNodeEx((void*)label.c_str(), defaultOpen ? (TreeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen) : TreeNodeFlags, label.c_str());
+		return ImGui::TreeNodeEx((ptr_id ? ptr_id : (void*)label.c_str()), defaultOpen ? (TreeNodeFlags | ImGuiTreeNodeFlags_DefaultOpen) : TreeNodeFlags, label.c_str());
 	}
 	inline void EndDrawTreeNode()
 	{ 

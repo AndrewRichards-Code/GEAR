@@ -98,6 +98,25 @@ void ViewportPanel::UpdateCameraTransform()
 	if (!camera)
 		return;
 
+	Ref<SceneHierarchyPanel> sceneHierarchyPanel = UIContext::GetUIContext()->GetEditorPanelsByType<SceneHierarchyPanel>()[0];
+	if (!sceneHierarchyPanel)
+		return;
+	Transform& transform = Transform();
+	bool found = false;
+	auto& vCameraComponents = sceneHierarchyPanel->GetScene()->GetRegistry().view<scene::TransformComponent, scene::CameraComponent>();
+	for (auto& entity : vCameraComponents)
+	{
+		Ref<Camera>& _camera = vCameraComponents.get<scene::CameraComponent>(entity);
+		found = _camera == camera;
+		if (found)
+		{
+			transform = vCameraComponents.get<scene::TransformComponent>(entity);
+			break;
+		}
+	}
+	if (!found)
+		return;
+
 	//View matrix update
 	camera->m_CI.perspectiveParams.aspectRatio = m_CI.renderer->GetRenderSurface()->GetRatio();
 	
@@ -120,7 +139,7 @@ void ViewportPanel::UpdateCameraTransform()
 			m_Yaw += delta.x;
 			m_Pitch += delta.y;
 
-			camera->m_CI.transform.orientation = Quaternion::FromEulerAngles(float3(m_Pitch, -m_Yaw, m_Roll));
+			transform.orientation = Quaternion::FromEulerAngles(float3(m_Pitch, -m_Yaw, m_Roll));
 		}
 		if (ImGui::IsMouseDown(ImGuiMouseButton_::ImGuiMouseButton_Middle))
 		{
@@ -131,13 +150,24 @@ void ViewportPanel::UpdateCameraTransform()
 			float x_offset = delta.x;
 			float y_offset = delta.y;
 
-			camera->m_CI.transform.translation +=
+			transform.translation +=
 				(camera->m_Right * -x_offset) +
 				(camera->m_Up * y_offset);
 		}
 	}
 
-	camera->Update();
+	camera->Update(transform);
+
+	for (auto& entity : vCameraComponents)
+	{
+		Ref<Camera>& _camera = vCameraComponents.get<scene::CameraComponent>(entity);
+		found = _camera == camera;
+		if (found)
+		{
+			vCameraComponents.get<scene::TransformComponent>(entity) = transform;
+			break;
+		}
+	}
 }
 
 float2 ViewportPanel::GetMousePositionInViewport()

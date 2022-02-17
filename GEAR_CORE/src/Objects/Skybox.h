@@ -1,21 +1,18 @@
 #pragma once
-
+#include "ObjectInterface.h"
 #include "Model.h"
 
 namespace gear
 {
 namespace objects
 {
-	class GEAR_API Skybox
+	class GEAR_API Skybox : public ObjectInterface
 	{
 	public:
-		struct CreateInfo
+		struct CreateInfo : public ObjectInterface::CreateInfo
 		{
-			std::string					debugName;
-			void*						device;
 			std::vector<std::string>	filepaths;
 			uint32_t					generatedCubemapSize;
-			Transform					transform;
 			float						exposure = 1.0f;
 			graphics::ColourSpace		gammaSpace = graphics::ColourSpace::SRGB;
 		};
@@ -61,7 +58,7 @@ namespace objects
 		~Skybox();
 
 		//Update the skybox from the current state of Skybox::CreateInfo m_CI.
-		void Update();
+		void Update(const Transform& transform) override;
 
 		inline Ref<graphics::Texture>& GetTexture() { return m_Texture; }
 		inline const Ref<graphics::Texture>& GetTexture() const { return m_Texture; }

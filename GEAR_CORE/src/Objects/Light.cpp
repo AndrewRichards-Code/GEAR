@@ -21,7 +21,7 @@ Light::Light(CreateInfo* pCreateInfo)
 		m_LightID = s_NumOfLights;
 		s_NumOfLights++;
 
-		Update();
+		Update(Transform());
 	}
 	else
 	{
@@ -38,11 +38,11 @@ Light::~Light()
 		s_UB = nullptr;
 }
 
-void Light::Update()
+void Light::Update(const Transform& transform)
 {
 	s_UB->lights[m_LightID].colour = m_CI.colour;
-	s_UB->lights[m_LightID].position = float4(m_CI.transform.translation, 1.0f);
-	s_UB->lights[m_LightID].direction = m_CI.transform.orientation.ToRotationMatrix4<float>() * float4(0, 0, -1, 0);
+	s_UB->lights[m_LightID].position = float4(transform.translation, 1.0f);
+	s_UB->lights[m_LightID].direction = transform.orientation.ToRotationMatrix4<float>() * float4(0, 0, -1, 0);
 	s_UB->lights[m_LightID].valid = float4(1, 1, 1, 1);
 	s_UB->SubmitData();
 }

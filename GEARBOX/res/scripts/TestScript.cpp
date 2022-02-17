@@ -18,20 +18,14 @@ public:
 
 	void OnDestroy()
 	{
-		CameraComponent* cameraComponent = GetCameraComponent();
-		if (!cameraComponent)
-			return;
-
-		cameraComponent->GetCreateInfo().transform.translation = initPos;
+		objects::Transform& transform = GetEntity().GetComponent<TransformComponent>().transform;
+		transform.translation = initPos;
 	}
 
 	void OnUpdate(float deltaTime)
 	{
-		CameraComponent* cameraComponent = GetCameraComponent();
-		if (!cameraComponent)
-			return;
-
-		mars::float3& pos = cameraComponent->GetCreateInfo().transform.translation;
+		objects::Transform& transform = GetEntity().GetComponent<TransformComponent>().transform;
+		mars::float3& pos = transform.translation;
 		if (first)
 		{
 			initPos = pos;

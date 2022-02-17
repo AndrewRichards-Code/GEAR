@@ -48,7 +48,6 @@ void gear::ui::componentui::DrawSkyboxComponentUI(gear::scene::Entity entity)
 		}
 	}
 
-
 	DrawUint32("Cubemap Size", CI.generatedCubemapSize, 16, 2048, true);
 	DrawFloat("Exposure", CI.exposure, 0.01f, 100.0f);
 	DrawDropDownMenu("Colour Space", { "CieXYZ", "sRGB", "Rec709", "Rec2020" }, CI.gammaSpace);
@@ -56,9 +55,7 @@ void gear::ui::componentui::DrawSkyboxComponentUI(gear::scene::Entity entity)
 	if (ImGui::Button("Generate"))
 		skybox->m_Generated = false;
 	
-	CI.transform = entity.GetComponent<TransformComponent>().transform;
-	
-	skybox->Update();
+	skybox->Update(entity.GetComponent<TransformComponent>());
 }
 
 void gear::ui::componentui::AddSkyboxComponent(gear::scene::Entity entity, void* device)
@@ -70,11 +67,11 @@ void gear::ui::componentui::AddSkyboxComponent(gear::scene::Entity entity, void*
 		skyboxCI.device = device;
 		skyboxCI.filepaths = { "res/img/kloppenheim_06_2k.hdr" };
 		skyboxCI.generatedCubemapSize = 1024;
-		skyboxCI.transform.translation = float3(0, 0, 0);
-		skyboxCI.transform.orientation = Quaternion(1, 0, 0, 0);
-		skyboxCI.transform.scale = float3(500.0f, 500.0f, 500.0f);
 		entity.AddComponent<SkyboxComponent>(&skyboxCI);
 
-		entity.GetComponent<TransformComponent>().transform = skyboxCI.transform;
+		Transform& transform = entity.GetComponent<TransformComponent>();
+		transform.translation = float3(0, 0, 0);
+		transform.orientation = Quaternion(1, 0, 0, 0);
+		transform.scale = float3(500.0f, 500.0f, 500.0f);
 	}
 }

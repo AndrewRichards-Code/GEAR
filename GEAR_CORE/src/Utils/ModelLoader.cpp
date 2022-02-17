@@ -37,7 +37,7 @@ ModelLoader::ModelData ModelLoader::LoadModelData(const std::string& filepath)
 	ModelData modelData;
 	BuildNodeGraph(scene, scene->mRootNode, modelData.nodeGraph, modelData);
 
-	return std::move(modelData);
+	return modelData;
 }
 
 void ModelLoader::BuildNodeGraph(const aiScene* scene, aiNode* node, Node& thisNode, ModelData& modelData)
@@ -147,19 +147,18 @@ std::vector<ModelLoader::MeshData> ModelLoader::ProcessMeshes(aiNode* node, cons
 		meshData.bones.reserve(mesh->mNumBones);
 		for (unsigned int i = 0; i < mesh->mNumBones; i++)
 		{
-			float4x4 transform;
+			meshData.bones.push_back({});
+
+			float4x4& transform = meshData.bones.back().transform;
 			aiMatrix4x4 aiTransform = mesh->mBones[i]->mOffsetMatrix;
 			Convert_aiMatrix4x4ToMat4(aiTransform, transform);
 
-			std::vector<std::pair<uint32_t, float>> vertexIDsAndWeights;
+			std::vector<std::pair<uint32_t, float>>& vertexIDsAndWeights = meshData.bones.back().vertexIDsAndWeights;
 			for (unsigned int j = 0; j < mesh->mBones[i]->mNumWeights; j++)
 			{
 				const aiVertexWeight& weight = mesh->mBones[i]->mWeights[j];
 				vertexIDsAndWeights.push_back({ weight.mVertexId, weight.mWeight });
 			}
-			meshData.bones.push_back({});
-			meshData.bones.back().transform = std::move(transform);
-			meshData.bones.back().vertexIDsAndWeights = std::move(vertexIDsAndWeights);
 		}
 
 		//Materials
@@ -233,7 +232,7 @@ std::vector<ModelLoader::MeshData> ModelLoader::ProcessMeshes(aiNode* node, cons
 		}
 		meshes.push_back(meshData);
 	}
-	return std::move(meshes);
+	return meshes;
 }
 std::vector<animation::Animation> ModelLoader::ProcessAnimations(const aiScene* scene)
 {
@@ -321,7 +320,7 @@ std::vector<animation::Animation> ModelLoader::ProcessAnimations(const aiScene* 
 			animations.push_back(animation);
 		}
 	}
-	return std::move(animations);
+	return animations;
 }
 
 std::vector<std::string> ModelLoader::GetMaterialFilePath(aiMaterial* material, aiTextureType type)

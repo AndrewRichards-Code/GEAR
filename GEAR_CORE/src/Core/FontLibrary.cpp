@@ -8,7 +8,7 @@
 
 using namespace gear;
 using namespace graphics;
-using namespace objects;
+using namespace core;
 using namespace mars;
 
 using namespace miru;
@@ -37,7 +37,7 @@ Ref<FontLibrary::Font> FontLibrary::LoadFont(LoadInfo* pLoadInfo)
 	result = LoadGeneratedFont(pLoadInfo->GI);
 	
 	result->loadInfo = *pLoadInfo;
-	return std::move(result);
+	return result;
 }
 
 Ref<FontLibrary::Font> FontLibrary::GenerateFont(const GenerateInfo& GI)
@@ -120,7 +120,7 @@ Ref<FontLibrary::Font> FontLibrary::GenerateFont(const GenerateInfo& GI)
 	result->textureAtlas = GenerateTextureAtlas(GI, data);
 	result->glyphInfos = glyphInfos;
 	result->fontHeightPx = GI.fontHeightPx;
-	return std::move(result);
+	return result;
 }
 
 Ref<FontLibrary::Font> FontLibrary::LoadGeneratedFont(const GenerateInfo& GI)
@@ -184,7 +184,7 @@ Ref<FontLibrary::Font> FontLibrary::LoadGeneratedFont(const GenerateInfo& GI)
 		result = GenerateFont(GI);
 	}
 
-	return std::move(result);
+	return result;
 }
 
 void FontLibrary::SaveGeneratedFont(const std::vector<uint8_t>& img_data, const std::array<GlyphInfo, s_NumCaracters>& glyphInfos, const GenerateInfo& GI)
@@ -249,5 +249,5 @@ Ref<Texture> FontLibrary::GenerateTextureAtlas(const GenerateInfo& GI, const Tex
 	texCI.usage = miru::crossplatform::Image::UsageBit(0);
 	texCI.generateMipMaps = false;
 
-	return std::move(CreateRef<Texture>(&texCI));
+	return CreateRef<Texture>(&texCI);
 }

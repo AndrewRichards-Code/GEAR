@@ -1,26 +1,21 @@
 #pragma once
-
 #include "gear_core_common.h"
-#include "Transform.h"
+#include "ObjectInterface.h"
 #include "Mesh.h"
 #include "Material.h"
 #include "Graphics/Uniformbuffer.h"
-#include "Utils/FileUtils.h"
 
 namespace gear 
 {
 namespace objects 
 {
-	class GEAR_API Model
+	class GEAR_API Model : public ObjectInterface
 	{
 	public:
-		struct CreateInfo
+		struct CreateInfo : public ObjectInterface::CreateInfo
 		{
-			std::string			debugName;
-			void*				device;
 			Ref<Mesh>			pMesh;
 			mars::float2		materialTextureScaling = mars::float2(1.0f, 1.0f);
-			Transform			transform;
 			std::string			renderPipelineName;
 		};
 	
@@ -36,7 +31,7 @@ namespace objects
 		~Model();
 	
 		//Update the model from the current state of Model::CreateInfo m_CI.
-		void Update();
+		void Update(const Transform& transform) override;
 	
 		inline const Ref<objects::Mesh>& GetMesh() const { return m_CI.pMesh; }
 		inline const std::string& GetPipelineName() const { return m_CI.renderPipelineName; }

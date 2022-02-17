@@ -4,6 +4,7 @@
 using namespace gear;
 using namespace graphics;
 using namespace objects;
+using namespace core;
 using namespace mars;
 
 using namespace miru;
@@ -12,7 +13,7 @@ using namespace miru::crossplatform;
 Text::Text(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
-	Update();
+	Update(Transform());
 }
 
 Text::~Text()
@@ -41,15 +42,23 @@ void Text::UpdateLine(const std::string& text, size_t lineIndex, bool force)
 	}
 }
 
-void Text::Update()
+void Text::Update(const Transform& transform)
 {
-	m_CameraCI.debugName = "GEAR_CORE_FontRenderer";
-	m_CameraCI.device = m_CI.device;
-	m_CameraCI.projectionType = Camera::ProjectionType::ORTHOGRAPHIC;
-	m_CameraCI.orthographicsParams = { 0.0f, static_cast<float>(m_CI.viewportWidth), 0.0f, static_cast<float>(m_CI.viewportHeight), 1.0f, -1.0f }; //TODO: Account for reverse depth.
-	m_CameraCI.flipX = false;
-	m_CameraCI.flipY = false;
-	m_Camera = CreateRef<Camera>(&m_CameraCI);
+	if (!m_Camera)
+	{
+		m_CameraCI.debugName = "GEAR_CORE_FontRenderer";
+		m_CameraCI.device = m_CI.device;
+		m_CameraCI.projectionType = Camera::ProjectionType::ORTHOGRAPHIC;
+		m_CameraCI.orthographicsParams = { 0.0f, static_cast<float>(m_CI.viewportWidth), 0.0f, static_cast<float>(m_CI.viewportHeight), 1.0f, -1.0f }; //TODO: Account for reverse depth.
+		m_CameraCI.flipX = false;
+		m_CameraCI.flipY = false;
+		m_Camera = CreateRef<Camera>(&m_CameraCI);
+	}
+	else
+	{
+		m_Camera->m_CI.orthographicsParams = { 0.0f, static_cast<float>(m_CI.viewportWidth), 0.0f, static_cast<float>(m_CI.viewportHeight), 1.0f, -1.0f }; //TODO: Account for reverse depth.
+		m_Camera->Update(transform);
+	}
 }
 
 void Text::GenerateLine(size_t lineIndex, bool update)

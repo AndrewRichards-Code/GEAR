@@ -1,5 +1,4 @@
 #pragma once
-
 #include "gear_core_common.h"
 #include "Graphics/Texture.h"
 
@@ -10,7 +9,7 @@ namespace graphics
 	class Texture;
 }
 
-namespace objects
+namespace core
 {
 	class GEAR_API FontLibrary
 	{

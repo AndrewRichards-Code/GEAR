@@ -123,11 +123,10 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	m_ModelCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
 	m_ModelCI.device = m_CI.device;
 	m_ModelCI.pMesh = m_Mesh;
-	m_ModelCI.transform = m_CI.transform;
 	m_ModelCI.renderPipelineName = "Cube";
 	m_Model = CreateRef<Model>(&m_ModelCI);
 	
-	Update();
+	Update(Transform());
 }
 
 Skybox::~Skybox()
@@ -135,7 +134,7 @@ Skybox::~Skybox()
 
 }
 
-void Skybox::Update()
+void Skybox::Update(const Transform& transform)
 {
 	if (m_Reload)
 	{
@@ -164,7 +163,7 @@ void Skybox::Update()
 	m_UB->gammaSpace = static_cast<uint32_t>(m_CI.gammaSpace);
 	m_UB->SubmitData();
 
-	m_Model->GetUB()->modl = TransformToMat4(m_CI.transform);
+	m_Model->GetUB()->modl = TransformToMatrix4(transform);
 	m_Model->GetUB()->SubmitData();
 }
 

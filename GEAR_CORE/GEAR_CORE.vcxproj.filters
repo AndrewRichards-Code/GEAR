@@ -87,7 +87,7 @@
     <ClCompile Include="src\Graphics\FrameGraph.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Objects\FontLibrary.cpp">
+    <ClCompile Include="src\Core\FontLibrary.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Objects\Text.cpp">
@@ -287,7 +287,7 @@
     <ClInclude Include="src\Graphics\FrameGraph.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Objects\FontLibrary.h">
+    <ClInclude Include="src\Core\FontLibrary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Objects\Text.h">
@@ -390,6 +390,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\UI\ComponentUI\ComponentUIs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Objects\ObjectInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
