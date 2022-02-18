@@ -1,5 +1,5 @@
 #pragma once
-
+#include "ObjectInterface.h"
 #include "Core/AssetFile.h"
 #include "gear_core_common.h"
 #include "Graphics/RenderPipeline.h"
@@ -10,7 +10,7 @@ namespace gear
 {
 namespace objects 
 {
-	class GEAR_API Material
+	class GEAR_API Material : public ObjectComponentInterface
 	{
 	public:
 		enum class TextureType : uint32_t
@@ -24,10 +24,8 @@ namespace objects
 			EMISSIVE,			//For PBR - Any light that the surface emits
 		};
 	
-		struct CreateInfo
+		struct CreateInfo : public ObjectComponentInterface::CreateInfo
 		{
-			std::string										debugName;
-			void*											device;
 			std::map<TextureType, Ref<graphics::Texture>>	pbrTextures;
 			graphics::UniformBufferStructures::PBRConstants	pbrConstants;
 			std::string										filepath; //Optional
@@ -70,11 +68,23 @@ namespace objects
 		~Material();
 	
 		//Update material based current Material::CreateInfo m_CI.
-		void Update();
-		void SetDefaultPBRTextures();
+		void Update() override;
 
+	protected:
+		bool CreateInfoHasChanged(const ObjectComponentInterface::CreateInfo* pCreateInfo) override;
+
+	public:
+		void SetDefaultPBRTextures();
 		void AddProperties(const Properties& properties);
 		
+	private:
+		void InitialiseUB();
+		void CreateDefaultColourTextures();
+
+	public:
+		void LoadFromAssetFile(const core::AssetFile& inAssetFile);
+		void SaveToAssetFile(core::AssetFile& outAssetFile);
+	
 		inline std::map<TextureType, Ref<graphics::Texture>>& GetTextures() { return m_CI.pbrTextures; }
 		inline const std::map<TextureType, Ref<graphics::Texture>>& GetTextures() const { return m_CI.pbrTextures; }
 		inline const Ref<graphics::Uniformbuffer<PBRConstantsUB>>& GetUB() const { return m_UB; }
@@ -90,14 +100,6 @@ namespace objects
 			else
 				return nullptr;
 		}
-	
-	private:
-		void InitialiseUB();
-		void CreateDefaultColourTextures();
-
-	public:
-		void LoadFromAssetFile(const core::AssetFile& inAssetFile);
-		void SaveToAssetFile(core::AssetFile& outAssetFile);
 	};
 }
 }

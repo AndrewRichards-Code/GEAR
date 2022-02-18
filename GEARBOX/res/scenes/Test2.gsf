@@ -48,9 +48,7 @@
                 "SkyboxComponent": {
                     "debugName": "Skybox-HDR",
                     "exposure": 0.5199999809265137,
-                    "filepaths": [
-                        "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img\\snowy_park_01_2k.hdr"
-                    ],
+                    "filepath": "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img\\snowy_park_01_2k.hdr",
                     "gammaSpace": 1,
                     "generatedCubemapSize": 1024
                 },

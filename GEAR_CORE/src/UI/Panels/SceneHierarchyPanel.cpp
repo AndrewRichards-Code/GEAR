@@ -84,7 +84,6 @@ void SceneHierarchyPanel::Draw()
 
 			ImGui::EndPopup();
 		}
-
 	}
 	ImGui::End();
 }

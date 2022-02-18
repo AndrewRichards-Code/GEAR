@@ -16,35 +16,20 @@ void gear::ui::componentui::DrawSkyboxComponentUI(gear::scene::Entity entity)
 	Ref<Skybox>& skybox = entity.GetComponent<SkyboxComponent>().skybox;
 	Skybox::CreateInfo& CI = skybox->m_CI;
 
-	const char* ext = ".hdr";
 	bool hdr = true;
 	DrawCheckbox("HDR", hdr);
 	if (hdr)
 	{
-		if (DrawInputText("Filepath", CI.filepaths[0]))
-		{
-			if(std::filesystem::exists(CI.filepaths[0]) && CI.filepaths[0].find(ext) != std::string::npos)
-				skybox->m_Reload = true;
-		}
-	}
-	else
-	{
-		for (auto& filepath : CI.filepaths)
-		{
-			DrawInputText("Filepath", filepath);
-		}
+		DrawInputText("Filepath", CI.filepath);
 	}
 	if (ImGui::BeginDragDropTarget())
 	{
-		const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(ext);
+		const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(".hdr");
 		if (payload)
 		{
 			std::string filepath = (char*)payload->Data;
 			if (std::filesystem::exists(filepath))
-			{
-				CI.filepaths[0] = filepath;
-				skybox->m_Reload = true;
-			}
+				CI.filepath = filepath;
 		}
 	}
 
@@ -65,7 +50,7 @@ void gear::ui::componentui::AddSkyboxComponent(gear::scene::Entity entity, void*
 		Skybox::CreateInfo skyboxCI;
 		skyboxCI.debugName = "Skybox-HDR";
 		skyboxCI.device = device;
-		skyboxCI.filepaths = { "res/img/kloppenheim_06_2k.hdr" };
+		skyboxCI.filepath = "res/img/kloppenheim_06_2k.hdr";
 		skyboxCI.generatedCubemapSize = 1024;
 		entity.AddComponent<SkyboxComponent>(&skyboxCI);
 

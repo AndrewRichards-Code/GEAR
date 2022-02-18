@@ -50,16 +50,10 @@ namespace gear
 			struct UploadResourceTaskInfo
 			{
 				Ref<objects::Camera>					camera;
-				bool									cameraForce;
 				Ref<objects::Camera>					textCamera;
-				bool									textCameraForce;
 				Ref<objects::Skybox>					skybox;
-				bool									skyboxForce;
 				std::vector<Ref<objects::Light>>		lights;
-				bool									lightsForce;
 				std::vector<Ref<objects::Model>>		models;
-				bool									modelsForce;
-				bool									materialsForce;
 			};
 			struct TransitionResourcesTaskInfo
 			{

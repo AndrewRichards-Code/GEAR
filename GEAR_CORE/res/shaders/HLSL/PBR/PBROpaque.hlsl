@@ -108,7 +108,8 @@ PS_OUT ps_main(PS_IN IN)
 	float cosWo = max(dot(Wo, N), 0.0);
 	
 	//Fresnel reflectance.
-	const float3 Fdielectric = float3(0.04, 0.04, 0.04);
+	//const float3 Fdielectric = float3(0.04, 0.04, 0.04);
+	float3 Fdielectric = pbrConstants.fresnel.rgb;
 	float3 F0 = lerp(Fdielectric, albedo, metallic);
 	
 	//Direct Lights

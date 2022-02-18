@@ -55,27 +55,20 @@ void gear::ui::componentui::DrawMeshUI(Ref<Mesh>& mesh, UIContext* uiContext)
 
 	if (DrawTreeNode("Mesh", false))
 	{
-		const char* ext = ".fbx";
-		bool reload = false;
-		if (DrawInputText("Filepath", CI.filepath))
-		{
-			if (std::filesystem::exists(CI.filepath) && CI.filepath.find(ext) != std::string::npos)
-				reload = true;
-		}
+		DrawInputText("Filepath", CI.filepath);
 		if (ImGui::BeginDragDropTarget())
 		{
-			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(ext);
+			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(".fbx");
 			if (payload)
 			{
 				std::string filepath = (char*)payload->Data;
 				if (std::filesystem::exists(filepath))
 				{
 					CI.filepath = filepath;
-					reload = true;
 				}
 			}
 		}
-		auto& data = CI.data;
+		auto& data = mesh->GetModelData();
 		
 		size_t id = 1;
 		if (DrawTreeNode("Sub Meshes: " + std::to_string(data.meshes.size()), false))
@@ -123,10 +116,7 @@ void gear::ui::componentui::DrawMeshUI(Ref<Mesh>& mesh, UIContext* uiContext)
 			EndDrawTreeNode();
 		}
 	
-		if (reload)
-		{
-			mesh = CreateRef<Mesh>(&CI);
-		}
+		mesh->Update();
 
 		EndDrawTreeNode();
 	}
@@ -169,6 +159,17 @@ void gear::ui::componentui::DrawMaterialUI(Ref<objects::Material>& material, UIC
 			float iconSize = ImGui::CalcItemWidth();
 			ImGui::ImageButton(textureID, ImVec2(iconSize, iconSize));
 			EndColumnLabel();
+
+			if (ImGui::BeginPopupContextWindow(0, ImGuiPopupFlags_MouseButtonRight))
+			{
+				if (ImGui::MenuItem("Reset Texture"))
+				{
+					material->m_CI.pbrTextures[type] = nullptr;
+					material->SetDefaultPBRTextures();
+				}
+
+				ImGui::EndPopup();
+			}
 
 			if (ImGui::BeginDragDropTarget())
 			{

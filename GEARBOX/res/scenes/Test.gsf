@@ -92,9 +92,7 @@
                 "SkyboxComponent": {
                     "debugName": "Skybox-HDR",
                     "exposure": 2.609999895095825,
-                    "filepaths": [
-                        "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img\\kloppenheim_06_2k.hdr"
-                    ],
+                    "filepath": "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img\\kloppenheim_06_2k.hdr",
                     "gammaSpace": 1,
                     "generatedCubemapSize": 1024
                 },

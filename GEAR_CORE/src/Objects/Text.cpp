@@ -44,21 +44,33 @@ void Text::UpdateLine(const std::string& text, size_t lineIndex, bool force)
 
 void Text::Update(const Transform& transform)
 {
-	if (!m_Camera)
+	if (CreateInfoHasChanged(&m_CI))
 	{
-		m_CameraCI.debugName = "GEAR_CORE_FontRenderer";
-		m_CameraCI.device = m_CI.device;
-		m_CameraCI.projectionType = Camera::ProjectionType::ORTHOGRAPHIC;
-		m_CameraCI.orthographicsParams = { 0.0f, static_cast<float>(m_CI.viewportWidth), 0.0f, static_cast<float>(m_CI.viewportHeight), 1.0f, -1.0f }; //TODO: Account for reverse depth.
-		m_CameraCI.flipX = false;
-		m_CameraCI.flipY = false;
-		m_Camera = CreateRef<Camera>(&m_CameraCI);
+		if (!m_Camera)
+		{
+			m_CameraCI.debugName = "GEAR_CORE_FontRenderer";
+			m_CameraCI.device = m_CI.device;
+			m_CameraCI.projectionType = Camera::ProjectionType::ORTHOGRAPHIC;
+			m_CameraCI.orthographicsParams = { 0.0f, static_cast<float>(m_CI.viewportWidth), 0.0f, static_cast<float>(m_CI.viewportHeight), 1.0f, -1.0f }; //TODO: Account for reverse depth.
+			m_CameraCI.flipX = false;
+			m_CameraCI.flipY = false;
+			m_Camera = CreateRef<Camera>(&m_CameraCI);
+		}
+		else
+		{
+			m_Camera->m_CI.orthographicsParams = { 0.0f, static_cast<float>(m_CI.viewportWidth), 0.0f, static_cast<float>(m_CI.viewportHeight), 1.0f, -1.0f }; //TODO: Account for reverse depth.
+			m_Camera->Update(transform);
+		}
 	}
-	else
-	{
-		m_Camera->m_CI.orthographicsParams = { 0.0f, static_cast<float>(m_CI.viewportWidth), 0.0f, static_cast<float>(m_CI.viewportHeight), 1.0f, -1.0f }; //TODO: Account for reverse depth.
-		m_Camera->Update(transform);
-	}
+}
+
+bool Text::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo)
+{
+	const CreateInfo& CI = *reinterpret_cast<const CreateInfo*>(pCreateInfo);
+	uint64_t newHash = 0;
+	newHash ^= core::GetHash(CI.viewportWidth);
+	newHash ^= core::GetHash(CI.viewportHeight);
+	return CompareCreateInfoHash(newHash);
 }
 
 void Text::GenerateLine(size_t lineIndex, bool update)
@@ -78,7 +90,7 @@ void Text::GenerateLine(size_t lineIndex, bool update)
 	textMeshCI.device = m_CI.device;
 	textMeshCI.filepath = "";
 
-	ModelLoader::ModelData& modelData = textMeshCI.data;
+	ModelLoader::ModelData& modelData = line.model->m_CI.pMesh->GetModelData();
 	modelData.meshes.push_back({});
 
 	ModelLoader::MeshData& meshData = modelData.meshes.back();
@@ -88,7 +100,7 @@ void Text::GenerateLine(size_t lineIndex, bool update)
 	if (!update)
 		meshData.pMaterial = CreateRef<Material>(&fontMaterialCI);
 	else
-		meshData.pMaterial = line.model->m_CI.pMesh->m_CI.data.meshes.back().pMaterial; //Grab old one!
+		meshData.pMaterial = line.model->m_CI.pMesh->GetModelData().meshes.back().pMaterial; //Grab old one!
 
 	//Make space for background quad
 	meshData.vertices.push_back({});

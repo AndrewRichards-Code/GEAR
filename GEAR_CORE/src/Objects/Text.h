@@ -50,6 +50,9 @@ namespace objects
 
 		//Update the text from the current state of Text::CreateInfo m_CI.
 		void Update(const Transform& transform) override;
+
+	protected:
+		bool CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo) override;
 	
 	private:
 		void GenerateLine(size_t lineIndex, bool update = false);

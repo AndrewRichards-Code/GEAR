@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
 #include "Mesh.h"
+#include "Material.h"
 
 using namespace gear;
 using namespace objects;
@@ -12,9 +13,7 @@ Mesh::Mesh(CreateInfo* pCreateInfo)
 	m_CI = *pCreateInfo;
 
 	ModelLoader::SetDevice(m_CI.device);
-	
-	if(!m_CI.filepath.empty())
-		m_CI.data = ModelLoader::LoadModelData(m_CI.filepath);
+	data = ModelLoader::LoadModelData(m_CI.filepath);
 
 	graphics::Vertexbuffer::CreateInfo vbCI;
 	vbCI.debugName = "GEAR_CORE_Mesh: " + m_CI.debugName;
@@ -26,7 +25,7 @@ Mesh::Mesh(CreateInfo* pCreateInfo)
 	ibCI.device = m_CI.device;
 	ibCI.stride = ModelLoader::GetSizeOfIndex();
 	
-	for (auto& mesh : m_CI.data.meshes)
+	for (auto& mesh : data.meshes)
 	{
 		vbCI.data = mesh.vertices.data();
 		vbCI.size = mesh.vertices.size() * ModelLoader::GetSizeOfVertex();
@@ -42,4 +41,28 @@ Mesh::Mesh(CreateInfo* pCreateInfo)
 
 Mesh::~Mesh()
 {
+	m_VBs.clear();
+	m_IBs.clear();
+	m_Materials.clear();
+}
+
+void Mesh::Update()
+{
+	if (CreateInfoHasChanged(&m_CI))
+	{
+		uint64_t newHash = m_CreateInfoHash;
+		*this = Mesh(&m_CI);
+		m_CreateInfoHash = newHash; //Set the Hash value from the previous instance of the Mesh.
+	}
+
+	for (auto& material : m_Materials)
+		material->Update();
+}
+
+bool Mesh::CreateInfoHasChanged(const ObjectComponentInterface::CreateInfo* pCreateInfo)
+{
+	const CreateInfo& CI = *reinterpret_cast<const CreateInfo*>(pCreateInfo);
+	uint64_t newHash = 0;
+	newHash ^= core::GetHash(CI.filepath);
+	return CompareCreateInfoHash(newHash);
 }

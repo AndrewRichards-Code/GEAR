@@ -282,8 +282,7 @@ void SkyboxComponent::Load(LoadSaveParameters& lsp)
 	Skybox::CreateInfo skyboxCI;
 	skyboxCI.debugName = component["debugName"];
 	skyboxCI.device = lsp.window->GetDevice();
-	for(const auto& filepath : component["filepaths"])
-		skyboxCI.filepaths.push_back(filepath);
+	skyboxCI.filepath = component["filepath"];
 	skyboxCI.generatedCubemapSize = component["generatedCubemapSize"];
 	skyboxCI.exposure = component["exposure"];
 	skyboxCI.gammaSpace = component["gammaSpace"];
@@ -296,8 +295,7 @@ void SkyboxComponent::Save(LoadSaveParameters& lsp)
 
 	Skybox::CreateInfo& skyboxCI = GetCreateInfo();
 	component["debugName"] = skyboxCI.debugName;
-	for (const auto& filepath : skyboxCI.filepaths)
-		component["filepaths"].push_back(filepath);
+	component["filepath"] = skyboxCI.filepath;
 	component["generatedCubemapSize"] = skyboxCI.generatedCubemapSize;
 	component["exposure"] = skyboxCI.exposure;
 	component["gammaSpace"] = skyboxCI.gammaSpace;

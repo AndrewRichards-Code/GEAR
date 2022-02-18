@@ -22,6 +22,7 @@
 #include <set>
 #include <map>
 #include <algorithm>
+#include <functional>
 #include <future>
 
 //Smart Poiners

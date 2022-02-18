@@ -33,6 +33,10 @@ namespace objects
 		//Update the model from the current state of Model::CreateInfo m_CI.
 		void Update(const Transform& transform) override;
 	
+	protected:
+		bool CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo) override;
+
+	public:
 		inline const Ref<objects::Mesh>& GetMesh() const { return m_CI.pMesh; }
 		inline const std::string& GetPipelineName() const { return m_CI.renderPipelineName; }
 	

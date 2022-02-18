@@ -11,10 +11,10 @@ namespace objects
 	public:
 		struct CreateInfo : public ObjectInterface::CreateInfo
 		{
-			std::vector<std::string>	filepaths;
-			uint32_t					generatedCubemapSize;
-			float						exposure = 1.0f;
-			graphics::ColourSpace		gammaSpace = graphics::ColourSpace::SRGB;
+			std::string				filepath;
+			uint32_t				generatedCubemapSize;
+			float					exposure = 1.0f;
+			graphics::ColourSpace	gammaSpace = graphics::ColourSpace::SRGB;
 		};
 
 	private:
@@ -27,8 +27,8 @@ namespace objects
 		Ref<Material> m_Material;
 		Material::CreateInfo m_MaterialCI;
 
-		Ref<graphics::Texture> m_Texture;
-		graphics::Texture::CreateInfo m_TextureCI;
+		Ref<graphics::Texture> m_HDRTexture;
+		graphics::Texture::CreateInfo m_HDRTextureCI;
 
 		Ref<graphics::Texture> m_GeneratedCubemap;
 		graphics::Texture::CreateInfo m_GeneratedCubemapCI;
@@ -46,10 +46,7 @@ namespace objects
 		Ref<graphics::Uniformbuffer<HDRInfoUB>> m_UB;
 	
 	public:
-		bool m_Cubemap;
-		bool m_HDR;
 		bool m_Generated = false;
-		bool m_Reload = false;
 
 		CreateInfo m_CI;
 
@@ -60,8 +57,12 @@ namespace objects
 		//Update the skybox from the current state of Skybox::CreateInfo m_CI.
 		void Update(const Transform& transform) override;
 
-		inline Ref<graphics::Texture>& GetTexture() { return m_Texture; }
-		inline const Ref<graphics::Texture>& GetTexture() const { return m_Texture; }
+	protected:
+		bool CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo) override;
+
+	public:
+		inline Ref<graphics::Texture>& GetHDRTexture() { return m_HDRTexture; }
+		inline const Ref<graphics::Texture>& GetHDRTexture() const { return m_HDRTexture; }
 
 		inline Ref<graphics::Texture>& GetGeneratedCubemap() { return m_GeneratedCubemap; }
 		inline const Ref<graphics::Texture>& GetGeneratedCubemap() const { return m_GeneratedCubemap; }

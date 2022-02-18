@@ -41,10 +41,13 @@ namespace objects
 		Light(CreateInfo* pCreateInfo);
 		~Light();
 
+		const Ref<graphics::Uniformbuffer<LightUB>>& GetUB() const { return s_UB; };
+
 		//Update the light from the current state of Light::CreateInfo m_CI.
 		void Update(const Transform& transform);
 
-		const Ref<graphics::Uniformbuffer<LightUB>>& GetUB() const { return s_UB; };
+	protected:
+		bool CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo) override;
 
 	private:
 		void InitialiseUB();

@@ -17,46 +17,42 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 
 	InitialiseUBs();
 	
-	m_Cubemap = m_CI.filepaths.size() == 6;
-	m_HDR = stbi_is_hdr(m_CI.filepaths[0].c_str());
-
-	m_TextureCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
-	m_TextureCI.device = m_CI.device;
-	m_TextureCI.dataType = Texture::DataType::FILE;
-	m_TextureCI.file.filepaths = m_CI.filepaths;
-	m_TextureCI.mipLevels = 1;
-	m_TextureCI.arrayLayers = m_CI.filepaths.size() == 6 ? 6 : 1;
-	m_TextureCI.type = m_CI.filepaths.size() == 6 ? Image::Type::TYPE_CUBE : Image::Type::TYPE_2D;
-	m_TextureCI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
-	m_TextureCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-	m_TextureCI.usage = Image::UsageBit(0);
-	m_TextureCI.generateMipMaps = false;
-	m_TextureCI.gammaSpace = GammaSpace::LINEAR;
-	m_Texture = CreateRef<Texture>(&m_TextureCI);
-
-	if (!m_Cubemap)
+	if (!(stbi_is_hdr(m_CI.filepath.c_str()) && m_CI.filepath.find(".hdr") != std::string::npos))
 	{
-		m_GeneratedCubemapCI.debugName = "GEAR_CORE_Skybox_GeneratedCubemap: " + m_CI.debugName;
-		m_GeneratedCubemapCI.device = m_CI.device;
-		m_GeneratedCubemapCI.dataType = Texture::DataType::DATA;
-		m_GeneratedCubemapCI.data.data = nullptr;
-		m_GeneratedCubemapCI.data.size = 0;
-		m_GeneratedCubemapCI.data.width = m_CI.generatedCubemapSize;
-		m_GeneratedCubemapCI.data.height = m_CI.generatedCubemapSize;
-		m_GeneratedCubemapCI.data.depth = 1;
-		m_GeneratedCubemapCI.mipLevels = graphics::Texture::MaxMipLevel;
-		m_GeneratedCubemapCI.arrayLayers = 6;
-		m_GeneratedCubemapCI.type = Image::Type::TYPE_CUBE;
-		m_GeneratedCubemapCI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
-		m_GeneratedCubemapCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-		m_GeneratedCubemapCI.usage = Image::UsageBit::STORAGE_BIT;
-		m_GeneratedCubemapCI.generateMipMaps = true;
-		m_GeneratedCubemap = CreateRef<Texture>(&m_GeneratedCubemapCI);
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::NOT_SUPPORTED, "%s: is not a supported file format.", m_CI.filepath)
 	}
-	else
-	{
-		m_GeneratedCubemap = m_Texture;
-	}
+
+	m_HDRTextureCI.debugName = "GEAR_CORE_Skybox_HDR: " + m_CI.debugName;
+	m_HDRTextureCI.device = m_CI.device;
+	m_HDRTextureCI.dataType = Texture::DataType::FILE;
+	m_HDRTextureCI.file.filepaths = { m_CI.filepath };
+	m_HDRTextureCI.mipLevels = 1;
+	m_HDRTextureCI.arrayLayers = 1;
+	m_HDRTextureCI.type = Image::Type::TYPE_2D;
+	m_HDRTextureCI.format = Image::Format::R32G32B32A32_SFLOAT;
+	m_HDRTextureCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	m_HDRTextureCI.usage = Image::UsageBit(0);
+	m_HDRTextureCI.generateMipMaps = false;
+	m_HDRTextureCI.gammaSpace = GammaSpace::LINEAR;
+	m_HDRTexture = CreateRef<Texture>(&m_HDRTextureCI);
+
+	m_GeneratedCubemapCI.debugName = "GEAR_CORE_Skybox_GeneratedCubemap: " + m_CI.debugName;
+	m_GeneratedCubemapCI.device = m_CI.device;
+	m_GeneratedCubemapCI.dataType = Texture::DataType::DATA;
+	m_GeneratedCubemapCI.data.data = nullptr;
+	m_GeneratedCubemapCI.data.size = 0;
+	m_GeneratedCubemapCI.data.width = m_CI.generatedCubemapSize;
+	m_GeneratedCubemapCI.data.height = m_CI.generatedCubemapSize;
+	m_GeneratedCubemapCI.data.depth = 1;
+	m_GeneratedCubemapCI.mipLevels = graphics::Texture::MaxMipLevel;
+	m_GeneratedCubemapCI.arrayLayers = 6;
+	m_GeneratedCubemapCI.type = Image::Type::TYPE_CUBE;
+	m_GeneratedCubemapCI.format = Image::Format::R32G32B32A32_SFLOAT;
+	m_GeneratedCubemapCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	m_GeneratedCubemapCI.usage = Image::UsageBit::STORAGE_BIT;
+	m_GeneratedCubemapCI.generateMipMaps = true;
+	m_GeneratedCubemap = CreateRef<Texture>(&m_GeneratedCubemapCI);
+	
 
 	m_GeneratedDiffuseCubemapCI.debugName = "GEAR_CORE_Skybox_GeneratedDiffuseCubemap: " + m_CI.debugName;
 	m_GeneratedDiffuseCubemapCI.device = m_CI.device;
@@ -69,7 +65,7 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	m_GeneratedDiffuseCubemapCI.mipLevels = 1;
 	m_GeneratedDiffuseCubemapCI.arrayLayers = 6;
 	m_GeneratedDiffuseCubemapCI.type = Image::Type::TYPE_CUBE;
-	m_GeneratedDiffuseCubemapCI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
+	m_GeneratedDiffuseCubemapCI.format = Image::Format::R32G32B32A32_SFLOAT;
 	m_GeneratedDiffuseCubemapCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	m_GeneratedDiffuseCubemapCI.usage = Image::UsageBit::STORAGE_BIT;
 	m_GeneratedDiffuseCubemapCI.generateMipMaps = false;
@@ -86,7 +82,7 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	m_GeneratedSpecularCubemapCI.mipLevels = graphics::Texture::MaxMipLevel;
 	m_GeneratedSpecularCubemapCI.arrayLayers = 6;
 	m_GeneratedSpecularCubemapCI.type = Image::Type::TYPE_CUBE;
-	m_GeneratedSpecularCubemapCI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
+	m_GeneratedSpecularCubemapCI.format = Image::Format::R32G32B32A32_SFLOAT;
 	m_GeneratedSpecularCubemapCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	m_GeneratedSpecularCubemapCI.usage = Image::UsageBit::STORAGE_BIT;
 	m_GeneratedSpecularCubemapCI.generateMipMaps = true;
@@ -103,7 +99,7 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	m_GeneratedSpecularBRDF_LUT_CI.mipLevels = 1;
 	m_GeneratedSpecularBRDF_LUT_CI.arrayLayers = 1;
 	m_GeneratedSpecularBRDF_LUT_CI.type = Image::Type::TYPE_2D;
-	m_GeneratedSpecularBRDF_LUT_CI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
+	m_GeneratedSpecularBRDF_LUT_CI.format = Image::Format::R32G32B32A32_SFLOAT;
 	m_GeneratedSpecularBRDF_LUT_CI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	m_GeneratedSpecularBRDF_LUT_CI.usage = Image::UsageBit::STORAGE_BIT;
 	m_GeneratedSpecularBRDF_LUT_CI.generateMipMaps = false;
@@ -111,7 +107,7 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 
 	m_MaterialCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
 	m_MaterialCI.device = m_CI.device;
-	m_MaterialCI.pbrTextures = { {Material::TextureType::ALBEDO, m_Texture} };
+	m_MaterialCI.pbrTextures = { {Material::TextureType::ALBEDO, m_HDRTexture} };
 	m_Material = CreateRef<Material>(&m_MaterialCI);
 
 	m_MeshCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
@@ -136,35 +132,52 @@ Skybox::~Skybox()
 
 void Skybox::Update(const Transform& transform)
 {
-	if (m_Reload)
+	if (CreateInfoHasChanged(&m_CI))
 	{
-		m_Cubemap = m_CI.filepaths.size() == 6;
-		m_HDR = stbi_is_hdr(m_CI.filepaths[0].c_str());
+		if (m_HDRTextureCI.file.filepaths[0].compare(m_CI.filepath) != 0) 
+		{
+			if (!(stbi_is_hdr(m_CI.filepath.c_str()) && m_CI.filepath.find(".hdr") != std::string::npos))
+			{
+				GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::NOT_SUPPORTED, "%s: is not a supported file format.", m_CI.filepath)
+			}
 
-		m_TextureCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
-		m_TextureCI.device = m_CI.device;
-		m_TextureCI.dataType = Texture::DataType::FILE;
-		m_TextureCI.file.filepaths = m_CI.filepaths;
-		m_TextureCI.mipLevels = 1;
-		m_TextureCI.arrayLayers = m_CI.filepaths.size() == 6 ? 6 : 1;
-		m_TextureCI.type = m_CI.filepaths.size() == 6 ? Image::Type::TYPE_CUBE : Image::Type::TYPE_2D;
-		m_TextureCI.format = m_HDR ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
-		m_TextureCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-		m_TextureCI.usage = Image::UsageBit(0);
-		m_TextureCI.generateMipMaps = false;
-		m_TextureCI.gammaSpace = GammaSpace::LINEAR;
-		m_Texture = CreateRef<Texture>(&m_TextureCI);
+			m_HDRTextureCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
+			m_HDRTextureCI.device = m_CI.device;
+			m_HDRTextureCI.dataType = Texture::DataType::FILE;
+			m_HDRTextureCI.file.filepaths = { m_CI.filepath };
+			m_HDRTextureCI.mipLevels = 1;
+			m_HDRTextureCI.arrayLayers = 1;
+			m_HDRTextureCI.type = Image::Type::TYPE_2D;
+			m_HDRTextureCI.format = Image::Format::R32G32B32A32_SFLOAT;
+			m_HDRTextureCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+			m_HDRTextureCI.usage = Image::UsageBit(0);
+			m_HDRTextureCI.generateMipMaps = false;
+			m_HDRTextureCI.gammaSpace = GammaSpace::LINEAR;
+			m_HDRTexture = CreateRef<Texture>(&m_HDRTextureCI);
 
-		m_Reload = false;
-		m_Generated = false;
+			m_Generated = false;
+		}
+
+		m_UB->exposure = m_CI.exposure;
+		m_UB->gammaSpace = static_cast<uint32_t>(m_CI.gammaSpace);
+		m_UB->SubmitData();
 	}
+	if (TransformHasChanged(transform))
+	{
+		m_Model->GetUB()->modl = TransformToMatrix4(transform);
+		m_Model->GetUB()->SubmitData();
+	}
+}
 
-	m_UB->exposure = m_CI.exposure;
-	m_UB->gammaSpace = static_cast<uint32_t>(m_CI.gammaSpace);
-	m_UB->SubmitData();
-
-	m_Model->GetUB()->modl = TransformToMatrix4(transform);
-	m_Model->GetUB()->SubmitData();
+bool Skybox::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo)
+{
+	const CreateInfo& CI = *reinterpret_cast<const CreateInfo*>(pCreateInfo);
+	uint64_t newHash = 0;
+	newHash ^= core::GetHash(CI.filepath);
+	newHash ^= core::GetHash(CI.generatedCubemapSize);
+	newHash ^= core::GetHash(CI.exposure);
+	newHash ^= core::GetHash(CI.gammaSpace);
+	return CompareCreateInfoHash(newHash);
 }
 
 void Skybox::InitialiseUBs()

@@ -64,10 +64,13 @@ namespace objects
 		Camera(CreateInfo* pCreateInfo);
 		~Camera();
 
+		const Ref<graphics::Uniformbuffer<CameraUB>>& GetUB() const { return m_UB; };
+
 		//Update the camera from the current state of Camera::CreateInfo m_CI.
 		void Update(const Transform& transform) override;
-
-		const Ref<graphics::Uniformbuffer<CameraUB>>& GetUB() const { return m_UB; };
+		
+	protected:
+		bool CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo) override;
 
 	private:
 		void DefineProjection();

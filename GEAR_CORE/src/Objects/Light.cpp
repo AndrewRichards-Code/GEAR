@@ -40,11 +40,32 @@ Light::~Light()
 
 void Light::Update(const Transform& transform)
 {
-	s_UB->lights[m_LightID].colour = m_CI.colour;
-	s_UB->lights[m_LightID].position = float4(transform.translation, 1.0f);
-	s_UB->lights[m_LightID].direction = transform.orientation.ToRotationMatrix4<float>() * float4(0, 0, -1, 0);
+	if (CreateInfoHasChanged(&m_CI))
+	{
+		s_UB->lights[m_LightID].colour = m_CI.colour;
+	}
+	if (TransformHasChanged(transform))
+	{
+		s_UB->lights[m_LightID].position = float4(transform.translation, 1.0f);
+		s_UB->lights[m_LightID].direction = transform.orientation.ToRotationMatrix4<float>() * float4(0, 0, -1, 0);
+	}
 	s_UB->lights[m_LightID].valid = float4(1, 1, 1, 1);
-	s_UB->SubmitData();
+	if (m_UpdateGPU)
+	{
+		s_UB->SubmitData();
+	}
+}
+
+bool Light::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo)
+{
+	const CreateInfo& CI = *reinterpret_cast<const CreateInfo*>(pCreateInfo);
+	uint64_t newHash = 0;
+	newHash ^= core::GetHash(CI.type);
+	newHash ^= core::GetHash(CI.colour.r);
+	newHash ^= core::GetHash(CI.colour.g);
+	newHash ^= core::GetHash(CI.colour.b);
+	newHash ^= core::GetHash(CI.colour.a);
+	return CompareCreateInfoHash(newHash);
 }
 
 void Light::InitialiseUB()

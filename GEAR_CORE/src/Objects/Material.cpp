@@ -15,11 +15,11 @@ Material::Material(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
-	if (!m_CI.filepath.empty())
-		LoadFromAssetFile(core::AssetFile(m_CI.filepath));
-
 	InitialiseUB();
 	CreateDefaultColourTextures();
+
+	if (!m_CI.filepath.empty())
+		LoadFromAssetFile(core::AssetFile(m_CI.filepath));
 
 	Update();
 }
@@ -30,16 +30,46 @@ Material::~Material()
 
 void Material::Update()
 {
-	SetDefaultPBRTextures();
+	if (CreateInfoHasChanged(&m_CI))
+	{
+		SetDefaultPBRTextures();
 
-	m_UB->fresnel			= m_CI.pbrConstants.fresnel;
-	m_UB->albedo			= m_CI.pbrConstants.albedo;
-	m_UB->metallic			= m_CI.pbrConstants.metallic;
-	m_UB->roughness			= m_CI.pbrConstants.roughness;
-	m_UB->ambientOcclusion	= m_CI.pbrConstants.ambientOcclusion;
-	m_UB->pad				= 0.0f;
-	m_UB->emissive			= m_CI.pbrConstants.emissive;
-	m_UB->SubmitData();
+		m_UB->fresnel = m_CI.pbrConstants.fresnel;
+		m_UB->albedo = m_CI.pbrConstants.albedo;
+		m_UB->metallic = m_CI.pbrConstants.metallic;
+		m_UB->roughness = m_CI.pbrConstants.roughness;
+		m_UB->ambientOcclusion = m_CI.pbrConstants.ambientOcclusion;
+		m_UB->pad = 0.0f;
+		m_UB->emissive = m_CI.pbrConstants.emissive;
+		m_UB->SubmitData();
+	}
+}
+
+bool Material::CreateInfoHasChanged(const ObjectComponentInterface::CreateInfo* pCreateInfo)
+{
+	const CreateInfo& CI = *reinterpret_cast<const CreateInfo*>(pCreateInfo);
+	uint64_t newHash = 0;
+	for (const auto& texture : CI.pbrTextures)
+	{
+		newHash ^= core::GetHash(texture.first);
+		newHash ^= core::GetHash((uint64_t)texture.second.get());
+	}
+	newHash ^= core::GetHash(CI.pbrConstants.fresnel.r);
+	newHash ^= core::GetHash(CI.pbrConstants.fresnel.g);
+	newHash ^= core::GetHash(CI.pbrConstants.fresnel.b);
+	newHash ^= core::GetHash(CI.pbrConstants.fresnel.a);
+	newHash ^= core::GetHash(CI.pbrConstants.albedo.r);
+	newHash ^= core::GetHash(CI.pbrConstants.albedo.g);
+	newHash ^= core::GetHash(CI.pbrConstants.albedo.b);
+	newHash ^= core::GetHash(CI.pbrConstants.albedo.a);
+	newHash ^= core::GetHash(CI.pbrConstants.metallic);
+	newHash ^= core::GetHash(CI.pbrConstants.roughness);
+	newHash ^= core::GetHash(CI.pbrConstants.ambientOcclusion);
+	newHash ^= core::GetHash(CI.pbrConstants.emissive.r);
+	newHash ^= core::GetHash(CI.pbrConstants.emissive.g);
+	newHash ^= core::GetHash(CI.pbrConstants.emissive.b);
+	newHash ^= core::GetHash(CI.pbrConstants.emissive.a);
+	return CompareCreateInfoHash(newHash);
 }
 
 void Material::SetDefaultPBRTextures()

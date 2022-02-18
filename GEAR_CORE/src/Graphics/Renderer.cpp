@@ -239,7 +239,7 @@ void Renderer::Upload()
 	//Deal with Skybox Textures first
 	if (m_Skybox)
 	{
-		if (!m_Skybox->m_Cubemap && !m_Skybox->m_Generated)
+		if (!m_Skybox->m_Generated)
 		{
 			auto SkyboxTextureStateUpdate = [&](Ref<Texture> texture)
 			{
@@ -265,14 +265,14 @@ void Renderer::Upload()
 			SkyboxTextureStateUpdate(m_Skybox->GetGeneratedSpecularCubemap());
 			SkyboxTextureStateUpdate(m_Skybox->GetGeneratedDiffuseCubemap());
 			SkyboxTextureStateUpdate(m_Skybox->GetGeneratedCubemap());
-			SkyboxTextureStateUpdate(m_Skybox->GetTexture());
+			SkyboxTextureStateUpdate(m_Skybox->GetHDRTexture());
 				
-			if (m_Skybox->GetTexture()->m_PreUpload)
+			if (m_Skybox->GetHDRTexture()->m_PreUpload)
 			{
-				m_Skybox->GetTexture()->TransitionSubResources(textureUnknownToTransferDstBarrier,
+				m_Skybox->GetHDRTexture()->TransitionSubResources(textureUnknownToTransferDstBarrier,
 					{ { Barrier::AccessBit::NONE_BIT, Barrier::AccessBit::TRANSFER_WRITE_BIT,
 					Image::Layout::UNKNOWN, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
-				m_Skybox->GetTexture()->m_PreUpload = false;
+				m_Skybox->GetHDRTexture()->m_PreUpload = false;
 			}
 			
 		}
@@ -280,7 +280,7 @@ void Renderer::Upload()
 		texturesToProcess.erase(m_Skybox->GetGeneratedSpecularCubemap());
 		texturesToProcess.erase(m_Skybox->GetGeneratedDiffuseCubemap());
 		texturesToProcess.erase(m_Skybox->GetGeneratedCubemap());
-		texturesToProcess.erase(m_Skybox->GetTexture());
+		texturesToProcess.erase(m_Skybox->GetHDRTexture());
 	}
 
 	//Process them
@@ -404,16 +404,10 @@ void Renderer::Upload()
 	{
 		GPUTask::UploadResourceTaskInfo urti;
 		urti.camera = m_Camera;
-		urti.cameraForce = true;
 		urti.textCamera = m_TextCamera;
-		urti.textCameraForce = true;
 		urti.skybox = m_Skybox;
-		urti.skyboxForce = true;
 		urti.lights = m_Lights;
-		urti.lightsForce = false;
 		urti.models = allQueue;
-		urti.modelsForce = true;
-		urti.materialsForce = true;
 		GPUTask::CreateInfo uploadTransferGPUTaskCI;
 		uploadTransferGPUTaskCI.debugName = "Upload - Transfer";
 		uploadTransferGPUTaskCI.task = GPUTask::Task::UPLOAD_RESOURCES;
@@ -472,14 +466,14 @@ void Renderer::Upload()
 			generateMipmapsComputeGPUTasks.back()->Execute();
 		}
 
-		if (m_Skybox && !m_Skybox->m_Cubemap && !m_Skybox->m_Generated)
+		if (m_Skybox && !m_Skybox->m_Generated)
 		{
 			GPUTask::ImageProcessingFunctionTaskInfo2 ipfti2;
 			ipfti2.pfn = ImageProcessing::EquirectangularToCube;
 			ipfti2.tri1 = { m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT };
-			ipfti2.tri2 = { m_Skybox->GetTexture(), Barrier::AccessBit::TRANSFER_WRITE_BIT, Image::Layout::TRANSFER_DST_OPTIMAL, PipelineStageBit::TRANSFER_BIT };
+			ipfti2.tri2 = { m_Skybox->GetHDRTexture(), Barrier::AccessBit::TRANSFER_WRITE_BIT, Image::Layout::TRANSFER_DST_OPTIMAL, PipelineStageBit::TRANSFER_BIT };
 			GPUTask::CreateInfo generateSkyboxTaskCI;
-			generateSkyboxTaskCI.debugName = "EquirectangularToCube : " + m_Skybox->GetTexture()->GetCreateInfo().debugName;
+			generateSkyboxTaskCI.debugName = "EquirectangularToCube : " + m_Skybox->GetHDRTexture()->GetCreateInfo().debugName;
 			generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_2;
 			generateSkyboxTaskCI.pTaskInfo = &ipfti2;
 			if (!generateMipmapsComputeGPUTasks.empty())
@@ -499,7 +493,7 @@ void Renderer::Upload()
 			GPUTask::ImageProcessingFunctionTaskInfo1 ipfti1;
 			ipfti1.pfn = ImageProcessing::GenerateMipMaps;
 			ipfti1.tri1 = { m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT };
-			generateSkyboxTaskCI.debugName = "GenerateMipMaps : " + m_Skybox->GetTexture()->GetCreateInfo().debugName;
+			generateSkyboxTaskCI.debugName = "GenerateMipMaps : " + m_Skybox->GetHDRTexture()->GetCreateInfo().debugName;
 			generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_1;
 			generateSkyboxTaskCI.pTaskInfo = &ipfti1;
 			generateSkyboxTaskCI.srcGPUTasks = { generateSkyboxComputeGPUTasks.back() };
@@ -516,7 +510,7 @@ void Renderer::Upload()
 			ipfti2.pfn = ImageProcessing::DiffuseIrradiance;
 			ipfti2.tri1 = { m_Skybox->GetGeneratedDiffuseCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT };
 			ipfti2.tri2 = { m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT };
-			generateSkyboxTaskCI.debugName = "DiffuseIrradiance : " + m_Skybox->GetTexture()->GetCreateInfo().debugName;
+			generateSkyboxTaskCI.debugName = "DiffuseIrradiance : " + m_Skybox->GetHDRTexture()->GetCreateInfo().debugName;
 			generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_2;
 			generateSkyboxTaskCI.pTaskInfo = &ipfti2;
 			generateSkyboxTaskCI.srcGPUTasks = { generateSkyboxComputeGPUTasks.back() };
@@ -533,7 +527,7 @@ void Renderer::Upload()
 			ipfti2.pfn = ImageProcessing::SpecularIrradiance;
 			ipfti2.tri1 = { m_Skybox->GetGeneratedSpecularCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT };
 			ipfti2.tri2 = { m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT };
-			generateSkyboxTaskCI.debugName = "SpecularIrradiance : " + m_Skybox->GetTexture()->GetCreateInfo().debugName;
+			generateSkyboxTaskCI.debugName = "SpecularIrradiance : " + m_Skybox->GetHDRTexture()->GetCreateInfo().debugName;
 			generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_2;
 			generateSkyboxTaskCI.pTaskInfo = &ipfti2;
 			generateSkyboxTaskCI.srcGPUTasks = { generateSkyboxComputeGPUTasks.back() };
@@ -549,7 +543,7 @@ void Renderer::Upload()
 
 			ipfti1.pfn = ImageProcessing::SpecularBRDF_LUT;
 			ipfti1.tri1 = { m_Skybox->GetGeneratedSpecularBRDF_LUT(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT };
-			generateSkyboxTaskCI.debugName = "SpecularBRDF_LUT : " + m_Skybox->GetTexture()->GetCreateInfo().debugName;
+			generateSkyboxTaskCI.debugName = "SpecularBRDF_LUT : " + m_Skybox->GetHDRTexture()->GetCreateInfo().debugName;
 			generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_1;
 			generateSkyboxTaskCI.pTaskInfo = &ipfti1;
 			generateSkyboxTaskCI.srcGPUTasks = { generateSkyboxComputeGPUTasks.back() };

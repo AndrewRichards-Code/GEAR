@@ -250,6 +250,7 @@
     <ClInclude Include="src\Core\Application.h" />
     <ClInclude Include="src\Core\AssetFile.h" />
     <ClInclude Include="src\Core\FileDialog.h" />
+    <ClInclude Include="src\Core\Hashing.h" />
     <ClInclude Include="src\Core\JsonFileHelper.h" />
     <ClInclude Include="src\Core\TypesCppHlsl.h" />
     <ClInclude Include="src\Core\UUID.h" />

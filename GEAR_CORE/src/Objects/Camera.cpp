@@ -20,10 +20,49 @@ Camera::~Camera()
 
 void Camera::Update(const Transform& transform)
 {
-	DefineProjection();
-	DefineView(transform);
-	SetPosition(transform);
-	m_UB->SubmitData();
+	if (CreateInfoHasChanged(&m_CI))
+	{
+		DefineProjection();
+	}
+	if (TransformHasChanged(transform))
+	{
+		DefineView(transform);
+		SetPosition(transform);
+	}
+	if (m_UpdateGPU)
+	{
+		m_UB->SubmitData();
+	}
+}
+
+bool Camera::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo)
+{
+	const CreateInfo& CI = *reinterpret_cast<const CreateInfo*>(pCreateInfo);
+	uint64_t newHash = 0;
+	newHash ^= core::GetHash(CI.projectionType);
+	if (m_CI.projectionType == ProjectionType::ORTHOGRAPHIC)
+	{
+		newHash ^= core::GetHash(CI.orthographicsParams.left);
+		newHash ^= core::GetHash(CI.orthographicsParams.right);
+		newHash ^= core::GetHash(CI.orthographicsParams.bottom);
+		newHash ^= core::GetHash(CI.orthographicsParams.top);
+		newHash ^= core::GetHash(CI.orthographicsParams.near);
+		newHash ^= core::GetHash(CI.orthographicsParams.far);
+	}
+	else if(m_CI.projectionType == ProjectionType::PERSPECTIVE)
+	{
+		newHash ^= core::GetHash(CI.perspectiveParams.horizonalFOV);
+		newHash ^= core::GetHash(CI.perspectiveParams.aspectRatio);
+		newHash ^= core::GetHash(CI.perspectiveParams.zNear);
+		newHash ^= core::GetHash(CI.perspectiveParams.zFar);
+	}
+	else
+	{
+		GEAR_ASSERT(ErrorCode::OBJECTS | ErrorCode::INVALID_VALUE, "Unknown projection type.");
+	}
+	newHash ^= core::GetHash(CI.flipX);
+	newHash ^= core::GetHash(CI.flipY);
+	return CompareCreateInfoHash(newHash);
 }
 
 void Camera::DefineProjection()
@@ -41,7 +80,6 @@ void Camera::DefineProjection()
 	else
 	{
 		GEAR_ASSERT(ErrorCode::OBJECTS | ErrorCode::INVALID_VALUE, "Unknown projection type.");
-		throw;
 	}
 	if (m_CI.flipX)
 		m_UB->proj.a *= -1;

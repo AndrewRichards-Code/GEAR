@@ -395,5 +395,8 @@
     <ClInclude Include="src\Objects\ObjectInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Core\Hashing.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

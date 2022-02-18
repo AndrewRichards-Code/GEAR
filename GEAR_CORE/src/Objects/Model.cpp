@@ -20,13 +20,34 @@ Model::~Model()
 
 void Model::Update(const Transform& transform)
 {
-	m_UB->texCoordScale0.x = m_CI.materialTextureScaling.x;
-	m_UB->texCoordScale0.y = m_CI.materialTextureScaling.y;
-	m_UB->texCoordScale1.x = m_CI.materialTextureScaling.x;
-	m_UB->texCoordScale1.y = m_CI.materialTextureScaling.y;
+	if (CreateInfoHasChanged(&m_CI))
+	{
+		m_UB->texCoordScale0.x = m_CI.materialTextureScaling.x;
+		m_UB->texCoordScale0.y = m_CI.materialTextureScaling.y;
+		m_UB->texCoordScale1.x = m_CI.materialTextureScaling.x;
+		m_UB->texCoordScale1.y = m_CI.materialTextureScaling.y;
+	}
+	if (TransformHasChanged(transform))
+	{
+		m_UB->modl = TransformToMatrix4(transform);
+	}
+	if (m_UpdateGPU)
+	{
+		m_UB->SubmitData();
+	}
 
-	m_UB->modl = TransformToMatrix4(transform);
-	m_UB->SubmitData();
+	m_CI.pMesh->Update();
+}
+
+bool Model::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo)
+{
+	const CreateInfo& CI = *reinterpret_cast<const CreateInfo*>(pCreateInfo);
+	uint64_t newHash = 0;
+	newHash ^= core::GetHash((uint64_t)CI.pMesh.get());
+	newHash ^= core::GetHash(CI.materialTextureScaling.x);
+	newHash ^= core::GetHash(CI.materialTextureScaling.x);
+	newHash ^= core::GetHash(CI.renderPipelineName);
+	return CompareCreateInfoHash(newHash);
 }
 
 void Model::InitialiseUB()

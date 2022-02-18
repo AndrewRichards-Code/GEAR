@@ -160,36 +160,48 @@ void GPUTask::UploadResources()
 	UploadResourceTaskInfo* uploadResourcesTI = reinterpret_cast<UploadResourceTaskInfo*>(m_CI.pTaskInfo);
 
 	if (uploadResourcesTI->camera)
-		uploadResourcesTI->camera->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->cameraForce);
+	{
+		uploadResourcesTI->camera->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->camera->GetUpdateGPUFlag());
+		uploadResourcesTI->camera->ResetUpdateGPUFlag();
+	}
 
 	if (uploadResourcesTI->textCamera)
-		uploadResourcesTI->textCamera->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->textCameraForce);
+	{
+		uploadResourcesTI->textCamera->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->textCamera->GetUpdateGPUFlag());
+		uploadResourcesTI->textCamera->ResetUpdateGPUFlag();
+	}
 
 	if (uploadResourcesTI->skybox)
 	{
-		uploadResourcesTI->skybox->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->skyboxForce);
-		uploadResourcesTI->skybox->GetTexture()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex);
+		uploadResourcesTI->skybox->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->skybox->GetUpdateGPUFlag());
+		uploadResourcesTI->skybox->ResetUpdateGPUFlag();
+		uploadResourcesTI->skybox->GetHDRTexture()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, !uploadResourcesTI->skybox->m_Generated);
 	}
 
 	for (auto& light : uploadResourcesTI->lights)
-		light->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->lightsForce);
+	{
+		light->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, light->GetUpdateGPUFlag());
+		light->ResetUpdateGPUFlag();
+	}
 
 	for (auto& model : uploadResourcesTI->models)
 	{
 		for (auto& vb : model->GetMesh()->GetVertexBuffers())
-			vb->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->modelsForce);
+			vb->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, model->GetUpdateGPUFlag());
 		for (auto& ib : model->GetMesh()->GetIndexBuffers())
-			ib->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->modelsForce);
+			ib->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, model->GetUpdateGPUFlag());
 
-		model->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->modelsForce);
+		model->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, model->GetUpdateGPUFlag());
+		model->ResetUpdateGPUFlag();
 		
 		for (auto& material : model->GetMesh()->GetMaterials())
 		{
-			material->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->materialsForce);
+			material->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, material->GetUpdateGPUFlag());
+			material->ResetUpdateGPUFlag();
 			
 			for (auto& texture : material->GetTextures())
 			{
-				texture.second->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, /*uploadResourcesTI->materialsForce*/false);
+				texture.second->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, false);
 			}
 		}
 	}
