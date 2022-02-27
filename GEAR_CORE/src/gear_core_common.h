@@ -82,7 +82,7 @@
 #include "imgui/imgui_internal.h"
 #include "imgui/misc/cpp/imgui_stdlib.h"
 #include "imgui/backends/imgui_impl_glfw.h"
-#include "imgui/backends/imgui_impl_vulkan_with_textures.h"
+#include "imgui/backends/imgui_impl_vulkan.h"
 #include "imgui/backends/imgui_impl_dx12.h"
 
 //JSON

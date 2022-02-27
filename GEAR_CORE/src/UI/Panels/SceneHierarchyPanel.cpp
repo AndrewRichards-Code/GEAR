@@ -44,7 +44,7 @@ void SceneHierarchyPanel::Draw()
 		DrawStaticText("Controls", "");
 		ImGui::NewLine();
 		float iconHeight = 32.0f;
-		float width = ImGui::GetContentRegionAvailWidth();
+		float width = ImGui::GetContentRegionAvail().x;
 		ImGui::SameLine(width / 2.0f - iconHeight / 2.0f);
 		std::string buttonStr = state == Scene::State::EDIT ? ">" : "X";
 		if (ImGui::Button(buttonStr.c_str(), { iconHeight, iconHeight }))

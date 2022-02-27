@@ -284,7 +284,7 @@ ImTextureID gear::ui::componentui::GetTextureID(const Ref<miru::crossplatform::I
 				vkFreeDescriptorSets(device, uiContext->m_VulkanDescriptorPool, 1, (VkDescriptorSet*)&ImageID);
 			}
 
-			ImageID = ImGui_ImplVulkan_AddTexture(uiContext->m_VulkanSampler, vkColourImageView->m_ImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			ImageID = (ImTextureID)ImGui_ImplVulkan_AddTexture(uiContext->m_VulkanSampler, vkColourImageView->m_ImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 		return ImageID;
 	}

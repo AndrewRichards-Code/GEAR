@@ -133,7 +133,7 @@ void ContentBrowserPanel::Draw()
 
 			//Calculate number of coloumns
 			static float iconSize = 128.0f;
-			uint32_t iconsPerRow = std::max(uint32_t(ImGui::GetContentRegionAvailWidth() / iconSize), uint32_t(1));
+			uint32_t iconsPerRow = std::max(uint32_t(ImGui::GetContentRegionAvail().x / iconSize), uint32_t(1));
 			if (ImGui::BeginTable("##ContentBrowserPanel", static_cast<int>(iconsPerRow)))
 			{
 				uint32_t i = 0;
