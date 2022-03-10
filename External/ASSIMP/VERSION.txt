@@ -1,2 +1,2 @@
-ASSIMP 5.0.1
+ASSIMP 5.2.1
 Redistribution - No Modifications.
