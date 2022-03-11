@@ -91,6 +91,7 @@
     "rasterisationSamples": "SAMPLE_COUNT_1_BIT",
     "sampleShadingEnable": false,
     "minSampleShading": 1.0,
+    "sampleMask": 4294967295,
     "alphaToCoverageEnable": false,
     "alphaToOneEnable": false
   },
