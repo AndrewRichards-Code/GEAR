@@ -94,7 +94,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)..\GEAR_CORE\src;$(ProjectDir)..\External;$(ProjectDir)..\External\ASSIMP\include;$(ProjectDir)..\External\FREETYPE\include;$(ProjectDir)..\External\MIRU\External\;$(ProjectDir)..\External\MIRU\MIRU_CORE\src;$(ProjectDir)..\External\MIRU\MIRU_SHADER_CORE\src;$(ProjectDir)..\External\imgui;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -134,7 +134,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)..\GEAR_CORE\src;$(ProjectDir)..\External;$(ProjectDir)..\External\ASSIMP\include;$(ProjectDir)..\External\FREETYPE\include;$(ProjectDir)..\External\MIRU\External\;$(ProjectDir)..\External\MIRU\MIRU_CORE\src;$(ProjectDir)..\External\MIRU\MIRU_SHADER_CORE\src;$(ProjectDir)..\External\imgui;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

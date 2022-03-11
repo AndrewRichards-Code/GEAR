@@ -60,7 +60,7 @@
       <PreprocessorDefinitions>GEAR_NO_CONSOLE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)..\GEAR_CORE\src;$(ProjectDir)..\External;$(ProjectDir)..\External\ASSIMP\include;$(ProjectDir)..\External\FREETYPE\include;$(ProjectDir)..\External\MIRU\External\;$(ProjectDir)..\External\MIRU\MIRU_CORE\src;$(ProjectDir)..\External\MIRU\MIRU_SHADER_CORE\src;$(ProjectDir)..\External\imgui;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>gearbox_common.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -83,7 +83,7 @@
       <PreprocessorDefinitions>GEAR_NO_CONSOLE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)..\GEAR_CORE\src;$(ProjectDir)..\External;$(ProjectDir)..\External\ASSIMP\include;$(ProjectDir)..\External\FREETYPE\include;$(ProjectDir)..\External\MIRU\External\;$(ProjectDir)..\External\MIRU\MIRU_CORE\src;$(ProjectDir)..\External\MIRU\MIRU_SHADER_CORE\src;$(ProjectDir)..\External\imgui;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>gearbox_common.h</PrecompiledHeaderFile>
     </ClCompile>

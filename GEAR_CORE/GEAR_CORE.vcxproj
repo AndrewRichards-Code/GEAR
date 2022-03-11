@@ -95,7 +95,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)..\External;$(ProjectDir)..\External\ASSIMP\include;$(ProjectDir)..\External\FREETYPE\include;$(ProjectDir)..\External\MIRU\External\;$(ProjectDir)..\External\MIRU\MIRU_CORE\src;$(ProjectDir)..\External\MIRU\MIRU_SHADER_CORE\src;$(ProjectDir)..\External\imgui;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GEAR_BUILD_DLL;GLEW_STATIC;PROJECT_DIR=R"($(ProjectDir))";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>gear_core_common.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -141,7 +141,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)..\External;$(ProjectDir)..\External\ASSIMP\include;$(ProjectDir)..\External\FREETYPE\include;$(ProjectDir)..\External\MIRU\External\;$(ProjectDir)..\External\MIRU\MIRU_CORE\src;$(ProjectDir)..\External\MIRU\MIRU_SHADER_CORE\src;$(ProjectDir)..\External\imgui;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>GEAR_BUILD_DLL;GLEW_STATIC;PROJECT_DIR=R"($(ProjectDir))";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>gear_core_common.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -227,6 +227,7 @@
     <ClCompile Include="src\Scene\Scene.cpp" />
     <ClCompile Include="src\UI\ComponentUI\CameraComponentUI.cpp" />
     <ClCompile Include="src\UI\ComponentUI\ComponentUI.cpp" />
+    <ClCompile Include="src\UI\ComponentUI\MaterialComponentUI.cpp" />
     <ClCompile Include="src\UI\ComponentUI\ModelComponentUI.cpp" />
     <ClCompile Include="src\UI\ComponentUI\NameComponentUI.cpp" />
     <ClCompile Include="src\UI\ComponentUI\SkyboxComponentUI.cpp" />
@@ -234,6 +235,7 @@
     <ClCompile Include="src\UI\MenuBar.cpp" />
     <ClCompile Include="src\UI\Panels\ContentBrowserPanel.cpp" />
     <ClCompile Include="src\UI\Panels\ContentEditorPanel.cpp" />
+    <ClCompile Include="src\UI\Panels\MaterialPanel.cpp" />
     <ClCompile Include="src\UI\Panels\ProjectPanel.cpp" />
     <ClCompile Include="src\UI\Panels\PropertiesPanel.cpp" />
     <ClCompile Include="src\UI\Panels\SceneHierarchyPanel.cpp" />
@@ -298,6 +300,7 @@
     <ClInclude Include="src\UI\ComponentUI\CameraComponentUI.h" />
     <ClInclude Include="src\UI\ComponentUI\ComponentUI.h" />
     <ClInclude Include="src\UI\ComponentUI\ComponentUIs.h" />
+    <ClInclude Include="src\UI\ComponentUI\MaterialComponentUI.h" />
     <ClInclude Include="src\UI\ComponentUI\ModelComponentUI.h" />
     <ClInclude Include="src\UI\ComponentUI\NameComponentUI.h" />
     <ClInclude Include="src\UI\ComponentUI\SkyboxComponentUI.h" />
@@ -306,6 +309,7 @@
     <ClInclude Include="src\UI\Panels\BasePanel.h" />
     <ClInclude Include="src\UI\Panels\ContentBrowserPanel.h" />
     <ClInclude Include="src\UI\Panels\ContentEditorPanel.h" />
+    <ClInclude Include="src\UI\Panels\MaterialPanel.h" />
     <ClInclude Include="src\UI\Panels\Panels.h" />
     <ClInclude Include="src\UI\Panels\ProjectPanel.h" />
     <ClInclude Include="src\UI\Panels\PropertiesPanel.h" />
