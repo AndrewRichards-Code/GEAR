@@ -30,5 +30,5 @@ A simple level editor using ImGui. Build as executable; Dynamic Runtime Linking 
 ## Windows x64:
 - Microsoft Visual Studio 2022
 - Toolset: v143 
-- Windows SDK: 10.0.22000
+- Windows SDK: 10.0.22000.0
 - ISO C++ 20
