@@ -16,7 +16,7 @@ void gear::ui::componentui::DrawCameraComponentUI(gear::scene::Entity entity, fl
 	Ref<Camera>& camera = entity.GetComponent<CameraComponent>().camera;
 	Camera::CreateInfo& CI = camera->m_CI;
 
-	DrawDropDownMenu("Projection Type", { "Perspective", "Orthographic" }, CI.projectionType);
+	DrawDropDownMenu("Projection Type", CI.projectionType);
 
 	if (CI.projectionType == Camera::ProjectionType::PERSPECTIVE)
 	{

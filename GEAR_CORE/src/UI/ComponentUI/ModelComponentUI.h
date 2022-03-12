@@ -11,7 +11,6 @@ namespace componentui
 	void AddModelComponent(gear::scene::Entity entity, void* device);
 
 	void DrawMeshUI(Ref<gear::objects::Mesh>& mesh, UIContext* uiContext);
-	void DrawMaterialUI(Ref<gear::objects::Material>& material, UIContext* uiContext, bool fileFunctions = true);
 }
 }
 }

@@ -49,6 +49,14 @@ bool gear::ui::componentui::DrawUint32(const std::string& label, uint32_t& value
 	return ret;
 }
 
+bool gear::ui::componentui::DrawInt32(const std::string& label, int32_t& value, int32_t minValue, int32_t maxValue, float width, float speed)
+{
+	BeginColumnLabel(label, width);
+	bool ret = ImGui::DragScalar("##label", ImGuiDataType_S32, (void*)&value, speed, (const void*)&minValue, (const void*)&maxValue, "%i");
+	EndColumnLabel();
+	return ret;
+}
+
 bool gear::ui::componentui::DrawFloat(const std::string& label, float& value, float minValue, float maxValue, float width, float speed)
 {
 	BeginColumnLabel(label, width);
@@ -212,6 +220,34 @@ bool gear::ui::componentui::DrawColourPicker4(const std::string& label, float4& 
 	EndColumnLabel();
 	return ret;
 }
+
+void gear::ui::componentui::DrawInputVectorOfString(const std::string& label, std::vector<std::string>& vector, float width)
+{
+	BeginColumnLabel(label, width);
+	for (auto& it = vector.begin(); it != vector.end(); it++)
+	{
+		std::string name = *it;
+		ImGui::InputText("##label", &name);
+		
+		ImGui::SameLine();
+		if (ImGui::Button("+"))
+		{
+			vector.insert(it, "");
+			it = vector.begin();
+		}
+		
+		ImGui::SameLine();
+		if (ImGui::Button("X"))
+		{
+			vector.erase(it);
+			if (!vector.empty())
+				it = vector.begin();
+			else
+				break;
+		}
+	}
+	EndColumnLabel();
+};
 
 ComponentSettingsBit gear::ui::componentui::DrawComponentSetting()
 {

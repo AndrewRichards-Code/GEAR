@@ -1,7 +1,10 @@
 #include "gear_core_common.h"
 #include "ModelComponentUI.h"
+#include "UI/Panels/Panels.h"
+#include "UI/Panels/MaterialPanel.h"
 
 #include "Core/AssetFile.h"
+#include "Graphics/Renderer.h"
 #include "Scene/Entity.h"
 
 using namespace gear;
@@ -23,6 +26,20 @@ void gear::ui::componentui::DrawModelComponentUI(Entity entity, UIContext* uiCon
 	DrawFloat("Scaling X", CI.materialTextureScaling.x, 0.0f);
 	DrawFloat("Scaling Y", CI.materialTextureScaling.y, 0.0f);
 	DrawInputText("Render Pipeline", CI.renderPipelineName);
+
+	Ref<panels::ViewportPanel> viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<panels::ViewportPanel>()[0];
+	if (viewportPanel)
+	{
+		Ref<graphics::Renderer>& renderer = viewportPanel->GetCreateInfo().renderer;
+		graphics::RenderPipeline* renderPipeline = renderer->GetRenderPipelines()[CI.renderPipelineName].get();
+
+		Ref<panels::MaterialPanel> materialPanel = UIContext::GetUIContext()->GetEditorPanelsByType<panels::MaterialPanel>()[0];
+		if (materialPanel)
+		{
+			materialPanel->SetSelectedRenderPipline(renderPipeline);
+		}
+
+	}
 
 	model->Update(entity.GetComponent<TransformComponent>());
 }
@@ -79,10 +96,17 @@ void gear::ui::componentui::DrawMeshUI(Ref<Mesh>& mesh, UIContext* uiContext)
 				if (DrawTreeNode("Sub Mesh: " + std::to_string(i), false, (void*)id++))
 				{
 					DrawStaticText("Name", subMesh.meshName);
+					if (ImGui::Button("View Material"))
+					{
+						Ref<panels::MaterialPanel> materialPanel = UIContext::GetUIContext()->GetEditorPanelsByType<panels::MaterialPanel>()[0];
+						if (materialPanel)
+						{
+							materialPanel->SetSelectedMaterial(mesh->GetMaterial(i));
+						}
+					}
 					DrawStaticNumber("Vertices", subMesh.vertices.size());
 					DrawStaticNumber("Indices", subMesh.indices.size());
 					DrawStaticNumber("Bones", subMesh.bones.size());
-					DrawMaterialUI(mesh->GetMaterial(i), uiContext);
 					EndDrawTreeNode();
 				}
 			}
@@ -95,7 +119,7 @@ void gear::ui::componentui::DrawMeshUI(Ref<Mesh>& mesh, UIContext* uiContext)
 				const auto& animation = data.animations[i];
 				if (DrawTreeNode("Animation: " + std::to_string(i), false, (void*)id++))
 				{
-					DrawEnum("Type", { "Animation", "Audio" }, animation.sequenceType);
+					DrawEnum("Type", animation.sequenceType);
 					DrawStaticNumber("Duration", animation.duration);
 					DrawStaticNumber("Frames Per Second", animation.framesPerSecond);
 
@@ -105,7 +129,7 @@ void gear::ui::componentui::DrawMeshUI(Ref<Mesh>& mesh, UIContext* uiContext)
 						if (DrawTreeNode("Node Animation: " + std::to_string(j), false, (void*)id++))
 						{
 							DrawStaticText("Name", nodeAnimation.name);
-							DrawEnum("Type", { "Translation", "Rotation", "Scale" }, nodeAnimation.type);
+							DrawEnum("Type", nodeAnimation.type);
 							DrawStaticNumber("Duration", nodeAnimation.keyframes.size());
 							EndDrawTreeNode();
 						}
@@ -118,148 +142,6 @@ void gear::ui::componentui::DrawMeshUI(Ref<Mesh>& mesh, UIContext* uiContext)
 	
 		mesh->Update();
 
-		EndDrawTreeNode();
-	}
-}
-
-void gear::ui::componentui::DrawMaterialUI(Ref<objects::Material>& material, UIContext* uiContext, bool fileFunctions)
-{
-	if (DrawTreeNode("Material", false))
-	{
-		Material::CreateInfo& CI = material->m_CI;
-		DrawInputText("Name", CI.debugName);
-
-		auto MaterialTextureTypeToString = [](const Material::TextureType& type) -> std::string
-		{
-			switch (type)
-			{
-			default:
-			case Material::TextureType::UNKNOWN:
-				return "Unknown";
-			case Material::TextureType::NORMAL:
-				return "Normal";
-			case Material::TextureType::ALBEDO:
-				return "Albedo";
-			case Material::TextureType::METALLIC:
-				return "Metallic";
-			case Material::TextureType::ROUGHNESS:
-				return "Roughness";
-			case Material::TextureType::AMBIENT_OCCLUSION:
-				return "Ambient Occlusion";
-			case Material::TextureType::EMISSIVE:
-				return "Emissive";
-			}
-		};
-
-		auto DrawPBRTexture = [&](const Material::TextureType& type, Ref<graphics::Texture>& texture, float width = DefaultWidth)
-		{
-			ImTextureID textureID = GetTextureID(texture->GetTextureImageView(), uiContext, false);
-
-			BeginColumnLabel(MaterialTextureTypeToString(type), width);
-			float iconSize = ImGui::CalcItemWidth();
-			ImGui::ImageButton(textureID, ImVec2(iconSize, iconSize));
-			EndColumnLabel();
-
-			if (ImGui::BeginPopupContextWindow(0, ImGuiPopupFlags_MouseButtonRight))
-			{
-				if (ImGui::MenuItem("Reset Texture"))
-				{
-					material->m_CI.pbrTextures[type] = nullptr;
-					material->SetDefaultPBRTextures();
-				}
-
-				ImGui::EndPopup();
-			}
-
-			if (ImGui::BeginDragDropTarget())
-			{
-				const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(".png");
-				if (payload)
-				{
-					std::string filepath = (char*)payload->Data;
-					if (std::filesystem::exists(filepath))
-					{
-						bool linear = false;
-						graphics::Texture::CreateInfo textureCI;
-						textureCI.debugName = filepath;
-						textureCI.device = uiContext->GetDevice();
-						textureCI.dataType = graphics::Texture::DataType::FILE;
-						textureCI.file.filepaths.push_back(filepath);
-						textureCI.mipLevels = graphics::Texture::MaxMipLevel;
-						textureCI.arrayLayers = 1;
-						textureCI.type = miru::crossplatform::Image::Type::TYPE_2D;
-						textureCI.format = linear ? miru::crossplatform::Image::Format::R32G32B32A32_SFLOAT : miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
-						textureCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-						textureCI.usage = miru::crossplatform::Image::UsageBit(0);
-						textureCI.generateMipMaps = true;
-						textureCI.gammaSpace = linear ? graphics::GammaSpace::LINEAR : graphics::GammaSpace::SRGB;
-						texture = CreateRef<graphics::Texture>(&textureCI);
-					}
-				}
-			}
-		};
-
-		DrawStaticText("Textures", "");
-		for (auto& texture : material->GetTextures())
-		{
-			DrawPBRTexture(texture.first, texture.second);
-		}
-
-		DrawStaticText("Colour Tints", "");
-		DrawColourPicker4("Fresnel", CI.pbrConstants.fresnel);
-		DrawColourPicker4("Albedo", CI.pbrConstants.albedo);
-		DrawFloat("Metallic", CI.pbrConstants.metallic, 0.0f, 1.0f);
-		DrawFloat("Roughness", CI.pbrConstants.roughness, 0.0f, 1.0f);
-		DrawFloat("Ambient Occlusion", CI.pbrConstants.ambientOcclusion, 0.0f, 1.0f);
-		DrawColourPicker4("Emissive", CI.pbrConstants.emissive);
-
-		CI.pbrConstants.emissive.r = std::clamp(CI.pbrConstants.emissive.r, 0.0f, 1.0f);
-		CI.pbrConstants.emissive.g = std::clamp(CI.pbrConstants.emissive.g, 0.0f, 1.0f);
-		CI.pbrConstants.emissive.b = std::clamp(CI.pbrConstants.emissive.b, 0.0f, 1.0f);
-		CI.pbrConstants.emissive.a = std::clamp(CI.pbrConstants.emissive.a, 0.0f, 1.0f);
-		static float emissiveMultiplier = 1.0f;
-		DrawFloat("Emissive Multiplier", emissiveMultiplier, 1.0f, 100.0f);
-		CI.pbrConstants.emissive *= emissiveMultiplier;
-
-		material->Update();
-
-		if (fileFunctions)
-		{
-			DrawStaticText("Filepath", material->m_CI.filepath);
-			if (ImGui::BeginDragDropTarget())
-			{
-				const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(".gaf");
-				if (payload)
-				{
-					std::string filepath = (char*)payload->Data;
-					if (std::filesystem::exists(filepath))
-					{
-						core::AssetFile assetFile(filepath);
-						material->LoadFromAssetFile(assetFile);
-					}
-				}
-			}
-			if (ImGui::Button("Open"))
-			{
-				std::string filepath = core::AssetFile::FileDialog_Open();
-				if (!filepath.empty())
-				{
-					core::AssetFile assetFile(filepath);
-					material->LoadFromAssetFile(assetFile);
-				}
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Save"))
-			{
-				std::string filepath = core::AssetFile::FileDialog_Save();
-				if (!filepath.empty())
-				{
-					core::AssetFile assetFile(filepath);
-					material->SaveToAssetFile(assetFile);
-					assetFile.Save();
-				}
-			}
-		}
 		EndDrawTreeNode();
 	}
 }

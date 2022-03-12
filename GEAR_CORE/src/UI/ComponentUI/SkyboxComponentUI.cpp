@@ -35,7 +35,7 @@ void gear::ui::componentui::DrawSkyboxComponentUI(gear::scene::Entity entity)
 
 	DrawUint32("Cubemap Size", CI.generatedCubemapSize, 16, 2048, true);
 	DrawFloat("Exposure", CI.exposure, 0.01f, 100.0f);
-	DrawDropDownMenu("Colour Space", { "CieXYZ", "sRGB", "Rec709", "Rec2020" }, CI.gammaSpace);
+	DrawDropDownMenu("Colour Space", CI.gammaSpace);
 	
 	if (ImGui::Button("Generate"))
 		skybox->m_Generated = false;

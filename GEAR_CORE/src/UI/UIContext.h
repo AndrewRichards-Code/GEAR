@@ -15,6 +15,7 @@ namespace ui
 		class ContentBrowserPanel;
 		class ContentEditorPanel;
 		class SceneHierarchyPanel;
+		class MaterialPanel;
 		class ProjectPanel;
 		class PropertiesPanel;
 		class ViewportPanel;
@@ -43,8 +44,8 @@ namespace ui
 		inline Ref<gear::graphics::Window> GetWindow() { return m_CI.window; }
 		inline const CreateInfo& GetCreateInfo() { return m_CI; }
 		inline std::vector<Ref<panels::Panel>>& GetEditorPanels() { return m_EditorPanels; };
-		inline Ref<gear::build::Project> GetProject() { return m_Project; }
-		inline void SetProject(Ref<gear::build::Project> project) { m_Project = project; }
+		inline Ref<build::Project> GetProject() { return m_Project; }
+		inline void SetProject(const Ref<build::Project>& project) { m_Project = project; }
 
 		template<typename T>
 		std::vector<Ref<T>> GetEditorPanelsByType()
@@ -67,6 +68,11 @@ namespace ui
 					continue;
 				}
 				if (typeid(T) == typeid(panels::SceneHierarchyPanel) && panel->GetPanelType() == panels::Panel::Type::SCENE_HIERARCHY)
+				{
+					selectedPanels.push_back(panel);
+					continue;
+				}
+				if (typeid(T) == typeid(panels::MaterialPanel) && panel->GetPanelType() == panels::Panel::Type::MATERIAL)
 				{
 					selectedPanels.push_back(panel);
 					continue;

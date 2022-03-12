@@ -112,7 +112,7 @@ void ContentBrowserPanel::Draw()
 		}
 		ImGui::SameLine();
 
-		std::string currentPathStr = m_CI.currentPath.generic_string();
+		std::string currentPathStr = m_CI.currentPath.string();
 		DrawInputText("Current Path", currentPathStr);
 
 		if (std::filesystem::exists(std::filesystem::path(currentPathStr)))
@@ -145,8 +145,8 @@ void ContentBrowserPanel::Draw()
 					i++;
 
 					const std::filesystem::path& path = directory.path().lexically_relative(m_CI.currentPath);
-					const std::string& pathStr = path.generic_u8string();
-					const std::string& pathExtStr = path.extension().generic_string();
+					const std::string& pathStr = path.string();
+					const std::string& pathExtStr = path.extension().string();
 
 					ImGui::PushID(pathStr.c_str());
 
@@ -172,10 +172,7 @@ void ContentBrowserPanel::Draw()
 
 					//Draw icon
 					ImGui::PushStyleColor(ImGuiCol_Button, { 0,0,0,0 });
-					if (imageID != 0)
-						ImGui::ImageButton(imageID, ImVec2(iconSize, iconSize));
-					else
-						ImGui::Button(pathStr.c_str(), ImVec2(iconSize, iconSize));
+					ImGui::ImageButton(imageID, ImVec2(iconSize, iconSize));
 
 					//DragDrop operations
 					if (ImGui::BeginDragDropSource())
@@ -203,7 +200,7 @@ void ContentBrowserPanel::Draw()
 					}
 
 					//Icon name wrapped
-					ImGui::TextWrapped(pathStr.c_str());
+					ImGui::TextWrapped("%s", path.u8string().c_str());
 					ImGui::PopID();
 				}
 

@@ -46,7 +46,7 @@ void MenuBar::Draw()
 
 bool MenuBar::ShortcutPressed(const std::vector<uint32_t>& keycodes)
 {
-	Ref<gear::graphics::Window> window = UIContext::GetUIContext()->GetWindow();
+	Ref<Window> window = UIContext::GetUIContext()->GetWindow();
 	window->Update();
 
 	std::vector<uint32_t> _keycodes = keycodes;
@@ -148,10 +148,14 @@ void MenuBar::DrawMenuWindows()
 			Scene::CreateInfo sceneCI;
 			sceneCI.debugName = "DefaultScene";
 			sceneCI.nativeScriptDir = "res/scripts/";
-			Ref<gear::scene::Scene> activeScene = CreateRef<gear::scene::Scene>(&sceneCI);
+			Ref<scene::Scene> activeScene = CreateRef<scene::Scene>(&sceneCI);
 
 			SceneHierarchyPanel::CreateInfo sceneHierarchyPanelCI = { activeScene };
 			editorPanels.emplace_back(CreateRef<SceneHierarchyPanel>(&sceneHierarchyPanelCI));
+		}
+		if (ImGui::MenuItem("Material"))
+		{
+			editorPanels.emplace_back(CreateRef<MaterialPanel>());
 		}
 		if (ImGui::MenuItem("Project"))
 		{
@@ -168,12 +172,12 @@ void MenuBar::DrawMenuWindows()
 			rendererCI.shouldCopyToSwapchian = false;
 			rendererCI.shouldDrawExternalUI = false;
 			rendererCI.shouldPresent = false;
-			Ref<gear::graphics::Renderer> renderer = CreateRef<gear::graphics::Renderer>(&rendererCI);
+			Ref<Renderer> renderer = CreateRef<Renderer>(&rendererCI);
 
 			static uint32_t idx = 0;
 			RenderSurface::CreateInfo renderSurfaceCI = rendererCI.window->GetRenderSurface()->GetCreateInfo();;
 			renderSurfaceCI.debugName = "Viewport " + std::to_string(idx++);
-			renderer->SubmitRenderSurface(CreateRef<gear::graphics::RenderSurface>(&renderSurfaceCI));
+			renderer->SubmitRenderSurface(CreateRef<RenderSurface>(&renderSurfaceCI));
 
 			ViewportPanel::CreateInfo viewportCI = { renderer };
 			editorPanels.emplace_back(CreateRef<ViewportPanel>(&viewportCI));
@@ -196,22 +200,22 @@ void MenuBar::DrawMenuHelp()
 
 void MenuBar::DrawItemNewProject()
 {
-	std::string folderPath = gear::core::FolderDialog_Browse();
+	std::string folderPath = FolderDialog_Browse();
 	if (!folderPath.empty())
 	{
 		Project::CreateInfo projectCI = { UIContext::GetUIContext()->GetWindow(), std::filesystem::path(folderPath), true };
-		Ref<Project> project = CreateRef<gear::build::Project>(&projectCI);
+		Ref<Project> project = CreateRef<Project>(&projectCI);
 		UIContext::GetUIContext()->SetProject(project);
 	}
 }
 
 void MenuBar::DrawItemOpenProject()
 {
-	std::string folderPath = gear::core::FolderDialog_Browse();
+	std::string folderPath = FolderDialog_Browse();
 	if (!folderPath.empty())
 	{
 		Project::CreateInfo projectCI = { UIContext::GetUIContext()->GetWindow(), std::filesystem::path(folderPath), false };
-		Ref<Project> project = CreateRef<gear::build::Project>(&projectCI);
+		Ref<Project> project = CreateRef<Project>(&projectCI);
 		UIContext::GetUIContext()->SetProject(project);
 	}
 }
@@ -224,7 +228,7 @@ void MenuBar::DrawItemNewScene()
 		Scene::CreateInfo sceneCI;
 		sceneCI.debugName = "DefaultScene";
 		sceneCI.nativeScriptDir = "res/scripts/";
-		sceneHierarchyPanel->SetScene(CreateRef<gear::scene::Scene>(&sceneCI));
+		sceneHierarchyPanel->SetScene(CreateRef<scene::Scene>(&sceneCI));
 		sceneHierarchyPanel->UpdateWindowTitle();
 	}
 }
@@ -234,7 +238,7 @@ void MenuBar::DrawItemOpenScene()
 	Ref<SceneHierarchyPanel> sceneHierarchyPanel = UIContext::GetUIContext()->GetEditorPanelsByType<SceneHierarchyPanel>()[0];
 	if (sceneHierarchyPanel)
 	{
-		std::string filepath = gear::core::FileDialog_Open("GEAR Scene file", "*.gsf");
+		std::string filepath = FileDialog_Open("GEAR Scene file", "*.gsf");
 
 		if (!filepath.empty())
 		{
@@ -266,7 +270,7 @@ void MenuBar::DrawItemSaveSceneAs()
 	Ref<SceneHierarchyPanel> sceneHierarchyPanel = UIContext::GetUIContext()->GetEditorPanelsByType<SceneHierarchyPanel>()[0];
 	if (sceneHierarchyPanel)
 	{
-		std::string filepath = gear::core::FileDialog_Save("GEAR Scene file", "*.gsf");
+		std::string filepath = FileDialog_Save("GEAR Scene file", "*.gsf");
 
 		if (!filepath.empty())
 		{
@@ -310,7 +314,7 @@ void MenuBar::DrawItemGEARBOXOptions()
 
 	if (ImGui::BeginPopupModal("GEARBOX Options"))
 	{
-		const gear::graphics::Window::CreateInfo& mainWindowCI = UIContext::GetUIContext()->GetWindow()->GetCreateInfo();
+		const Window::CreateInfo& mainWindowCI = UIContext::GetUIContext()->GetWindow()->GetCreateInfo();
 
 		uint32_t monitorCount;
 		GLFWmonitor** monitors = glfwGetMonitors((int*)&monitorCount);
@@ -365,8 +369,8 @@ void MenuBar::DrawItemGEARBOXOptions()
 			loaded = true;
 		}
 
-		DrawDropDownMenu("API", { "Unknown", "D3D12", "Vulkan" }, api, 130.0f);
-		DrawDropDownMenu("Graphics Debugger", { "None", "PIX", "RenderDoc" }, graphicsDebugger, 130.0f);
+		DrawDropDownMenu("API", api, 130.0f);
+		DrawDropDownMenu("Graphics Debugger", graphicsDebugger, 130.0f);
 		DrawUint32("Windowed Width", windowedWidth, 0, 3840, false ,130.0f);
 		DrawUint32("Windowed Height", windowedHeight, 0, 2160, false, 130.0f);
 		DrawCheckbox("Fullscreen", fullscreen, 130.0f);

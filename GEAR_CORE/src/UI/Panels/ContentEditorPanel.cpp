@@ -4,6 +4,7 @@
 
 #include "UI/ComponentUI/ComponentUI.h"
 #include "UI/ComponentUI/ModelComponentUI.h"
+#include "UI/ComponentUI/MaterialComponentUI.h"
 #include "Core/AssetFile.h"
 #include "Core/FileDialog.h"
 
