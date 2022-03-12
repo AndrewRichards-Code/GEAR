@@ -18,10 +18,7 @@ GEARBOX Editor - Work in Progress
 
 # Projects:
 ## GEAR_CORE: 
-Contains the core functionality of the game engine. Build as a static library; Dynamic Runtime Linking (MD).
-
-## GEAR_MIPMAP:
-Offline GPU-accelerated Mipmap generator. Build as executable; Dynamic Runtime Linking (MD).
+Contains the core functionality of the game engine. Build as a dynamic library; Dynamic Runtime Linking (MD).
 
 ## GEAR_TEST: 
 Simple test application for development, test and demonstration. Build as executable; Dynamic Runtime Linking (MD).
@@ -33,5 +30,5 @@ A simple level editor using ImGui. Build as executable; Dynamic Runtime Linking 
 ## Windows x64:
 - Microsoft Visual Studio 2022
 - Toolset: v143 
-- Windows SDK: 10.0.19401
-- ISO C++ 17
+- Windows SDK: 10.0.22000
+- ISO C++ 20
