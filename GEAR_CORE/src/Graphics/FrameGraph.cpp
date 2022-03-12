@@ -98,6 +98,11 @@ void GPUTask::Execute()
 			ImageProcessingFunction2();
 			break;
 		}
+		case Task::POST_PROCESSING_FUNCTION:
+		{
+			PostProcessingFunction();
+			break;
+		}
 		default:
 			break;
 		}
@@ -248,3 +253,9 @@ void GPUTask::ImageProcessingFunction2()
 	pfn(m_CI.cmdBuffer, imageProcessingFunctionTI->tri1, imageProcessingFunctionTI->tri2);
 }
 
+void GPUTask::PostProcessingFunction()
+{
+	PostProcessingFunctionTaskInfo* postProcessingFunctionTI = reinterpret_cast<PostProcessingFunctionTaskInfo*>(m_CI.pTaskInfo);
+	PostProcessing::PFN_PostProcessing pfn = postProcessingFunctionTI->pfn;
+	pfn(m_CI.cmdBuffer, postProcessingFunctionTI->frameIndex, postProcessingFunctionTI->iri);
+}

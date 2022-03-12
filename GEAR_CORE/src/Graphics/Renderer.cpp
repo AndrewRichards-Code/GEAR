@@ -97,10 +97,11 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 Renderer::~Renderer()
 {
 	m_Context->DeviceWaitIdle();
-	s_RenderPipelines.clear();
+
+	UninitialiseRenderPipelines();
+
 	ImageProcessing::ClearState();
 	PostProcessing::ClearState();
-	//m_UIContext = nullptr;
 }
 
 void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface)
@@ -139,6 +140,20 @@ void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface
 		Ref<RenderPipeline> renderPipeline = CreateRef<RenderPipeline>(&renderPipelineLI);
 		s_RenderPipelines[renderPipeline->m_CI.debugName] = renderPipeline;
 	}
+
+	ImageProcessing::InitialiseRenderPipelines();
+	PostProcessing::InitialiseRenderPipelines();
+}
+
+void Renderer::UninitialiseRenderPipelines()
+{
+	ImageProcessing::UninitialiseRenderPipelines();
+	PostProcessing::UninitialiseRenderPipelines();
+
+	for (auto& pipeline : s_RenderPipelines)
+		pipeline.second = nullptr;
+
+	s_RenderPipelines.clear();
 }
 
 void Renderer::SubmitRenderSurface(const Ref<RenderSurface>& renderSurface)
@@ -933,15 +948,27 @@ void Renderer::Draw()
 	endMainRenderPassCI.cmdBufferIndex = m_FrameIndex;
 	endMainRenderPassCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
 	endMainRenderPassCI.skipTask = false;
-	Ref<GPUTask>endMainRenderPass = CreateRef<GPUTask>(&endMainRenderPassCI);
+	Ref<GPUTask> endMainRenderPass = CreateRef<GPUTask>(&endMainRenderPassCI);
 	endMainRenderPass->Execute();
 
 	//Post Processing Compute shaders
-	graphicsCmdBuffer->BeginDebugLabel(m_FrameIndex, "PostProcessing::Bloom");
-	Ref<Image> colourInputImage = graphicsRenderPassBeginTI.framebuffer->GetCreateInfo().attachments.back()->GetCreateInfo().pImage;
-	PostProcessing::ClearImageViewsAndDescriptorSets(m_FrameIndex);
-	PostProcessing::Bloom(graphicsCmdBuffer, m_FrameIndex, { colourInputImage, Barrier::AccessBit::COLOUR_ATTACHMENT_WRITE_BIT, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT });
-	graphicsCmdBuffer->EndDebugLabel(m_FrameIndex);
+	GPUTask::PostProcessingFunctionTaskInfo ppfti;
+	ppfti.pfn = PostProcessing::Bloom;
+	ppfti.frameIndex = m_FrameIndex;
+	const Ref<Image>& colourInputImage = graphicsRenderPassBeginTI.framebuffer->GetCreateInfo().attachments.back()->GetCreateInfo().pImage;
+	ppfti.iri = { colourInputImage, Barrier::AccessBit::COLOUR_ATTACHMENT_WRITE_BIT, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT };
+	GPUTask::CreateInfo postProcessingBloomCI;
+	postProcessingBloomCI.debugName = "PostProcessing::Bloom";
+	postProcessingBloomCI.task = GPUTask::Task::POST_PROCESSING_FUNCTION;
+	postProcessingBloomCI.pTaskInfo = &ppfti;
+	postProcessingBloomCI.srcGPUTasks = { endMainRenderPass };
+	postProcessingBloomCI.srcPipelineStages = { PipelineStageBit(0) };
+	postProcessingBloomCI.cmdBuffer = graphicsCmdBuffer;
+	postProcessingBloomCI.cmdBufferIndex = m_FrameIndex;
+	postProcessingBloomCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
+	postProcessingBloomCI.skipTask = false;
+	Ref<GPUTask> postProcessingBloom = CreateRef<GPUTask>(&postProcessingBloomCI);
+	postProcessingBloom->Execute();
 
 	//HDRMapping
 	graphicsRenderPassBeginTI.framebuffer = m_RenderSurface->GetHDRFramebuffers()[m_FrameIndex];
@@ -950,7 +977,7 @@ void Renderer::Draw()
 	beginHDRRenderPassCI.debugName = "Begin HDRRenderPass";
 	beginHDRRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_BEGIN;
 	beginHDRRenderPassCI.pTaskInfo = &graphicsRenderPassBeginTI;
-	beginHDRRenderPassCI.srcGPUTasks = { endMainRenderPass };
+	beginHDRRenderPassCI.srcGPUTasks = { postProcessingBloom };
 	beginHDRRenderPassCI.srcPipelineStages = {};
 	beginHDRRenderPassCI.cmdBuffer = graphicsCmdBuffer;
 	beginHDRRenderPassCI.cmdBufferIndex = m_FrameIndex;

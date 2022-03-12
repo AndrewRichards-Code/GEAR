@@ -5,35 +5,52 @@
 #include "RenderPipeline.h"
 #include "Texture.h"
 
-
-
 using namespace gear;
 using namespace graphics;
 
 using namespace miru;
 using namespace miru::crossplatform;
 
-Ref<RenderPipeline> PostProcessing::s_BloomPreFilter;
-Ref<RenderPipeline> PostProcessing::s_BloomDownsample;
-Ref<RenderPipeline> PostProcessing::s_BloomUpsample;
+Ref<RenderPipeline> PostProcessing::s_BloomPreFilter = nullptr;
+Ref<RenderPipeline> PostProcessing::s_BloomDownsample = nullptr;
+Ref<RenderPipeline> PostProcessing::s_BloomUpsample = nullptr;
 
 std::array<std::vector<Ref<ImageView>>, 2>		PostProcessing::s_ImageViews;
 std::array<std::vector<Ref<DescriptorSet>>, 2>	PostProcessing::s_DescSets;
 
 std::array<Ref<Uniformbuffer<PostProcessing::BloomInfoUB>>, 2> PostProcessing::s_BloomInfoUBs;
-
 std::array<Ref<Sampler>, 2> PostProcessing::s_Samplers;
 
-PostProcessing::PostProcessing()
+
+void PostProcessing::InitialiseRenderPipelines()
 {
+	RenderPipeline::LoadInfo pipelineLI;
+
+	pipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
+	pipelineLI.filepath = "res/pipelines/BloomPrefilter.grpf";
+	pipelineLI.viewportWidth = 0.0f;
+	pipelineLI.viewportHeight = 0.0f;
+	pipelineLI.renderPass = nullptr;
+	pipelineLI.subpassIndex = 0;
+	s_BloomPreFilter = CreateRef<RenderPipeline>(&pipelineLI);
+
+	pipelineLI.filepath = "res/pipelines/BloomDownsample.grpf";
+	s_BloomDownsample = CreateRef<RenderPipeline>(&pipelineLI);
+
+	pipelineLI.filepath = "res/pipelines/BloomUpsample.grpf";
+	s_BloomUpsample = CreateRef<RenderPipeline>(&pipelineLI);
 }
 
-PostProcessing::~PostProcessing()
+void PostProcessing::UninitialiseRenderPipelines()
 {
+	s_BloomPreFilter = nullptr;
+	s_BloomDownsample = nullptr;
+	s_BloomUpsample = nullptr;
 }
 
 void PostProcessing::Bloom(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const ImageResourceInfo& IRI)
 {
+	PostProcessing::ClearImageViewsAndDescriptorSets(frameIndex);
 	BloomPreFilter(cmdBuffer, frameIndex, IRI);
 	
 	ImageResourceInfo IRI_output;
@@ -48,18 +65,6 @@ void PostProcessing::Bloom(const Ref<miru::crossplatform::CommandBuffer>& cmdBuf
 
 void PostProcessing::BloomPreFilter(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const ImageResourceInfo& IRI)
 {
-	if (!s_BloomPreFilter)
-	{
-		RenderPipeline::LoadInfo s_PipelineLI;
-		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/BloomPrefilter.grpf";
-		s_PipelineLI.viewportWidth = 0.0f;
-		s_PipelineLI.viewportHeight = 0.0f;
-		s_PipelineLI.renderPass = nullptr;
-		s_PipelineLI.subpassIndex = 0;
-		s_BloomPreFilter = CreateRef<RenderPipeline>(&s_PipelineLI);
-	}
-
 	void* device = cmdBuffer->GetCreateInfo().pCommandPool->GetCreateInfo().pContext->GetDevice();
 	uint32_t minSize = std::min(IRI.image->GetCreateInfo().width, IRI.image->GetCreateInfo().height);
 	uint32_t levels = std::max(static_cast<uint32_t>(log2(static_cast<double>(minSize / 8))), uint32_t(1));
@@ -174,18 +179,6 @@ void PostProcessing::BloomPreFilter(const Ref<miru::crossplatform::CommandBuffer
 
 void PostProcessing::BloomDownsample(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const ImageResourceInfo& IRI)
 {
-	if (!s_BloomDownsample)
-	{
-		RenderPipeline::LoadInfo s_PipelineLI;
-		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/BloomDownsample.grpf";
-		s_PipelineLI.viewportWidth = 0.0f;
-		s_PipelineLI.viewportHeight = 0.0f;
-		s_PipelineLI.renderPass = nullptr;
-		s_PipelineLI.subpassIndex = 0;
-		s_BloomDownsample = CreateRef<RenderPipeline>(&s_PipelineLI);
-	}
-
 	void* device = cmdBuffer->GetCreateInfo().pCommandPool->GetCreateInfo().pContext->GetDevice();
 	const uint32_t& levels = IRI.image->GetCreateInfo().mipLevels;
 
@@ -300,18 +293,6 @@ void PostProcessing::BloomDownsample(const Ref<miru::crossplatform::CommandBuffe
 
 void PostProcessing::BloomUpsample(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const ImageResourceInfo& IRI)
 {
-	if (!s_BloomUpsample)
-	{
-		RenderPipeline::LoadInfo s_PipelineLI;
-		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/BloomUpsample.grpf";
-		s_PipelineLI.viewportWidth = 0.0f;
-		s_PipelineLI.viewportHeight = 0.0f;
-		s_PipelineLI.renderPass = nullptr;
-		s_PipelineLI.subpassIndex = 0;
-		s_BloomUpsample = CreateRef<RenderPipeline>(&s_PipelineLI);
-	}
-
 	void* device = cmdBuffer->GetCreateInfo().pCommandPool->GetCreateInfo().pContext->GetDevice();
 	const uint32_t& levels = s_ImageViews[frameIndex][1]->GetCreateInfo().pImage->GetCreateInfo().mipLevels;
 
@@ -406,4 +387,15 @@ void PostProcessing::BloomUpsample(const Ref<miru::crossplatform::CommandBuffer>
 		barriers.emplace_back(Barrier::Create(&barrierCI));
 		cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
 	}
+}
+
+void PostProcessing::RecompileRenderPipelineShaders()
+{
+	AllocatorManager::GetCreateInfo().pContext->DeviceWaitIdle();
+	if (s_BloomPreFilter)
+		s_BloomPreFilter->RecompileShaders();
+	if (s_BloomDownsample)
+		s_BloomDownsample->RecompileShaders();
+	if (s_BloomUpsample)
+		s_BloomUpsample->RecompileShaders();
 }

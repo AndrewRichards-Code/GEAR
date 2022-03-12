@@ -22,8 +22,8 @@ namespace build
 		Project(CreateInfo* pCreateInfo);
 		~Project();
 
-		void AddScene(Ref<scene::Scene> scene);
-		void RemoveScene(Ref<scene::Scene> scene);
+		void AddScene(const Ref<scene::Scene>& scene);
+		void RemoveScene(const Ref<scene::Scene>& scene);
 		inline std::vector<Ref<scene::Scene>>& GetScenes() { return m_Scenes; }
 		
 		//Can return nullptr.
@@ -31,7 +31,7 @@ namespace build
 		{
 			return m_SelectedScene;
 		}
-		inline void SetSelectedScene(Ref<scene::Scene> scene)
+		inline void SetSelectedScene(const Ref<scene::Scene>& scene)
 		{
 			bool found = false;
 			for (const auto& _scene : m_Scenes)

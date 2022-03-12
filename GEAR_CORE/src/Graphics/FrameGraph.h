@@ -1,8 +1,8 @@
 #pragma once
-
 #include "gear_core_common.h"
 #include "Graphics/Renderer.h"
 #include "Graphics/ImageProcessing.h"
+#include "Graphics/PostProcessing.h"
 
 namespace gear
 {
@@ -33,6 +33,7 @@ namespace gear
 				RENDERER_FUNCTION,
 				IMAGE_PROCESSING_FUNCTION_1,
 				IMAGE_PROCESSING_FUNCTION_2,
+				POST_PROCESSING_FUNCTION,
 			};
 			enum class CommandBufferBasicControlsBit : uint32_t
 			{
@@ -91,6 +92,12 @@ namespace gear
 				ImageProcessing::TextureResourceInfo	tri1;
 				ImageProcessing::TextureResourceInfo	tri2;
 			};
+			struct PostProcessingFunctionTaskInfo
+			{
+				PostProcessing::PFN_PostProcessing	pfn;
+				uint32_t							frameIndex;
+				PostProcessing::ImageResourceInfo	iri;
+			};
 
 			struct CreateInfo
 			{
@@ -139,6 +146,7 @@ namespace gear
 			void RendererFunction();
 			void ImageProcessingFunction1();
 			void ImageProcessingFunction2();
+			void PostProcessingFunction();
 
 		};
 	}

@@ -1,15 +1,10 @@
 #pragma once
 #include "gear_core_common.h"
 #include "Animation/Animation.h"
+#include "Objects/Material.h"
 
 namespace gear 
 {
-	//Forward Declaration
-	namespace objects
-	{
-		class Material;
-	}
-		
 	class GEAR_API ModelLoader
 	{
 	public:
@@ -67,10 +62,8 @@ namespace gear
 		static std::vector<MeshData> ProcessMeshes(aiNode* node, const aiScene* scene);
 		static std::vector<animation::Animation> ProcessAnimations(const aiScene* scene);
 
-		static std::vector<std::string> GetMaterialFilePath(aiMaterial* material, aiTextureType type);
-		static void AddMaterialProperties(aiMaterial* aiMaterial, Ref<objects::Material> material);
-
-		inline static void Convert_aiMatrix4x4ToMat4(const aiMatrix4x4& in, mars::float4x4& out)
+		static void FillOutMaterialCreateInfo(aiMaterial* aiMaterial, objects::Material::CreateInfo& materialCreateInfo);
+		inline static void Convert_aiMatrix4x4ToFloat4x4(const aiMatrix4x4& in, mars::float4x4& out)
 		{
 			memcpy_s((void* const)out.GetData(), out.GetSize(), &in.a1, sizeof(aiMatrix4x4));
 		}

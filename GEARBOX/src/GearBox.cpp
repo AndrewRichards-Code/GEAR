@@ -110,6 +110,11 @@ void GEARBOX::InternalRun()
 			editorPanels.emplace_back(CreateRef<ContentEditorPanel>(&contentEditorCI));
 			break;
 		}
+		case Panel::Type::MATERIAL:
+		{
+			editorPanels.emplace_back(CreateRef<MaterialPanel>());
+			break;
+		}
 		case Panel::Type::PROJECT:
 		{
 			editorPanels.emplace_back(CreateRef<ProjectPanel>());
@@ -161,6 +166,7 @@ void GEARBOX::InternalRun()
 		mainWindow->CalculateFPS();
 	}
 	mainWindow->GetContext()->DeviceWaitIdle();
+	AllocatorManager::Uninitialise();
 
 	if (std::filesystem::exists(configFilepath))
 	{

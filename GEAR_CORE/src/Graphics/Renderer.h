@@ -88,6 +88,7 @@ namespace graphics
 
 	private:
 		void InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface);
+		void UninitialiseRenderPipelines();
 		
 	public:
 		void SubmitRenderSurface(const Ref<RenderSurface>& renderSurface);
@@ -127,6 +128,7 @@ namespace graphics
 		inline Ref<miru::crossplatform::Context> GetContext() { return m_Context; }
 		inline void* GetDevice() { return m_Device; }
 		inline Ref<Window> GetWindow() { return m_CI.window; }
+		static inline std::map<std::string, Ref<graphics::RenderPipeline>> GetRenderPipelines() { return s_RenderPipelines; }
 		inline Ref<RenderSurface> GetRenderSurface() { return m_RenderSurface; }
 		inline Ref<objects::Camera> GetCamera() { return m_Camera; }
 

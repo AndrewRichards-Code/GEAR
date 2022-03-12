@@ -30,6 +30,8 @@ namespace graphics
 
 	public:
 		static void Initialise(CreateInfo* pCreateInfo);
+		static void Uninitialise();
+
 		static Ref<miru::crossplatform::Allocator> GetAllocator(AllocatorType type);
 		static Ref<miru::crossplatform::Allocator> GetCPUAllocator();
 		static Ref<miru::crossplatform::Allocator> GetGPUAllocator();

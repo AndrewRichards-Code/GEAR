@@ -411,4 +411,5 @@ void GEAR_TEST::Run()
 		window->CalculateFPS();
 	}
 	window->GetContext()->DeviceWaitIdle();
+	AllocatorManager::Uninitialise();
 }

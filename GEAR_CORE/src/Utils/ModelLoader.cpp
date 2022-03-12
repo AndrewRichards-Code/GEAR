@@ -3,10 +3,11 @@
 #include "ModelLoader.h"
 #include "Objects/Material.h"
 #include "Objects/Transform.h"
-#include "Animation/Animation.h"
 
 using namespace gear;
+using namespace graphics;
 using namespace animation;
+using namespace objects;
 
 using namespace mars;
 
@@ -37,6 +38,8 @@ ModelLoader::ModelData ModelLoader::LoadModelData(const std::string& filepath)
 	ModelData modelData;
 	BuildNodeGraph(scene, scene->mRootNode, modelData.nodeGraph, modelData);
 
+	Material::ClearLoadedMaterials();
+
 	return modelData;
 }
 
@@ -53,7 +56,7 @@ void ModelLoader::BuildNodeGraph(const aiScene* scene, aiNode* node, Node& thisN
 	if (node)
 	{
 		thisNode.name = node->mName.C_Str();
-		Convert_aiMatrix4x4ToMat4(node->mTransformation, thisNode.transform);
+		Convert_aiMatrix4x4ToFloat4x4(node->mTransformation, thisNode.transform);
 
 		if(node->mNumMeshes > 0)
 		{
@@ -151,7 +154,7 @@ std::vector<ModelLoader::MeshData> ModelLoader::ProcessMeshes(aiNode* node, cons
 
 			float4x4& transform = meshData.bones.back().transform;
 			aiMatrix4x4 aiTransform = mesh->mBones[i]->mOffsetMatrix;
-			Convert_aiMatrix4x4ToMat4(aiTransform, transform);
+			Convert_aiMatrix4x4ToFloat4x4(aiTransform, transform);
 
 			std::vector<std::pair<uint32_t, float>>& vertexIDsAndWeights = meshData.bones.back().vertexIDsAndWeights;
 			for (unsigned int j = 0; j < mesh->mBones[i]->mNumWeights; j++)
@@ -166,69 +169,20 @@ std::vector<ModelLoader::MeshData> ModelLoader::ProcessMeshes(aiNode* node, cons
 		aiString materialName;
 		material->Get(AI_MATKEY_NAME, materialName);
 
-		Ref<objects::Material> mat = objects::Material::FindMaterial(materialName.C_Str());
+		Ref<Material> mat = Material::FindMaterial(materialName.C_Str());
 		if (mat != nullptr)
 		{
 			meshData.pMaterial = mat;
 		}
 		else
 		{
-			std::map<objects::Material::TextureType, Ref<graphics::Texture>> textures;
-			for (unsigned int i = 0; i < AI_TEXTURE_TYPE_MAX; i++)
-			{
-				std::vector<std::string> filepaths = GetMaterialFilePath(material, (aiTextureType)i);
-				if (!filepaths.empty())
-				{
-					objects::Material::TextureType type;
-					for (auto& filepath : filepaths)
-					{
-						switch (i)
-						{
-						case aiTextureType::aiTextureType_BASE_COLOR:
-							type = objects::Material::TextureType::ALBEDO; break;
-						case aiTextureType::aiTextureType_NORMAL_CAMERA:
-							type = objects::Material::TextureType::NORMAL; break;
-						case aiTextureType::aiTextureType_EMISSION_COLOR:
-							type = objects::Material::TextureType::EMISSIVE; break;
-						case aiTextureType::aiTextureType_METALNESS:
-							type = objects::Material::TextureType::METALLIC; break;
-						case aiTextureType::aiTextureType_DIFFUSE_ROUGHNESS:
-							type = objects::Material::TextureType::ROUGHNESS; break;
-						case aiTextureType::aiTextureType_AMBIENT_OCCLUSION:
-							type = objects::Material::TextureType::AMBIENT_OCCLUSION; break;
-						case aiTextureType::aiTextureType_NORMALS:
-							type = objects::Material::TextureType::NORMAL; break;
-						default:
-							type = objects::Material::TextureType::UNKNOWN; break;
-						}
-
-						if (std::filesystem::exists(filepath))
-						{
-							graphics::Texture::CreateInfo texCI;
-							texCI.device = m_Device;
-							texCI.dataType = graphics::Texture::DataType::FILE;
-							texCI.file.filepaths = { filepath };
-							texCI.mipLevels = 1;
-							texCI.arrayLayers = 1;
-							texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
-							texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
-							texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-							texCI.usage = miru::crossplatform::Image::UsageBit(0);
-							texCI.generateMipMaps = false;
-							textures[type] = CreateRef<graphics::Texture>(&texCI);
-						}
-					}
-				}
-			}
-
-			objects::Material::CreateInfo materialCI;
+			Material::CreateInfo materialCI;
 			materialCI.debugName = materialName.C_Str();
 			materialCI.device = m_Device;
-			materialCI.pbrTextures = textures;
-			meshData.pMaterial = CreateRef<objects::Material>(&materialCI);
-			AddMaterialProperties(material, meshData.pMaterial);
+			FillOutMaterialCreateInfo(material, materialCI);
+			meshData.pMaterial = CreateRef<Material>(&materialCI);
 
-			objects::Material::AddMaterial(materialName.C_Str(), meshData.pMaterial);
+			Material::AddMaterial(materialName.C_Str(), meshData.pMaterial);
 		}
 		meshes.push_back(meshData);
 	}
@@ -270,7 +224,7 @@ std::vector<animation::Animation> ModelLoader::ProcessAnimations(const aiScene* 
 						nodeAnim->mPositionKeys[k].mValue.y,
 						nodeAnim->mPositionKeys[k].mValue.z);
 
-					objects::Transform transform;
+					Transform transform;
 					transform.translation = translation;
 					NodeAnimation::Keyframe kf = { timepoint , transform };
 					keyframes.push_back(kf);
@@ -289,7 +243,7 @@ std::vector<animation::Animation> ModelLoader::ProcessAnimations(const aiScene* 
 						nodeAnim->mRotationKeys[k].mValue.y,
 						nodeAnim->mRotationKeys[k].mValue.z);
 
-					objects::Transform transform;
+					Transform transform;
 					transform.orientation = orientation;
 					NodeAnimation::Keyframe kf = { timepoint , transform };
 					keyframes.push_back(kf);
@@ -307,7 +261,7 @@ std::vector<animation::Animation> ModelLoader::ProcessAnimations(const aiScene* 
 						nodeAnim->mScalingKeys[k].mValue.y,
 						nodeAnim->mScalingKeys[k].mValue.z);
 
-					objects::Transform transform;
+					Transform transform;
 					transform.scale = scale;
 					NodeAnimation::Keyframe kf = { timepoint , transform };
 					keyframes.push_back(kf);
@@ -323,84 +277,100 @@ std::vector<animation::Animation> ModelLoader::ProcessAnimations(const aiScene* 
 	return animations;
 }
 
-std::vector<std::string> ModelLoader::GetMaterialFilePath(aiMaterial* material, aiTextureType type)
+void ModelLoader::FillOutMaterialCreateInfo(aiMaterial* aiMaterial, Material::CreateInfo& materialCreateInfo)
 {
-	std::vector<std::string> result;
-	for (unsigned int i = 0; i < material->GetTextureCount(type); i++)
+	UniformBufferStructures::PBRConstants& pbrConstants = materialCreateInfo.pbrConstants;
+	std::map<Material::TextureType, Ref<Texture>>& pbrTextures = materialCreateInfo.pbrTextures;
+
+	pbrConstants = UniformBufferStructures::DefaultPBRConstants();
+
+	bool useColourMap;
+	bool useEmissiveMap;
+	bool useMetallicMap;
+	bool useRoughnessMap;
+	bool useAOMap;
+
+	aiString baseColourFilepath;
+	aiString normalFilepath;
+	aiString emissiveFilepath;
+	aiString metallicFilepath;
+	aiString roughnessFilepath;
+	aiString aoFilepath;
+
+	aiColor3D baseColour;
+	aiColor3D emissiveColour;
+	float emissiveIntensity = 0.0f;
+	float metallic = 0.0f;
+	float roughness = 0.0f;
+	float ao = 0.0f;
+	aiColor3D specularColour;
+
+	aiShadingMode mode;
+	aiMaterial->Get(AI_MATKEY_SHADING_MODEL, mode);
+
+	aiMaterial->Get(AI_MATKEY_USE_COLOR_MAP, useColourMap);
+	aiMaterial->GetTexture(aiTextureType_BASE_COLOR, 0, &baseColourFilepath);
+	aiMaterial->Get(AI_MATKEY_BASE_COLOR, baseColour);
+
+	aiMaterial->GetTexture(aiTextureType_NORMAL_CAMERA, 0, &normalFilepath);
+
+	aiMaterial->Get(AI_MATKEY_USE_EMISSIVE_MAP, useEmissiveMap);
+	aiMaterial->GetTexture(aiTextureType_EMISSION_COLOR, 0, &emissiveFilepath);
+	aiMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColour);
+	aiMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, emissiveIntensity);
+	
+	aiMaterial->Get(AI_MATKEY_USE_METALLIC_MAP, useMetallicMap);
+	aiMaterial->GetTexture(aiTextureType_METALNESS, 0, &metallicFilepath);
+	aiMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallic);
+
+	aiMaterial->Get(AI_MATKEY_USE_ROUGHNESS_MAP, useRoughnessMap);
+	aiMaterial->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessFilepath);
+	aiMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
+
+	aiMaterial->Get(AI_MATKEY_USE_AO_MAP, useAOMap);
+	aiMaterial->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aoFilepath);
+
+	aiMaterial->Get(AI_MATKEY_COLOR_SPECULAR, specularColour);
+
+	auto LoadTexture = [](std::map<Material::TextureType, Ref<Texture>>& textures, const Material::TextureType& type, aiString _filepath)
 	{
-		aiString str;
-		material->GetTexture(type, i, &str);
-		std::string filepath = str.C_Str();
+		std::string filepath = std::string(_filepath.C_Str());
 
-		bool skip = false;
-		for(std::vector<std::string>::iterator it = result.begin(); it < result.end(); it++)
+		if (std::filesystem::exists(filepath))
 		{
-			if (*it == filepath)
-			{
-				skip = true;
-				break;
-			}
+			bool linear = Material::IsTextureTypeLinear(type);
+			graphics::Texture::CreateInfo textureCI;
+			textureCI.debugName = filepath;
+			textureCI.device = m_Device;
+			textureCI.dataType = graphics::Texture::DataType::FILE;
+			textureCI.file.filepaths.push_back(filepath);
+			textureCI.mipLevels = graphics::Texture::MaxMipLevel;
+			textureCI.arrayLayers = 1;
+			textureCI.type = miru::crossplatform::Image::Type::TYPE_2D;
+			textureCI.format = linear ? miru::crossplatform::Image::Format::R32G32B32A32_SFLOAT : miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
+			textureCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+			textureCI.usage = miru::crossplatform::Image::UsageBit(0);
+			textureCI.generateMipMaps = true;
+			textureCI.gammaSpace = linear ? graphics::GammaSpace::LINEAR : graphics::GammaSpace::SRGB;
+			textures[type] = CreateRef<Texture>(&textureCI);
 		}
-		if(!skip)
-			result.push_back(filepath);
-	}
-	return result;
-}
-void ModelLoader::AddMaterialProperties(aiMaterial* aiMaterial, Ref<objects::Material> material)
-{
-	aiString name;
-	int twoSided;
-	int shadingModel;
-	int wireframe;
-	int blendFunc;
-	float opacity;
-	float shininess;
-	float reflectivity;
-	float shininessStrength;
-	float refractiveIndex;
-	aiColor3D colourDiffuse;
-	aiColor3D colourAmbient;
-	aiColor3D colourSpecular;
-	aiColor3D colourEmissive;
-	aiColor3D colourTransparent;
-	aiColor3D colourReflective;
 
-	aiMaterial->Get(AI_MATKEY_NAME, name);
-	aiMaterial->Get(AI_MATKEY_TWOSIDED, twoSided);
-	aiMaterial->Get(AI_MATKEY_SHADING_MODEL, shadingModel);
-	aiMaterial->Get(AI_MATKEY_ENABLE_WIREFRAME, wireframe);
-	aiMaterial->Get(AI_MATKEY_BLEND_FUNC, blendFunc);
-	aiMaterial->Get(AI_MATKEY_OPACITY, opacity);
-	//aiMmaterial->Get(AI_MATKEY_BUMPSCALING, colour_diffuse);
-	aiMaterial->Get(AI_MATKEY_SHININESS, shininess);
-	aiMaterial->Get(AI_MATKEY_REFLECTIVITY, reflectivity);
-	aiMaterial->Get(AI_MATKEY_SHININESS_STRENGTH, shininessStrength);
-	aiMaterial->Get(AI_MATKEY_REFRACTI, refractiveIndex);
-	aiMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, colourDiffuse);
-	aiMaterial->Get(AI_MATKEY_COLOR_AMBIENT, colourAmbient);
-	aiMaterial->Get(AI_MATKEY_COLOR_SPECULAR, colourSpecular);
-	aiMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, colourEmissive);
-	aiMaterial->Get(AI_MATKEY_COLOR_TRANSPARENT, colourTransparent);
-	aiMaterial->Get(AI_MATKEY_COLOR_REFLECTIVE, colourReflective);
-	//aiMaterial->Get(AI_MATKEY_GLOBAL_BACKGROUND_IMAGE, colour_diffuse);
+	};
+	LoadTexture(pbrTextures, Material::TextureType::ALBEDO, baseColourFilepath);
+	LoadTexture(pbrTextures, Material::TextureType::NORMAL, normalFilepath);
+	LoadTexture(pbrTextures, Material::TextureType::EMISSIVE, emissiveFilepath);
+	LoadTexture(pbrTextures, Material::TextureType::METALLIC, metallicFilepath);
+	LoadTexture(pbrTextures, Material::TextureType::ROUGHNESS, roughnessFilepath);
+	LoadTexture(pbrTextures, Material::TextureType::AMBIENT_OCCLUSION, aoFilepath);
 
-	material->AddProperties({
-		name.C_Str(),
-		twoSided,
-		shadingModel,
-		wireframe,
-		blendFunc,
-		opacity,
-		shininess,
-		reflectivity,
-		shininessStrength,
-		refractiveIndex,
-		float4(colourDiffuse.r, colourDiffuse.g, colourDiffuse.b, 1),
-		float4(colourAmbient.r, colourAmbient.g, colourAmbient.b, 1),
-		float4(colourSpecular.r, colourSpecular.g, colourSpecular.b, 1),
-		float4(colourEmissive.r, colourEmissive.g, colourEmissive.b, 1),
-		float4(colourTransparent.r, colourTransparent.g, colourTransparent.b, 1),
-		float4(colourReflective.r, colourReflective.g, colourReflective.b, 1)
-		});
-	material->Update();
+	auto aiColor3DToFloat4 = [](const aiColor3D value) -> float4
+	{
+		return float4(value.r, value.g, value.b, 1.0);
+	};
+	pbrConstants.fresnel = aiColor3DToFloat4(specularColour);
+	pbrConstants.albedo = aiColor3DToFloat4(baseColour);
+	pbrConstants.metallic = metallic;
+	pbrConstants.roughness = roughness;
+	pbrConstants.ambientOcclusion = 1.0f;
+	pbrConstants.emissive = aiColor3DToFloat4(emissiveColour) * emissiveIntensity;
 }

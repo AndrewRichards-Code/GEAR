@@ -26,6 +26,10 @@ Material::Material(CreateInfo* pCreateInfo)
 
 Material::~Material()
 {
+	ClearLoadedMaterials();
+	s_WhiteTexture = nullptr;
+	s_BlueNormalTexture = nullptr;
+	s_BlackTexture = nullptr;
 }
 
 void Material::Update()
@@ -88,19 +92,6 @@ void Material::SetDefaultPBRTextures()
 		m_CI.pbrTextures[TextureType::EMISSIVE] = s_WhiteTexture;
 }
 
-
-void Material::AddProperties(const Properties& properties)
-{
-	m_Properties = properties;
-
-	m_CI.pbrConstants.fresnel = m_Properties.colourSpecular;
-	m_CI.pbrConstants.albedo = m_Properties.colourDiffuse;
-	m_CI.pbrConstants.metallic = 1.0f;
-	m_CI.pbrConstants.roughness = 1.0f - (m_Properties.shininess / 32.0f);
-	m_CI.pbrConstants.ambientOcclusion = 1.0f;
-	m_CI.pbrConstants.emissive = m_Properties.colourEmissive;
-}
-
 void Material::InitialiseUB()
 {
 	float zero[sizeof(PBRConstantsUB)] = { 0 };
@@ -134,6 +125,7 @@ void Material::CreateDefaultColourTextures()
 	texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	texCI.usage = miru::crossplatform::Image::UsageBit(0);
 	texCI.generateMipMaps = false;
+	texCI.gammaSpace = GammaSpace::LINEAR;
 	s_WhiteTexture = CreateRef<Texture>(&texCI);
 
 	uint8_t dataBlue[4] = { 0x7F, 0x7F, 0xFF, 0xFF };

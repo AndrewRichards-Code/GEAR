@@ -154,6 +154,7 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 	rpCI.multisampleState.rasterisationSamples = std::string(multisampleState["rasterisationSamples"]).compare("FRAMEBUFFER_SAMPLE_COUNT") == 0 ? pLoadInfo->samples : SampleCountBitStrings[multisampleState["rasterisationSamples"]];
 	rpCI.multisampleState.sampleShadingEnable = multisampleState["sampleShadingEnable"];
 	rpCI.multisampleState.minSampleShading = multisampleState["minSampleShading"];
+	rpCI.multisampleState.sampleMask = multisampleState["sampleMask"];
 	rpCI.multisampleState.alphaToCoverageEnable = multisampleState["alphaToCoverageEnable"];
 	rpCI.multisampleState.alphaToOneEnable = multisampleState["alphaToOneEnable"];
 

@@ -4,8 +4,6 @@
 #include "AllocatorManager.h"
 #include "RenderPipeline.h"
 #include "Texture.h"
-#include "UniformBuffer.h"
-#include "UniformBufferStructures.h"
 
 using namespace gear;
 using namespace graphics;
@@ -13,54 +11,60 @@ using namespace graphics;
 using namespace miru;
 using namespace miru::crossplatform;
 
-Ref<RenderPipeline> ImageProcessing::s_PipelineMipMap;
-Ref<RenderPipeline> ImageProcessing::s_PipelineMipMapArray;
-Ref<RenderPipeline> ImageProcessing::s_PipelineEquirectangularToCube;
-Ref<RenderPipeline> ImageProcessing::s_PipelineDiffuseIrradiance;
-Ref<RenderPipeline> ImageProcessing::s_PipelineSpecularIrradiance;
-Ref<RenderPipeline> ImageProcessing::s_PipelineSpecularBRDF_LUT;
+Ref<RenderPipeline> ImageProcessing::s_PipelineMipMap = nullptr;
+Ref<RenderPipeline> ImageProcessing::s_PipelineMipMapArray = nullptr;
+Ref<RenderPipeline> ImageProcessing::s_PipelineEquirectangularToCube = nullptr;
+Ref<RenderPipeline> ImageProcessing::s_PipelineDiffuseIrradiance = nullptr;
+Ref<RenderPipeline> ImageProcessing::s_PipelineSpecularIrradiance = nullptr;
+Ref<RenderPipeline> ImageProcessing::s_PipelineSpecularBRDF_LUT = nullptr;
 
 std::vector<Ref<ImageView>>		ImageProcessing::s_ImageViews;
 std::vector<Ref<DescriptorSet>>	ImageProcessing::s_DescSets;
 
-typedef UniformBufferStructures::SpecularIrradianceInfo SpecularIrradianceInfoUB;
-static std::vector<Ref<Uniformbuffer<SpecularIrradianceInfoUB>>> m_SpecularIrradianceInfoUBs;
+std::vector<Ref<Uniformbuffer<ImageProcessing::SpecularIrradianceInfoUB>>> ImageProcessing::s_SpecularIrradianceInfoUBs;
 
-ImageProcessing::ImageProcessing()
+void ImageProcessing::InitialiseRenderPipelines()
 {
+	RenderPipeline::LoadInfo pipelineLI;
+
+	pipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
+	pipelineLI.filepath = "res/pipelines/Mipmap.grpf";
+	pipelineLI.viewportWidth = 0.0f;
+	pipelineLI.viewportHeight = 0.0f;
+	pipelineLI.renderPass = nullptr;
+	pipelineLI.subpassIndex = 0;
+	s_PipelineMipMap = CreateRef<RenderPipeline>(&pipelineLI);
+
+	pipelineLI.filepath = "res/pipelines/MipmapArray.grpf";
+	s_PipelineMipMapArray = CreateRef<RenderPipeline>(&pipelineLI);
+
+	pipelineLI.filepath = "res/pipelines/EquirectangularToCube.grpf";
+	s_PipelineEquirectangularToCube = CreateRef<RenderPipeline>(&pipelineLI);
+
+	pipelineLI.filepath = "res/pipelines/DiffuseIrradiance.grpf";
+	s_PipelineDiffuseIrradiance = CreateRef<RenderPipeline>(&pipelineLI);
+
+	pipelineLI.filepath = "res/pipelines/SpecularIrradiance.grpf";
+	s_PipelineSpecularIrradiance = CreateRef<RenderPipeline>(&pipelineLI);
+
+	pipelineLI.filepath = "res/pipelines/SpecularBRDF_LUT.grpf";
+	s_PipelineSpecularBRDF_LUT = CreateRef<RenderPipeline>(&pipelineLI);
 }
 
-ImageProcessing::~ImageProcessing()
+void ImageProcessing::UninitialiseRenderPipelines()
 {
+	s_PipelineMipMap = nullptr;
+	s_PipelineMipMapArray = nullptr;
+	s_PipelineEquirectangularToCube = nullptr;
+	s_PipelineDiffuseIrradiance = nullptr;
+	s_PipelineSpecularIrradiance = nullptr;
+	s_PipelineSpecularBRDF_LUT = nullptr;
 }
 
 void ImageProcessing::GenerateMipMaps(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, const TextureResourceInfo& TRI)
 {
 	if (!TRI.texture->m_GenerateMipMaps || TRI.texture->m_Generated)
 		return;
-
-	if(!s_PipelineMipMap)
-	{ 
-		RenderPipeline::LoadInfo s_PipelineLI;
-		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/Mipmap.grpf";
-		s_PipelineLI.viewportWidth = 0.0f;
-		s_PipelineLI.viewportHeight = 0.0f;
-		s_PipelineLI.renderPass = nullptr;
-		s_PipelineLI.subpassIndex = 0;
-		s_PipelineMipMap = CreateRef<RenderPipeline>(&s_PipelineLI);
-	}
-	if (!s_PipelineMipMapArray)
-	{
-		RenderPipeline::LoadInfo s_PipelineLI;
-		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/MipmapArray.grpf";
-		s_PipelineLI.viewportWidth = 0.0f;
-		s_PipelineLI.viewportHeight = 0.0f;
-		s_PipelineLI.renderPass = nullptr;
-		s_PipelineLI.subpassIndex = 0;
-		s_PipelineMipMapArray = CreateRef<RenderPipeline>(&s_PipelineLI);
-	}
 
 	void* device = cmdBuffer->GetCreateInfo().pCommandPool->GetCreateInfo().pContext->GetDevice();
 	const uint32_t& levels = TRI.texture->GetCreateInfo().mipLevels;
@@ -178,18 +182,6 @@ void ImageProcessing::GenerateMipMaps(const Ref<miru::crossplatform::CommandBuff
 
 void ImageProcessing::EquirectangularToCube(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, const TextureResourceInfo& environmentCubemapTRI, const TextureResourceInfo& equirectangularTRI)
 {
-	if (!s_PipelineEquirectangularToCube)
-	{
-		RenderPipeline::LoadInfo s_PipelineLI;
-		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/EquirectangularToCube.grpf";
-		s_PipelineLI.viewportWidth = 0.0f;
-		s_PipelineLI.viewportHeight = 0.0f;
-		s_PipelineLI.renderPass = nullptr;
-		s_PipelineLI.subpassIndex = 0;
-		s_PipelineEquirectangularToCube = CreateRef<RenderPipeline>(&s_PipelineLI);
-	}
-
 	void* device = cmdBuffer->GetCreateInfo().pCommandPool->GetCreateInfo().pContext->GetDevice();
 
 	Ref<ImageView> m_EquirectangularImageView;
@@ -306,18 +298,6 @@ void ImageProcessing::EquirectangularToCube(const Ref<miru::crossplatform::Comma
 
 void ImageProcessing::DiffuseIrradiance(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, const TextureResourceInfo& diffuseIrradianceTRI, const TextureResourceInfo& environmentCubemapTRI)
 {
-	if (!s_PipelineDiffuseIrradiance)
-	{
-		RenderPipeline::LoadInfo s_PipelineLI;
-		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/DiffuseIrradiance.grpf";
-		s_PipelineLI.viewportWidth = 0.0f;
-		s_PipelineLI.viewportHeight = 0.0f;
-		s_PipelineLI.renderPass = nullptr;
-		s_PipelineLI.subpassIndex = 0;
-		s_PipelineDiffuseIrradiance = CreateRef<RenderPipeline>(&s_PipelineLI);
-	}
-
 	void* device = cmdBuffer->GetCreateInfo().pCommandPool->GetCreateInfo().pContext->GetDevice();
 
 	Ref<ImageView> m_EnvironmentImageView;
@@ -422,18 +402,6 @@ void ImageProcessing::DiffuseIrradiance(const Ref<miru::crossplatform::CommandBu
 
 void ImageProcessing::SpecularIrradiance(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, const TextureResourceInfo& specularIrradianceTRI, const TextureResourceInfo& environmentCubemapTRI)
 {
-	if (!s_PipelineSpecularIrradiance)
-	{
-		RenderPipeline::LoadInfo s_PipelineLI;
-		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/SpecularIrradiance.grpf";
-		s_PipelineLI.viewportWidth = 0.0f;
-		s_PipelineLI.viewportHeight = 0.0f;
-		s_PipelineLI.renderPass = nullptr;
-		s_PipelineLI.subpassIndex = 0;
-		s_PipelineSpecularIrradiance = CreateRef<RenderPipeline>(&s_PipelineLI);
-	}
-
 	void* device = cmdBuffer->GetCreateInfo().pCommandPool->GetCreateInfo().pContext->GetDevice();
 
 	const uint32_t& levels = specularIrradianceTRI.texture->GetCreateInfo().mipLevels;
@@ -459,8 +427,8 @@ void ImageProcessing::SpecularIrradiance(const Ref<miru::crossplatform::CommandB
 		m_SpecularIrradianceImageViews.push_back(ImageView::Create(&m_ImageViewCI));
 	}
 
-	m_SpecularIrradianceInfoUBs.clear();
-	m_SpecularIrradianceInfoUBs.resize(levels);
+	s_SpecularIrradianceInfoUBs.clear();
+	s_SpecularIrradianceInfoUBs.resize(levels);
 
 	float zero[sizeof(SpecularIrradianceInfoUB)] = { 0 };
 	Uniformbuffer<SpecularIrradianceInfoUB>::CreateInfo ubCI;
@@ -469,9 +437,9 @@ void ImageProcessing::SpecularIrradiance(const Ref<miru::crossplatform::CommandB
 	ubCI.data = zero;
 	for (uint32_t i = 0; i < levels; i++)
 	{
-		m_SpecularIrradianceInfoUBs[i] = CreateRef<Uniformbuffer<SpecularIrradianceInfoUB>>(&ubCI);
-		m_SpecularIrradianceInfoUBs[i]->roughness = float(i) / float(levels);
-		m_SpecularIrradianceInfoUBs[i]->SubmitData();
+		s_SpecularIrradianceInfoUBs[i] = CreateRef<Uniformbuffer<SpecularIrradianceInfoUB>>(&ubCI);
+		s_SpecularIrradianceInfoUBs[i]->roughness = float(i) / float(levels);
+		s_SpecularIrradianceInfoUBs[i]->SubmitData();
 	}
 
 	DescriptorPool::CreateInfo m_DescPoolCI;
@@ -493,7 +461,7 @@ void ImageProcessing::SpecularIrradiance(const Ref<miru::crossplatform::CommandB
 		m_DescSets.emplace_back(DescriptorSet::Create(&m_DescSetCI));
 		m_DescSets[i]->AddImage(0, 0, { { environmentCubemapTRI.texture->GetTextureSampler(), m_EnvironmentImageView, m_EnvironmentImageLayout } });
 		m_DescSets[i]->AddImage(0, 1, { { nullptr, m_SpecularIrradianceImageViews[i], m_SpecularIrradianceImageLayout } });
-		m_DescSets[i]->AddBuffer(0, 2, { { m_SpecularIrradianceInfoUBs[i]->GetBufferView() } });
+		m_DescSets[i]->AddBuffer(0, 2, { { s_SpecularIrradianceInfoUBs[i]->GetBufferView() } });
 		m_DescSets[i]->Update();
 	}
 	//Save the Image Views and Descriptor Set as the command buffer is executed out of scope.
@@ -531,7 +499,7 @@ void ImageProcessing::SpecularIrradiance(const Ref<miru::crossplatform::CommandB
 		
 		for (uint32_t i = 0; i < levels; i++)
 		{
-			m_SpecularIrradianceInfoUBs[i]->Upload(cmdBuffer, 0, true);
+			s_SpecularIrradianceInfoUBs[i]->Upload(cmdBuffer, 0, true);
 			if (GraphicsAPI::IsD3D12())
 			{
 				Barrier::CreateInfo bCI;
@@ -540,9 +508,9 @@ void ImageProcessing::SpecularIrradiance(const Ref<miru::crossplatform::CommandB
 				bCI.dstAccess = Barrier::AccessBit::UNIFORM_READ_BIT;
 				bCI.dstQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
 				bCI.srcQueueFamilyIndex = MIRU_QUEUE_FAMILY_IGNORED;
-				bCI.pBuffer = m_SpecularIrradianceInfoUBs[i]->GetBuffer();
+				bCI.pBuffer = s_SpecularIrradianceInfoUBs[i]->GetBuffer();
 				bCI.offset = 0;
-				bCI.size = m_SpecularIrradianceInfoUBs[i]->GetSize();
+				bCI.size = s_SpecularIrradianceInfoUBs[i]->GetSize();
 				Ref<Barrier> b = Barrier::Create(&bCI);
 				cmdBuffer->PipelineBarrier(0, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, { b });
 			};
@@ -582,18 +550,6 @@ void ImageProcessing::SpecularIrradiance(const Ref<miru::crossplatform::CommandB
 
 void ImageProcessing::SpecularBRDF_LUT(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, const TextureResourceInfo& TRI)
 {
-	if (!s_PipelineSpecularBRDF_LUT)
-	{
-		RenderPipeline::LoadInfo s_PipelineLI;
-		s_PipelineLI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-		s_PipelineLI.filepath = "res/pipelines/SpecularBRDF_LUT.grpf";
-		s_PipelineLI.viewportWidth = 0.0f;
-		s_PipelineLI.viewportHeight = 0.0f;
-		s_PipelineLI.renderPass = nullptr;
-		s_PipelineLI.subpassIndex = 0;
-		s_PipelineSpecularBRDF_LUT = CreateRef<RenderPipeline>(&s_PipelineLI);
-	}
-
 	void* device = cmdBuffer->GetCreateInfo().pCommandPool->GetCreateInfo().pContext->GetDevice();
 
 	Ref<ImageView> m_SpecularBRDF_LUTImageView;

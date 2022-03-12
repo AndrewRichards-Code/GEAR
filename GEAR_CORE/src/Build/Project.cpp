@@ -55,12 +55,12 @@ Project::~Project()
 	m_Scenes.clear();
 }
 
-void Project::AddScene(Ref<Scene> scene)
+void Project::AddScene(const Ref<Scene>& scene)
 {
 	m_Scenes.push_back(scene);
 }
 
-void Project::RemoveScene(Ref<Scene> scene)
+void Project::RemoveScene(const Ref<Scene>& scene)
 {
 	if (!m_Scenes.empty())
 	{

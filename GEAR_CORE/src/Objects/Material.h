@@ -40,30 +40,9 @@ namespace objects
 		typedef graphics::UniformBufferStructures::PBRConstants PBRConstantsUB;
 		Ref<graphics::Uniformbuffer<PBRConstantsUB>> m_UB;
 	
-		struct Properties
-		{
-			std::string name;
-			int				twoSided;
-			int				shadingModel;
-			int				wireframe;
-			int				blendFunc;
-			float			opacity;
-			float			shininess;
-			float			reflectivity;
-			float			shininessStrength;
-			float			refractiveIndex;
-			mars::float4	colourDiffuse;
-			mars::float4	colourAmbient;
-			mars::float4	colourSpecular;
-			mars::float4	colourEmissive;
-			mars::float4	colourTransparent;
-			mars::float4	colourReflective;
-		} m_Properties;
-	
 	public:
 		CreateInfo m_CI;
 	
-	public:
 		Material(CreateInfo* pCreateInfo);
 		~Material();
 	
@@ -75,7 +54,6 @@ namespace objects
 
 	public:
 		void SetDefaultPBRTextures();
-		void AddProperties(const Properties& properties);
 		
 	private:
 		void InitialiseUB();
@@ -88,8 +66,9 @@ namespace objects
 		inline std::map<TextureType, Ref<graphics::Texture>>& GetTextures() { return m_CI.pbrTextures; }
 		inline const std::map<TextureType, Ref<graphics::Texture>>& GetTextures() const { return m_CI.pbrTextures; }
 		inline const Ref<graphics::Uniformbuffer<PBRConstantsUB>>& GetUB() const { return m_UB; }
-
 		inline std::string GetDebugName() const { return "GEAR_CORE_Material: " + m_CI.debugName; }
+		inline static graphics::GammaSpace GetGammaSpacePerTextureType(const TextureType& type) { return (type == TextureType::ALBEDO ? graphics::GammaSpace::SRGB : graphics::GammaSpace::LINEAR); }
+		inline static bool IsTextureTypeLinear(const TextureType& type) { return (GetGammaSpacePerTextureType(type) == graphics::GammaSpace::LINEAR); }
 	
 		inline static void AddMaterial(std::string name, const Ref<Material>& material) { s_LoadedMaterials.insert({ name, material }); }
 		inline static Ref<Material> FindMaterial(const std::string& name) 
@@ -100,6 +79,7 @@ namespace objects
 			else
 				return nullptr;
 		}
+		inline void static ClearLoadedMaterials() { s_LoadedMaterials.clear(); }
 	};
 }
 }

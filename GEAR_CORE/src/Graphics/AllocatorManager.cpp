@@ -39,6 +39,17 @@ void AllocatorManager::Initialise(CreateInfo* pCreateInfo)
 	s_Initialised = true;
 }
 
+void AllocatorManager::Uninitialise()
+{
+	if (!s_Initialised)
+		return;
+
+	s_CPUAllocator = nullptr;
+	s_GPUAllocator = nullptr;
+
+	s_CI.pContext = nullptr;
+}
+
 Ref<Allocator> AllocatorManager::GetAllocator(AllocatorType type)
 {
 	if (!s_Initialised)
