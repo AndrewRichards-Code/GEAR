@@ -8,15 +8,15 @@
                     "debugName": "Model-Drone",
                     "mesh": {
                         "material": [
-                            987063058019713795,
-                            6927883231677111729,
-                            9279253431718445592,
-                            527229072612910269,
-                            8169230956500269367,
-                            3584304202354966372,
-                            2908597336107230557
+                            17332028618110246928,
+                            9187673831878740862,
+                            14055087188784038775,
+                            3186203220683953370,
+                            6465952289103343937,
+                            10288832218331653467,
+                            12586543630725179579
                         ],
-                        "uuid": 1875460834497727611
+                        "uuid": 4993090299797641017
                     },
                     "renderPipelineName": "PBROpaque"
                 },
@@ -52,9 +52,9 @@
                     "debugName": "Sphere",
                     "mesh": {
                         "material": [
-                            3847957852020097471
+                            11549650985290602592
                         ],
-                        "uuid": 15486506546140003970
+                        "uuid": 5962501195308395361
                     },
                     "renderPipelineName": "PBROpaque"
                 },
@@ -125,9 +125,9 @@
                     "debugName": "Model-Cube",
                     "mesh": {
                         "material": [
-                            17373079255060646619
+                            5156008909825968105
                         ],
-                        "uuid": 5191701259848757239
+                        "uuid": 3099598295247084849
                     },
                     "renderPipelineName": "PBROpaque"
                 },
@@ -150,12 +150,50 @@
                         "translation": [
                             0.0,
                             0.0,
-                            0.0
+                            -1.899999976158142
                         ]
                     }
                 },
                 "UUIDComponent": {
                     "uuid": 3201678994658933944
+                }
+            },
+            "685938390321061058": {
+                "LightComponent": {
+                    "colour": [
+                        1.0,
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "debugName": "Empty",
+                    "type": 0
+                },
+                "NameComponent": {
+                    "name": "Light"
+                },
+                "TransformComponent": {
+                    "transform": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "translation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "UUIDComponent": {
+                    "uuid": 685938390321061058
                 }
             },
             "8077919658766236766": {
@@ -164,7 +202,7 @@
                     "flipX": false,
                     "flipY": false,
                     "orthographicsParams": {
-                        "bottom": 1.4941935539245605,
+                        "bottom": 1.1374346017837524,
                         "far": 0.0,
                         "left": 3370280550400.0,
                         "near": 3000.0,
@@ -172,7 +210,7 @@
                         "top": 0.0010000000474974513
                     },
                     "perspectiveParams": {
-                        "aspectRatio": 1.4941935539245605,
+                        "aspectRatio": 1.1374346017837524,
                         "horizonalFOV": 1.5707963267948966,
                         "zFar": 3000.0,
                         "zNear": 0.0010000000474974513
@@ -208,40 +246,7 @@
             }
         },
         "references": {
-            "15486506546140003970": {
-                "data": {
-                    "debugName": "Mesh-Sphere",
-                    "filepath": "res/obj/sphere.fbx"
-                },
-                "type": {
-                    "hash_code": 3736462184517488487,
-                    "name": "struct gear::objects::Mesh::CreateInfo"
-                },
-                "uuid": 15486506546140003970
-            },
-            "17373079255060646619": {
-                "data": {
-                    "debugName": "Material.003",
-                    "filepath": "res/assets/Material.003.gaf"
-                },
-                "type": {
-                    "hash_code": 18167184297631927809,
-                    "name": "struct gear::objects::Material::CreateInfo"
-                },
-                "uuid": 17373079255060646619
-            },
-            "1875460834497727611": {
-                "data": {
-                    "debugName": "Mesh-Drone",
-                    "filepath": "../GEAR_TEST/res/obj/Drone_Animated_03.fbx"
-                },
-                "type": {
-                    "hash_code": 3736462184517488487,
-                    "name": "struct gear::objects::Mesh::CreateInfo"
-                },
-                "uuid": 1875460834497727611
-            },
-            "2908597336107230557": {
+            "10288832218331653467": {
                 "data": {
                     "debugName": "defaultMat",
                     "filepath": "res/assets/defaultMat.gaf"
@@ -250,20 +255,9 @@
                     "hash_code": 18167184297631927809,
                     "name": "struct gear::objects::Material::CreateInfo"
                 },
-                "uuid": 2908597336107230557
+                "uuid": 10288832218331653467
             },
-            "3584304202354966372": {
-                "data": {
-                    "debugName": "defaultMat",
-                    "filepath": "res/assets/defaultMat.gaf"
-                },
-                "type": {
-                    "hash_code": 18167184297631927809,
-                    "name": "struct gear::objects::Material::CreateInfo"
-                },
-                "uuid": 3584304202354966372
-            },
-            "3847957852020097471": {
+            "11549650985290602592": {
                 "data": {
                     "debugName": "DefaultMaterial",
                     "filepath": "res/assets/DefaultMaterial.gaf"
@@ -272,9 +266,42 @@
                     "hash_code": 18167184297631927809,
                     "name": "struct gear::objects::Material::CreateInfo"
                 },
-                "uuid": 3847957852020097471
+                "uuid": 11549650985290602592
             },
-            "5191701259848757239": {
+            "12586543630725179579": {
+                "data": {
+                    "debugName": "defaultMat",
+                    "filepath": "res/assets/defaultMat.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 12586543630725179579
+            },
+            "14055087188784038775": {
+                "data": {
+                    "debugName": "defaultMat",
+                    "filepath": "res/assets/defaultMat.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 14055087188784038775
+            },
+            "17332028618110246928": {
+                "data": {
+                    "debugName": "defaultMat",
+                    "filepath": "res/assets/defaultMat.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 17332028618110246928
+            },
+            "3099598295247084849": {
                 "data": {
                     "debugName": "Mesh-Cube",
                     "filepath": "D:/Users/Andrew/Downloads/VisualStudioSwag-main/VisualStudioSwag-main/2022 Launch Swag/Visual Studio 2022 3D Product Icon/FBX\\VisualStudio.fbx"
@@ -283,9 +310,9 @@
                     "hash_code": 3736462184517488487,
                     "name": "struct gear::objects::Mesh::CreateInfo"
                 },
-                "uuid": 5191701259848757239
+                "uuid": 3099598295247084849
             },
-            "527229072612910269": {
+            "3186203220683953370": {
                 "data": {
                     "debugName": "defaultMat",
                     "filepath": "res/assets/defaultMat.gaf"
@@ -294,9 +321,42 @@
                     "hash_code": 18167184297631927809,
                     "name": "struct gear::objects::Material::CreateInfo"
                 },
-                "uuid": 527229072612910269
+                "uuid": 3186203220683953370
             },
-            "6927883231677111729": {
+            "4993090299797641017": {
+                "data": {
+                    "debugName": "Mesh-Drone",
+                    "filepath": "../GEAR_TEST/res/obj/Drone_Animated_03.fbx"
+                },
+                "type": {
+                    "hash_code": 3736462184517488487,
+                    "name": "struct gear::objects::Mesh::CreateInfo"
+                },
+                "uuid": 4993090299797641017
+            },
+            "5156008909825968105": {
+                "data": {
+                    "debugName": "Material.003",
+                    "filepath": "res/assets/Material.003.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 5156008909825968105
+            },
+            "5962501195308395361": {
+                "data": {
+                    "debugName": "Mesh-Sphere",
+                    "filepath": "res/obj/sphere.fbx"
+                },
+                "type": {
+                    "hash_code": 3736462184517488487,
+                    "name": "struct gear::objects::Mesh::CreateInfo"
+                },
+                "uuid": 5962501195308395361
+            },
+            "6465952289103343937": {
                 "data": {
                     "debugName": "defaultMat",
                     "filepath": "res/assets/defaultMat.gaf"
@@ -305,9 +365,9 @@
                     "hash_code": 18167184297631927809,
                     "name": "struct gear::objects::Material::CreateInfo"
                 },
-                "uuid": 6927883231677111729
+                "uuid": 6465952289103343937
             },
-            "8169230956500269367": {
+            "9187673831878740862": {
                 "data": {
                     "debugName": "defaultMat",
                     "filepath": "res/assets/defaultMat.gaf"
@@ -316,29 +376,7 @@
                     "hash_code": 18167184297631927809,
                     "name": "struct gear::objects::Material::CreateInfo"
                 },
-                "uuid": 8169230956500269367
-            },
-            "9279253431718445592": {
-                "data": {
-                    "debugName": "defaultMat",
-                    "filepath": "res/assets/defaultMat.gaf"
-                },
-                "type": {
-                    "hash_code": 18167184297631927809,
-                    "name": "struct gear::objects::Material::CreateInfo"
-                },
-                "uuid": 9279253431718445592
-            },
-            "987063058019713795": {
-                "data": {
-                    "debugName": "defaultMat",
-                    "filepath": "res/assets/defaultMat.gaf"
-                },
-                "type": {
-                    "hash_code": 18167184297631927809,
-                    "name": "struct gear::objects::Material::CreateInfo"
-                },
-                "uuid": 987063058019713795
+                "uuid": 9187673831878740862
             }
         },
         "uuid": 7089646094366150252

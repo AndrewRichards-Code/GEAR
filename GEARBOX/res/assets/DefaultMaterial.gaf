@@ -4,9 +4,9 @@
         "debugName": "DefaultMaterial",
         "pbrConstants": {
             "albedo": [
-                0.800000011920929,
-                0.800000011920929,
-                0.800000011920929,
+                0.0,
+                0.0,
+                0.0,
                 1.0
             ],
             "ambientOcclusion": 1.0,
@@ -14,7 +14,7 @@
                 0.0,
                 0.0,
                 0.0,
-                1.0
+                0.0
             ],
             "fresnel": [
                 0.0,
@@ -22,8 +22,8 @@
                 0.0,
                 1.0
             ],
-            "metallic": 1.0,
-            "roughness": 3355444.0
+            "metallic": 0.0,
+            "roughness": 0.0
         },
         "textures": null
     }

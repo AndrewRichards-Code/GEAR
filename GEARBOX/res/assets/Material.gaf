@@ -1,7 +1,7 @@
 {
     "fileType": "GEAR_ASSET_FILE",
     "material": {
-        "debugName": "defaultMat",
+        "debugName": "Material",
         "pbrConstants": {
             "albedo": [
                 0.0,
@@ -17,9 +17,9 @@
                 0.0
             ],
             "fresnel": [
-                0.8999999761581421,
-                0.8999999761581421,
-                0.8999999761581421,
+                0.800000011920929,
+                0.800000011920929,
+                0.800000011920929,
                 1.0
             ],
             "metallic": 0.0,

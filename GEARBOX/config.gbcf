@@ -4,7 +4,7 @@
         "api": 2,
         "fullscreen": false,
         "fullscreenMonitorIndex": 0,
-        "graphicsDebugger": 0,
+        "graphicsDebugger": 2,
         "maximised": false,
         "windowedHeight": 1080,
         "windowedWidth": 1920
@@ -15,6 +15,7 @@
         6,
         7,
         3,
-        1
+        1,
+        5
     ]
 }
