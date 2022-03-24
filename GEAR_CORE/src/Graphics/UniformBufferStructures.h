@@ -17,7 +17,7 @@ namespace gear
 			{
 				GEAR_FLOAT4X4	proj;
 				GEAR_FLOAT4X4	view;
-				GEAR_FLOAT4		cameraPosition;
+				GEAR_FLOAT4		position;
 			};
 
 			struct Light
@@ -42,6 +42,13 @@ namespace gear
 			{
 				GEAR_FLOAT		threshold;
 				GEAR_FLOAT		upsampleScale;
+			};
+#
+			struct ProbeInfo
+			{
+				GEAR_FLOAT4X4	proj;
+				GEAR_FLOAT4X4	view[6];
+				GEAR_FLOAT4		position;
 			};
 
 			//Per model - Set 1
@@ -102,7 +109,9 @@ namespace gear
 		{
 			{ "CAMERA",			SetUpdateType::PER_VIEW		},
 			{ "TEXTCAMERA",		SetUpdateType::PER_VIEW		},
+			{ "DEBUGCAMERA",	SetUpdateType::PER_VIEW		},
 			{ "LIGHTS",			SetUpdateType::PER_VIEW		},
+			{ "PROBEINFO",		SetUpdateType::PER_VIEW		},
 			{ "HDRINFO",		SetUpdateType::PER_VIEW		},
 			{ "MODEL",			SetUpdateType::PER_MODEL	},
 			{ "PBRCONSTANTS",	SetUpdateType::PER_MATERIAL }

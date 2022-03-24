@@ -35,6 +35,27 @@ float2 CubemapToEquirectangularTextCoords(float3 v)
 	return uv;
 }
 
+uint UVWToFaceIndex(float3 view)
+{
+	float maxDirection = max(abs(view.x), max(abs(view.y), abs(view.z)));
+	uint faceIndex = 0;
+	if (maxDirection == abs(view.x))
+		faceIndex = 0;
+	else if (maxDirection == abs(view.y))
+		faceIndex = 2;
+	else if (maxDirection == abs(view.z))
+		faceIndex = 4;
+
+	if (faceIndex == 0 && maxDirection == -view.x)
+		faceIndex++;
+	else if (faceIndex == 2 && maxDirection == -view.y)
+		faceIndex++;
+	else if (faceIndex == 4 && maxDirection == -view.z)
+		faceIndex++;
+
+	return faceIndex;
+}
+
 float4 CubemapFaceColour(uint faceIndex)
 {
 	float4 result = float4(0.0, 0.0, 0.0, 1.0);

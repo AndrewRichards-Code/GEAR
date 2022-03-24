@@ -55,7 +55,7 @@ VS_OUT vs_main(VS_IN IN)
 	OUT.texCoord = float2(model.texCoordScale0.x * IN.texCoords.x, model.texCoordScale0.y * IN.texCoords.y);
 	OUT.tbn = transpose(float3x3(mul(transpose(model.modl), IN.tangents).xyz, mul(transpose(model.modl), IN.binormals).xyz, mul(transpose(model.modl), IN.normals).xyz));
 	OUT.worldSpace = mul(transpose(model.modl), IN.positions);	
-	OUT.vertexToCamera = normalize(camera.cameraPosition - OUT.worldSpace);
+	OUT.vertexToCamera = normalize(camera.position - OUT.worldSpace);
 	OUT.colour = IN.colours;
 	
 	return OUT;
