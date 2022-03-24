@@ -38,10 +38,15 @@ void UIContext::Update(gear::core::Timer timer)
 	{
 		panel->Update(timer);
 	}
-}
 
-void UIContext::Draw()
-{
+	//Remove old images
+	for (auto& it = m_TextureIDs.begin(); it != m_TextureIDs.end();)
+	{
+		if (it->first.use_count() == 1)
+			it = m_TextureIDs.erase(it);
+		else
+			it++;
+	}
 	//Remove closed panels
 	for (auto it = m_EditorPanels.begin(); it != m_EditorPanels.end(); it++)
 	{
@@ -55,7 +60,10 @@ void UIContext::Draw()
 				break;
 		}
 	}
+}
 
+void UIContext::Draw()
+{
 	BeginFrame();
 	BeginDockspace();
 	for (auto& panel : m_EditorPanels)

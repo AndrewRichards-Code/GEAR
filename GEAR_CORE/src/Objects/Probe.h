@@ -1,81 +1,78 @@
 #pragma once
-
-#include "gear_core_common.h"
-#include "mars.h"
-//#include "Graphics/opengl/buffer/framebuffer.h"
-//#include "Graphics/opengl/renderer/batchrenderer3d.h"
+#include "ObjectInterface.h"
+#include "Graphics/Texture.h"
+#include "Graphics/RenderPipeline.h"
 #include "Camera.h"
-#include "Object.h"
 
-namespace GEAR {
-namespace OBJECTS {
-
-class OmniProbe
+namespace gear
 {
-private:
-	const mars::Vec3 m_Position;
-	int m_Size;
-	int m_Multisample;
-	GRAPHICS::Texture::ImageFormat m_Format;
-
-	std::shared_ptr<GRAPHICS::FrameBuffer> m_FrameBuffer;
-	std::shared_ptr<Camera> m_Camera;
-
-	std::shared_ptr<OPENGL::Texture> m_Cubemap = std::make_shared<GRAPHICS::Texture>(OPENGL::Texture::TextureType::GEAR_TEXTURE_CUBE_MAP, m_Format, 1, m_Size, m_Size);
-
-	const mars::Vec3 m_X = mars::Vec3(1, 0, 0);
-	const mars::Vec3 m_Y = mars::Vec3(0, 1, 0);
-	const mars::Vec3 m_Z = mars::Vec3(0, 0, 1);
-	mars::Mat4 m_ViewMatrices[6] = 
+namespace objects 
+{
+	class GEAR_API Probe : public ObjectInterface
 	{
-		mars::Quat(static_cast<float>(+mars::pi / 2), m_Y).ToMat4(),	//+X
-		mars::Quat(static_cast<float>(-mars::pi / 2), m_Y).ToMat4(),	//-X
-		mars::Quat(static_cast<float>(-mars::pi / 2), m_X).ToMat4(),	//+Y
-		mars::Quat(static_cast<float>(+mars::pi / 2), m_X).ToMat4(),	//-Y
-		mars::Quat(static_cast<float>(+mars::pi	 ), m_Y).ToMat4(),	//-Z
-		mars::Quat(static_cast<float>(0			 ), m_Y).ToMat4(),	//+Z
+	public:
+		enum class DirectionType : uint32_t
+		{
+			MONO,
+			OMNI
+		};
+		enum class CaptureType : uint32_t
+		{
+			SHADOW,
+			REFLECTION
+		};
+
+		struct CreateInfo : public ObjectInterface::CreateInfo
+		{
+			DirectionType			directionType;
+			CaptureType				captureType;
+			uint32_t				imageWidth;
+			uint32_t				imageHeight;				//Only for DirectionType::MONO
+			Camera::ProjectionType	projectionType;				//DirectionType::ONMI will force Camera::ProjectionType::PERSPECTIVE
+			double					perspectiveHorizonalFOV;	//In radians
+			float					zNear;
+			float					zFar;
+		};
+
+		Ref<graphics::Texture> m_ColourTexture;
+		graphics::Texture::CreateInfo m_ColourTextureCI;
+		
+		Ref<graphics::Texture> m_DepthTexture;
+		graphics::Texture::CreateInfo m_DepthTextureCI;
+
+		Ref<miru::crossplatform::RenderPass> m_RenderPass;
+		miru::crossplatform::RenderPass::CreateInfo m_RenderPassCI;
+
+		Ref<miru::crossplatform::Framebuffer> m_Framebuffer;
+		miru::crossplatform::Framebuffer::CreateInfo m_FramebufferCI;
+
+		Ref<graphics::RenderPipeline> m_ShadowRenderPipeline;
+		graphics::RenderPipeline::LoadInfo m_ShadowRenderPipelineLI;
+
+		Ref<miru::crossplatform::Framebuffer> m_DebugFramebuffer[2] = { 0, 0 };
+
+	private:
+		typedef graphics::UniformBufferStructures::ProbeInfo ProbeInfoUB;
+		Ref<graphics::Uniformbuffer<ProbeInfoUB>> m_UB;
+
+	public:
+		CreateInfo m_CI;
+
+	public:
+		Probe(CreateInfo* pCreateInfo);
+		~Probe();
+
+		void Update(const Transform& transform) override;
+		bool CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo) override;
+
+		const Ref<graphics::Uniformbuffer<ProbeInfoUB>>& GetUB() const { return m_UB; };
+
+	private:
+		void CreateTexture(Ref<graphics::Texture>& texture, graphics::Texture::CreateInfo& textureCI, bool colour = true);
+		void CreateRenderPass();
+		void CreateFramebuffer();
+		void CreateRenderPipeline();
+		void InitialiseUB();
 	};
-
-	OPENGL::BatchRenderer3D r;
-
-public:
-	OmniProbe(const mars::Vec3& position, int size, int multisample = 1, OPENGL::Texture::ImageFormat format = OPENGL::Texture::ImageFormat::GEAR_RGBA8);
-	~OmniProbe();
-
-	void Resolve();
-	void Render(const std::deque<Object*>& renderQueue, int windowWidth, int windowHeight, const OPENGL::Shader* overrideShader = nullptr);
-	void UpdatePosition(const mars::Vec3& position);
-
-	inline std::shared_ptr<OPENGL::Texture> GetCubemap() { return m_Cubemap; }
-	inline std::shared_ptr<OPENGL::FrameBuffer> GetFrameBuffer() { return m_FrameBuffer; }
-};
-
-class UniProbe
-{
-private:
-	const mars::Vec3 m_Position;
-	const mars::Vec3 m_Direction;
-	int m_Size;
-	int m_Multisample;
-	OPENGL::Texture::ImageFormat m_Format;
-
-	std::shared_ptr<OPENGL::FrameBuffer> m_FrameBuffer;
-	std::shared_ptr<Camera> m_Camera;
-
-	std::shared_ptr<OPENGL::Texture> m_Texture = std::make_shared<OPENGL::Texture>(OPENGL::Texture::TextureType::GEAR_TEXTURE_2D, m_Format, 1, m_Size, m_Size);
-
-	OPENGL::BatchRenderer3D r;
-
-public:
-	UniProbe(const mars::Vec3& position, const mars::Vec3& direction, int size, int projectionType = GEAR_CAMERA_PERSPECTIVE, int multisample = 1, OPENGL::Texture::ImageFormat format = OPENGL::Texture::ImageFormat::GEAR_RGBA8);
-	~UniProbe();
-
-	void Resolve();
-	void Render(const std::deque<Object*>& renderQueue, int windowWidth, int windowHeight, const OPENGL::Shader* overrideShader = nullptr);
-	void UpdatePosition(const mars::Vec3& position);
-
-	inline std::shared_ptr<OPENGL::Texture> GetTexture() { return m_Texture; }
-	inline std::shared_ptr<OPENGL::FrameBuffer> GetFrameBuffer() { return m_FrameBuffer; }
-};
 }
 }

@@ -75,6 +75,8 @@ void MenuBar::ProcessShortcuts()
 		DrawItemNewProject();
 	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_O }))
 		DrawItemOpenProject();
+	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_R }))
+		DrawItemRecompileRenderPipelineShaders();
 }
 
 void MenuBar::DrawMenuFile()
@@ -124,6 +126,14 @@ void MenuBar::DrawMenuSettings()
 		{
 			m_PopupWindowFunction = &MenuBar::DrawItemGEARBOXOptions;
 		}
+
+		ImGui::Separator();
+
+		if (ImGui::MenuItem("Recompile RenderPipeline Shaders", "Ctrl+R"))
+		{
+			DrawItemRecompileRenderPipelineShaders();
+		}
+
 		ImGui::EndMenu();
 	}
 }
@@ -407,5 +417,14 @@ void MenuBar::DrawItemGEARBOXOptions()
 			m_PopupWindowFunction = nullptr;
 		}
 		ImGui::EndPopup();
+	}
+}
+
+void MenuBar::DrawItemRecompileRenderPipelineShaders()
+{
+	Ref<ViewportPanel> viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
+	if (viewportPanel)
+	{
+		viewportPanel->GetCreateInfo().renderer->RecompileRenderPipelineShaders();
 	}
 }

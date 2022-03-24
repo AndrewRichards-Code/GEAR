@@ -39,6 +39,7 @@ namespace ui
 
 		void DrawItemAbout();
 		void DrawItemGEARBOXOptions();
+		void DrawItemRecompileRenderPipelineShaders();
 
 		//Members
 	private:

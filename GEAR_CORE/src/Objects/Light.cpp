@@ -9,13 +9,16 @@ using namespace mars;
 int Light::s_NumOfLights = 0;
 
 typedef graphics::UniformBufferStructures::Lights LightUB;
- Ref<graphics::Uniformbuffer<LightUB>> Light::s_UB = nullptr;
+Ref<graphics::Uniformbuffer<LightUB>> Light::s_UB = nullptr;
 
 Light::Light(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
 	InitialiseUB();
+
+	CreateProbe();
+
 	if (s_NumOfLights < GEAR_MAX_LIGHTS)
 	{
 		m_LightID = s_NumOfLights;
@@ -43,6 +46,7 @@ void Light::Update(const Transform& transform)
 	if (CreateInfoHasChanged(&m_CI))
 	{
 		s_UB->lights[m_LightID].colour = m_CI.colour;
+		CreateProbe();
 	}
 	if (TransformHasChanged(transform))
 	{
@@ -54,6 +58,8 @@ void Light::Update(const Transform& transform)
 	{
 		s_UB->SubmitData();
 	}
+
+	m_Probe->Update(transform);
 }
 
 bool Light::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo)
@@ -80,4 +86,20 @@ void Light::InitialiseUB()
 		ubCI.data = zero0;
 		s_UB = CreateRef<Uniformbuffer<LightUB>>(&ubCI);
 	}
+}
+
+void Light::CreateProbe()
+{
+	Probe::CreateInfo probeCI;
+	probeCI.debugName = "GEAR_CORE_Probe_Light: " + m_CI.debugName;
+	probeCI.device = m_CI.device;
+	probeCI.directionType = m_CI.type == Type::POINT ? Probe::DirectionType::OMNI : Probe::DirectionType::MONO;
+	probeCI.captureType = Probe::CaptureType::SHADOW;
+	probeCI.imageWidth = 512;
+	probeCI.imageHeight = 512;
+	probeCI.projectionType = m_CI.type == Type::DIRECTIONAL ? Camera::ProjectionType::ORTHOGRAPHIC : Camera::ProjectionType::PERSPECTIVE;
+	probeCI.perspectiveHorizonalFOV = pi / 2.0;
+	probeCI.zNear = 0.001f;
+	probeCI.zFar = 3000.0f;
+	m_Probe = CreateRef<Probe>(&probeCI);
 }

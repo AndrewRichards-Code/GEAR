@@ -68,6 +68,9 @@ namespace objects
 
 		//Update the camera from the current state of Camera::CreateInfo m_CI.
 		void Update(const Transform& transform) override;
+
+		//The view matrix is already inversed and should be passed unmodified to a UniformBuffer's view matrix member.
+		static mars::float4x4 GetCubemapFaceViewMatrix(uint32_t faceIndex, const mars::float3& translation = mars::float3(0.0f, 0.0f, 0.0f));
 		
 	protected:
 		bool CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo) override;

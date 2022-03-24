@@ -256,7 +256,7 @@ bool Window::Init()
 #else
 	m_ContextCI.debugValidationLayers = false;
 #endif
-	m_ContextCI.extensions = Context::ExtensionsBit::NONE;
+	m_ContextCI.extensions = Context::ExtensionsBit::SHADER_VIEWPORT_INDEX_LAYER;
 	m_ContextCI.deviceDebugName = "GEAR_CORE_Context";
 	m_Context = Context::Create(&m_ContextCI);
 

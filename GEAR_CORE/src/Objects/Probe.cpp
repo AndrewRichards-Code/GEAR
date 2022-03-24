@@ -1,158 +1,234 @@
+#include "gear_core_common.h"
 #include "Probe.h"
 
-using namespace GEAR;
-using namespace GRAPHICS;
-using namespace OBJECTS;
+using namespace gear;
+using namespace objects;
+using namespace graphics;
+
+using namespace miru;
+using namespace miru::crossplatform;
+
 using namespace mars;
 
-//--------OmniProbe--------//
-OmniProbe::OmniProbe(const Vec3& position, int size, int multisample, OPENGL::Texture::ImageFormat format)
-	:m_Position(position), m_Size(size), m_Multisample(multisample), m_Format(format)
+Probe::Probe(CreateInfo* pCreateInfo)
 {
-	m_FrameBuffer = std::make_shared<OPENGL::FrameBuffer>(m_Size, m_Size, m_Multisample, true, m_Format);
-	m_Camera = std::make_shared<Camera>(GEAR_CAMERA_PERSPECTIVE, m_Position, Vec3(0, 0, -1), Vec3(0, 1, 0));
+	m_CI = *pCreateInfo;
+
+	InitialiseUB();
+
+	if (m_CI.captureType == CaptureType::REFLECTION)
+		CreateTexture(m_ColourTexture, m_ColourTextureCI);
+
+	CreateTexture(m_DepthTexture, m_DepthTextureCI, false);
+
+	CreateRenderPass();
+	CreateFramebuffer();
+	CreateRenderPipeline();
 }
-OmniProbe::~OmniProbe()
-{
 
+Probe::~Probe()
+{
 }
 
-void OmniProbe::Resolve()
+void Probe::Update(const Transform& transform)
 {
-	m_FrameBuffer->Resolve();
-}
-
-void OmniProbe::Render(const std::deque<Object*>& renderQueue, int windowWidth, int windowHeight, const OPENGL::Shader* overrideShader)
-{
-	glViewport(0, 0, m_Size, m_Size);
-	m_FrameBuffer->Bind();
-
-	for (int i = 0; i < 6; i++)
+	if (CreateInfoHasChanged(&m_CI))
 	{
-		m_FrameBuffer->DrawToColourTextureAttachment(i);
-		m_FrameBuffer->Clear();
-		m_Camera->DefineProjection(DegToRad(90), 1.0f, 0.01f, 1500.0f, true, true);
-		if(i==2||i==3)
-			m_Camera->DefineProjection(DegToRad(90), 1.0f, 0.01f, 1500.0f, false, false);
-
-		m_Camera->UpdateCameraPosition();
-		m_Camera->DefineView(m_ViewMatrices[i]);
-		for (Object* obj : renderQueue)
+		uint64_t newHash = m_CreateInfoHash;
+		*this = Probe(&m_CI);
+		m_CreateInfoHash = newHash; //Set the Hash value from the previous instance of the Mesh.
+	}
+	if (TransformHasChanged(transform))
+	{
+		//Projection
 		{
-			if (obj->GetTexture().IsCubeMap() == true)
+			if (m_CI.directionType == DirectionType::OMNI)
+				m_CI.projectionType = Camera::ProjectionType::PERSPECTIVE;
+
+			const float& aspectRatio = static_cast<float>(m_CI.imageWidth) / static_cast<float>(m_CI.imageHeight);
+			if (m_CI.projectionType == Camera::ProjectionType::PERSPECTIVE)
 			{
-				obj->BindCubeMap(0);
+				m_UB->proj = float4x4::Perspective(
+					m_CI.directionType == DirectionType::OMNI ? DegToRad(90.0) : m_CI.perspectiveHorizonalFOV,
+					m_CI.directionType == DirectionType::OMNI ? 1.0f : aspectRatio,
+					m_CI.zNear,
+					m_CI.zFar);
 			}
 			else
 			{
-				obj->BindTexture(0);
+				m_UB->proj = float4x4::Orthographic(
+					-1.0f,
+					+1.0f,
+					-aspectRatio,
+					+aspectRatio,
+					m_CI.zNear,
+					m_CI.zFar);
 			}
-			obj->SetUniformModlMatrix();
-			overrideShader ? overrideShader->Enable() : obj->GetShader().Enable();
-			obj->GetVAO()->Bind();
-			obj->GetIBO()->Bind();
-			glDrawElements(GL_TRIANGLES, obj->GetIBO()->GetCount(), GL_UNSIGNED_INT, nullptr);
-
+			if (miru::crossplatform::GraphicsAPI::IsVulkan())
+				m_UB->proj.f *= -1;
 		}
-		/*r.OpenMapBuffer();
-		for (Object* obj : renderQueue)
-			r.Submit(obj);
-		r.CloseMapBuffer();
-		overrideShader ? r.Flush(overrideShader) : r.Flush();*/
-	}
-	renderQueue.back()->GetIBO()->Unbind();
-	renderQueue.back()->GetVAO()->Unbind();
-	overrideShader ? overrideShader->Disable() : renderQueue.back()->GetShader().Disable();
-	
-	m_FrameBuffer->Unbind();
-	glViewport(0, 0, windowWidth, windowHeight);
-		
-	Resolve();
 
-	m_FrameBuffer->BindResolved();
-	for (int i = 0; i < 6; i++)
-	{
-		m_Cubemap->BindCubeMap();
-		glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
-		glCopyTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, (unsigned int)OPENGL::Texture::ToBaseFormat(m_Format), 0, 0, m_Size, m_Size, 0);
-		m_Cubemap->UnbindCubeMap();
-	}
-	m_FrameBuffer->UnbindResolved();
-}
-
-void OmniProbe::UpdatePosition(const Vec3& position)
-{
-	m_Camera->m_Position = position;
-}
-
-//--------UniProbe--------//
-UniProbe::UniProbe(const Vec3& position, const mars::Vec3& direction, int size, int projectionType, int multisample, OPENGL::Texture::ImageFormat format)
-	:m_Position(position), m_Direction(direction), m_Size(size), m_Multisample(multisample), m_Format(format)
-{
-	m_FrameBuffer = std::make_shared<OPENGL::FrameBuffer>(m_Size, m_Size, m_Multisample, false, m_Format);
-	m_Camera = std::make_shared<Camera>(projectionType, m_Position, m_Direction, Vec3(0, 1, 0));
-}
-UniProbe::~UniProbe()
-{
-
-}
-
-void UniProbe::Resolve()
-{
-	m_FrameBuffer->Resolve();
-}
-
-void UniProbe::Render(const std::deque<Object*>& renderQueue, int windowWidth, int windowHeight, const OPENGL::Shader* overrideShader)
-{
-	glViewport(0, 0, m_Size, m_Size);
-	m_FrameBuffer->Bind();
-
-	m_FrameBuffer->DrawToColourTextureAttachment();
-	m_FrameBuffer->Clear();
-	m_Camera->DefineProjection(DegToRad(90), 1.0f, 0.01f, 1500.0f, true, true);
-
-	m_Camera->UpdateCameraPosition();
-	m_Camera->DefineView();
-	for (Object* obj : renderQueue)
-	{
-		if (obj->GetTexture().IsCubeMap() == true)
+		//View
 		{
-			obj->BindCubeMap(0);
+			if (m_CI.directionType == DirectionType::MONO)
+			{
+				m_UB->view[0] = TransformToMatrix4(transform).Inverse();
+			}
+			else
+			{
+				for (uint32_t faceIndex = 0; faceIndex < 6; faceIndex++)
+				{
+					m_UB->view[faceIndex] = Camera::GetCubemapFaceViewMatrix(faceIndex, transform.translation);
+				}
+			}
 		}
-		else
+
+		//Position
 		{
-			obj->BindTexture(0);
+			m_UB->position = float4(transform.translation, 1.0f);
 		}
-		obj->SetUniformModlMatrix();
-		overrideShader ? overrideShader->Enable() : obj->GetShader().Enable();
-		obj->GetVAO()->Bind();
-		obj->GetIBO()->Bind();
-		glDrawElements(GL_TRIANGLES, obj->GetIBO()->GetCount(), GL_UNSIGNED_INT, nullptr);
 
+		m_UB->SubmitData();
 	}
-	/*r.OpenMapBuffer();
-	for (Object* obj : renderQueue)
-		r.Submit(obj);
-	r.CloseMapBuffer();
-	overrideShader ? r.Flush(overrideShader) : r.Flush();*/
-	renderQueue.back()->GetIBO()->Unbind();
-	renderQueue.back()->GetVAO()->Unbind();
-	overrideShader ? overrideShader->Disable() : renderQueue.back()->GetShader().Disable();
-
-	m_FrameBuffer->Unbind();
-	glViewport(0, 0, windowWidth, windowHeight);
-
-	Resolve();
-
-	m_FrameBuffer->BindResolved();
-	m_Texture->Bind();
-	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	glCopyTexImage2D(GL_TEXTURE_2D, 0, (unsigned int)OPENGL::Texture::ToBaseFormat(m_Format), 0, 0, m_Size, m_Size, 0);
-	m_Texture->Unbind();
-	m_FrameBuffer->UnbindResolved();
 }
 
-void UniProbe::UpdatePosition(const Vec3& position)
+bool Probe::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo)
 {
-	m_Camera->m_Position = position;
+	const CreateInfo& CI = *reinterpret_cast<const CreateInfo*>(pCreateInfo);
+	uint64_t newHash = 0;
+	newHash ^= core::GetHash(CI.directionType);
+	newHash ^= core::GetHash(CI.captureType);
+	newHash ^= core::GetHash(CI.imageWidth);
+	newHash ^= core::GetHash(CI.imageHeight);
+	newHash ^= core::GetHash(CI.projectionType);
+	newHash ^= core::GetHash(CI.perspectiveHorizonalFOV);
+	newHash ^= core::GetHash(CI.zNear);
+	newHash ^= core::GetHash(CI.zFar);
+	return CompareCreateInfoHash(newHash);
 }
+
+void Probe::CreateTexture(Ref<Texture>& texture, Texture::CreateInfo& textureCI, bool colour)
+{
+	//TODO: Add mips and multisampling 
+	textureCI.debugName = (colour ? "GEAR_CORE_Texture_Colour: " : "GEAR_CORE_Texture_Depth: ") + m_CI.debugName;
+	textureCI.device = m_CI.device;
+	textureCI.dataType = Texture::DataType::DATA;
+	textureCI.data.data = nullptr;
+	textureCI.data.size = 0;
+	textureCI.data.width = m_CI.imageWidth;
+	textureCI.data.height = m_CI.directionType == DirectionType::MONO ? m_CI.imageHeight : m_CI.imageWidth;
+	textureCI.data.depth = 1;
+	textureCI.mipLevels = 1;
+	textureCI.arrayLayers = m_CI.directionType == DirectionType::OMNI ? 6 : 1;
+	textureCI.type = m_CI.directionType == DirectionType::OMNI ? Image::Type::TYPE_CUBE : Image::Type::TYPE_2D;
+	textureCI.format = m_CI.captureType == CaptureType::REFLECTION ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::D32_SFLOAT;
+	textureCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	textureCI.usage = Image::UsageBit::SAMPLED_BIT | (m_CI.captureType == CaptureType::REFLECTION ? Image::UsageBit::COLOUR_ATTACHMENT_BIT : Image::UsageBit::DEPTH_STENCIL_ATTACHMENT_BIT);
+	textureCI.generateMipMaps = false;
+	textureCI.gammaSpace = GammaSpace::LINEAR;
+	texture = CreateRef<Texture>(&textureCI);
+}
+
+void Probe::CreateRenderPass()
+{
+	m_RenderPassCI.debugName = "GEAR_CORE_RenderPass: " + m_CI.debugName;
+	m_RenderPassCI.device = m_CI.device;
+	if (m_CI.captureType == CaptureType::REFLECTION)
+	{
+		RenderPass::AttachmentDescription attachment;
+		attachment.format = m_ColourTextureCI.format;
+		attachment.samples = m_ColourTextureCI.samples;
+		attachment.loadOp = RenderPass::AttachmentLoadOp::CLEAR;
+		attachment.storeOp = RenderPass::AttachmentStoreOp::STORE;
+		attachment.stencilLoadOp = RenderPass::AttachmentLoadOp::DONT_CARE;
+		attachment.stencilStoreOp = RenderPass::AttachmentStoreOp::DONT_CARE;
+		attachment.initialLayout = Image::Layout::UNKNOWN;
+		attachment.finalLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
+		m_RenderPassCI.attachments.push_back(attachment);
+	}
+	RenderPass::AttachmentDescription attachment;
+	attachment.format = m_DepthTextureCI.format;
+	attachment.samples = m_DepthTextureCI.samples;
+	attachment.loadOp = RenderPass::AttachmentLoadOp::CLEAR;
+	attachment.storeOp = RenderPass::AttachmentStoreOp::STORE;
+	attachment.stencilLoadOp = RenderPass::AttachmentLoadOp::DONT_CARE;
+	attachment.stencilStoreOp = RenderPass::AttachmentStoreOp::DONT_CARE;
+	attachment.initialLayout = Image::Layout::UNKNOWN;
+	attachment.finalLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
+	m_RenderPassCI.attachments.push_back(attachment);
+
+	RenderPass::SubpassDescription description;
+	if (m_CI.captureType == CaptureType::REFLECTION)
+	{
+		description.pipelineType = PipelineType::GRAPHICS;
+		description.inputAttachments = {};
+		description.colourAttachments = { { 0, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL } };
+		description.resolveAttachments = {};
+		description.depthStencilAttachment = { { 1, Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL} };
+		description.preseverseAttachments = {};
+	}
+	else
+	{
+		description.pipelineType = PipelineType::GRAPHICS;
+		description.inputAttachments = {};
+		description.colourAttachments = {};
+		description.resolveAttachments = {};
+		description.depthStencilAttachment = { { 0, Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL} };
+		description.preseverseAttachments = {};
+	}
+	m_RenderPassCI.subpassDescriptions.push_back(description);
+
+	RenderPass::SubpassDependency dependency;
+	dependency.srcSubpass = MIRU_SUBPASS_EXTERNAL;
+	dependency.dstSubpass = 0;
+	dependency.srcStage = PipelineStageBit::TRANSFER_BIT;
+	dependency.dstStage = PipelineStageBit::FRAGMENT_SHADER_BIT;
+	dependency.srcAccess = Barrier::AccessBit::TRANSFER_WRITE_BIT;
+	dependency.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
+	dependency.dependencies = DependencyBit::NONE_BIT;
+	m_RenderPassCI.subpassDependencies.push_back(dependency);
+
+	m_RenderPass = RenderPass::Create(&m_RenderPassCI);
+}
+
+void Probe::CreateFramebuffer()
+{
+	m_FramebufferCI.debugName = "GEAR_CORE_Framebuffer: " + m_CI.debugName;
+	m_FramebufferCI.device = m_CI.device;
+	m_FramebufferCI.renderPass = m_RenderPass;
+	if (m_CI.captureType == CaptureType::REFLECTION)
+		m_FramebufferCI.attachments = { m_ColourTexture->GetTextureImageView(), m_DepthTexture->GetTextureImageView() };
+	else
+		m_FramebufferCI.attachments = { m_DepthTexture->GetTextureImageView() };
+	m_FramebufferCI.width = m_DepthTextureCI.data.width;
+	m_FramebufferCI.height = m_DepthTextureCI.data.height;
+	m_FramebufferCI.layers = m_CI.directionType == DirectionType::OMNI ? 6 : 1;
+	m_Framebuffer = Framebuffer::Create(&m_FramebufferCI);
+}
+
+void Probe::CreateRenderPipeline()
+{
+	m_ShadowRenderPipelineLI.device = m_CI.device;
+	m_ShadowRenderPipelineLI.filepath = "res/pipelines/Shadow.grpf";
+	m_ShadowRenderPipelineLI.viewportWidth = static_cast<float>(m_FramebufferCI.width);
+	m_ShadowRenderPipelineLI.viewportHeight = static_cast<float>(m_FramebufferCI.height);
+	m_ShadowRenderPipelineLI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	m_ShadowRenderPipelineLI.renderPass = m_RenderPass;
+	m_ShadowRenderPipelineLI.subpassIndex = 0;
+	m_ShadowRenderPipeline = CreateRef<RenderPipeline>(&m_ShadowRenderPipelineLI);
+}
+
+void Probe::InitialiseUB()
+{
+	if (!m_UB)
+	{
+		float zero0[sizeof(ProbeInfoUB)] = { 0 };
+
+		Uniformbuffer<ProbeInfoUB>::CreateInfo ubCI;
+		ubCI.debugName = "GEAR_CORE_Probe_ProbeInfoUB: " + m_CI.debugName;
+		ubCI.device = m_CI.device;
+		ubCI.data = zero0;
+		m_UB = CreateRef<Uniformbuffer<ProbeInfoUB>>(&ubCI);
+	}
+}
+

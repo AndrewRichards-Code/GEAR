@@ -35,6 +35,67 @@ void Camera::Update(const Transform& transform)
 	}
 }
 
+float4x4 Camera::GetCubemapFaceViewMatrix(uint32_t faceIndex, const float3& translation)
+{
+	float4x4 view;
+	float3 _translation = translation;
+
+	switch (faceIndex)
+	{
+	default:
+		view = float4x4();
+	
+	case 0: // POSITIVE_X
+		view = float4x4(
+		+0.0f, +0.0f, -1.0f, +0.0f,
+		+0.0f, +1.0f, +0.0f, +0.0f,
+		-1.0f, +0.0f, +0.0f, +0.0f,
+		+0.0f, +0.0f, +0.0f, +1.0f);
+		break;
+
+	case 1: // NEGATIVE_X
+		view = float4x4(
+		+0.0f, +0.0f, +1.0f, +0.0f,
+		+0.0f, +1.0f, +0.0f, +0.0f,
+		+1.0f, +0.0f, +0.0f, +0.0f,
+		+0.0f, +0.0f, +0.0f, +1.0f);
+		break;
+
+	case 2: // POSITIVE_Y
+		view = float4x4(
+		+1.0f, +0.0f, +0.0f, +0.0f,
+		+0.0f, +0.0f, -1.0f, +0.0f,
+		+0.0f, -1.0f, +0.0f, +0.0f,
+		+0.0f, +0.0f, +0.0f, +1.0f);
+		break;
+	
+	case 3: // NEGATIVE_Y
+		view = float4x4(
+		+1.0f, +0.0f, +0.0f, +0.0f,
+		+0.0f, +0.0f, +1.0f, +0.0f,
+		+0.0f, +1.0f, +0.0f, +0.0f,
+		+0.0f, +0.0f, +0.0f, +1.0f);
+		break;
+
+	case 4: // POSITIVE_Z
+		view = float4x4(
+		+1.0f, +0.0f, +0.0f, +0.0f,
+		+0.0f, +1.0f, +0.0f, +0.0f,
+		+0.0f, +0.0f, -1.0f, +0.0f,
+		+0.0f, +0.0f, +0.0f, +1.0f);
+		break;
+
+	case 5: // NEGATIVE_Z
+		view = float4x4(
+		-1.0f, +0.0f, +0.0f, +0.0f,
+		+0.0f, +1.0f, +0.0f, +0.0f,
+		+0.0f, +0.0f, +1.0f, +0.0f,
+		+0.0f, +0.0f, +0.0f, +1.0f);
+		break;
+	}
+	return view * float4x4::Translation(-(_translation));
+}
+
 bool Camera::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo)
 {
 	const CreateInfo& CI = *reinterpret_cast<const CreateInfo*>(pCreateInfo);
@@ -104,7 +165,7 @@ void Camera::DefineView(const Transform& transform)
 
 void Camera::SetPosition(const Transform& transform)
 {
-	m_UB->cameraPosition = float4(transform.translation, 1.0f);
+	m_UB->position = float4(transform.translation, +1.0f);
 }
 
 void Camera::InitialiseUB()

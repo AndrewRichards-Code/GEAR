@@ -1,6 +1,7 @@
 #pragma once
 #include "ObjectInterface.h"
 #include "Camera.h"
+#include "Probe.h"
 
 #define GEAR_MAX_LIGHTS 8
 
@@ -8,11 +9,10 @@ namespace gear
 {
 namespace objects 
 {
-	//TODO: Add Shadow mapping.
 	class GEAR_API Light : public ObjectInterface
 	{
 	public:
-		enum class LightType : uint32_t
+		enum class Type : uint32_t
 		{
 			POINT = 0,		//pos
 			DIRECTIONAL = 1,//dir
@@ -22,7 +22,7 @@ namespace objects
 
 		struct CreateInfo : public ObjectInterface::CreateInfo
 		{
-			LightType		type;
+			Type			type;
 			mars::float4	colour;
 		};
 
@@ -32,7 +32,7 @@ namespace objects
 
 		static int s_NumOfLights;
 		size_t m_LightID;
-		LightType m_Type;
+		Ref<Probe> m_Probe;
 
 	public:
 		CreateInfo m_CI;
@@ -42,6 +42,7 @@ namespace objects
 		~Light();
 
 		const Ref<graphics::Uniformbuffer<LightUB>>& GetUB() const { return s_UB; };
+		const Ref<Probe>& GetProbe() const { return m_Probe; };
 
 		//Update the light from the current state of Light::CreateInfo m_CI.
 		void Update(const Transform& transform);
@@ -51,6 +52,7 @@ namespace objects
 
 	private:
 		void InitialiseUB();
+		void CreateProbe();
 	};
 }
 }
