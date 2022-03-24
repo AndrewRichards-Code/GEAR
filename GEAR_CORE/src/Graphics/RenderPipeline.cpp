@@ -116,8 +116,8 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 		rpCI.viewportState.viewports.push_back({
 			viewport["x"],
 			viewport["y"],
-			std::string(viewport["width"]).compare("VIEWPORT_WIDTH") == 0 ? pLoadInfo->viewportWidth : viewport["width"],
-			std::string(viewport["height"]).compare("VIEWPORT_HEIGHT") == 0 ? pLoadInfo->viewportHeight : viewport["height"],
+			(viewport["width"].is_string() && std::string(viewport["width"]).compare("VIEWPORT_WIDTH") == 0) ? pLoadInfo->viewportWidth : viewport["width"],
+			(viewport["height"].is_string() && std::string(viewport["height"]).compare("VIEWPORT_HEIGHT") == 0) ? pLoadInfo->viewportHeight : viewport["height"],
 			viewport["minDepth"],
 			viewport["maxDepth"]
 			});
@@ -130,8 +130,8 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 				scissor["y"]
 			},
 			{
-				(uint32_t)(std::string(scissor["width"]).compare("VIEWPORT_WIDTH") == 0 ? pLoadInfo->viewportWidth : scissor["width"]),
-				(uint32_t)(std::string(scissor["height"]).compare("VIEWPORT_HEIGHT") == 0 ? pLoadInfo->viewportHeight : scissor["height"]),
+				(uint32_t)((scissor["width"].is_string() && std::string(scissor["width"]).compare("VIEWPORT_WIDTH") == 0) ? pLoadInfo->viewportWidth : scissor["width"]),
+				(uint32_t)((scissor["height"].is_string() && std::string(scissor["height"]).compare("VIEWPORT_HEIGHT") == 0) ? pLoadInfo->viewportHeight : scissor["height"]),
 			}
 			});
 	}

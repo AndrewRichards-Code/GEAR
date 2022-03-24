@@ -5,6 +5,7 @@
 #include "UI/ComponentUI/NameComponentUI.h"
 #include "UI/ComponentUI/TransformComponentUI.h"
 #include "UI/ComponentUI/CameraComponentUI.h"
+#include "UI/ComponentUI/LightComponentUI.h"
 #include "UI/ComponentUI/SkyboxComponentUI.h"
 #include "UI/ComponentUI/ModelComponentUI.h"
 
@@ -37,7 +38,27 @@ void PropertiesPanel::Draw()
 		Ref<ViewportPanel> viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
 		if (sceneHierarchyPanel && viewportPanel)
 		{
-			Entity& entity = sceneHierarchyPanel->GetSelectedEntity();
+			DrawCheckbox("Use Selected Entity", m_UseSelectedEntity, 200.0f);
+			
+			if (!m_UseSelectedEntity)
+			{
+				Ref<Scene>& scene = sceneHierarchyPanel->GetCreateInfo().scene;
+				entt::registry& reg = scene->GetRegistry();
+				reg.each([&](entt::entity entityID)
+					{
+						Entity _entity;
+						_entity.m_CI = { scene.get() };
+						_entity.m_Entity = entityID;
+
+						const std::string& name = _entity.GetComponent<NameComponent>().name;
+						ImGui::Text("%s", name.c_str());
+						if (ImGui::IsItemClicked())
+							entity = _entity;
+					});
+			}
+			else
+				entity = sceneHierarchyPanel->GetSelectedEntity();
+
 			void* device = viewportPanel->GetCreateInfo().renderer->GetDevice();
 			const float& screenRatio = viewportPanel->GetCreateInfo().renderer->GetRenderSurface()->GetRatio();
 			if (entity)
@@ -45,6 +66,7 @@ void PropertiesPanel::Draw()
 				DrawComponentUI<NameComponent>("Name", entity, true, DrawNameComponentUI, entity);
 				DrawComponentUI<TransformComponent>("Transform", entity, true, DrawTransformComponentUI, entity);
 				DrawComponentUI<CameraComponent>("Camera", entity, true, DrawCameraComponentUI, entity, screenRatio);
+				DrawComponentUI<LightComponent>("Light", entity, true, DrawLightComponentUI, entity);
 				DrawComponentUI<SkyboxComponent>("Skybox", entity, true, DrawSkyboxComponentUI, entity);
 				DrawComponentUI<ModelComponent>("Model", entity, true, DrawModelComponentUI, entity, UIContext::GetUIContext());
 				
@@ -56,6 +78,11 @@ void PropertiesPanel::Draw()
 					if (ImGui::MenuItem("Camera"))
 					{
 						AddCameraComponent(entity, screenRatio, device);
+						ImGui::CloseCurrentPopup();
+					}
+					if (ImGui::MenuItem("Light"))
+					{
+						AddLightComponent(entity, device);
 						ImGui::CloseCurrentPopup();
 					}
 					if (ImGui::MenuItem("Skybox"))

@@ -1,5 +1,6 @@
 #pragma once
 #include "SceneHierarchyPanel.h"
+#include "Scene/Entity.h"
 
 namespace gear
 {
@@ -19,9 +20,10 @@ namespace panels
 
 		void Draw() override;
 
-
 		//Members
 	private:
+		bool m_UseSelectedEntity = true;
+		scene::Entity entity;
 	};
 }
 }

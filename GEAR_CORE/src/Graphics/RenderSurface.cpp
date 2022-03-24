@@ -53,7 +53,7 @@ void RenderSurface::CreateAttachments()
 		m_ColourSRGBImageCI.arrayLayers = 1;
 		m_ColourSRGBImageCI.sampleCount = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 		m_ColourSRGBImageCI.usage = Image::UsageBit::COLOUR_ATTACHMENT_BIT | Image::UsageBit::SAMPLED_BIT;
-		m_ColourSRGBImageCI.layout = GraphicsAPI::IsD3D12() ? Image::Layout::SHADER_READ_ONLY_OPTIMAL : Image::Layout::UNKNOWN;
+		m_ColourSRGBImageCI.layout = Image::Layout::UNKNOWN;
 		m_ColourSRGBImageCI.size = 0;
 		m_ColourSRGBImageCI.data = nullptr;
 		m_ColourSRGBImageCI.pAllocator = m_AttachmentAllocator;
@@ -80,7 +80,7 @@ void RenderSurface::CreateAttachments()
 		m_DepthImageCI.arrayLayers = 1;
 		m_DepthImageCI.sampleCount = m_CI.samples;
 		m_DepthImageCI.usage = Image::UsageBit::DEPTH_STENCIL_ATTACHMENT_BIT;
-		m_DepthImageCI.layout = GraphicsAPI::IsD3D12() ? Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL : Image::Layout::UNKNOWN;
+		m_DepthImageCI.layout = Image::Layout::UNKNOWN;
 		m_DepthImageCI.size = 0;
 		m_DepthImageCI.data = nullptr;
 		m_DepthImageCI.pAllocator = m_AttachmentAllocator;
@@ -108,7 +108,7 @@ void RenderSurface::CreateAttachments()
 		m_MSAAColourImageCI.arrayLayers = 1;
 		m_MSAAColourImageCI.sampleCount = m_CI.samples;
 		m_MSAAColourImageCI.usage = Image::UsageBit::COLOUR_ATTACHMENT_BIT;
-		m_MSAAColourImageCI.layout = GraphicsAPI::IsD3D12() ? Image::Layout::COLOUR_ATTACHMENT_OPTIMAL : Image::Layout::UNKNOWN;
+		m_MSAAColourImageCI.layout = Image::Layout::UNKNOWN;
 		m_MSAAColourImageCI.size = 0;
 		m_MSAAColourImageCI.data = nullptr;
 		m_MSAAColourImageCI.pAllocator = m_AttachmentAllocator;
@@ -135,7 +135,7 @@ void RenderSurface::CreateAttachments()
 		m_ColourImageCI.arrayLayers = 1;
 		m_ColourImageCI.sampleCount = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 		m_ColourImageCI.usage = Image::UsageBit::COLOUR_ATTACHMENT_BIT | Image::UsageBit::STORAGE_BIT | Image::UsageBit::INPUT_ATTACHMENT_BIT;
-		m_ColourImageCI.layout = GraphicsAPI::IsD3D12() ? Image::Layout::COLOUR_ATTACHMENT_OPTIMAL : Image::Layout::UNKNOWN;
+		m_ColourImageCI.layout = Image::Layout::UNKNOWN;
 		m_ColourImageCI.size = 0;
 		m_ColourImageCI.data = nullptr;
 		m_ColourImageCI.pAllocator = m_AttachmentAllocator;
@@ -176,7 +176,7 @@ void RenderSurface::CreateMainRenderPass()
 				RenderPass::AttachmentStoreOp::STORE,
 				RenderPass::AttachmentLoadOp::DONT_CARE,
 				RenderPass::AttachmentStoreOp::DONT_CARE,
-				GraphicsAPI::IsD3D12() ? Image::Layout::PRESENT_SRC : Image::Layout::UNKNOWN,
+				Image::Layout::UNKNOWN,
 				Image::Layout::COLOUR_ATTACHMENT_OPTIMAL
 			},
 			{	//2 - Colour
@@ -186,7 +186,7 @@ void RenderSurface::CreateMainRenderPass()
 				RenderPass::AttachmentStoreOp::STORE,
 				RenderPass::AttachmentLoadOp::DONT_CARE,
 				RenderPass::AttachmentStoreOp::DONT_CARE,
-				GraphicsAPI::IsD3D12() ? Image::Layout::PRESENT_SRC : Image::Layout::UNKNOWN,
+				Image::Layout::UNKNOWN,
 				Image::Layout::COLOUR_ATTACHMENT_OPTIMAL
 			}
 		};
@@ -223,7 +223,7 @@ void RenderSurface::CreateMainRenderPass()
 				RenderPass::AttachmentStoreOp::STORE,
 				RenderPass::AttachmentLoadOp::DONT_CARE,
 				RenderPass::AttachmentStoreOp::DONT_CARE,
-				GraphicsAPI::IsD3D12() ? Image::Layout::PRESENT_SRC : Image::Layout::UNKNOWN,
+				Image::Layout::UNKNOWN,
 				Image::Layout::COLOUR_ATTACHMENT_OPTIMAL
 			}
 		};
@@ -267,7 +267,7 @@ void RenderSurface::CreateHDRRenderPass()
 			RenderPass::AttachmentStoreOp::STORE,
 			RenderPass::AttachmentLoadOp::DONT_CARE,
 			RenderPass::AttachmentStoreOp::DONT_CARE,
-			GraphicsAPI::IsD3D12() ? Image::Layout::PRESENT_SRC : Image::Layout::UNKNOWN,
+			Image::Layout::UNKNOWN,
 			Image::Layout::SHADER_READ_ONLY_OPTIMAL
 		},
 		{	//1 - Colour
