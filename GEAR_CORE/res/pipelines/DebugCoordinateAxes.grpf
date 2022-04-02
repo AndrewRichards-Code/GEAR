@@ -21,9 +21,7 @@
         "cso": true,
         "spv": true,
         "dxcLocation": "",
-        "dxcArguments": [],
-        "nologo": false,
-        "nooutput": false
+        "dxcArguments": []
       }
     },
     {
@@ -45,9 +43,7 @@
         "cso": true,
         "spv": true,
         "dxcLocation": "",
-        "dxcArguments": [],
-        "nologo": false,
-        "nooutput": false
+        "dxcArguments": []
       }
     }
   ],
@@ -85,7 +81,7 @@
     "depthBiasConstantFactor": 0.0,
     "depthBiasClamp": 0.0,
     "depthBiasSlopeFactor": 0.0,
-    "lineWidth": 1.0
+    "lineWidth": 2.0
   },
   "multisampleState": {
     "rasterisationSamples": "SAMPLE_COUNT_1_BIT",

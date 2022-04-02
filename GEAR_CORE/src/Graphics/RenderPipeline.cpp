@@ -89,8 +89,6 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 		shaderCI.recompileArguments.dxcLocation = recompileArgs["dxcLocation"];
 		for (auto& dxcArguments : recompileArgs["dxcArguments"])
 			shaderCI.recompileArguments.dxcArguments.push_back(dxcArguments);
-		shaderCI.recompileArguments.nologo = recompileArgs["nologo"];
-		shaderCI.recompileArguments.nooutput = recompileArgs["nooutput"];
 
 		rpCI.shaderCreateInfo.push_back(shaderCI);
 	}

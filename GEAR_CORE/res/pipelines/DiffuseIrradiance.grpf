@@ -21,9 +21,7 @@
         "cso": true,
         "spv": true,
         "dxcLocation": "",
-        "dxcArguments": [],
-        "nologo": false,
-        "nooutput": false
+        "dxcArguments": []
       }
     }
   ]

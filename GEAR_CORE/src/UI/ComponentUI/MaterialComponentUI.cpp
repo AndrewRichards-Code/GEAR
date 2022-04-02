@@ -197,7 +197,7 @@ void gear::ui::componentui::DrawRenderPipelineUI(gear::graphics::RenderPipeline*
 
 					if (DrawTreeNode("Recompile Arguments", false, (void*)id++))
 					{
-						miru::crossplatform::Shader::RecompileArguments& RA = shaderCI.recompileArguments;
+						miru::crossplatform::Shader::CompileArguments& RA = shaderCI.recompileArguments;
 
 						DrawInputText("HLSL Filepath", RA.hlslFilepath);
 						DrawInputText("Output Directory", RA.outputDirectory);
@@ -209,8 +209,6 @@ void gear::ui::componentui::DrawRenderPipelineUI(gear::graphics::RenderPipeline*
 						DrawCheckbox("SPV", RA.spv);
 						DrawInputVectorOfString("DXC Arguments", RA.dxcArguments);
 						DrawInputText("DXC Location", RA.dxcLocation);
-						DrawCheckbox("No Logo", RA.nologo);
-						DrawCheckbox("No Output", RA.nooutput);
 
 						EndDrawTreeNode();
 					}
