@@ -19,7 +19,7 @@ ModelLoader::ModelData ModelLoader::LoadModelData(const std::string& filepath)
 	bool flipUVs = true;
 
 	Assimp::Importer importer;
-	unsigned int flags = aiProcess_Triangulate /*| aiProcess_PreTransformVertices*/;
+	unsigned int flags = aiProcess_Triangulate | aiProcess_ConvertToLeftHanded/*| aiProcess_PreTransformVertices*/;
 	if (calculateTangentsAndBiNormals)
 		flags |= aiProcess_CalcTangentSpace;
 	if (flipUVs)
@@ -284,54 +284,10 @@ void ModelLoader::FillOutMaterialCreateInfo(aiMaterial* aiMaterial, Material::Cr
 
 	pbrConstants = UniformBufferStructures::DefaultPBRConstants();
 
-	bool useColourMap;
-	bool useEmissiveMap;
-	bool useMetallicMap;
-	bool useRoughnessMap;
-	bool useAOMap;
-
-	aiString baseColourFilepath;
-	aiString normalFilepath;
-	aiString emissiveFilepath;
-	aiString metallicFilepath;
-	aiString roughnessFilepath;
-	aiString aoFilepath;
-
-	aiColor3D baseColour;
-	aiColor3D emissiveColour;
-	float emissiveIntensity = 0.0f;
-	float metallic = 0.0f;
-	float roughness = 0.0f;
-	float ao = 0.0f;
-	aiColor3D specularColour;
-
-	aiShadingMode mode;
-	aiMaterial->Get(AI_MATKEY_SHADING_MODEL, mode);
-
-	aiMaterial->Get(AI_MATKEY_USE_COLOR_MAP, useColourMap);
-	aiMaterial->GetTexture(aiTextureType_BASE_COLOR, 0, &baseColourFilepath);
-	aiMaterial->Get(AI_MATKEY_BASE_COLOR, baseColour);
-
-	aiMaterial->GetTexture(aiTextureType_NORMAL_CAMERA, 0, &normalFilepath);
-
-	aiMaterial->Get(AI_MATKEY_USE_EMISSIVE_MAP, useEmissiveMap);
-	aiMaterial->GetTexture(aiTextureType_EMISSION_COLOR, 0, &emissiveFilepath);
-	aiMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColour);
-	aiMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, emissiveIntensity);
-	
-	aiMaterial->Get(AI_MATKEY_USE_METALLIC_MAP, useMetallicMap);
-	aiMaterial->GetTexture(aiTextureType_METALNESS, 0, &metallicFilepath);
-	aiMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallic);
-
-	aiMaterial->Get(AI_MATKEY_USE_ROUGHNESS_MAP, useRoughnessMap);
-	aiMaterial->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessFilepath);
-	aiMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
-
-	aiMaterial->Get(AI_MATKEY_USE_AO_MAP, useAOMap);
-	aiMaterial->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aoFilepath);
-
-	aiMaterial->Get(AI_MATKEY_COLOR_SPECULAR, specularColour);
-
+	auto aiColor3DToFloat4 = [](const aiColor3D value) -> float4
+	{
+		return float4(value.r, value.g, value.b, 1.0);
+	};
 	auto LoadTexture = [](std::map<Material::TextureType, Ref<Texture>>& textures, const Material::TextureType& type, aiString _filepath)
 	{
 		std::string filepath = std::string(_filepath.C_Str());
@@ -356,21 +312,114 @@ void ModelLoader::FillOutMaterialCreateInfo(aiMaterial* aiMaterial, Material::Cr
 		}
 
 	};
-	LoadTexture(pbrTextures, Material::TextureType::ALBEDO, baseColourFilepath);
-	LoadTexture(pbrTextures, Material::TextureType::NORMAL, normalFilepath);
-	LoadTexture(pbrTextures, Material::TextureType::EMISSIVE, emissiveFilepath);
-	LoadTexture(pbrTextures, Material::TextureType::METALLIC, metallicFilepath);
-	LoadTexture(pbrTextures, Material::TextureType::ROUGHNESS, roughnessFilepath);
-	LoadTexture(pbrTextures, Material::TextureType::AMBIENT_OCCLUSION, aoFilepath);
 
-	auto aiColor3DToFloat4 = [](const aiColor3D value) -> float4
+	aiShadingMode mode;
+	aiMaterial->Get(AI_MATKEY_SHADING_MODEL, mode);
+
+	if (mode == aiShadingMode::aiShadingMode_PBR_BRDF)
 	{
-		return float4(value.r, value.g, value.b, 1.0);
-	};
-	pbrConstants.fresnel = aiColor3DToFloat4(specularColour);
-	pbrConstants.albedo = aiColor3DToFloat4(baseColour);
-	pbrConstants.metallic = metallic;
-	pbrConstants.roughness = roughness;
-	pbrConstants.ambientOcclusion = 1.0f;
-	pbrConstants.emissive = aiColor3DToFloat4(emissiveColour) * emissiveIntensity;
+		aiColor3D baseColour;
+		aiColor3D emissiveColour;
+		float emissiveIntensity = 0.0f;
+		float metallic = 0.0f;
+		float roughness = 0.0f;
+		aiColor3D specularColour;
+
+		aiMaterial->Get(AI_MATKEY_BASE_COLOR, baseColour);
+		aiMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColour);
+		aiMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, emissiveIntensity);
+		aiMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallic);
+		aiMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
+		aiMaterial->Get(AI_MATKEY_COLOR_SPECULAR, specularColour);
+
+		bool useColourMap;
+		bool useEmissiveMap;
+		bool useMetallicMap;
+		bool useRoughnessMap;
+		bool useAOMap;
+
+		aiString baseColourFilepath;
+		aiString normalFilepath;
+		aiString emissiveFilepath;
+		aiString metallicFilepath;
+		aiString roughnessFilepath;
+		aiString aoFilepath;
+
+		aiMaterial->Get(AI_MATKEY_USE_COLOR_MAP, useColourMap);
+		aiMaterial->GetTexture(aiTextureType_BASE_COLOR, 0, &baseColourFilepath);
+		aiMaterial->GetTexture(aiTextureType_NORMAL_CAMERA, 0, &normalFilepath);
+		aiMaterial->Get(AI_MATKEY_USE_EMISSIVE_MAP, useEmissiveMap);
+		aiMaterial->GetTexture(aiTextureType_EMISSION_COLOR, 0, &emissiveFilepath);
+		aiMaterial->Get(AI_MATKEY_USE_METALLIC_MAP, useMetallicMap);
+		aiMaterial->GetTexture(aiTextureType_METALNESS, 0, &metallicFilepath);
+		aiMaterial->Get(AI_MATKEY_USE_ROUGHNESS_MAP, useRoughnessMap);
+		aiMaterial->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessFilepath);
+		aiMaterial->Get(AI_MATKEY_USE_AO_MAP, useAOMap);
+		aiMaterial->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aoFilepath);
+
+		LoadTexture(pbrTextures, Material::TextureType::ALBEDO, baseColourFilepath);
+		LoadTexture(pbrTextures, Material::TextureType::NORMAL, normalFilepath);
+		LoadTexture(pbrTextures, Material::TextureType::EMISSIVE, emissiveFilepath);
+		LoadTexture(pbrTextures, Material::TextureType::METALLIC, metallicFilepath);
+		LoadTexture(pbrTextures, Material::TextureType::ROUGHNESS, roughnessFilepath);
+		LoadTexture(pbrTextures, Material::TextureType::AMBIENT_OCCLUSION, aoFilepath);
+
+		pbrConstants.fresnel = aiColor3DToFloat4(specularColour);
+		pbrConstants.albedo = aiColor3DToFloat4(baseColour);
+		pbrConstants.metallic = metallic;
+		pbrConstants.roughness = roughness;
+		pbrConstants.ambientOcclusion = 1.0f;
+		pbrConstants.emissive = aiColor3DToFloat4(emissiveColour) * emissiveIntensity;
+	}
+	else
+	{
+		float shininess;
+		aiColor3D colourDiffuse;
+		aiColor3D colourSpecular;
+		aiColor3D colourEmissive;
+
+		aiMaterial->Get(AI_MATKEY_SHININESS, shininess);
+		aiMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, colourDiffuse);
+		aiMaterial->Get(AI_MATKEY_COLOR_SPECULAR, colourSpecular);
+		aiMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, colourEmissive);
+
+		bool useColourMap;
+		bool useEmissiveMap;
+		bool useMetallicMap;
+		bool useRoughnessMap;
+		bool useAOMap;
+
+		aiString baseColourFilepath;
+		aiString normalFilepath;
+		aiString emissiveFilepath;
+		aiString metallicFilepath;
+		aiString roughnessFilepath;
+		aiString aoFilepath;
+
+		aiMaterial->Get(AI_MATKEY_USE_COLOR_MAP, useColourMap);
+		aiMaterial->GetTexture(aiTextureType_BASE_COLOR, 0, &baseColourFilepath);
+		aiMaterial->GetTexture(aiTextureType_NORMAL_CAMERA, 0, &normalFilepath);
+		aiMaterial->Get(AI_MATKEY_USE_EMISSIVE_MAP, useEmissiveMap);
+		aiMaterial->GetTexture(aiTextureType_EMISSION_COLOR, 0, &emissiveFilepath);
+		aiMaterial->Get(AI_MATKEY_USE_METALLIC_MAP, useMetallicMap);
+		aiMaterial->GetTexture(aiTextureType_METALNESS, 0, &metallicFilepath);
+		aiMaterial->Get(AI_MATKEY_USE_ROUGHNESS_MAP, useRoughnessMap);
+		aiMaterial->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessFilepath);
+		aiMaterial->Get(AI_MATKEY_USE_AO_MAP, useAOMap);
+		aiMaterial->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aoFilepath);
+
+		LoadTexture(pbrTextures, Material::TextureType::ALBEDO, baseColourFilepath);
+		LoadTexture(pbrTextures, Material::TextureType::NORMAL, normalFilepath);
+		LoadTexture(pbrTextures, Material::TextureType::EMISSIVE, emissiveFilepath);
+		LoadTexture(pbrTextures, Material::TextureType::METALLIC, metallicFilepath);
+		LoadTexture(pbrTextures, Material::TextureType::ROUGHNESS, roughnessFilepath);
+		LoadTexture(pbrTextures, Material::TextureType::AMBIENT_OCCLUSION, aoFilepath);
+
+		pbrConstants.fresnel = aiColor3DToFloat4(colourSpecular);
+		pbrConstants.albedo = aiColor3DToFloat4(colourDiffuse);
+		pbrConstants.metallic = 0.5f;
+		pbrConstants.roughness = std::clamp(1.0f - (shininess / 32.0f), 0.0f, 1.0f);
+		pbrConstants.ambientOcclusion = 1.0f;
+		pbrConstants.emissive = aiColor3DToFloat4(colourEmissive);
+	}
 }
