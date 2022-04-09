@@ -1,6 +1,4 @@
 #pragma once
-
-#include "gear_core_common.h"
 #include "Graphics/RenderSurface.h"
 #include "Graphics/RenderPipeline.h"
 #include "Objects/Camera.h"
@@ -35,7 +33,7 @@ namespace graphics
 			Ref<miru::crossplatform::DescriptorPool> pool;
 			miru::crossplatform::DescriptorPool::CreateInfo poolCI;
 
-			std::map<Ref<graphics::RenderPipeline>, Ref<miru::crossplatform::DescriptorSet>> setPerRenderPipeline;
+			std::map<Ref<objects::ObjectViewInterface>, std::map<Ref<graphics::RenderPipeline>, Ref<miru::crossplatform::DescriptorSet>>> setPerViewPerRenderPipeline;
 			std::map<Ref<objects::Model>, Ref<miru::crossplatform::DescriptorSet>> setPerModel;
 			std::map<Ref<objects::Material>, Ref<miru::crossplatform::DescriptorSet>> setPerMaterial;
 		};
@@ -65,8 +63,9 @@ namespace graphics
 		miru::crossplatform::Semaphore::CreateInfo m_SubmitSemaphoreCI;
 
 		//Renderering Objects
-		Ref<objects::Camera> m_Camera;
+		Ref<objects::Camera> m_MainRenderCamera;
 		Ref<objects::Camera> m_TextCamera;
+		std::vector<Ref<objects::Camera>> m_AllCameras;
 		std::vector<Ref<objects::Light>> m_Lights;
 		Ref<objects::Skybox> m_Skybox;
 		std::vector<Ref<objects::Model>> m_ModelQueue;
@@ -74,7 +73,9 @@ namespace graphics
 		ui::UIContext* m_UIContext = nullptr;
 
 		//Default Objects
-		Ref<objects::Light> m_DefaultLight;
+		Ref<Uniformbuffer<UniformBufferStructures::Lights>> m_EmptyLightsUB;
+		Ref<Texture> m_Black2DTexture;
+		Ref<Texture> m_BlackCubeTexture;
 		
 		uint32_t m_FrameIndex = 0;
 		uint32_t m_FrameCount = 0;
@@ -92,8 +93,7 @@ namespace graphics
 		
 	public:
 		void SubmitRenderSurface(const Ref<RenderSurface>& renderSurface);
-		void SubmitCamera(const Ref<objects::Camera>& camera);
-		void SubmitTextCamera(const Ref<objects::Camera>& fontCamera);
+		void SubmitCamera(const Ref<objects::Camera>& camera, uint32_t usage);
 		void SubmitLight(const Ref<objects::Light>& lights);
 		void SubmitSkybox(const Ref<objects::Skybox>& skybox);
 		void SubmitModel(const Ref<objects::Model>& obj);
@@ -130,7 +130,7 @@ namespace graphics
 		inline Ref<Window> GetWindow() { return m_CI.window; }
 		static inline std::map<std::string, Ref<graphics::RenderPipeline>> GetRenderPipelines() { return s_RenderPipelines; }
 		inline Ref<RenderSurface> GetRenderSurface() { return m_RenderSurface; }
-		inline Ref<objects::Camera> GetCamera() { return m_Camera; }
+		inline Ref<objects::Camera> GetCamera() { return m_MainRenderCamera; }
 
 		inline const uint32_t& GetFrameIndex() const { return m_FrameIndex; }
 		inline const uint32_t& GetFrameCount() const { return m_FrameCount; }

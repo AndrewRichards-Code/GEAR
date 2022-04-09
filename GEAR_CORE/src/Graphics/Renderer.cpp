@@ -1,10 +1,11 @@
 #include "gear_core_common.h"
 #include "Renderer.h"
 #include "ARC/src/StringConversion.h"
+#include "DebugRender.h"
 #include "ImageProcessing.h"
+#include "PostProcessing.h"
 #include "FrameGraph.h"
 #include "Window.h"
-#include "PostProcessing.h"
 
 using namespace gear;
 using namespace graphics;
@@ -86,12 +87,47 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 	InitialiseRenderPipelines(m_RenderSurface);
 
 	//Set Default Objects
-	Light::CreateInfo lightCI;
-	lightCI.debugName = "GEAR_CORE_Light_Renderer";
-	lightCI.device = m_Device;
-	lightCI.type = Light::LightType::POINT;
-	lightCI.colour = mars::float4(1.0f, 1.0f, 1.0f, 1.0f);
-	m_DefaultLight = CreateRef<Light>(&lightCI);
+	float zero0[sizeof(UniformBufferStructures::Lights)] = { 0 };
+	Uniformbuffer<UniformBufferStructures::Lights>::CreateInfo lightsUBCI;
+	lightsUBCI.debugName = "GEAR_CORE_LightUBType_Renderer: Empty";
+	lightsUBCI.device = m_Device;
+	lightsUBCI.data = zero0;
+	m_EmptyLightsUB = CreateRef<Uniformbuffer<UniformBufferStructures::Lights>>(&lightsUBCI);
+
+	uint8_t dataBlack[4] = { 0x00, 0x00, 0x00, 0xFF };
+	Texture::CreateInfo texCI;
+	texCI.debugName = "GEAR_CORE_Texture_Renderer: Black Texture 2D";
+	texCI.device = m_Device;
+	texCI.dataType = Texture::DataType::DATA;
+	texCI.data.data = dataBlack;
+	texCI.data.size = 4;
+	texCI.data.width = 1;
+	texCI.data.height = 1;
+	texCI.data.depth = 1;
+	texCI.mipLevels = 1;
+	texCI.arrayLayers = 1;
+	texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
+	texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
+	texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	texCI.usage = miru::crossplatform::Image::UsageBit(0);
+	texCI.generateMipMaps = false;
+	texCI.gammaSpace = GammaSpace::LINEAR;
+	m_Black2DTexture = CreateRef<Texture>(&texCI);
+
+	uint8_t dataBlackCube[24] = { 
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF
+	};
+	texCI.debugName = "GEAR_CORE_Texture_Renderer: Black Texture cube";
+	texCI.data.data = dataBlackCube;
+	texCI.data.size = 24;
+	texCI.arrayLayers = 6;
+	texCI.type = miru::crossplatform::Image::Type::TYPE_CUBE;
+	m_BlackCubeTexture = CreateRef<Texture>(&texCI);
 }
 
 Renderer::~Renderer()
@@ -108,23 +144,28 @@ void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface
 {
 	if (!s_RenderPipelines.empty())
 		return;
+
+	DebugRender::Initialise(m_Device);
 	
 	//Filepath, RenderPass Index, Subpass Index
 	std::vector<std::tuple<std::string, size_t, uint32_t>> filepaths =
 	{
-		{ "res/pipelines/PBROpaque.grpf",			0, 0 },
-		{ "res/pipelines/HDR.grpf",					1, 0 },
-		{ "res/pipelines/Cube.grpf",				0, 0 },
-		{ "res/pipelines/Text.grpf",				1, 0 },
-		{ "res/pipelines/DebugCoordinateAxes.grpf",	1, 0 },
-		{ "res/pipelines/DebugCopy.grpf",			2, 0 }
+		{ "res/pipelines/PBROpaque.grpf",				0, 0 },
+		{ "res/pipelines/Cube.grpf",					0, 0 },
+		{ "res/pipelines/Text.grpf",					1, 0 },
+		{ "res/pipelines/HDR.grpf",						1, 0 },
+		{ "res/pipelines/DebugCoordinateAxes.grpf",		1, 0 },
+		{ "res/pipelines/DebugCopy.grpf",				2, 0 },
+		{ "res/pipelines/DebugShowDepth.grpf",			3, 0 },
+		{ "res/pipelines/DebugShowDepthCubemap.grpf",	3, 0 },
 	};
 
-	Ref<RenderPass> renderPasses[3] =
+	Ref<RenderPass> renderPasses[4] =
 	{
 			renderSurface->GetMainRenderPass(),
 			renderSurface->GetHDRRenderPass(),
-			m_CI.window->GetSwapchainRenderPass()
+			m_CI.window->GetSwapchainRenderPass(),
+			DebugRender::GetDefaultRenderPass()
 	};
 
 	RenderPipeline::LoadInfo renderPipelineLI;
@@ -150,6 +191,8 @@ void Renderer::UninitialiseRenderPipelines()
 	ImageProcessing::UninitialiseRenderPipelines();
 	PostProcessing::UninitialiseRenderPipelines();
 
+	DebugRender::Uninitialise();
+
 	for (auto& pipeline : s_RenderPipelines)
 		pipeline.second = nullptr;
 
@@ -164,25 +207,19 @@ void Renderer::SubmitRenderSurface(const Ref<RenderSurface>& renderSurface)
 	}
 }
 
-void Renderer::SubmitCamera(const Ref<objects::Camera>& camera)
+void Renderer::SubmitCamera(const Ref<objects::Camera>& camera, uint32_t usage)
 { 
-	if (m_Camera != camera)
-	{
-		m_Camera = camera;
-	}
-}
+	m_AllCameras.push_back(camera);
 
-void Renderer::SubmitTextCamera(const Ref<Camera>& textCamera)
-{
-	if (m_TextCamera != textCamera)
-	{
-		m_TextCamera = textCamera;
-	}
+	if (usage == 2)
+		m_MainRenderCamera = camera;
+	if (usage == 3)
+		m_TextCamera = camera;
 }
 
 void Renderer::SubmitLight(const Ref<Light>& light)
 { 
-	m_Lights.push_back(light); 
+	m_Lights.push_back(light);
 }
 
 void Renderer::SubmitSkybox(const Ref<Skybox>& skybox)
@@ -238,6 +275,10 @@ void Renderer::Upload()
 	std::vector<Ref<objects::Model>> allQueue;
 	allQueue.insert(allQueue.end(), m_ModelQueue.begin(), m_ModelQueue.end());
 	allQueue.insert(allQueue.end(), m_TextQueue.begin(), m_TextQueue.end());
+
+	//Get Renderer Default Textures
+	texturesToProcess.insert(m_Black2DTexture);
+	texturesToProcess.insert(m_BlackCubeTexture);
 
 	//Get all unique textures
 	for (auto& model : allQueue)
@@ -338,12 +379,6 @@ void Renderer::Upload()
 	}
 	m_ReloadTextures = false;
 
-	//Set Lights
-	if (m_Lights.empty())
-	{
-		m_Lights.push_back(m_DefaultLight);
-	}
-
 	bool preTransferGraphicsTask1 = textureShaderReadOnlyToTransferDst.size();
 	bool preTransferGraphicsTask2 = textureShaderReadOnlyToGeneralBarrier.size();
 	bool preUploadTransferTask = textureUnknownToTransferDstBarrier.size();
@@ -418,8 +453,8 @@ void Renderer::Upload()
 	//Upload Transfer Task
 	{
 		GPUTask::UploadResourceTaskInfo urti;
-		urti.camera = m_Camera;
-		urti.textCamera = m_TextCamera;
+		urti.cameras = m_AllCameras;
+		urti.cameras.push_back(DebugRender::GetCamera());
 		urti.skybox = m_Skybox;
 		urti.lights = m_Lights;
 		urti.models = allQueue;
@@ -669,6 +704,11 @@ void Renderer::BuildDescriptorSetandPools()
 			set++;
 		}
 	};
+	std::vector<Ref<ObjectViewInterface>> viewObjects;
+	for (auto& camera : m_AllCameras)
+		viewObjects.push_back(ref_cast<ObjectViewInterface>(camera));
+	for (auto& light : m_Lights)
+		viewObjects.push_back(ref_cast<ObjectViewInterface>(light->GetProbe()));
 
 	std::vector<Ref<objects::Model>> allQueue;
 	allQueue.insert(allQueue.end(), m_ModelQueue.begin(), m_ModelQueue.end());
@@ -682,96 +722,131 @@ void Renderer::BuildDescriptorSetandPools()
 
 		AddToPoolSizeMap(rbds, static_cast<uint32_t>(materialCount));
 	}
+	for (const Ref<Light>& light : m_Lights)
+	{
+		const auto& shadowRenderPipeline = light->GetProbe()->m_ShadowRenderPipeline;
+		const auto& shadowRenderPipelineViewIDStr = light->GetProbe()->GetViewIDString();
+		s_RenderPipelines[shadowRenderPipeline->m_CI.debugName + shadowRenderPipelineViewIDStr] = shadowRenderPipeline;
+		AddToPoolSizeMap(s_RenderPipelines[shadowRenderPipeline->m_CI.debugName + shadowRenderPipelineViewIDStr]->GetRBDs());
+	}
 	AddToPoolSizeMap(s_RenderPipelines["HDR"]->GetRBDs());
+	AddToPoolSizeMap(s_RenderPipelines["DebugCoordinateAxes"]->GetRBDs());
 	AddToPoolSizeMap(s_RenderPipelines["DebugCopy"]->GetRBDs());
+	AddToPoolSizeMap(s_RenderPipelines["DebugShowDepth"]->GetRBDs());
+	AddToPoolSizeMap(s_RenderPipelines["DebugShowDepthCubemap"]->GetRBDs());
 
 	descPoolAndSets.poolCI.debugName = "GEAR_CORE_DescriptorPool_Renderer_" + indexString;
 	descPoolAndSets.poolCI.device = m_Device;
 	for (auto& poolSize : poolSizesMap)
 		descPoolAndSets.poolCI.poolSizes.push_back({ poolSize.first, poolSize.second });
-	descPoolAndSets.poolCI.maxSets = static_cast<uint32_t>(s_RenderPipelines.size() + allQueue.size() + m_RenderQueueMaterialCount);
+	descPoolAndSets.poolCI.maxSets = static_cast<uint32_t>((s_RenderPipelines.size() + allQueue.size() + m_RenderQueueMaterialCount) * viewObjects.size());
 	descPoolAndSets.pool = DescriptorPool::Create(&descPoolAndSets.poolCI);
 
-	//Per Render Pipeline Descriptor Set
-	descPoolAndSets.setPerRenderPipeline.clear();
-	for (auto& pipeline : s_RenderPipelines)
+	//Per View Descriptor Set
+	descPoolAndSets.setPerViewPerRenderPipeline.clear();
+	for (auto& view : viewObjects)
 	{
-		const std::vector<Ref<DescriptorSetLayout>>& descriptorSetLayouts = pipeline.second->GetDescriptorSetLayouts();
-		const std::vector<std::vector<Shader::ResourceBindingDescription>> rbds = pipeline.second->GetRBDs();
-
-		if (descriptorSetLayouts.empty() || rbds.empty())
-			continue;
-
-		DescriptorSet::CreateInfo descSetPerViewCI;
-		descSetPerViewCI.debugName = "GEAR_CORE_DescriptorSet_PerView_" + indexString + ": " + pipeline.second->GetPipeline()->GetCreateInfo().debugName;
-		descSetPerViewCI.pDescriptorPool = descPoolAndSets.pool;
-		descSetPerViewCI.pDescriptorSetLayouts = { descriptorSetLayouts[0] };
-		descPoolAndSets.setPerRenderPipeline[pipeline.second] = DescriptorSet::Create(&descSetPerViewCI);
-		
-		for (auto& rbd : rbds[0])
+		for (auto& pipeline : s_RenderPipelines)
 		{
-			const uint32_t& binding = rbd.binding;
-			const std::string& name = arc::ToUpper(rbd.name);
-			if (rbd.structSize > 0)
-			{
-				if (SetUpdateTypeMap.find(name) == SetUpdateTypeMap.end())
-					continue;
-				if (SetUpdateTypeMap[name] != SetUpdateType::PER_VIEW)
-					continue;
-			}
+			const std::vector<Ref<DescriptorSetLayout>>& descriptorSetLayouts = pipeline.second->GetDescriptorSetLayouts();
+			const std::vector<std::vector<Shader::ResourceBindingDescription>> rbds = pipeline.second->GetRBDs();
 
-			if (name.compare("CAMERA") == 0 && m_Camera)
-			{
-				descPoolAndSets.setPerRenderPipeline[pipeline.second]->AddBuffer(0, binding, { { m_Camera->GetUB()->GetBufferView() } });
-			}
-			else if (name.compare("TEXTCAMERA") == 0 && m_TextCamera)
-			{
-				descPoolAndSets.setPerRenderPipeline[pipeline.second]->AddBuffer(0, binding, { { m_TextCamera->GetUB()->GetBufferView() } });
-			}
-			else if (name.compare("LIGHTS") == 0 && m_Lights[0])
-			{
-				descPoolAndSets.setPerRenderPipeline[pipeline.second]->AddBuffer(0, binding, { { m_Lights[0]->GetUB()->GetBufferView() } });
-			}
-
-			else if (name.find("DIFFUSEIRRADIANCE") == 0 && m_Skybox)
-			{
-				const Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedDiffuseCubemap();
-				descPoolAndSets.setPerRenderPipeline[pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
-			}
-			else if (name.find("SPECULARIRRADIANCE") == 0 && m_Skybox)
-			{
-				const Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedSpecularCubemap();
-				descPoolAndSets.setPerRenderPipeline[pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
-			}
-			else if (name.find("SPECULARBRDF_LUT") == 0 && m_Skybox)
-			{
-				const Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedSpecularBRDF_LUT();
-				descPoolAndSets.setPerRenderPipeline[pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
-			}
-
-			else if (name.compare("HDRINFO") == 0 && m_Skybox)
-			{
-				descPoolAndSets.setPerRenderPipeline[pipeline.second]->AddBuffer(0, binding, { { m_Skybox->GetUB()->GetBufferView() } });
-			}
-			else if (name.compare("HDRINPUT") == 0 && m_RenderSurface)
-			{
-				const Ref<ImageView>& colourImageView = m_RenderSurface->GetHDRFramebuffers()[0]->GetCreateInfo().attachments[1];
-				descPoolAndSets.setPerRenderPipeline[pipeline.second]->AddImage(0, binding, { { nullptr, colourImageView, Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
-			}
-			else if (name.compare("EMISSIVEINPUT") == 0 && m_RenderSurface)
-			{
-				const Ref<ImageView>& emissiveImageView = m_RenderSurface->GetHDRFramebuffers()[0]->GetCreateInfo().attachments[2];
-				descPoolAndSets.setPerRenderPipeline[pipeline.second]->AddImage(0, binding, { { nullptr, emissiveImageView, Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
-			}
-			else if (name.compare("SOURCEIMAGE") == 0 && m_RenderSurface)
-			{
-				const Ref<ImageView>& sourceImageView = m_RenderSurface->GetHDRFramebuffers()[0]->GetCreateInfo().attachments[0];
-				descPoolAndSets.setPerRenderPipeline[pipeline.second]->AddImage(0, binding, { { nullptr, sourceImageView, Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
-			}
-			else
+			if (descriptorSetLayouts.empty() || rbds.empty())
 				continue;
+
+			DescriptorSet::CreateInfo descSetPerViewCI;
+			descSetPerViewCI.debugName = "GEAR_CORE_DescriptorSet_PerView_" + indexString + ": " + pipeline.second->GetPipeline()->GetCreateInfo().debugName + ": " + std::to_string(view->GetViewID());
+			descSetPerViewCI.pDescriptorPool = descPoolAndSets.pool;
+			descSetPerViewCI.pDescriptorSetLayouts = { descriptorSetLayouts[0] };
+			descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second] = DescriptorSet::Create(&descSetPerViewCI);
+
+			for (auto& rbd : rbds[0])
+			{
+				const uint32_t& binding = rbd.binding;
+				const std::string& name = arc::ToUpper(rbd.name);
+				if (rbd.structSize > 0)
+				{
+					if (SetUpdateTypeMap.find(name) == SetUpdateTypeMap.end())
+						continue;
+					if (SetUpdateTypeMap[name] != SetUpdateType::PER_VIEW)
+						continue;
+				}
+
+				if (name.compare("CAMERA") == 0 && m_MainRenderCamera)
+				{
+					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddBuffer(0, binding, { { m_MainRenderCamera->GetCameraUB()->GetBufferView() } });
+				}
+				else if (name.compare("TEXTCAMERA") == 0 && m_TextCamera)
+				{
+					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddBuffer(0, binding, { { m_TextCamera->GetCameraUB()->GetBufferView() } });
+				}
+				else if (name.compare("DEBUGCAMERA") == 0)
+				{
+					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddBuffer(0, binding, { { DebugRender::GetCamera()->GetCameraUB()->GetBufferView()} });
+				}
+				else if (name.compare("LIGHTS") == 0)
+				{
+					const Ref<Uniformbuffer<UniformBufferStructures::Lights>>& lightUB = m_Lights.size() ? m_Lights[0]->GetUB() : m_EmptyLightsUB;
+					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddBuffer(0, binding, { { lightUB->GetBufferView() } });
+				}
+				else if (name.compare("PROBEINFO") == 0 && m_Lights.size()) //TODO: Multiple lights!
+				{
+					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddBuffer(0, binding, { { m_Lights[0]->GetProbe()->GetUB()->GetBufferView()} });
+				}
+
+				else if (name.find("DIFFUSEIRRADIANCE") == 0)
+				{
+					const Ref<Texture>& skyboxTexture = m_Skybox ? m_Skybox->GetGeneratedDiffuseCubemap() : m_BlackCubeTexture;
+					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
+				}
+				else if (name.find("SPECULARIRRADIANCE") == 0)
+				{
+					const Ref<Texture>& skyboxTexture = m_Skybox ? m_Skybox->GetGeneratedSpecularCubemap() : m_BlackCubeTexture;
+					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
+				}
+				else if (name.find("SPECULARBRDF_LUT") == 0)
+				{
+					const Ref<Texture>& skyboxTexture = m_Skybox ? m_Skybox->GetGeneratedSpecularBRDF_LUT() : m_Black2DTexture;
+					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
+				}
+
+				else if (name.compare("HDRINFO") == 0 && m_MainRenderCamera)
+				{
+					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddBuffer(0, binding, { { m_MainRenderCamera->GetHDRInfoUB()->GetBufferView() } });
+				}
+				else if (name.compare("HDRINPUT") == 0 && m_RenderSurface)
+				{
+					const Ref<ImageView>& colourImageView = m_RenderSurface->GetHDRFramebuffers()[0]->GetCreateInfo().attachments[1];
+					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddImage(0, binding, { { nullptr, colourImageView, Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
+				}
+				else if (name.compare("SOURCEIMAGE") == 0 && m_RenderSurface)
+				{
+					const Ref<ImageView>& sourceImageView = m_RenderSurface->GetHDRFramebuffers()[0]->GetCreateInfo().attachments[0];
+					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddImage(0, binding, { { nullptr, sourceImageView, Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
+				}
+				else if (name.find("CUBEMAP") == 0) //TODO: Multiple lights!
+				{
+					Ref<Probe>& probe = ref_cast<Probe>(view);
+					if (probe && probe->m_DepthTexture && probe->m_CI.directionType == Probe::DirectionType::OMNI)
+					{
+						const Ref<Texture>& cubemapTexture = probe->m_DepthTexture;
+						descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddImage(0, binding, { { cubemapTexture->GetTextureSampler(), cubemapTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL} });
+					}
+				}
+				else if (name.find("IMAGE2D") == 0) //TODO: Multiple lights!
+				{
+					Ref<Probe>& probe = ref_cast<Probe>(view);
+					if (probe && probe->m_DepthTexture && probe->m_CI.directionType == Probe::DirectionType::MONO)
+					{
+						const Ref<Texture>& image2DTexture = probe->m_DepthTexture;
+						descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddImage(0, binding, { { image2DTexture->GetTextureSampler(), image2DTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL} });
+					}
+				}
+				else
+					continue;
+			}
+			descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->Update();
 		}
-		descPoolAndSets.setPerRenderPipeline[pipeline.second]->Update();
 	}
 
 	//Per model Descriptor Sets
@@ -906,7 +981,7 @@ void Renderer::Draw()
 	graphicsRenderPassBeginTI.framebuffer = m_RenderSurface->GetMainFramebuffers()[m_FrameIndex];
 	graphicsRenderPassBeginTI.clearValues = { {1.0f, 0}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f} };
 	GPUTask::CreateInfo beginMainRenderPassCI;
-	beginMainRenderPassCI.debugName = "Begin MainRenderPass";
+	beginMainRenderPassCI.debugName = "Main Render Pass";
 	beginMainRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_BEGIN;
 	beginMainRenderPassCI.pTaskInfo = &graphicsRenderPassBeginTI;
 	beginMainRenderPassCI.srcGPUTasks = {};
@@ -925,7 +1000,7 @@ void Renderer::Draw()
 	rendererFunctionTI.pfn = &Renderer::MainRenderLoop;
 	rendererFunctionTI.pDescPoolAndSets = &(m_DescPoolAndSets[m_FrameIndex]);
 	GPUTask::CreateInfo mainRenderLoopCI;
-	mainRenderLoopCI.debugName = "MainRenderLoop";
+	mainRenderLoopCI.debugName = "Main Render Loop";
 	mainRenderLoopCI.task = GPUTask::Task::RENDERER_FUNCTION;
 	mainRenderLoopCI.pTaskInfo = &rendererFunctionTI;
 	mainRenderLoopCI.srcGPUTasks = { beginMainRenderPass };
@@ -933,13 +1008,13 @@ void Renderer::Draw()
 	mainRenderLoopCI.cmdBuffer = graphicsCmdBuffer;
 	mainRenderLoopCI.cmdBufferIndex = m_FrameIndex;
 	mainRenderLoopCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	mainRenderLoopCI.skipTask = !m_Camera;
+	mainRenderLoopCI.skipTask = !m_MainRenderCamera;
 	Ref<GPUTask> mainRenderLoop = CreateRef<GPUTask>(&mainRenderLoopCI);
 	mainRenderLoop->Execute();
 
 	GPUTask::GraphicsRenderPassEndTaskInfo graphicsRenderPassEndTI;
 	GPUTask::CreateInfo endMainRenderPassCI;
-	endMainRenderPassCI.debugName = "End MainRenderPass";
+	endMainRenderPassCI.debugName = "Main Render Pass";
 	endMainRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_END;
 	endMainRenderPassCI.pTaskInfo = &graphicsRenderPassEndTI;
 	endMainRenderPassCI.srcGPUTasks = { mainRenderLoop };
@@ -951,33 +1026,115 @@ void Renderer::Draw()
 	Ref<GPUTask> endMainRenderPass = CreateRef<GPUTask>(&endMainRenderPassCI);
 	endMainRenderPass->Execute();
 
+	//Shadow Pass Light
+	graphicsCmdBuffer->BeginDebugLabel(m_FrameIndex, "Shadow Render Pass");
+	for (const Ref<Light> light : m_Lights)
+	{
+		graphicsCmdBuffer->BeginDebugLabel(m_FrameIndex, "Depth Render Pass: " + light->m_CI.debugName);
+		graphicsCmdBuffer->BeginRenderPass(m_FrameIndex, light->GetProbe()->m_Framebuffer, { { 1.0f, 0 } });
+		
+		const Ref<graphics::RenderPipeline>& renderPipeline = s_RenderPipelines["Shadow"+light->GetProbe()->GetViewIDString()];
+		const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
+		graphicsCmdBuffer->BindPipeline(m_FrameIndex, pipeline);
+		graphicsCmdBuffer->BindDescriptorSets(m_FrameIndex, { m_DescPoolAndSets[m_FrameIndex].setPerViewPerRenderPipeline.at(light->GetProbe()).at(renderPipeline)}, 0, pipeline);
+
+		for (auto& model : m_ModelQueue)
+		{
+			graphicsCmdBuffer->BindDescriptorSets(m_FrameIndex, { m_DescPoolAndSets[m_FrameIndex].setPerModel.at(model) }, 1, pipeline);
+
+			for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
+			{
+				graphicsCmdBuffer->BindVertexBuffers(m_FrameIndex, { model->GetMesh()->GetVertexBuffers()[i]->GetVertexBufferView() });
+				graphicsCmdBuffer->BindIndexBuffer(m_FrameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetIndexBufferView());
+
+				const uint32_t& instanceCount = light->GetProbe()->m_CI.directionType == Probe::DirectionType::OMNI ? 6 : 1;
+				graphicsCmdBuffer->DrawIndexed(m_FrameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetCount(), instanceCount);
+			}
+		}
+		graphicsCmdBuffer->EndRenderPass(m_FrameIndex);
+		graphicsCmdBuffer->EndDebugLabel(m_FrameIndex);
+
+		//TODO: Should be controlled by the editor
+		if (!light->GetProbe()->m_DebugFramebuffer[m_FrameIndex])
+			light->GetProbe()->m_DebugFramebuffer[m_FrameIndex] = DebugRender::CreateFramebuffer(DebugRender::CreateColourImageView());
+		graphicsCmdBuffer->BeginDebugLabel(m_FrameIndex, "Debug Show Depth: " + light->m_CI.debugName);
+		graphicsCmdBuffer->BeginRenderPass(m_FrameIndex, light->GetProbe()->m_DebugFramebuffer[m_FrameIndex], { {0.0f, 0.0f, 0.0f, 1.0f} });
+		if (light->GetProbe()->m_CI.directionType == Probe::DirectionType::OMNI)
+		{
+
+			const Ref<graphics::RenderPipeline>& renderPipeline = s_RenderPipelines["DebugShowDepthCubemap"];
+			const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
+			graphicsCmdBuffer->BindPipeline(m_FrameIndex, pipeline);
+			graphicsCmdBuffer->BindDescriptorSets(m_FrameIndex, { m_DescPoolAndSets[m_FrameIndex].setPerViewPerRenderPipeline.at(light->GetProbe()).at(renderPipeline) }, 0, pipeline);
+			graphicsCmdBuffer->Draw(m_FrameIndex, 6);
+
+		}
+		else
+		{
+			const Ref<graphics::RenderPipeline>& renderPipeline = s_RenderPipelines["DebugShowDepth"];
+			const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
+			graphicsCmdBuffer->BindPipeline(m_FrameIndex, pipeline);
+			graphicsCmdBuffer->BindDescriptorSets(m_FrameIndex, { m_DescPoolAndSets[m_FrameIndex].setPerViewPerRenderPipeline.at(light->GetProbe()).at(renderPipeline) }, 0, pipeline);
+			graphicsCmdBuffer->Draw(m_FrameIndex, 6);
+		}
+		graphicsCmdBuffer->EndRenderPass(m_FrameIndex);
+		graphicsCmdBuffer->EndDebugLabel(m_FrameIndex);
+	}
+	graphicsCmdBuffer->EndDebugLabel(m_FrameIndex);
+
 	//Post Processing Compute shaders
+	GPUTask::CreateInfo postProcessingBeginCI;
+	postProcessingBeginCI.debugName = "PostProcessing";
+	postProcessingBeginCI.task = GPUTask::Task::DEBUG_LABEL_BEGIN;
+	postProcessingBeginCI.pTaskInfo = nullptr;
+	postProcessingBeginCI.srcGPUTasks = { endMainRenderPass };
+	postProcessingBeginCI.srcPipelineStages = { PipelineStageBit(0) };
+	postProcessingBeginCI.cmdBuffer = graphicsCmdBuffer;
+	postProcessingBeginCI.cmdBufferIndex = m_FrameIndex;
+	postProcessingBeginCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
+	postProcessingBeginCI.skipTask = false;
+	Ref<GPUTask> postProcessingBegin = CreateRef<GPUTask>(&postProcessingBeginCI);
+	postProcessingBegin->Execute();
+
 	GPUTask::PostProcessingFunctionTaskInfo ppfti;
 	ppfti.pfn = PostProcessing::Bloom;
 	ppfti.frameIndex = m_FrameIndex;
 	const Ref<Image>& colourInputImage = graphicsRenderPassBeginTI.framebuffer->GetCreateInfo().attachments.back()->GetCreateInfo().pImage;
 	ppfti.iri = { colourInputImage, Barrier::AccessBit::COLOUR_ATTACHMENT_WRITE_BIT, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT };
 	GPUTask::CreateInfo postProcessingBloomCI;
-	postProcessingBloomCI.debugName = "PostProcessing::Bloom";
+	postProcessingBloomCI.debugName = "Bloom";
 	postProcessingBloomCI.task = GPUTask::Task::POST_PROCESSING_FUNCTION;
 	postProcessingBloomCI.pTaskInfo = &ppfti;
-	postProcessingBloomCI.srcGPUTasks = { endMainRenderPass };
-	postProcessingBloomCI.srcPipelineStages = { PipelineStageBit(0) };
+	postProcessingBloomCI.srcGPUTasks = { postProcessingBegin };
+	postProcessingBloomCI.srcPipelineStages = {};
 	postProcessingBloomCI.cmdBuffer = graphicsCmdBuffer;
 	postProcessingBloomCI.cmdBufferIndex = m_FrameIndex;
 	postProcessingBloomCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	postProcessingBloomCI.skipTask = false;
+	postProcessingBloomCI.skipTask = !m_MainRenderCamera;
 	Ref<GPUTask> postProcessingBloom = CreateRef<GPUTask>(&postProcessingBloomCI);
 	postProcessingBloom->Execute();
+
+	GPUTask::CreateInfo postProcessingEndCI;
+	postProcessingEndCI.debugName = "PostProcessing";
+	postProcessingEndCI.task = GPUTask::Task::DEBUG_LABEL_END;
+	postProcessingEndCI.pTaskInfo = nullptr;
+	postProcessingEndCI.srcGPUTasks = { postProcessingBloom };
+	postProcessingEndCI.srcPipelineStages = {};
+	postProcessingEndCI.cmdBuffer = graphicsCmdBuffer;
+	postProcessingEndCI.cmdBufferIndex = m_FrameIndex;
+	postProcessingEndCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
+	postProcessingEndCI.skipTask = false;
+	Ref<GPUTask> postProcessingEnd = CreateRef<GPUTask>(&postProcessingEndCI);
+	postProcessingEnd->Execute();
 
 	//HDRMapping
 	graphicsRenderPassBeginTI.framebuffer = m_RenderSurface->GetHDRFramebuffers()[m_FrameIndex];
 	graphicsRenderPassBeginTI.clearValues = { {0.25f, 0.25f, 0.25f, 1.0f} };
 	GPUTask::CreateInfo beginHDRRenderPassCI;
-	beginHDRRenderPassCI.debugName = "Begin HDRRenderPass";
+	beginHDRRenderPassCI.debugName = "HDR Render Pass";
 	beginHDRRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_BEGIN;
 	beginHDRRenderPassCI.pTaskInfo = &graphicsRenderPassBeginTI;
-	beginHDRRenderPassCI.srcGPUTasks = { postProcessingBloom };
+	beginHDRRenderPassCI.srcGPUTasks = { postProcessingEnd };
 	beginHDRRenderPassCI.srcPipelineStages = {};
 	beginHDRRenderPassCI.cmdBuffer = graphicsCmdBuffer;
 	beginHDRRenderPassCI.cmdBufferIndex = m_FrameIndex;
@@ -990,7 +1147,7 @@ void Renderer::Draw()
 
 	rendererFunctionTI.pfn = &Renderer::HDRMapping;
 	GPUTask::CreateInfo hdrMappingCI;
-	hdrMappingCI.debugName = "HDRMapping";
+	hdrMappingCI.debugName = "HDR Mapping";
 	hdrMappingCI.task = GPUTask::Task::RENDERER_FUNCTION;
 	hdrMappingCI.pTaskInfo = &rendererFunctionTI;
 	hdrMappingCI.srcGPUTasks = { beginHDRRenderPass };
@@ -998,14 +1155,14 @@ void Renderer::Draw()
 	hdrMappingCI.cmdBuffer = graphicsCmdBuffer;
 	hdrMappingCI.cmdBufferIndex = m_FrameIndex;
 	hdrMappingCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	hdrMappingCI.skipTask = !m_Skybox;
+	hdrMappingCI.skipTask = !m_MainRenderCamera;
 	Ref<GPUTask> hdrMapping = CreateRef<GPUTask>(&hdrMappingCI);
 	hdrMapping->Execute();
 
 	//OSD Text
 	rendererFunctionTI.pfn = &Renderer::DrawTextLines;
 	GPUTask::CreateInfo drawTextLinesCI;
-	drawTextLinesCI.debugName = "DrawTextLines";
+	drawTextLinesCI.debugName = "Draw Text Lines";
 	drawTextLinesCI.task = GPUTask::Task::RENDERER_FUNCTION;
 	drawTextLinesCI.pTaskInfo = &rendererFunctionTI;
 	drawTextLinesCI.srcGPUTasks = { hdrMapping };
@@ -1013,14 +1170,14 @@ void Renderer::Draw()
 	drawTextLinesCI.cmdBuffer = graphicsCmdBuffer;
 	drawTextLinesCI.cmdBufferIndex = m_FrameIndex;
 	drawTextLinesCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	drawTextLinesCI.skipTask = false;
+	drawTextLinesCI.skipTask = !m_TextCamera;
 	Ref<GPUTask> drawTextLines = CreateRef<GPUTask>(&drawTextLinesCI);
 	drawTextLines->Execute();
 
 	//OSD Axes
 	rendererFunctionTI.pfn = &Renderer::DrawCoordinateAxes;
 	GPUTask::CreateInfo drawCoordinateAxesCI;
-	drawCoordinateAxesCI.debugName = "DrawCoordinateAxes";
+	drawCoordinateAxesCI.debugName = "Draw Coordinate Axes";
 	drawCoordinateAxesCI.task = GPUTask::Task::RENDERER_FUNCTION;
 	drawCoordinateAxesCI.pTaskInfo = &rendererFunctionTI;
 	drawCoordinateAxesCI.srcGPUTasks = { drawTextLines };
@@ -1028,12 +1185,12 @@ void Renderer::Draw()
 	drawCoordinateAxesCI.cmdBuffer = graphicsCmdBuffer;
 	drawCoordinateAxesCI.cmdBufferIndex = m_FrameIndex;
 	drawCoordinateAxesCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	drawCoordinateAxesCI.skipTask = !m_Camera;
+	drawCoordinateAxesCI.skipTask = !m_MainRenderCamera;
 	Ref<GPUTask> drawCoordinateAxes = CreateRef<GPUTask>(&drawCoordinateAxesCI);
 	drawCoordinateAxes->Execute();
 
 	GPUTask::CreateInfo endHDRRenderPassCI;
-	endHDRRenderPassCI.debugName = "End HDRRenderPass";
+	endHDRRenderPassCI.debugName = "HDR Render Pass";
 	endHDRRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_END;
 	endHDRRenderPassCI.pTaskInfo = &graphicsRenderPassEndTI;
 	endHDRRenderPassCI.srcGPUTasks = { drawCoordinateAxes };
@@ -1049,7 +1206,7 @@ void Renderer::Draw()
 	graphicsRenderPassBeginTI.framebuffer = m_CI.window->GetSwapchainFramebuffers()[m_FrameIndex];
 	graphicsRenderPassBeginTI.clearValues = { {0.25f, 0.25f, 0.25f, 1.0f} };
 	GPUTask::CreateInfo beginSwapchainRenderPassCI;
-	beginSwapchainRenderPassCI.debugName = "Begin SwapchainRenderPass";
+	beginSwapchainRenderPassCI.debugName = "Swapchain Render Pass";
 	beginSwapchainRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_BEGIN;
 	beginSwapchainRenderPassCI.pTaskInfo = &graphicsRenderPassBeginTI;
 	beginSwapchainRenderPassCI.srcGPUTasks = { endHDRRenderPass };
@@ -1068,7 +1225,7 @@ void Renderer::Draw()
 	{
 		rendererFunctionTI.pfn = &Renderer::CopyToSwapchain;
 		GPUTask::CreateInfo copyToSwapchainCI;
-		copyToSwapchainCI.debugName = "CopyToSwapchain";
+		copyToSwapchainCI.debugName = "Copy To Swapchain";
 		copyToSwapchainCI.task = GPUTask::Task::RENDERER_FUNCTION;
 		copyToSwapchainCI.pTaskInfo = &rendererFunctionTI;
 		copyToSwapchainCI.srcGPUTasks = { beginSwapchainRenderPass };
@@ -1084,7 +1241,7 @@ void Renderer::Draw()
 	{
 		rendererFunctionTI.pfn = &Renderer::DrawExternalUI;
 		GPUTask::CreateInfo copyToSwapchainCI;
-		copyToSwapchainCI.debugName = "DrawExternalUI";
+		copyToSwapchainCI.debugName = "Draw External UI";
 		copyToSwapchainCI.task = GPUTask::Task::RENDERER_FUNCTION;
 		copyToSwapchainCI.pTaskInfo = &rendererFunctionTI;
 		copyToSwapchainCI.srcGPUTasks = { beginSwapchainRenderPass };
@@ -1098,7 +1255,7 @@ void Renderer::Draw()
 	}
 
 	GPUTask::CreateInfo endSwapchainRenderPassCI;
-	endSwapchainRenderPassCI.debugName = "End SwapchainRenderPass";
+	endSwapchainRenderPassCI.debugName = "Swapchain Render Pass";
 	endSwapchainRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_END;
 	endSwapchainRenderPassCI.pTaskInfo = &graphicsRenderPassEndTI;
 	endSwapchainRenderPassCI.srcGPUTasks = { copyToSwapchain };
@@ -1113,6 +1270,7 @@ void Renderer::Draw()
 	m_ModelQueue.clear();
 	m_TextQueue.clear();
 	m_Lights.clear();
+	m_AllCameras.clear();
 }
 
 void Renderer::Present()
@@ -1164,7 +1322,7 @@ void Renderer::MainRenderLoop(const Ref<miru::crossplatform::CommandBuffer>& cmd
 		const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
 
 		cmdBuffer->BindPipeline(frameIndex, pipeline);
-		cmdBuffer->BindDescriptorSets(frameIndex, {descPoolAndSets.setPerRenderPipeline.at(renderPipeline), descPoolAndSets.setPerModel.at(model) }, 0, pipeline);
+		cmdBuffer->BindDescriptorSets(frameIndex, {descPoolAndSets.setPerViewPerRenderPipeline.at(m_MainRenderCamera).at(renderPipeline), descPoolAndSets.setPerModel.at(model)}, 0, pipeline);
 
 		for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
 		{
@@ -1185,7 +1343,7 @@ void Renderer::HDRMapping(const Ref<miru::crossplatform::CommandBuffer>& cmdBuff
 	const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
 
 	cmdBuffer->BindPipeline(frameIndex, pipeline);
-	cmdBuffer->BindDescriptorSets(frameIndex, { descPoolAndSets.setPerRenderPipeline.at(renderPipeline) }, 0, pipeline);
+	cmdBuffer->BindDescriptorSets(frameIndex, { descPoolAndSets.setPerViewPerRenderPipeline.at(m_MainRenderCamera).at(renderPipeline) }, 0, pipeline);
 	cmdBuffer->Draw(frameIndex, 3);
 }
 
@@ -1197,7 +1355,7 @@ void Renderer::DrawTextLines(const Ref<miru::crossplatform::CommandBuffer>& cmdB
 		const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
 
 		cmdBuffer->BindPipeline(frameIndex, pipeline);
-		cmdBuffer->BindDescriptorSets(frameIndex, { descPoolAndSets.setPerRenderPipeline.at(renderPipeline), descPoolAndSets.setPerModel.at(model) }, 0, pipeline);
+		cmdBuffer->BindDescriptorSets(frameIndex, { descPoolAndSets.setPerViewPerRenderPipeline.at(m_TextCamera).at(renderPipeline), descPoolAndSets.setPerModel.at(model) }, 0, pipeline);
 
 		for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
 		{
@@ -1218,7 +1376,7 @@ void Renderer::DrawCoordinateAxes(const Ref<miru::crossplatform::CommandBuffer>&
 	const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
 
 	cmdBuffer->BindPipeline(frameIndex, pipeline);
-	cmdBuffer->BindDescriptorSets(frameIndex, { descPoolAndSets.setPerRenderPipeline.at(renderPipeline) }, 0, pipeline);
+	cmdBuffer->BindDescriptorSets(frameIndex, { descPoolAndSets.setPerViewPerRenderPipeline.at(m_MainRenderCamera).at(renderPipeline) }, 0, pipeline);
 	cmdBuffer->Draw(frameIndex, 6);
 }
 
@@ -1228,7 +1386,7 @@ void Renderer::CopyToSwapchain(const Ref<miru::crossplatform::CommandBuffer>& cm
 	const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
 
 	cmdBuffer->BindPipeline(frameIndex, pipeline);
-	cmdBuffer->BindDescriptorSets(m_FrameIndex, { descPoolAndSets.setPerRenderPipeline.at(renderPipeline) }, 0, pipeline);
+	cmdBuffer->BindDescriptorSets(m_FrameIndex, { descPoolAndSets.setPerViewPerRenderPipeline.at(m_MainRenderCamera).at(renderPipeline) }, 0, pipeline);
 	cmdBuffer->Draw(frameIndex, 3);
 }
 
@@ -1245,6 +1403,13 @@ void Renderer::ResizeRenderPipelineViewports(uint32_t width, uint32_t height)
 	m_Context->DeviceWaitIdle();
 	for (auto& renderPipeline : s_RenderPipelines)
 	{
+		if (renderPipeline.first.find("Shadow") == 0)
+			continue;
+		if (renderPipeline.first.find("DebugShowDepth") == 0)
+			continue;
+		if (renderPipeline.first.find("DebugShowDepthCubemap") == 0)
+			continue;
+
 		renderPipeline.second->m_CI.viewportState.viewports = { { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f } };
 		renderPipeline.second->m_CI.viewportState.scissors = { { { 0, 0 },{ width, height } } };
 		renderPipeline.second->Rebuild();
