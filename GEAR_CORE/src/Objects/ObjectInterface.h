@@ -16,6 +16,7 @@ namespace objects
 			void* device;
 		};
 
+		virtual ~ObjectInterface() = default;
 		virtual void Update(const Transform& transform) = 0;
 
 		const bool& GetUpdateGPUFlag() const { return m_UpdateGPU; }
@@ -77,6 +78,8 @@ namespace objects
 			std::string	debugName;
 			void* device;
 		};
+
+		virtual ~ObjectComponentInterface() = default;
 		virtual void Update() = 0;
 
 		const bool& GetUpdateGPUFlag() const { return m_UpdateGPU; }
@@ -101,6 +104,32 @@ namespace objects
 				return true;
 			}
 		}
+	};
+
+	class GEAR_API ObjectViewInterface
+	{
+	public:
+		typedef uint64_t ViewID;
+
+	public:
+		ObjectViewInterface()
+		{
+			m_ViewID = s_GlobalViewID++;
+		}
+		virtual ~ObjectViewInterface()
+		{
+			m_ViewID = 0;
+		}
+
+		const ViewID& GetViewID() const { return m_ViewID; }
+		const std::string GetViewIDString() const { return std::to_string(m_ViewID); }
+		bool ViewIDIsValid() const { return (m_ViewID != 0); }
+
+	protected:
+		ViewID m_ViewID = 0;
+
+	private:
+		static ViewID s_GlobalViewID;
 	};
 }
 }

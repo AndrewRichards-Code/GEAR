@@ -13,8 +13,6 @@ namespace objects
 		{
 			std::string				filepath;
 			uint32_t				generatedCubemapSize;
-			float					exposure = 1.0f;
-			graphics::ColourSpace	gammaSpace = graphics::ColourSpace::SRGB;
 		};
 
 	private:
@@ -41,9 +39,6 @@ namespace objects
 		
 		Ref<graphics::Texture> m_GeneratedSpecularBRDF_LUT;
 		graphics::Texture::CreateInfo m_GeneratedSpecularBRDF_LUT_CI;
-
-		typedef graphics::UniformBufferStructures::HDRInfo HDRInfoUB;
-		Ref<graphics::Uniformbuffer<HDRInfoUB>> m_UB;
 	
 	public:
 		bool m_Generated = false;
@@ -77,10 +72,6 @@ namespace objects
 		inline const Ref<graphics::Texture>& GetGeneratedSpecularBRDF_LUT() const { return m_GeneratedSpecularBRDF_LUT; }
 
 		inline const Ref<objects::Model>& GetModel() const { return m_Model; }
-		inline const Ref<graphics::Uniformbuffer<HDRInfoUB>>& GetUB() const { return m_UB; }
-
-	private:
-		void InitialiseUBs();
 	};
 }
 }

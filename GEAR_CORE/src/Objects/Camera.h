@@ -1,6 +1,6 @@
 #pragma once
-#include "gear_core_common.h"
 #include "ObjectInterface.h"
+#include "Graphics/Colour.h"
 #include "Graphics/Uniformbuffer.h"
 #include "Transform.h"
 
@@ -11,7 +11,7 @@ namespace gear
 {
 namespace objects 
 {
-	class GEAR_API Camera : public ObjectInterface
+	class GEAR_API Camera : public ObjectInterface, public ObjectViewInterface
 	{
 	public:
 		enum class ProjectionType : uint32_t
@@ -36,6 +36,11 @@ namespace objects
 			float	zNear;
 			float	zFar;
 		};
+		struct HDRSettings
+		{
+			float					exposure = 1.0f;
+			graphics::ColourSpace	gammaSpace = graphics::ColourSpace::SRGB;
+		};
 
 		struct CreateInfo : public ObjectInterface::CreateInfo
 		{
@@ -47,11 +52,15 @@ namespace objects
 			};
 			bool			flipX;
 			bool			flipY;
+			HDRSettings		hdrSettings;
 		};
 
 	private:
 		typedef graphics::UniformBufferStructures::Camera CameraUB;
-		Ref<graphics::Uniformbuffer<CameraUB>> m_UB;
+		Ref<graphics::Uniformbuffer<CameraUB>> m_CameraUB;
+
+		typedef graphics::UniformBufferStructures::HDRInfo HDRInfoUB;
+		Ref<graphics::Uniformbuffer<HDRInfoUB>> m_HDRInfoUB;
 
 	public:
 		CreateInfo m_CI;
@@ -64,7 +73,8 @@ namespace objects
 		Camera(CreateInfo* pCreateInfo);
 		~Camera();
 
-		const Ref<graphics::Uniformbuffer<CameraUB>>& GetUB() const { return m_UB; };
+		const Ref<graphics::Uniformbuffer<CameraUB>>& GetCameraUB() const { return m_CameraUB; };
+		const Ref<graphics::Uniformbuffer<HDRInfoUB>>& GetHDRInfoUB() const { return m_HDRInfoUB; };
 
 		//Update the camera from the current state of Camera::CreateInfo m_CI.
 		void Update(const Transform& transform) override;
@@ -79,6 +89,7 @@ namespace objects
 		void DefineProjection();
 		void DefineView(const Transform& transform);
 		void SetPosition(const Transform& transform);
+		void SetHDRInfo();
 		void InitialiseUB();
 	};
 }

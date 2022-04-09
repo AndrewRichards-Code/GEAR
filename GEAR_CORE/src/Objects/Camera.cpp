@@ -23,6 +23,7 @@ void Camera::Update(const Transform& transform)
 	if (CreateInfoHasChanged(&m_CI))
 	{
 		DefineProjection();
+		SetHDRInfo();
 	}
 	if (TransformHasChanged(transform))
 	{
@@ -31,7 +32,8 @@ void Camera::Update(const Transform& transform)
 	}
 	if (m_UpdateGPU)
 	{
-		m_UB->SubmitData();
+		m_CameraUB->SubmitData();
+		m_HDRInfoUB->SubmitData();
 	}
 }
 
@@ -49,7 +51,7 @@ float4x4 Camera::GetCubemapFaceViewMatrix(uint32_t faceIndex, const float3& tran
 		view = float4x4(
 		+0.0f, +0.0f, -1.0f, +0.0f,
 		+0.0f, +1.0f, +0.0f, +0.0f,
-		-1.0f, +0.0f, +0.0f, +0.0f,
+		+1.0f, +0.0f, +0.0f, +0.0f,
 		+0.0f, +0.0f, +0.0f, +1.0f);
 		break;
 
@@ -57,7 +59,7 @@ float4x4 Camera::GetCubemapFaceViewMatrix(uint32_t faceIndex, const float3& tran
 		view = float4x4(
 		+0.0f, +0.0f, +1.0f, +0.0f,
 		+0.0f, +1.0f, +0.0f, +0.0f,
-		+1.0f, +0.0f, +0.0f, +0.0f,
+		-1.0f, +0.0f, +0.0f, +0.0f,
 		+0.0f, +0.0f, +0.0f, +1.0f);
 		break;
 
@@ -65,7 +67,7 @@ float4x4 Camera::GetCubemapFaceViewMatrix(uint32_t faceIndex, const float3& tran
 		view = float4x4(
 		+1.0f, +0.0f, +0.0f, +0.0f,
 		+0.0f, +0.0f, -1.0f, +0.0f,
-		+0.0f, -1.0f, +0.0f, +0.0f,
+		+0.0f, +1.0f, +0.0f, +0.0f,
 		+0.0f, +0.0f, +0.0f, +1.0f);
 		break;
 	
@@ -73,7 +75,7 @@ float4x4 Camera::GetCubemapFaceViewMatrix(uint32_t faceIndex, const float3& tran
 		view = float4x4(
 		+1.0f, +0.0f, +0.0f, +0.0f,
 		+0.0f, +0.0f, +1.0f, +0.0f,
-		+0.0f, +1.0f, +0.0f, +0.0f,
+		+0.0f, -1.0f, +0.0f, +0.0f,
 		+0.0f, +0.0f, +0.0f, +1.0f);
 		break;
 
@@ -81,7 +83,7 @@ float4x4 Camera::GetCubemapFaceViewMatrix(uint32_t faceIndex, const float3& tran
 		view = float4x4(
 		+1.0f, +0.0f, +0.0f, +0.0f,
 		+0.0f, +1.0f, +0.0f, +0.0f,
-		+0.0f, +0.0f, -1.0f, +0.0f,
+		+0.0f, +0.0f, +1.0f, +0.0f,
 		+0.0f, +0.0f, +0.0f, +1.0f);
 		break;
 
@@ -89,7 +91,7 @@ float4x4 Camera::GetCubemapFaceViewMatrix(uint32_t faceIndex, const float3& tran
 		view = float4x4(
 		-1.0f, +0.0f, +0.0f, +0.0f,
 		+0.0f, +1.0f, +0.0f, +0.0f,
-		+0.0f, +0.0f, +1.0f, +0.0f,
+		+0.0f, +0.0f, -1.0f, +0.0f,
 		+0.0f, +0.0f, +0.0f, +1.0f);
 		break;
 	}
@@ -123,6 +125,8 @@ bool Camera::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo
 	}
 	newHash ^= core::GetHash(CI.flipX);
 	newHash ^= core::GetHash(CI.flipY);
+	newHash ^= core::GetHash(CI.hdrSettings.exposure);
+	newHash ^= core::GetHash(CI.hdrSettings.gammaSpace);
 	return CompareCreateInfoHash(newHash);
 }
 
@@ -131,24 +135,24 @@ void Camera::DefineProjection()
 	if (m_CI.projectionType == ProjectionType::ORTHOGRAPHIC)
 	{
 		OrthographicParameters& op = m_CI.orthographicsParams;
-		m_UB->proj= float4x4::Orthographic(op.left, op.right, op.bottom, op.top, op.near, op.far);
+		m_CameraUB->proj= float4x4::Orthographic(op.left, op.right, op.bottom, op.top, op.near, op.far);
 	}
 	else if (m_CI.projectionType == ProjectionType::PERSPECTIVE)
 	{
 		PerspectiveParameters& pp = m_CI.perspectiveParams;
-		m_UB->proj = float4x4::Perspective(pp.horizonalFOV, pp.aspectRatio, pp.zNear, pp.zFar);
+		m_CameraUB->proj = float4x4::Perspective(pp.horizonalFOV, pp.aspectRatio, pp.zNear, pp.zFar);
 	}
 	else
 	{
 		GEAR_ASSERT(ErrorCode::OBJECTS | ErrorCode::INVALID_VALUE, "Unknown projection type.");
 	}
 	if (m_CI.flipX)
-		m_UB->proj.a *= -1;
+		m_CameraUB->proj.a *= -1;
 	if (m_CI.flipY)
-		m_UB->proj.f *= -1;
+		m_CameraUB->proj.f *= -1;
 
 	if (miru::crossplatform::GraphicsAPI::IsVulkan())
-		m_UB->proj.f *= -1;
+		m_CameraUB->proj.f *= -1;
 }
 
 void Camera::DefineView(const Transform& transform)
@@ -159,13 +163,19 @@ void Camera::DefineView(const Transform& transform)
 	m_Up		= +float3(orientation * float4(0, 1, 0, 0));
 	m_Right		= +float3(orientation * float4(1, 0, 0, 0));
 
-	m_UB->view = TransformToMatrix4(transform).Inverse();
+	m_CameraUB->view = TransformToMatrix4(transform).Inverse();
 }
 
 
 void Camera::SetPosition(const Transform& transform)
 {
-	m_UB->position = float4(transform.translation, +1.0f);
+	m_CameraUB->position = float4(transform.translation, +1.0f);
+}
+
+void Camera::SetHDRInfo()
+{
+	m_HDRInfoUB->exposure = m_CI.hdrSettings.exposure;
+	m_HDRInfoUB->gammaSpace = static_cast<uint32_t>(m_CI.hdrSettings.gammaSpace);
 }
 
 void Camera::InitialiseUB()
@@ -175,5 +185,12 @@ void Camera::InitialiseUB()
 	ubCI.debugName = "GEAR_CORE_Camera_CameraUB: " + m_CI.debugName;
 	ubCI.device = m_CI.device;
 	ubCI.data = zero;
-	m_UB = CreateRef<Uniformbuffer<CameraUB>>(&ubCI);
+	m_CameraUB = CreateRef<Uniformbuffer<CameraUB>>(&ubCI);
+
+	float zero2[sizeof(HDRInfoUB)] = { 0 };
+	Uniformbuffer<HDRInfoUB>::CreateInfo ubCI2;
+	ubCI2.debugName = "GEAR_CORE_Camera_HDRInfo: " + m_CI.debugName;
+	ubCI2.device = m_CI.device;
+	ubCI2.data = zero2;
+	m_HDRInfoUB = CreateRef<Uniformbuffer<HDRInfoUB>>(&ubCI2);
 }

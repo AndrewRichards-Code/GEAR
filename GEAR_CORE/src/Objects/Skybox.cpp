@@ -15,8 +15,6 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
-	InitialiseUBs();
-	
 	if (!(stbi_is_hdr(m_CI.filepath.c_str()) && m_CI.filepath.find(".hdr") != std::string::npos))
 	{
 		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::NOT_SUPPORTED, "%s: is not a supported file format.", m_CI.filepath)
@@ -157,10 +155,6 @@ void Skybox::Update(const Transform& transform)
 
 			m_Generated = false;
 		}
-
-		m_UB->exposure = m_CI.exposure;
-		m_UB->gammaSpace = static_cast<uint32_t>(m_CI.gammaSpace);
-		m_UB->SubmitData();
 	}
 	if (TransformHasChanged(transform))
 	{
@@ -175,17 +169,5 @@ bool Skybox::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo
 	uint64_t newHash = 0;
 	newHash ^= core::GetHash(CI.filepath);
 	newHash ^= core::GetHash(CI.generatedCubemapSize);
-	newHash ^= core::GetHash(CI.exposure);
-	newHash ^= core::GetHash(CI.gammaSpace);
 	return CompareCreateInfoHash(newHash);
-}
-
-void Skybox::InitialiseUBs()
-{
-	float zero[sizeof(HDRInfoUB)] = { 0 };
-	Uniformbuffer<HDRInfoUB>::CreateInfo ubCI;
-	ubCI.debugName = "GEAR_CORE_Skybox_HDRInfo: " + m_CI.debugName;
-	ubCI.device = m_CI.device;
-	ubCI.data = zero;
-	m_UB = CreateRef<Uniformbuffer<HDRInfoUB>>(&ubCI);
 }
