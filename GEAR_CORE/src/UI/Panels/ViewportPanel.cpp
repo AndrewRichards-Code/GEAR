@@ -139,7 +139,7 @@ void ViewportPanel::UpdateCameraTransform()
 			m_Yaw += delta.x;
 			m_Pitch += delta.y;
 
-			transform.orientation = Quaternion::FromEulerAngles(float3(m_Pitch, -m_Yaw, m_Roll));
+			transform.orientation = Quaternion::FromEulerAngles(float3(m_Pitch, m_Yaw, m_Roll));
 		}
 		if (ImGui::IsMouseDown(ImGuiMouseButton_::ImGuiMouseButton_Middle))
 		{

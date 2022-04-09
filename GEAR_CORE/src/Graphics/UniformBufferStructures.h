@@ -25,7 +25,7 @@ namespace gear
 				GEAR_FLOAT4		colour;
 				GEAR_FLOAT4		position;
 				GEAR_FLOAT4		direction;
-				GEAR_FLOAT4		valid;
+				GEAR_FLOAT4		type_valid_spotInner_spotOuter;
 			};
 
 			struct Lights

@@ -17,8 +17,6 @@ Light::Light(CreateInfo* pCreateInfo)
 
 	InitialiseUB();
 
-	CreateProbe();
-
 	if (s_NumOfLights < GEAR_MAX_LIGHTS)
 	{
 		m_LightID = s_NumOfLights;
@@ -30,11 +28,13 @@ Light::Light(CreateInfo* pCreateInfo)
 	{
 		GEAR_WARN(ErrorCode::OBJECTS | ErrorCode::INIT_FAILED, "Too many lights declared.");
 	}
+
+	CreateProbe();
 }
 
 Light::~Light()
 {
-	s_UB->lights[m_LightID].valid = float4(0, 0, 0, 0);
+	s_UB->lights[m_LightID].type_valid_spotInner_spotOuter.y = 0.0f;
 	s_NumOfLights--;
 	
 	if(!s_NumOfLights)
@@ -46,6 +46,9 @@ void Light::Update(const Transform& transform)
 	if (CreateInfoHasChanged(&m_CI))
 	{
 		s_UB->lights[m_LightID].colour = m_CI.colour;
+		s_UB->lights[m_LightID].type_valid_spotInner_spotOuter.x = static_cast<float>(m_CI.type);
+		s_UB->lights[m_LightID].type_valid_spotInner_spotOuter.z = m_CI.spotInnerAngle;
+		s_UB->lights[m_LightID].type_valid_spotInner_spotOuter.w = m_CI.spotOuterAngle;
 		CreateProbe();
 	}
 	if (TransformHasChanged(transform))
@@ -53,7 +56,7 @@ void Light::Update(const Transform& transform)
 		s_UB->lights[m_LightID].position = float4(transform.translation, 1.0f);
 		s_UB->lights[m_LightID].direction = transform.orientation.ToRotationMatrix4<float>() * float4(0, 0, -1, 0);
 	}
-	s_UB->lights[m_LightID].valid = float4(1, 1, 1, 1);
+	s_UB->lights[m_LightID].type_valid_spotInner_spotOuter.y = 1.0f;
 	if (m_UpdateGPU)
 	{
 		s_UB->SubmitData();
@@ -71,6 +74,8 @@ bool Light::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo)
 	newHash ^= core::GetHash(CI.colour.g);
 	newHash ^= core::GetHash(CI.colour.b);
 	newHash ^= core::GetHash(CI.colour.a);
+	newHash ^= core::GetHash(CI.spotInnerAngle);
+	newHash ^= core::GetHash(CI.spotOuterAngle);
 	return CompareCreateInfoHash(newHash);
 }
 
@@ -91,14 +96,14 @@ void Light::InitialiseUB()
 void Light::CreateProbe()
 {
 	Probe::CreateInfo probeCI;
-	probeCI.debugName = "GEAR_CORE_Probe_Light: " + m_CI.debugName;
+	probeCI.debugName = "GEAR_CORE_Probe_Light " + std::to_string(m_LightID) + ": " + m_CI.debugName;
 	probeCI.device = m_CI.device;
 	probeCI.directionType = m_CI.type == Type::POINT ? Probe::DirectionType::OMNI : Probe::DirectionType::MONO;
 	probeCI.captureType = Probe::CaptureType::SHADOW;
 	probeCI.imageWidth = 512;
 	probeCI.imageHeight = 512;
 	probeCI.projectionType = m_CI.type == Type::DIRECTIONAL ? Camera::ProjectionType::ORTHOGRAPHIC : Camera::ProjectionType::PERSPECTIVE;
-	probeCI.perspectiveHorizonalFOV = pi / 2.0;
+	probeCI.perspectiveHorizonalFOV = m_CI.type == Type::POINT ? pi / 2.0 : m_CI.type == Type::SPOT ? m_CI.spotOuterAngle : 0.0;
 	probeCI.zNear = 0.001f;
 	probeCI.zFar = 3000.0f;
 	m_Probe = CreateRef<Probe>(&probeCI);

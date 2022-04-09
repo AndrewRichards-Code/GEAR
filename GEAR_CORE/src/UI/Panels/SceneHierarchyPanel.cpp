@@ -3,7 +3,9 @@
 #include "Panels.h"
 
 #include "UI/ComponentUI/ComponentUI.h"
+#include "UI/ComponentUI/ComponentUIs.h"
 
+#include "Graphics/Renderer.h"
 #include "Scene/Entity.h"
 
 using namespace gear;
@@ -27,9 +29,9 @@ SceneHierarchyPanel::~SceneHierarchyPanel()
 
 void SceneHierarchyPanel::Update(Timer timer)
 {
-	Ref<ViewportPanel> viewport = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
-	if (viewport)
-		m_CI.scene->OnUpdate(viewport->GetCreateInfo().renderer, timer);
+	Ref<ViewportPanel> viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
+	if (viewportPanel)
+		m_CI.scene->OnUpdate(viewportPanel->GetCreateInfo().renderer, timer);
 }
 
 void SceneHierarchyPanel::Draw()
@@ -76,7 +78,42 @@ void SceneHierarchyPanel::Draw()
 
 		if (ImGui::BeginPopupContextWindow(0, ImGuiPopupFlags_NoOpenOverItems | ImGuiPopupFlags_MouseButtonRight))
 		{
-			if (ImGui::MenuItem("Create Entity"))
+			Ref<ViewportPanel> viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
+			if (viewportPanel)
+			{
+				void* device = viewportPanel->GetCreateInfo().renderer->GetDevice();
+				const float& screenRatio = viewportPanel->GetCreateInfo().renderer->GetRenderSurface()->GetRatio();
+
+				if (ImGui::MenuItem("Create Camera"))
+				{
+					Entity newEntity = scene->CreateEntity();
+					newEntity.GetComponent<NameComponent>().name = "Camera";
+					AddCameraComponent(newEntity, screenRatio, device);
+				}
+				if (ImGui::MenuItem("Create Light"))
+				{
+					Entity newEntity = scene->CreateEntity();
+					newEntity.GetComponent<NameComponent>().name = "Light";
+					AddLightComponent(newEntity, device);
+					ImGui::CloseCurrentPopup();
+				}
+				if (ImGui::MenuItem("Create Skybox"))
+				{
+					Entity newEntity = scene->CreateEntity();
+					newEntity.GetComponent<NameComponent>().name = "Skybox";
+					AddSkyboxComponent(newEntity, device);
+					ImGui::CloseCurrentPopup();
+				}
+				if (ImGui::MenuItem("Create Model"))
+				{
+					Entity newEntity = scene->CreateEntity();
+					newEntity.GetComponent<NameComponent>().name = "Model";
+					AddModelComponent(newEntity, device);
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
+			if (ImGui::MenuItem("Create Empty Entity"))
 			{
 				Entity newEntity = scene->CreateEntity();
 				newEntity.GetComponent<NameComponent>().name = "Empty";

@@ -8,7 +8,7 @@ namespace gear
 {
 namespace objects 
 {
-	class GEAR_API Probe : public ObjectInterface
+	class GEAR_API Probe : public ObjectInterface, public ObjectViewInterface
 	{
 	public:
 		enum class DirectionType : uint32_t

@@ -23,6 +23,15 @@ void gear::ui::componentui::DrawLightComponentUI(Entity entity)
 	{
 		DrawDropDownMenu("Type", CI.type);
 		DrawColourPicker4("Colour", CI.colour);
+		if (CI.type == Light::Type::SPOT)
+		{
+			float inner = RadToDeg(CI.spotInnerAngle);
+			float outer = RadToDeg(CI.spotOuterAngle);
+			DrawFloat("Spot Inner Angle", inner, 0.0, outer);
+			DrawFloat("Spot Outer Angle", outer, inner);
+			CI.spotInnerAngle = DegToRad(inner);
+			CI.spotOuterAngle = DegToRad(outer);
+		}
 
 		EndDrawTreeNode();
 	}
@@ -41,6 +50,8 @@ void gear::ui::componentui::AddLightComponent(Entity entity, void* device)
 		lightCI.device = device;
 		lightCI.type = Light::Type::DIRECTIONAL;
 		lightCI.colour = float4(1.0f, 1.0f, 1.0f, 1.0f);
+		lightCI.spotInnerAngle = DegToRad(45.0f);
+		lightCI.spotOuterAngle = DegToRad(45.0f);
 		entity.AddComponent<LightComponent>(&lightCI);
 	}
 }
@@ -80,8 +91,11 @@ void gear::ui::componentui::DrawProbeComponentUI(Ref<Probe> probe)
 		{
 			const Ref<miru::crossplatform::ImageView>& cubemapDebugImageView = probe->m_DebugFramebuffer[0]->GetCreateInfo().attachments[0];
 			const miru::crossplatform::Image::CreateInfo& cubemapDebugImageCI = cubemapDebugImageView->GetCreateInfo().pImage->GetCreateInfo();
+			float imageRatio = float(cubemapDebugImageCI.width) / float(cubemapDebugImageCI.height);
+			float width = std::max(ImGui::GetContentRegionMax().x - 10.0f, 1.0f); 
+			float height = width * imageRatio;
 			const ImTextureID& id = GetTextureID(cubemapDebugImageView, UIContext::GetUIContext(), false);
-			ImGui::Image(id, ImVec2(cubemapDebugImageCI.width, cubemapDebugImageCI.height));
+			ImGui::Image(id, ImVec2(width, height));
 
 			Ref<Camera>& debugCamera = graphics::DebugRender::GetCamera();
 			static Transform& transform = Transform();
@@ -114,11 +128,21 @@ void gear::ui::componentui::DrawProbeComponentUI(Ref<Probe> probe)
 				m_Yaw += delta.x;
 				m_Pitch += delta.y;
 
-				transform.orientation = Quaternion::FromEulerAngles(float3(m_Pitch, -m_Yaw, m_Roll));
+				transform.orientation = Quaternion::FromEulerAngles(float3(m_Pitch, m_Yaw, m_Roll));
 			}
 
 			debugCamera->Update(transform);
 			
+		}
+		else
+		{
+			const Ref<miru::crossplatform::ImageView>& debugImageView = probe->m_DepthTexture->GetTextureImageView();
+			const miru::crossplatform::Image::CreateInfo& debugImageCI = debugImageView->GetCreateInfo().pImage->GetCreateInfo();
+			float imageRatio = float(debugImageCI.width) / float(debugImageCI.height);
+			float width = std::max(ImGui::GetContentRegionMax().x - 10.0f, 1.0f);
+			float height = width * imageRatio;
+			const ImTextureID& id = GetTextureID(debugImageView, UIContext::GetUIContext(), false);
+			ImGui::Image(id, ImVec2(width, height));
 		}
 
 		EndDrawTreeNode();

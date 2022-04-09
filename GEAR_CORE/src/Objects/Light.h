@@ -14,16 +14,17 @@ namespace objects
 	public:
 		enum class Type : uint32_t
 		{
-			POINT = 0,		//pos
-			DIRECTIONAL = 1,//dir
-			SPOT = 2,		//cone, umbra, penumbra
-			AREA = 3		//err...
+			POINT = 0,
+			DIRECTIONAL = 1,
+			SPOT = 2,
 		};
 
 		struct CreateInfo : public ObjectInterface::CreateInfo
 		{
 			Type			type;
 			mars::float4	colour;
+			float			spotInnerAngle; //Radians
+			float			spotOuterAngle; //Radians
 		};
 
 	private:
