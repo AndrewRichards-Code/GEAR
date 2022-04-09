@@ -28,6 +28,7 @@
 //Graphics
 #include "Graphics/AllocatorManager.h"
 #include "Graphics/Colour.h"
+#include "Graphics/DebugRender.h"
 #include "Graphics/FrameGraph.h"
 #include "Graphics/ImageProcessing.h"
 #include "Graphics/Indexbuffer.h"
