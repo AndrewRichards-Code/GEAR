@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Core/UUID.h"
 #include "Graphics/Window.h"
 #include "Objects/Camera.h"
@@ -67,7 +66,16 @@ namespace scene
 
 	struct GEAR_API CameraComponent
 	{
+		enum class Usage : uint32_t
+		{
+			NONE,
+			EDITOR,
+			MAIN_RENDER,
+			TEXT
+		};
+
 		Ref<objects::Camera> camera;
+		Usage usage = Usage::MAIN_RENDER;
 
 		GEAR_SCENE_COMPONENTS_DEFAULTS_DECLARATION(CameraComponent);
 		CameraComponent(Ref<objects::Camera>& _camera) : camera(_camera) {}

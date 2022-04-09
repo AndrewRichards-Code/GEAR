@@ -122,6 +122,8 @@ void CameraComponent::Load(LoadSaveParameters& lsp)
 	cameraCI.perspectiveParams.zFar = component["perspectiveParams"]["zFar"];
 	cameraCI.flipX = component["flipX"];
 	cameraCI.flipY = component["flipY"];
+	cameraCI.hdrSettings.exposure = component["hdrSettings"]["exposure"];
+	cameraCI.hdrSettings.gammaSpace = component["hdrSettings"]["gammaSpace"];
 
 	camera = CreateRef<Camera>(&cameraCI);
 }
@@ -144,6 +146,8 @@ void CameraComponent::Save(LoadSaveParameters& lsp)
 	component["perspectiveParams"]["zFar"] = cameraCI.perspectiveParams.zFar;
 	component["flipX"] = cameraCI.flipX;
 	component["flipY"] = cameraCI.flipY;
+	component["hdrSettings"]["exposure"] = cameraCI.hdrSettings.exposure;
+	component["hdrSettings"]["gammaSpace"] = cameraCI.hdrSettings.gammaSpace;
 }
 
 GEAR_SCENE_COMPONENTS_DEFAULTS_DEFINITION(LightComponent);
@@ -159,6 +163,8 @@ void LightComponent::Load(LoadSaveParameters& lsp)
 	lightCI.colour.g = component["colour"][1];
 	lightCI.colour.b = component["colour"][2];
 	lightCI.colour.a = component["colour"][3];
+	lightCI.spotInnerAngle = component["spotInnerAngle"];
+	lightCI.spotOuterAngle = component["spotOuterAngle"];
 
 	light = CreateRef<Light>(&lightCI);
 }
@@ -170,6 +176,8 @@ void LightComponent::Save(LoadSaveParameters& lsp)
 	component["debugName"] = lightCI.debugName;
 	component["type"] = lightCI.type;
 	component["colour"] = { lightCI.colour.r, lightCI.colour.g, lightCI.colour.b, lightCI.colour.a };
+	component["spotInnerAngle"] = lightCI.spotInnerAngle;
+	component["spotOuterAngle"] = lightCI.spotOuterAngle;
 }
 
 GEAR_SCENE_COMPONENTS_DEFAULTS_DEFINITION(ModelComponent);
@@ -284,8 +292,7 @@ void SkyboxComponent::Load(LoadSaveParameters& lsp)
 	skyboxCI.device = lsp.window->GetDevice();
 	skyboxCI.filepath = component["filepath"];
 	skyboxCI.generatedCubemapSize = component["generatedCubemapSize"];
-	skyboxCI.exposure = component["exposure"];
-	skyboxCI.gammaSpace = component["gammaSpace"];
+	
 
 	skybox = CreateRef<Skybox>(&skyboxCI);
 }
@@ -297,8 +304,6 @@ void SkyboxComponent::Save(LoadSaveParameters& lsp)
 	component["debugName"] = skyboxCI.debugName;
 	component["filepath"] = skyboxCI.filepath;
 	component["generatedCubemapSize"] = skyboxCI.generatedCubemapSize;
-	component["exposure"] = skyboxCI.exposure;
-	component["gammaSpace"] = skyboxCI.gammaSpace;
 }
 
 GEAR_SCENE_COMPONENTS_DEFAULTS_DEFINITION(TextComponent);
