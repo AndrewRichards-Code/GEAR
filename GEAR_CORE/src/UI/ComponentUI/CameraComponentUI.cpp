@@ -46,6 +46,8 @@ void gear::ui::componentui::DrawCameraComponentUI(gear::scene::Entity entity, fl
 	}
 	DrawCheckbox("Flip X", CI.flipX);
 	DrawCheckbox("Flip Y", CI.flipY);
+	DrawFloat("Exposure", CI.hdrSettings.exposure, 0.01f, 100.0f);
+	DrawDropDownMenu("Colour Space", CI.hdrSettings.gammaSpace);
 
 	camera->Update(entity.GetComponent<TransformComponent>());
 }
@@ -61,6 +63,8 @@ void gear::ui::componentui::AddCameraComponent(gear::scene::Entity entity, float
 		cameraCI.perspectiveParams = { DegToRad(90.0), screenRatio, 0.001f, 3000.0f };
 		cameraCI.flipX = false;
 		cameraCI.flipY = false;
+		cameraCI.hdrSettings.exposure = 1.0f;
+		cameraCI.hdrSettings.gammaSpace = graphics::ColourSpace::SRGB;
 		entity.AddComponent<CameraComponent>(&cameraCI);
 	}
 }
