@@ -119,14 +119,35 @@ PS_OUT ps_main(PS_IN IN)
 		//Light Properties.
 		Light light = lights.lights[i];
 		
-		if(light.valid.x == 0.0)
+		if (light.type_valid_spotInner_spotOuter.y == 0.0)
 			continue;
 		
 		//Input light vector(retro).
-		float3 Wi = /*-light.direction.xyz;*/light.position.xyz -IN.worldSpace.xyz;
-		float WiDistance = length(light.position.xyz - IN.worldSpace.xyz);
+		float3 Wi;
+		float intensity = 1.0;
+		if (light.type_valid_spotInner_spotOuter.x == 0.0)
+		{
+			Wi = light.position.xyz - IN.worldSpace.xyz;
+		}
+		else if (light.type_valid_spotInner_spotOuter.x == 1.0)
+		{
+			Wi = normalize(-light.direction.xyz);
+		}
+		else if (light.type_valid_spotInner_spotOuter.x == 2.0)
+		{
+			Wi = normalize(light.position.xyz - IN.worldSpace.xyz);
+			float3 spotWi = normalize(light.direction.xyz);
+			float theta = dot(spotWi, Wi);
+			float epsilon = cos(light.type_valid_spotInner_spotOuter.z) - cos(light.type_valid_spotInner_spotOuter.w);
+			intensity = saturate(lerp(0.0, 1.0, ((theta - cos(light.type_valid_spotInner_spotOuter.w)) / max(epsilon, 0.000001))));
+		}
+		else
+		{
+			Wi = normalize(-light.direction.xyz);
+		}
+		float WiDistance = length(Wi);
 		float attenuation = 1.0 / (WiDistance * WiDistance);
-		float3 Li = light.colour.rgb * attenuation;
+		float3 Li = light.colour.rgb * light.colour.a * attenuation * intensity;
 		
 		//Half vector between input and output vector.
 		float3 Wh = normalize(Wo + Wi);

@@ -76,7 +76,7 @@
 		"rasteriserDiscardEnable": false,
 		"polygonMode": "FILL",
 		"cullMode": "NONE_BIT",
-		"frontFace": "COUNTER_CLOCKWISE",
+		"frontFace": "CLOCKWISE",
 		"depthBiasEnable": false,
 		"depthBiasConstantFactor": 0.0,
 		"depthBiasClamp": 0.0,
