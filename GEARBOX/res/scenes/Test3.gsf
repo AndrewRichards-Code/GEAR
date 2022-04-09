@@ -1,0 +1,223 @@
+{
+    "fileType": "GEAR_SCENE_FILE",
+    "scene": {
+        "debugName": "Test3.gsf",
+        "entities": {
+            "1675327227977939747": {
+                "LightComponent": {
+                    "colour": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        2.0
+                    ],
+                    "debugName": "Light",
+                    "spotInnerAngle": 0.7853981852531433,
+                    "spotOuterAngle": 0.7853981852531433,
+                    "type": 0
+                },
+                "NameComponent": {
+                    "name": "Light"
+                },
+                "TransformComponent": {
+                    "transform": {
+                        "orientation": [
+                            0.5515002500935406,
+                            -0.8341747263893591,
+                            0.0,
+                            0.0
+                        ],
+                        "scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "translation": [
+                            0.0,
+                            0.9100000262260437,
+                            -2.309999942779541
+                        ]
+                    }
+                },
+                "UUIDComponent": {
+                    "uuid": 1675327227977939747
+                }
+            },
+            "4108840462453433763": {
+                "ModelComponent": {
+                    "debugName": "Model-Cube",
+                    "mesh": {
+                        "material": [
+                            16284687620487040763
+                        ],
+                        "uuid": 18174614055685169991
+                    },
+                    "renderPipelineName": "PBROpaque"
+                },
+                "NameComponent": {
+                    "name": "Cube"
+                },
+                "TransformComponent": {
+                    "transform": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "translation": [
+                            0.0,
+                            1.0,
+                            0.0
+                        ]
+                    }
+                },
+                "UUIDComponent": {
+                    "uuid": 4108840462453433763
+                }
+            },
+            "8705923029992559273": {
+                "ModelComponent": {
+                    "debugName": "Model-Cube",
+                    "mesh": {
+                        "material": [
+                            17581967335599402294
+                        ],
+                        "uuid": 15518176948133369203
+                    },
+                    "renderPipelineName": "PBROpaque"
+                },
+                "NameComponent": {
+                    "name": "Plane"
+                },
+                "TransformComponent": {
+                    "transform": {
+                        "orientation": [
+                            0.7071067657322372,
+                            0.7071067966408575,
+                            0.0,
+                            0.0
+                        ],
+                        "scale": [
+                            1000.0,
+                            1000.0,
+                            1000.0
+                        ],
+                        "translation": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "UUIDComponent": {
+                    "uuid": 8705923029992559273
+                }
+            },
+            "9120241668796281219": {
+                "CameraComponent": {
+                    "debugName": "Camera",
+                    "flipX": false,
+                    "flipY": false,
+                    "hdrSettings": {
+                        "exposure": 1.0,
+                        "gammaSpace": 1
+                    },
+                    "orthographicsParams": {
+                        "bottom": 2.1196582317352295,
+                        "far": 0.0,
+                        "left": 3370280550400.0,
+                        "near": 3000.0,
+                        "right": 1.9463495016098022,
+                        "top": 0.0010000000474974513
+                    },
+                    "perspectiveParams": {
+                        "aspectRatio": 2.1196582317352295,
+                        "horizonalFOV": 1.5707963267948966,
+                        "zFar": 3000.0,
+                        "zNear": 0.0010000000474974513
+                    },
+                    "projectionType": 0
+                },
+                "NameComponent": {
+                    "name": "Camera"
+                },
+                "TransformComponent": {
+                    "transform": {
+                        "orientation": [
+                            0.8995486012786029,
+                            0.26208128095763245,
+                            -0.3355150691955235,
+                            0.09775149334940451
+                        ],
+                        "scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "translation": [
+                            4.487504959106445,
+                            3.9450483322143555,
+                            -2.773108720779419
+                        ]
+                    }
+                },
+                "UUIDComponent": {
+                    "uuid": 9120241668796281219
+                }
+            }
+        },
+        "references": {
+            "15518176948133369203": {
+                "data": {
+                    "debugName": "Mesh-Cube",
+                    "filepath": "C:\\Users\\Andrew\\source\\repos\\GEAR\\GEARBOX\\res\\obj\\quad.fbx"
+                },
+                "type": {
+                    "hash_code": 3736462184517488487,
+                    "name": "struct gear::objects::Mesh::CreateInfo"
+                },
+                "uuid": 15518176948133369203
+            },
+            "16284687620487040763": {
+                "data": {
+                    "debugName": "Material",
+                    "filepath": "res/assets/Material.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 16284687620487040763
+            },
+            "17581967335599402294": {
+                "data": {
+                    "debugName": "DefaultMaterial",
+                    "filepath": "res/assets/DefaultMaterial.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 17581967335599402294
+            },
+            "18174614055685169991": {
+                "data": {
+                    "debugName": "Mesh-Cube",
+                    "filepath": "C:\\Users\\Andrew\\source\\repos\\GEAR\\GEARBOX\\res\\obj\\cube.fbx"
+                },
+                "type": {
+                    "hash_code": 3736462184517488487,
+                    "name": "struct gear::objects::Mesh::CreateInfo"
+                },
+                "uuid": 18174614055685169991
+            }
+        },
+        "uuid": 17601971750853432418
+    }
+}

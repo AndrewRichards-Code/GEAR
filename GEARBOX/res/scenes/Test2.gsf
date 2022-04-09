@@ -48,8 +48,7 @@
                 "SkyboxComponent": {
                     "debugName": "Skybox-HDR",
                     "exposure": 0.5199999809265137,
-                    "filepath": "C:/Users/Andrew/source/repos/GEAR/GEAR_TEST/res/img\\snowy_park_01_2k.hdr",
-                    "gammaSpace": 1,
+                    "filepath": "res/img//snowy_park_01_2k.hdr",
                     "generatedCubemapSize": 1024
                 },
                 "TransformComponent": {
@@ -201,6 +200,10 @@
                     "debugName": "Camera",
                     "flipX": false,
                     "flipY": false,
+                    "hdrSettings": {
+                        "gammaSpace": 1,
+                        "generatedCubemapSize": 1024
+                    },
                     "orthographicsParams": {
                         "bottom": 2.2687559127807617,
                         "far": 0.0,

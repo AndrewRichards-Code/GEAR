@@ -4,9 +4,9 @@
         "debugName": "defaultMat",
         "pbrConstants": {
             "albedo": [
-                0.0,
-                0.0,
-                0.0,
+                0.550000011920929,
+                0.550000011920929,
+                0.550000011920929,
                 1.0
             ],
             "ambientOcclusion": 1.0,
@@ -14,7 +14,7 @@
                 0.0,
                 0.0,
                 0.0,
-                0.0
+                1.0
             ],
             "fresnel": [
                 0.8999999761581421,
@@ -22,8 +22,8 @@
                 0.8999999761581421,
                 1.0
             ],
-            "metallic": 0.0,
-            "roughness": 0.0
+            "metallic": 0.5,
+            "roughness": 0.75
         },
         "textures": null
     }
