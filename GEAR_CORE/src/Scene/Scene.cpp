@@ -70,14 +70,14 @@ void Scene::OnUpdate(Ref<graphics::Renderer>& renderer, core::Timer& timer)
 		}
 	}
 
-	renderer->SubmitCamera(nullptr);
 	auto& vCameraComponents = m_Registry.view<TransformComponent, CameraComponent>();
 	for (auto& entity : vCameraComponents)
 	{
 		Ref<Camera>& camera = vCameraComponents.get<CameraComponent>(entity);
+		CameraComponent::Usage& usage = vCameraComponents.get<CameraComponent>(entity).usage;
 		const Transform& transform = vCameraComponents.get<TransformComponent>(entity);
 		camera->Update(transform);
-		renderer->SubmitCamera(camera);
+		renderer->SubmitCamera(camera, static_cast<uint32_t>(usage));
 	}
 
 	auto& vLightComponents = m_Registry.view<TransformComponent, LightComponent>();
@@ -114,7 +114,7 @@ void Scene::OnUpdate(Ref<graphics::Renderer>& renderer, core::Timer& timer)
 		Ref<Text>& text = vTextComponent.get<TextComponent>(entity);
 		const Transform& transform = vTextComponent.get<TransformComponent>(entity);
 		text->Update(transform);
-		renderer->SubmitTextCamera(text->GetCamera());
+		renderer->SubmitCamera(text->GetCamera(), static_cast<uint32_t>(CameraComponent::Usage::TEXT));
 		for (auto& line : text->GetLines())
 		{
 			renderer->SubmitTextLine(line.model);
