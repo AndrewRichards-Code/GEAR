@@ -53,7 +53,8 @@ void GPUTask::Execute()
 		if (m_CI.cmdBuffer->GetCreateInfo().pCommandPool->GetCreateInfo().queueType == CommandPool::QueueType::GRAPHICS
 			|| m_CI.cmdBuffer->GetCreateInfo().pCommandPool->GetCreateInfo().queueType == CommandPool::QueueType::COMPUTE)
 		{
-			m_CI.cmdBuffer->BeginDebugLabel(m_CI.cmdBufferIndex, m_CI.debugName);
+			if (!(m_CI.task == Task::GRAPHICS_RENDER_PASS_END || m_CI.task == Task::DEBUG_LABEL_END))
+				m_CI.cmdBuffer->BeginDebugLabel(m_CI.cmdBufferIndex, m_CI.debugName);
 		}
 
 		switch (m_CI.task)
@@ -110,7 +111,8 @@ void GPUTask::Execute()
 		if (m_CI.cmdBuffer->GetCreateInfo().pCommandPool->GetCreateInfo().queueType == CommandPool::QueueType::GRAPHICS
 			|| m_CI.cmdBuffer->GetCreateInfo().pCommandPool->GetCreateInfo().queueType == CommandPool::QueueType::COMPUTE)
 		{
-			m_CI.cmdBuffer->EndDebugLabel(m_CI.cmdBufferIndex);
+			if (!(m_CI.task == Task::GRAPHICS_RENDER_PASS_BEGIN || m_CI.task == Task::DEBUG_LABEL_BEGIN))
+				m_CI.cmdBuffer->EndDebugLabel(m_CI.cmdBufferIndex);
 		}
 	}
 	
@@ -164,29 +166,30 @@ void GPUTask::UploadResources()
 {
 	UploadResourceTaskInfo* uploadResourcesTI = reinterpret_cast<UploadResourceTaskInfo*>(m_CI.pTaskInfo);
 
-	if (uploadResourcesTI->camera)
+	for (auto& camera : uploadResourcesTI->cameras)
 	{
-		uploadResourcesTI->camera->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->camera->GetUpdateGPUFlag());
-		uploadResourcesTI->camera->ResetUpdateGPUFlag();
-	}
-
-	if (uploadResourcesTI->textCamera)
-	{
-		uploadResourcesTI->textCamera->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->textCamera->GetUpdateGPUFlag());
-		uploadResourcesTI->textCamera->ResetUpdateGPUFlag();
+		if (camera)
+		{
+			camera->GetCameraUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, camera->GetUpdateGPUFlag());
+			camera->GetHDRInfoUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, camera->GetUpdateGPUFlag());
+			camera->ResetUpdateGPUFlag();
+		}
 	}
 
 	if (uploadResourcesTI->skybox)
 	{
-		uploadResourcesTI->skybox->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, uploadResourcesTI->skybox->GetUpdateGPUFlag());
-		uploadResourcesTI->skybox->ResetUpdateGPUFlag();
 		uploadResourcesTI->skybox->GetHDRTexture()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, !uploadResourcesTI->skybox->m_Generated);
+		uploadResourcesTI->skybox->ResetUpdateGPUFlag();
 	}
 
 	for (auto& light : uploadResourcesTI->lights)
 	{
 		light->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, light->GetUpdateGPUFlag());
 		light->ResetUpdateGPUFlag();
+
+		const Ref<objects::Probe>& probe = light->GetProbe();
+		probe->GetUB()->Upload(m_CI.cmdBuffer, m_CI.cmdBufferIndex, probe->GetUpdateGPUFlag());
+		probe->ResetUpdateGPUFlag();
 	}
 
 	for (auto& model : uploadResourcesTI->models)

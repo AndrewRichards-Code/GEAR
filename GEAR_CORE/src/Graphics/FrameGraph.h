@@ -26,10 +26,11 @@ namespace gear
 				NONE,
 				UPLOAD_RESOURCES,
 				TRANSITION_RESOURCES,
+				DEBUG_LABEL_BEGIN,
+				DEBUG_LABEL_END,
 				GRAPHICS_RENDER_PASS_BEGIN,
 				GRAPHICS_RENDER_PASS_END,
 				GRAPHICS_NEXT_SUBPASS,
-				COMPUTE_DISPATCH,
 				RENDERER_FUNCTION,
 				IMAGE_PROCESSING_FUNCTION_1,
 				IMAGE_PROCESSING_FUNCTION_2,
@@ -50,8 +51,7 @@ namespace gear
 			
 			struct UploadResourceTaskInfo
 			{
-				Ref<objects::Camera>					camera;
-				Ref<objects::Camera>					textCamera;
+				std::vector<Ref<objects::Camera>>		cameras;
 				Ref<objects::Skybox>					skybox;
 				std::vector<Ref<objects::Light>>		lights;
 				std::vector<Ref<objects::Model>>		models;
