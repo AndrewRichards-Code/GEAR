@@ -26,7 +26,7 @@ ModelLoader::ModelData ModelLoader::LoadModelData(const std::string& filepath)
 		flags |= aiProcess_FlipUVs;
 	const aiScene* scene = importer.ReadFile(filepath, flags);
 
-	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+	if (!scene || arc::BitwiseCheck(scene->mFlags, (unsigned int)AI_SCENE_FLAGS_INCOMPLETE) || !scene->mRootNode)
 	{
 		GEAR_WARN(ErrorCode::UTILS | ErrorCode::INIT_FAILED, "Assimp error: %s.", importer.GetErrorString());
 		return ModelData();

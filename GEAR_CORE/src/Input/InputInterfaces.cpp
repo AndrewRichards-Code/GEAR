@@ -26,7 +26,7 @@ InputInterface::InputInterface(CreateInfo* pCreateInfo)
 		XINPUT_CAPABILITIES capab;
 		XInputGetCapabilities(m_CI.controllerIndex, XINPUT_FLAG_GAMEPAD, &capab);
 		
-		if ((capab.Flags & XINPUT_CAPS_VOICE_SUPPORTED) == XINPUT_CAPS_VOICE_SUPPORTED)
+		if (arc::BitwiseCheck(capab.Flags, (WORD)XINPUT_CAPS_VOICE_SUPPORTED))
 		{
 			PWCHAR renderId = nullptr;
 			PWCHAR captureId = nullptr;

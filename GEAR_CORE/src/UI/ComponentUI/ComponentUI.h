@@ -155,7 +155,7 @@ namespace componentui
 				pfn_UIFunction(std::forward<Args>(args)...);
 				EndDrawTreeNode();
 			}
-			if ((settings & ComponentSettingsBit::REMOVE_BIT) == ComponentSettingsBit::REMOVE_BIT)
+			if (arc::BitwiseCheck(settings, ComponentSettingsBit::REMOVE_BIT))
 			{
 				entity.RemoveComponent<T>();
 			}

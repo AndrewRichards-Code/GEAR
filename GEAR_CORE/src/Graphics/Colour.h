@@ -156,7 +156,7 @@ namespace graphics
 		Colour_Rec709(const mars::float4& RGBA);
 
 		Colour_CIE_XYZ ToCIE_XYZ();
-		Colour_Rec709 FromCIE_XYZ(const Colour_CIE_XYZ & XYZ);
+		Colour_Rec709 FromCIE_XYZ(const Colour_CIE_XYZ& XYZ);
 
 		float GetLuminance();
 
