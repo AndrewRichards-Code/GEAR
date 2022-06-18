@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "AudioInterfaces.h"
+#include "Audio/AudioInterfaces.h"
 
 using namespace gear;
 using namespace audio;
@@ -262,7 +262,7 @@ AudioSourceInterface::AudioSourceInterface(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 	m_API = m_CI.pAudioListener->GetAPI();
-	m_WavData = file_utils::stream_wav(m_CI.filepath);
+	m_WavData = utils::stream_wav(m_CI.filepath);
 
 	switch (m_API)
 	{
@@ -412,7 +412,7 @@ void AudioSourceInterface::OpenAL_DestroyBufferAndSource()
 
 void AudioSourceInterface::OpenAL_SubmitBuffer()
 {
-	file_utils::get_next_wav_block(m_WavData);
+	utils::get_next_wav_block(m_WavData);
 
 	ALenum format = 0;
 	if (m_WavData->channels == 1)
@@ -569,7 +569,7 @@ void AudioSourceInterface::XAudio2_DestroyIXAudio2SourceVoiceAndX3DAUDIO()
 
 void AudioSourceInterface::XAudio2_SubmitBuffer()
 {
-	file_utils::get_next_wav_block(m_WavData);
+	utils::get_next_wav_block(m_WavData);
 
 	XAUDIO2_BUFFER buffer;
 	buffer.Flags = 0;

@@ -1,17 +1,21 @@
 #include "gear_core_common.h"
-#include "Scene.h"
-#include "Entity.h"
-#include "NativeScriptManager.h"
-#include "INativeScript.h"
+#include "Scene/Scene.h"
+#include "Scene/Entity.h"
+#include "Scene/Components.h"
+#include "Scene/NativeScriptManager.h"
+#include "Scene/INativeScript.h"
 
 #include "Core/Timer.h"
 #include "Core/JsonFileHelper.h"
 #include "Graphics/Renderer.h"
 
-using namespace arc;
 using namespace gear;
+using namespace graphics;
+using namespace core;
 using namespace scene;
 using namespace objects;
+
+using namespace arc;
 
 static DynamicLibrary::LibraryHandle s_NativeScriptLibrary = 0;
 
@@ -44,7 +48,7 @@ void Scene::DestroyEntity(Entity entity)
 	m_Registry.destroy(entity.m_Entity);
 }
 
-void Scene::OnUpdate(Ref<graphics::Renderer>& renderer, core::Timer& timer)
+void Scene::OnUpdate(Ref<Renderer>& renderer, Timer& timer)
 {
 	if (m_State == State::PLAY)
 	{
@@ -156,7 +160,7 @@ void Scene::UnloadNativeScriptLibrary()
 
 using namespace nlohmann;
 
-void Scene::LoadEntity(json& references, json& entity, Entity entityID, const Ref<graphics::Window>& window)
+void Scene::LoadEntity(json& references, json& entity, Entity entityID, const Ref<Window>& window)
 {
 	LoadSaveParameters lsp = { this, entity, references, window };
 
@@ -191,7 +195,7 @@ void Scene::LoadEntity(json& references, json& entity, Entity entityID, const Re
 
 }
 
-void Scene::LoadFromFile(const std::string& filepath, const Ref<graphics::Window>& window)
+void Scene::LoadFromFile(const std::string& filepath, const Ref<Window>& window)
 {
 	std::filesystem::path cwd = std::filesystem::current_path();
 	std::filesystem::path fullSaveFilepath = cwd / std::filesystem::path(filepath);
@@ -203,7 +207,7 @@ void Scene::LoadFromFile(const std::string& filepath, const Ref<graphics::Window
 	ClearEntities();
 
 	json scene_gsf;
-	core::LoadJsonFile(fullSaveFilepath.string(), ".gsf", "GEAR_SCENE_FILE", scene_gsf);
+	LoadJsonFile(fullSaveFilepath.string(), ".gsf", "GEAR_SCENE_FILE", scene_gsf);
 
 	json& scene = scene_gsf["scene"];
 	m_CI.debugName = scene["debugName"];
@@ -294,5 +298,5 @@ void Scene::SaveToFile(const std::string& filepath)
 			SaveEntity(references, _entity, entity);
 		});
 
-	core::SaveJsonFile(fullSaveFilepath.string(), ".gsf", "GEAR_SCENE_FILE", scene_gsf);
+	SaveJsonFile(fullSaveFilepath.string(), ".gsf", "GEAR_SCENE_FILE", scene_gsf);
 }

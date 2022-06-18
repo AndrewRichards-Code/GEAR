@@ -1,6 +1,6 @@
 {
 	"fileType": "GEAR_RENDER_PIPELINE_FILE",
-	"debugName": "Mipmap_array",
+	"debugName": "MipmapArray",
 	"shaders": [
 		{
 			"debugName": "Mipmap_cs_6_4_mipmap_array.spv",

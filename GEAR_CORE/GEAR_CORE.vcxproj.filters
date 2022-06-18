@@ -78,13 +78,10 @@
     <ClCompile Include="src\Objects\Skybox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Graphics\ImageProcessing.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Graphics\AllocatorManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Graphics\FrameGraph.cpp">
+    <ClCompile Include="src\Graphics\RenderGraph.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\FontLibrary.cpp">
@@ -103,9 +100,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Graphics\Colour.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Graphics\PostProcessing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\UUID.cpp">
@@ -290,9 +284,6 @@
     <ClInclude Include="src\Graphics\UniformBufferStructures.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Graphics\ImageProcessing.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="dep\STBI\stb_image_write.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -302,7 +293,7 @@
     <ClInclude Include="src\Scene\INativeScript.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Graphics\FrameGraph.h">
+    <ClInclude Include="src\Graphics\RenderGraph.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\FontLibrary.h">
@@ -339,9 +330,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Graphics\ColourFunctions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Graphics\PostProcessing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\UUID.h">

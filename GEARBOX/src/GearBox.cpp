@@ -1,5 +1,5 @@
 #include "gearbox_common.h"
-#include "GEARBOX.h"
+#include "gearbox.h"
 
 using namespace gear;
 using namespace animation;
@@ -12,7 +12,7 @@ using namespace ui;
 using namespace panels;
 
 using namespace miru;
-using namespace miru::crossplatform;
+using namespace base;
 
 using namespace mars;
 
@@ -148,7 +148,6 @@ void GEARBOX::InternalRun()
 
 		if (mainWindow->Resized())
 		{
-			mainRenderer->ResizeRenderPipelineViewports(mainWindow->GetRenderSurface()->GetWidth(), mainWindow->GetRenderSurface()->GetHeight());
 			mainWindow->Resized() = false;
 		}
 

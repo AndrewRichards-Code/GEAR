@@ -1,16 +1,18 @@
 #include "gear_core_common.h"
-#include "ViewportPanel.h"
-#include "Panels.h"
+#include "UI/Panels/ViewportPanel.h"
+#include "UI/Panels/Panels.h"
 #include "UI/ComponentUI/ComponentUI.h"
+#include "UI/UIContext.h"
 
 #include "Graphics/Renderer.h"
+#include "Graphics/Window.h"
 
 using namespace gear;
 using namespace ui;
 using namespace panels;
 using namespace objects;
 
-using namespace miru::crossplatform;
+using namespace miru::base;
 
 using namespace mars;
 
@@ -56,16 +58,14 @@ void ViewportPanel::Draw()
 			m_CurrentSize.y = std::max(size.y, 1.0f);
 
 			m_CI.renderer->GetRenderSurface()->Resize((uint32_t)m_CurrentSize.x, (uint32_t)m_CurrentSize.y);
-			m_CI.renderer->ResizeRenderPipelineViewports((uint32_t)m_CurrentSize.x, (uint32_t)m_CurrentSize.y);
 			
 			resized = true;
 		}
 
 		const uint32_t& m_FrameIndex = m_CI.renderer->GetFrameIndex();
-		Ref<Framebuffer> framebuffer = m_CI.renderer->GetRenderSurface()->GetHDRFramebuffers()[m_FrameIndex];
-		Ref<ImageView> colourImageView = framebuffer->GetCreateInfo().attachments[0];
-		uint32_t width = colourImageView->GetCreateInfo().pImage->GetCreateInfo().width;
-		uint32_t height = colourImageView->GetCreateInfo().pImage->GetCreateInfo().height;
+		ImageViewRef colourImageView = m_CI.renderer->GetRenderSurface()->GetColourSRGBImageView();
+		uint32_t width = colourImageView->GetCreateInfo().image->GetCreateInfo().width;
+		uint32_t height = colourImageView->GetCreateInfo().image->GetCreateInfo().height;
 		
 		m_ImageID = componentui::GetTextureID(colourImageView, UIContext::GetUIContext(), resized);
 		ImGui::Image(m_ImageID, ImVec2(static_cast<float>(width), static_cast<float>(height)));

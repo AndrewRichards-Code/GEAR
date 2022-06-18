@@ -4,130 +4,115 @@
 
 namespace gear 
 {
-namespace graphics 
-{
-	class GEAR_API Texture
+	namespace graphics
 	{
-	public:
-		enum class DataType : uint32_t
+		class GEAR_API Texture
 		{
-			DATA,
-			FILE
+		public:
+			enum class DataType : uint32_t
+			{
+				DATA,
+				FILE
+			};
+
+			struct DataTypeDataParameters
+			{
+				const uint8_t* data;
+				size_t			size;
+				uint32_t		width;
+				uint32_t		height;
+				uint32_t		depth;
+			};
+			struct DataTypeFileParameters
+			{
+				std::vector<std::string> filepaths;
+			};
+
+			//Provide either filepaths or data, size and image dimension details.
+			struct CreateInfo
+			{
+				std::string							debugName;
+				void* device;
+				DataType							dataType;
+				DataTypeDataParameters				data;
+				DataTypeFileParameters				file;
+				uint32_t							mipLevels;
+				uint32_t							arrayLayers;
+				miru::base::Image::Type				type;
+				miru::base::Image::Format			format;
+				miru::base::Image::SampleCountBit	samples;
+				miru::base::Image::UsageBit			usage;
+				bool								generateMipMaps;
+				GammaSpace							gammaSpace;
+			};
+			uint32_t static constexpr MaxMipLevel = 16;
+
+		private:
+			miru::base::BufferRef m_ImageUploadBuffer;
+			miru::base::Buffer::CreateInfo m_ImageUploadBufferCI;
+
+			miru::base::BufferViewRef m_ImageUploadBufferView;
+			miru::base::BufferView::CreateInfo m_ImageUploadBufferViewCI;
+
+			miru::base::ImageRef m_Image;
+			miru::base::Image::CreateInfo m_TextureCI;
+
+			miru::base::ImageViewRef m_ImageView;
+			miru::base::ImageView::CreateInfo m_TextureImageViewCI;
+
+			miru::base::SamplerRef m_Sampler;
+			miru::base::Sampler::CreateInfo m_SamplerCI;
+
+			CreateInfo m_CI;
+
+			uint32_t m_Width = 0;
+			uint32_t m_Height = 0;
+			uint32_t m_Depth = 0;
+
+			uint32_t m_BPP = 0; //BPP = Bytes per pixel
+			bool m_HDR = false;
+			bool m_Cubemap = false;
+			bool m_DepthTexture = false;
+			float m_AnisotrophicValue = 1.0f;
+
+		public:
+			bool m_GenerateMipMaps = false;
+			bool m_GeneratedMipMaps = false;
+
+
+		public:
+			Texture(CreateInfo* pCreateInfo);
+			~Texture();
+
+			CreateInfo& GetCreateInfo() { return m_CI; }
+
+			void Reload();
+
+			void SubmitImageData(std::vector<uint8_t>& imageData);
+			void AccessImageData(std::vector<uint8_t>& imageData);
+
+			inline const miru::base::BufferRef& GetCPUBuffer() const { return m_ImageUploadBuffer; }
+			inline const miru::base::BufferViewRef& GetCPUBufferView() const { return m_ImageUploadBufferView; }
+			inline const miru::base::ImageRef& GetImage() const { return m_Image; }
+			inline const miru::base::ImageViewRef& GetImageView() const { return m_ImageView; }
+			inline const miru::base::SamplerRef& GetSampler() const { return m_Sampler; }
+
+			inline const uint32_t& GetWidth() const { return m_Width; }
+			inline const uint32_t& GetHeight() const { return m_Height; }
+			inline const uint32_t& GetDepth() const { return m_Depth; }
+
+			inline bool IsCubemap() const { return m_Cubemap; }
+			inline bool IsDepthTexture() const { return m_DepthTexture; }
+
+			inline void SetAnisotrophicValue(float anisostrphicVal) { m_AnisotrophicValue = anisostrphicVal; CreateSampler(); };
+			inline float GetAnisotrophicValue() const { return m_AnisotrophicValue; };
+			inline std::string GetAnisotrophicValue() { return std::to_string(static_cast<int>(m_AnisotrophicValue)); }
+
+		private:
+			void CreateSampler();
+
+			//This populates the parameter imageData. This should only be called in the constructor and Reload().
+			void LoadImageData(std::vector<uint8_t>& imageData);
 		};
-
-		struct DataTypeDataParameters
-		{
-			const uint8_t*	data;
-			size_t			size;
-			uint32_t		width;
-			uint32_t		height;
-			uint32_t		depth;
-		};
-		struct DataTypeFileParameters
-		{
-			std::vector<std::string> filepaths;
-		};
-
-		//Provide either filepaths or data, size and image dimension details.
-		struct CreateInfo
-		{
-			std::string									debugName;
-			void*										device;
-			DataType									dataType;
-			DataTypeDataParameters						data;
-			DataTypeFileParameters						file;
-			uint32_t									mipLevels;
-			uint32_t									arrayLayers;
-			miru::crossplatform::Image::Type			type;
-			miru::crossplatform::Image::Format			format;
-			miru::crossplatform::Image::SampleCountBit	samples;
-			miru::crossplatform::Image::UsageBit		usage;
-			bool										generateMipMaps;
-			GammaSpace									gammaSpace;
-		};
-		uint32_t static constexpr MaxMipLevel = 16;
-
-		struct SubresouresTransitionInfo
-		{
-			miru::crossplatform::Barrier::AccessBit			srcAccess;
-			miru::crossplatform::Barrier::AccessBit			dstAccess;
-			miru::crossplatform::Image::Layout				oldLayout;
-			miru::crossplatform::Image::Layout				newLayout;
-			miru::crossplatform::Image::SubresourceRange	subresourceRange; //Option 1
-			bool											allSubresources;  //Option 2
-		};
-
-	private:
-		Ref<miru::crossplatform::Image> m_Texture;
-		miru::crossplatform::Image::CreateInfo m_TextureCI;
-		Ref<miru::crossplatform::Buffer> m_TextureUploadBuffer;
-		miru::crossplatform::Buffer::CreateInfo m_TextureUploadBufferCI;
-
-		Ref<miru::crossplatform::ImageView> m_TextureImageView;
-		miru::crossplatform::ImageView::CreateInfo m_TextureImageViewCI;
-
-		Ref<miru::crossplatform::Sampler> m_Sampler;
-		miru::crossplatform::Sampler::CreateInfo m_SamplerCI;
-
-		CreateInfo m_CI;
-
-		uint32_t m_Width = 0;
-		uint32_t m_Height = 0;
-		uint32_t m_Depth = 0;
-
-		uint32_t m_BPP = 0; //BPP = Bytes per pixel
-		bool m_HDR = false;
-		bool m_Cubemap = false;
-		bool m_DepthTexture = false;
-
-		bool m_Upload = false;
-
-		float m_AnisotrophicValue = 1.0f;
-
-		typedef std::map<uint32_t, std::map<uint32_t, miru::crossplatform::Image::Layout>> SubresourceMap;
-		SubresourceMap m_SubresourceMap; //m_SubResourceMap[mipLevel][arrayLayer] = { currentLayout };
-
-	public:
-		bool m_PreUpload = true;
-		bool m_GenerateMipMaps = false;
-		bool m_Generated = false;
-		bool m_ShaderReadable = false;
-
-	public:
-		Texture(CreateInfo* pCreateInfo);
-		~Texture();
-
-		CreateInfo& GetCreateInfo() { return m_CI; }
-
-		void Upload(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
-		void Download(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
-		void TransitionSubResources(std::vector<Ref<miru::crossplatform::Barrier>>& barriers, const std::vector<SubresouresTransitionInfo>& transitionInfos);
-		void Reload();
-
-		void SubmitImageData(std::vector<uint8_t>& imageData);
-		void AccessImageData(std::vector<uint8_t>& imageData);
-
-		inline const Ref<miru::crossplatform::Image>& GetTexture() const { return m_Texture; }
-		inline const Ref<miru::crossplatform::ImageView>& GetTextureImageView() const { return m_TextureImageView; }
-		inline const Ref<miru::crossplatform::Sampler>& GetTextureSampler() const { return m_Sampler; }
-		
-		inline const uint32_t& GetWidth() const { return m_Width; }
-		inline const uint32_t& GetHeight() const { return m_Height; }
-		inline const uint32_t& GetDepth() const { return m_Depth; }
-
-		inline bool IsCubemap() const { return m_Cubemap; }
-		inline bool IsDepthTexture() const { return m_DepthTexture; }
-		inline bool IsUploaded() const { return m_Upload; }
-
-		inline void SetAnisotrophicValue(float anisostrphicVal) { m_AnisotrophicValue = anisostrphicVal; CreateSampler(); };
-		inline float GetAnisotrophicValue() const { return m_AnisotrophicValue; };
-		inline std::string GetAnisotrophicValue() { return std::to_string(static_cast<int>(m_AnisotrophicValue)); }
-
-	private:
-		void CreateSampler();
-
-		//This populates the parameter imageData. This should only be called in the constructor and Reload().
-		void LoadImageData(std::vector<uint8_t>& imageData);
-	};
-}
+	}
 }

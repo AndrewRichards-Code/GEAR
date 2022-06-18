@@ -1,6 +1,7 @@
 #include "gear_core_common.h"
-#include "Project.h"
+#include "Build/Project.h"
 #include "Core/JsonFileHelper.h"
+#include "Scene/Scene.h"
 
 using namespace gear;
 using namespace build;

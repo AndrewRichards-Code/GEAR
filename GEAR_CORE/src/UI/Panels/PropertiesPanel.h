@@ -1,30 +1,30 @@
 #pragma once
-#include "SceneHierarchyPanel.h"
+#include "UI/Panels/BasePanel.h"
 #include "Scene/Entity.h"
 
 namespace gear
 {
-namespace ui
-{
-namespace panels
-{
-	class GEAR_API PropertiesPanel final : public Panel
+	namespace ui
 	{
-		//enums/structs
-	public:
+		namespace panels
+		{
+			class GEAR_API PropertiesPanel final : public Panel
+			{
+				//enums/structs
+			public:
 
-		//Methods
-	public:
-		PropertiesPanel();
-		~PropertiesPanel();
+				//Methods
+			public:
+				PropertiesPanel();
+				~PropertiesPanel();
 
-		void Draw() override;
+				void Draw() override;
 
-		//Members
-	private:
-		bool m_UseSelectedEntity = true;
-		scene::Entity entity;
-	};
-}
-}
+				//Members
+			private:
+				bool m_UseSelectedEntity = true;
+				scene::Entity entity;
+			};
+		}
+	}
 }

@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "FileDialog.h"
+#include "Core/FileDialog.h"
 #include "ARC/src/StringConversion.h"
 
 #include <shobjidl.h>
@@ -30,7 +30,8 @@ std::string gear::core::FileDialog_Open(const char* filterName, const char* filt
 					{
 						LPWSTR _path;
 						pShellItem->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &_path);
-						path = arc::ToString(std::wstring(_path));
+						if (_path)
+							path = arc::ToString(std::wstring(_path));
 
 						CoTaskMemFree(_path);
 						pShellItem->Release();
@@ -73,7 +74,8 @@ std::string gear::core::FileDialog_Save(const char* filterName, const char* filt
 					{
 						LPWSTR _path;
 						pShellItem->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &_path);
-						path = arc::ToString(std::wstring(_path));
+						if (_path)
+							path = arc::ToString(std::wstring(_path));
 
 						CoTaskMemFree(_path);
 						pShellItem->Release();
@@ -117,7 +119,8 @@ std::string gear::core::FolderDialog_Browse()
 				{
 					LPWSTR _path;
 					pShellItem->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &_path);
-					path = arc::ToString(std::wstring(_path));
+					if (_path)
+						path = arc::ToString(std::wstring(_path));
 
 					CoTaskMemFree(_path);
 					pShellItem->Release();

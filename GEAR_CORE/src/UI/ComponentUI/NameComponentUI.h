@@ -1,13 +1,16 @@
 #pragma once
-#include "ComponentUI.h"
 
 namespace gear
 {
-namespace ui
-{
-namespace componentui
-{
-	void DrawNameComponentUI(gear::scene::Entity entity);
-}
-}
+	namespace scene
+	{
+		class Entity;
+	}
+	namespace ui
+	{
+		namespace componentui
+		{
+			void DrawNameComponentUI(scene::Entity entity);
+		}
+	}
 }

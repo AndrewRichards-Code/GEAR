@@ -1,8 +1,11 @@
 #include "gear_core_common.h"
-#include "ContentBrowserPanel.h"
-#include "Panels.h"
+#include "UI/Panels/ContentBrowserPanel.h"
 #include "UI/ComponentUI/ComponentUI.h"
+#include "UI/UIContext.h"
+
 #include "Core/FileDialog.h"
+#include "Graphics/Texture.h"
+#include "Graphics/Window.h"
 
 using namespace gear;
 using namespace graphics;
@@ -10,7 +13,7 @@ using namespace ui;
 using namespace panels;
 using namespace componentui;
 
-using namespace miru::crossplatform;
+using namespace miru::base;
 
 ContentBrowserPanel::ContentBrowserPanel(CreateInfo* pCreateInfo)
 {
@@ -44,33 +47,56 @@ ContentBrowserPanel::ContentBrowserPanel(CreateInfo* pCreateInfo)
 
 	{
 		CommandPool::CreateInfo cmdPoolCI = { "ContentBrowser", UIContext::GetUIContext()->GetContext(), CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT, CommandPool::QueueType::GRAPHICS };
-		Ref<CommandPool> cmdPool = CommandPool::Create(&cmdPoolCI);
+		CommandPoolRef cmdPool = CommandPool::Create(&cmdPoolCI);
 
 		CommandBuffer::CreateInfo cmdBufferCI = { "ContentBrowser", cmdPool, CommandBuffer::Level::PRIMARY, 1 };
-		Ref<CommandBuffer> cmdBuffer = CommandBuffer::Create(&cmdBufferCI);
+		CommandBufferRef cmdBuffer = CommandBuffer::Create(&cmdBufferCI);
 
 		Fence::CreateInfo fenceCI = { "ContentBrowser", UIContext::GetUIContext()->GetDevice(), false, UINT64_MAX };
-		Ref<Fence> fence = Fence::Create(&fenceCI);
+		FenceRef fence = Fence::Create(&fenceCI);
 
 		cmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
 
-		std::vector<Ref<Barrier>> barriers;
-		m_FolderTexture->TransitionSubResources(barriers, { { Barrier::AccessBit::NONE_BIT, Barrier::AccessBit::TRANSFER_WRITE_BIT, Image::Layout::UNKNOWN, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
-		m_FileTexture->TransitionSubResources(barriers, { { Barrier::AccessBit::NONE_BIT, Barrier::AccessBit::TRANSFER_WRITE_BIT, Image::Layout::UNKNOWN, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
+		std::vector<BarrierRef> barriers;
+		Barrier::CreateInfo barrierCI;
+		barrierCI.type = Barrier::Type::IMAGE;
+		barrierCI.srcAccess = Barrier::AccessBit::NONE_BIT;
+		barrierCI.dstAccess = Barrier::AccessBit::TRANSFER_WRITE_BIT;
+		barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+		barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+		barrierCI.image = m_FolderTexture->GetImage();
+		barrierCI.oldLayout = Image::Layout::UNKNOWN;
+		barrierCI.newLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
+		barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
+		barriers.emplace_back(Barrier::Create(&barrierCI));
+		barrierCI.image = m_FileTexture->GetImage();
+		barriers.emplace_back(Barrier::Create(&barrierCI));
 		for (auto& fileExt : m_FileExtTextureFilepath)
-			fileExt.texture->TransitionSubResources(barriers, { { Barrier::AccessBit::NONE_BIT, Barrier::AccessBit::TRANSFER_WRITE_BIT, Image::Layout::UNKNOWN, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
+		{
+			barrierCI.image = fileExt.texture->GetImage();
+			barriers.emplace_back(Barrier::Create(&barrierCI));
+		}
 		cmdBuffer->PipelineBarrier(0, PipelineStageBit::TOP_OF_PIPE_BIT, PipelineStageBit::TRANSFER_BIT, DependencyBit::NONE_BIT, barriers);
 		barriers.clear();
 		
-		m_FolderTexture->Upload(cmdBuffer);
-		m_FileTexture->Upload(cmdBuffer);
+		cmdBuffer->CopyBufferToImage(0, m_FolderTexture->GetCPUBuffer(), m_FolderTexture->GetImage(), Image::Layout::TRANSFER_DST_OPTIMAL, { { 0, 0, 0, { Image::AspectBit::COLOUR_BIT, 0, 0, 1 }, { 0, 0, 0 }, { m_FolderTexture->GetWidth(), m_FolderTexture->GetHeight(), m_FolderTexture->GetDepth() }} });
+		cmdBuffer->CopyBufferToImage(0, m_FileTexture->GetCPUBuffer(), m_FileTexture->GetImage(), Image::Layout::TRANSFER_DST_OPTIMAL, { { 0, 0, 0, { Image::AspectBit::COLOUR_BIT, 0, 0, 1 }, { 0, 0, 0 }, { m_FileTexture->GetWidth(), m_FileTexture->GetHeight(), m_FileTexture->GetDepth() }} });
 		for (auto& fileExt : m_FileExtTextureFilepath)
-			fileExt.texture->Upload(cmdBuffer);
+			cmdBuffer->CopyBufferToImage(0, fileExt.texture->GetCPUBuffer(), fileExt.texture->GetImage(), Image::Layout::TRANSFER_DST_OPTIMAL, { { 0, 0, 0, { Image::AspectBit::COLOUR_BIT, 0, 0, 1 }, { 0, 0, 0 }, { fileExt.texture->GetWidth(), fileExt.texture->GetHeight(), fileExt.texture->GetDepth() }} });
 
-		m_FolderTexture->TransitionSubResources(barriers, { { Barrier::AccessBit::TRANSFER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT, Image::Layout::TRANSFER_DST_OPTIMAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
-		m_FileTexture->TransitionSubResources(barriers, { { Barrier::AccessBit::TRANSFER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT, Image::Layout::TRANSFER_DST_OPTIMAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
+		barrierCI.srcAccess = Barrier::AccessBit::TRANSFER_WRITE_BIT;
+		barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
+		barrierCI.image = m_FolderTexture->GetImage();
+		barrierCI.oldLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
+		barrierCI.newLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
+		barriers.emplace_back(Barrier::Create(&barrierCI));
+		barrierCI.image = m_FileTexture->GetImage();
+		barriers.emplace_back(Barrier::Create(&barrierCI));
 		for (auto& fileExt : m_FileExtTextureFilepath)
-			fileExt.texture->TransitionSubResources(barriers, { { Barrier::AccessBit::TRANSFER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT, Image::Layout::TRANSFER_DST_OPTIMAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
+		{
+			barrierCI.image = fileExt.texture->GetImage();
+			barriers.emplace_back(Barrier::Create(&barrierCI));
+		}
 		cmdBuffer->PipelineBarrier(0, PipelineStageBit::TRANSFER_BIT, PipelineStageBit::FRAGMENT_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
 		barriers.clear();
 
@@ -79,10 +105,10 @@ ContentBrowserPanel::ContentBrowserPanel(CreateInfo* pCreateInfo)
 		fence->Wait();
 	}
 
-	m_FolderTextureID = GetTextureID(m_FolderTexture->GetTextureImageView(), UIContext::GetUIContext(), false);
-	m_FileTextureID = GetTextureID(m_FileTexture->GetTextureImageView(), UIContext::GetUIContext(), false);
+	m_FolderTextureID = GetTextureID(m_FolderTexture->GetImageView(), UIContext::GetUIContext(), false);
+	m_FileTextureID = GetTextureID(m_FileTexture->GetImageView(), UIContext::GetUIContext(), false);
 	for (auto& fileExt : m_FileExtTextureFilepath)
-		fileExt.id= GetTextureID(fileExt.texture->GetTextureImageView(), UIContext::GetUIContext(), false);
+		fileExt.id= GetTextureID(fileExt.texture->GetImageView(), UIContext::GetUIContext(), false);
 	
 }
 

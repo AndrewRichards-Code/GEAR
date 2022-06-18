@@ -1,33 +1,32 @@
 #pragma once
-
 #include "gear_core_common.h"
 #include "Timer.h"
 
 namespace gear
 {
-namespace core
-{
-	struct Sequence 
+	namespace core
 	{
-		enum class Type : uint32_t
+		struct Sequence
 		{
-			ANIMATION,
-			AUDIO
+			enum class Type : uint32_t
+			{
+				ANIMATION,
+				AUDIO
+			};
+
+			Type		sequenceType;
+			double		duration;
+			uint32_t	framesPerSecond;
 		};
 
-		Type		sequenceType;
-		double		duration;
-		uint32_t	framesPerSecond;
-	};
+		class GEAR_API Sequencer
+		{
+		protected:
+			Timer m_Timer;
 
-	class GEAR_API Sequencer
-	{
-	protected:
-		Timer m_Timer;
-
-	public:
-		virtual ~Sequencer() = default;
-		virtual void Update(const Sequence* sequences, size_t sequenceCount) = 0;
-	};
-}
+		public:
+			virtual ~Sequencer() = default;
+			virtual void Update(const Sequence* sequences, size_t sequenceCount) = 0;
+		};
+	}
 }

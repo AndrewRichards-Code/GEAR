@@ -1,12 +1,13 @@
 #include "gear_core_common.h"
-#include "SceneHierarchyPanel.h"
-#include "Panels.h"
+#include "UI/Panels/SceneHierarchyPanel.h"
+#include "UI/Panels/Panels.h"
 
+#include "UI/UIContext.h"
 #include "UI/ComponentUI/ComponentUI.h"
 #include "UI/ComponentUI/ComponentUIs.h"
 
 #include "Graphics/Renderer.h"
-#include "Scene/Entity.h"
+#include "Graphics/Window.h"
 
 using namespace gear;
 using namespace core;

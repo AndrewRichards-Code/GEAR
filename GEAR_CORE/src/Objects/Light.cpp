@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
-#include "Light.h"
+#include "Objects/Probe.h"
+#include "Objects/Light.h"
 
 using namespace gear;
 using namespace graphics;
@@ -54,7 +55,7 @@ void Light::Update(const Transform& transform)
 	if (TransformHasChanged(transform))
 	{
 		s_UB->lights[m_LightID].position = float4(transform.translation, 1.0f);
-		s_UB->lights[m_LightID].direction = transform.orientation.ToRotationMatrix4<float>() * float4(0, 0, -1, 0);
+		s_UB->lights[m_LightID].direction = transform.orientation.ToRotationMatrix4<float>() * float4(0, 0, 1, 0);
 	}
 	s_UB->lights[m_LightID].type_valid_spotInner_spotOuter.y = 1.0f;
 	if (m_UpdateGPU)
@@ -104,6 +105,7 @@ void Light::CreateProbe()
 	probeCI.imageHeight = 512;
 	probeCI.projectionType = m_CI.type == Type::DIRECTIONAL ? Camera::ProjectionType::ORTHOGRAPHIC : Camera::ProjectionType::PERSPECTIVE;
 	probeCI.perspectiveHorizonalFOV = m_CI.type == Type::POINT ? pi / 2.0 : m_CI.type == Type::SPOT ? m_CI.spotOuterAngle : 0.0;
+	probeCI.orthographicScale = 100.0f;
 	probeCI.zNear = 0.001f;
 	probeCI.zFar = 3000.0f;
 	m_Probe = CreateRef<Probe>(&probeCI);

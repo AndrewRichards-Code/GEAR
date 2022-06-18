@@ -1,7 +1,7 @@
 #include "gear_core_common.h"
-#include "Colour.h"
-#include "../Core/TypesCppHlsl.h"
-#include "ColourFunctions.h"
+#include "Graphics/Colour.h"
+#include "Graphics/ColourFunctions.h"
+#include "Core/TypesCppHlsl.h"
 
 using namespace gear;
 using namespace graphics;

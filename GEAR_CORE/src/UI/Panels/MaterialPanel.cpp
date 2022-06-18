@@ -1,6 +1,5 @@
 #include "gear_core_common.h"
-#include "MaterialPanel.h"
-#include "UI/Panels/Panels.h"
+#include "UI/Panels/MaterialPanel.h"
 #include "UI/UIContext.h"
 #include "UI/ComponentUI/MaterialComponentUI.h"
 

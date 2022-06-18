@@ -1,15 +1,14 @@
 #include "gear_core_common.h"
-#include "AllocatorManager.h"
-
+#include "Graphics/AllocatorManager.h"
 
 using namespace gear;
 using namespace graphics;
 
 using namespace miru;
-using namespace miru::crossplatform;
+using namespace base;
 
-Ref<miru::crossplatform::Allocator> AllocatorManager::s_CPUAllocator = nullptr;
-Ref<miru::crossplatform::Allocator> AllocatorManager::s_GPUAllocator = nullptr;
+miru::base::AllocatorRef AllocatorManager::s_CPUAllocator = nullptr;
+miru::base::AllocatorRef AllocatorManager::s_GPUAllocator = nullptr;
 AllocatorManager::CreateInfo AllocatorManager::s_CI;
 bool AllocatorManager::s_Initialised = false;
 
@@ -25,13 +24,13 @@ void AllocatorManager::Initialise(CreateInfo* pCreateInfo)
 
 	Allocator::CreateInfo allocatorCI;
 	allocatorCI.debugName = "GEAR_CORE_CPU_ALLOCATOR";
-	allocatorCI.pContext = s_CI.pContext;
+	allocatorCI.context = s_CI.pContext;
 	allocatorCI.blockSize = s_CI.defaultBlockSize;
 	allocatorCI.properties = Allocator::PropertiesBit::HOST_VISIBLE_BIT | Allocator::PropertiesBit::HOST_COHERENT_BIT;
 	s_CPUAllocator = Allocator::Create(&allocatorCI);
 
 	allocatorCI.debugName = "GEAR_CORE_GPU_ALLOCATOR";
-	allocatorCI.pContext = s_CI.pContext;
+	allocatorCI.context = s_CI.pContext;
 	allocatorCI.blockSize = s_CI.defaultBlockSize;
 	allocatorCI.properties = Allocator::PropertiesBit::DEVICE_LOCAL_BIT;
 	s_GPUAllocator = Allocator::Create(&allocatorCI);
@@ -50,7 +49,7 @@ void AllocatorManager::Uninitialise()
 	s_CI.pContext = nullptr;
 }
 
-Ref<Allocator> AllocatorManager::GetAllocator(AllocatorType type)
+AllocatorRef AllocatorManager::GetAllocator(AllocatorType type)
 {
 	if (!s_Initialised)
 	{
@@ -72,12 +71,12 @@ Ref<Allocator> AllocatorManager::GetAllocator(AllocatorType type)
 	}
 }
 
-Ref<Allocator> AllocatorManager::GetCPUAllocator()
+AllocatorRef AllocatorManager::GetCPUAllocator()
 {
 	return GetAllocator(AllocatorManager::AllocatorType::CPU);
 }
 
-Ref<Allocator> AllocatorManager::GetGPUAllocator()
+AllocatorRef AllocatorManager::GetGPUAllocator()
 {
 	return GetAllocator(AllocatorManager::AllocatorType::GPU);
 }

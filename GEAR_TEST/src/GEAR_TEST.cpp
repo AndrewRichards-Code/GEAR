@@ -10,7 +10,7 @@ using namespace objects;
 using namespace scene;
 
 using namespace miru;
-using namespace miru::crossplatform;
+using namespace base;
 
 using namespace mars;
 
@@ -89,7 +89,7 @@ void GEAR_TEST::Run()
 	skyboxCI.debugName = "Skybox-HDR";
 	skyboxCI.device = window->GetDevice();
 	//skyboxCI.filepaths = { "res/img/snowy_park_01_2k.hdr" };
-	skyboxCI.filepaths = { "res/img/kloppenheim_06_2k.hdr" };
+	skyboxCI.filepath = "res/img/kloppenheim_06_2k.hdr";
 	skyboxCI.generatedCubemapSize = 1024;
 	Entity skyboxEntity = activeScene->CreateEntity();
 	skyboxEntity.AddComponent<SkyboxComponent>(CreateRef<Skybox>(&skyboxCI));
@@ -106,10 +106,10 @@ void GEAR_TEST::Run()
 		texCI.file.filepaths = { filepath };
 		texCI.mipLevels = Texture::MaxMipLevel;
 		texCI.arrayLayers = 1;
-		texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
-		texCI.format = linear ? miru::crossplatform::Image::Format::R32G32B32A32_SFLOAT : miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
-		texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-		texCI.usage = miru::crossplatform::Image::UsageBit(0);
+		texCI.type = Image::Type::TYPE_2D;
+		texCI.format = linear ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
+		texCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+		texCI.usage = Image::UsageBit(0);
 		texCI.generateMipMaps = true;
 		texCI.gammaSpace = linear ? GammaSpace::LINEAR : GammaSpace::SRGB;
 		return CreateRef<Texture>(&texCI);
@@ -267,7 +267,7 @@ void GEAR_TEST::Run()
 	Light::CreateInfo lightCI;
 	lightCI.debugName = "Main";
 	lightCI.device = window->GetDevice();
-	lightCI.type = Light::LightType::POINT;
+	lightCI.type = Light::Type::POINT;
 	lightCI.colour = float4(1.0f, 1.0f, 1.0f, 1.0f);
 	Entity lightEntity = activeScene->CreateEntity();
 	lightEntity.AddComponent<LightComponent>(CreateRef<Light>(&lightCI));
@@ -327,7 +327,6 @@ void GEAR_TEST::Run()
 		//Update from Window
 		if (window->Resized())
 		{
-			m_Renderer->ResizeRenderPipelineViewports(window->GetWidth(), window->GetHeight());
 			text->m_CI.viewportWidth = (uint32_t)window->GetWidth();
 			text->m_CI.viewportHeight = (uint32_t)window->GetHeight();
 			text->Update(Transform());
@@ -337,7 +336,6 @@ void GEAR_TEST::Run()
 		if (window->IsKeyPressed(GLFW_KEY_R))
 		{
 			m_Renderer->RecompileRenderPipelineShaders();
-			ImageProcessing::RecompileRenderPipelineShaders();
 			skyboxEntity.GetComponent<SkyboxComponent>().skybox->m_Generated = false;
 		}
 

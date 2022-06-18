@@ -3,15 +3,15 @@
 
 namespace gear
 {
-namespace core
-{
-	class GEAR_API Application
+	namespace core
 	{
-	public:
-		Application() = default;
-		virtual ~Application() = default;
+		class GEAR_API Application
+		{
+		public:
+			Application() = default;
+			virtual ~Application() = default;
 
-		virtual void Run() = 0;
-	};
-}
+			virtual void Run() = 0;
+		};
+	}
 }

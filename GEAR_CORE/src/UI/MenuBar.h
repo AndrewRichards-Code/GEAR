@@ -1,52 +1,51 @@
 #pragma once
 #include "gear_core_common.h"
-#include "UIContext.h"
 
 namespace gear
 {
-namespace ui
-{
-	class GEAR_API MenuBar
+	namespace ui
 	{
-		//enums/structs
-	public:
+		class GEAR_API MenuBar
+		{
+			//enums/structs
+		public:
 
-		//Methods
-	public:
-		MenuBar();
-		~MenuBar();
+			//Methods
+		public:
+			MenuBar();
+			~MenuBar();
 
-		void Draw();
+			void Draw();
 
-	private:
-		bool ShortcutPressed(const std::vector<uint32_t>& keycodes);
+		private:
+			bool ShortcutPressed(const std::vector<uint32_t>& keycodes);
 
-		void ProcessShortcuts();
+			void ProcessShortcuts();
 
-		void DrawMenuFile();
-		void DrawMenuSettings();
-		void DrawMenuWindows();
-		void DrawMenuHelp();
+			void DrawMenuFile();
+			void DrawMenuSettings();
+			void DrawMenuWindows();
+			void DrawMenuHelp();
 
-		void DrawItemNewProject();
-		void DrawItemOpenProject();
+			void DrawItemNewProject();
+			void DrawItemOpenProject();
 
-		void DrawItemNewScene();
-		void DrawItemOpenScene();
-		void DrawItemSaveScene();
-		void DrawItemSaveSceneAs();
-		void DrawItemExit();
+			void DrawItemNewScene();
+			void DrawItemOpenScene();
+			void DrawItemSaveScene();
+			void DrawItemSaveSceneAs();
+			void DrawItemExit();
 
-		void DrawItemAbout();
-		void DrawItemGEARBOXOptions();
-		void DrawItemRecompileRenderPipelineShaders();
+			void DrawItemAbout();
+			void DrawItemGEARBOXOptions();
+			void DrawItemRecompileRenderPipelineShaders();
 
-		//Members
-	private:
-		typedef void(MenuBar::*PFN_PopupWindowFunction)();
-		PFN_PopupWindowFunction m_PopupWindowFunction = nullptr;
+			//Members
+		private:
+			typedef void(MenuBar::* PFN_PopupWindowFunction)();
+			PFN_PopupWindowFunction m_PopupWindowFunction = nullptr;
 
-		bool m_SaveToSaveAs = false;
-	};
-}
+			bool m_SaveToSaveAs = false;
+		};
+	}
 }

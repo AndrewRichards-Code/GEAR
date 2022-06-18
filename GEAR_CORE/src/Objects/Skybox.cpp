@@ -1,6 +1,5 @@
 #include "gear_core_common.h"
-#include "Skybox.h"
-#include "Graphics/ImageProcessing.h"
+#include "Objects/Skybox.h"
 #include "STBI/stb_image.h"
 
 using namespace gear;
@@ -9,7 +8,7 @@ using namespace objects;
 using namespace mars;
 
 using namespace miru;
-using namespace miru::crossplatform;
+using namespace base;
 
 Skybox::Skybox(CreateInfo* pCreateInfo)
 {

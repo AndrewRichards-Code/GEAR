@@ -7,149 +7,149 @@
 
 namespace gear
 {
-namespace audio
-{
-	class GEAR_API AudioListenerInterface
+	namespace audio
 	{
-	public:
-		enum class API
+		class GEAR_API AudioListenerInterface
 		{
-			UNKNOWN,
-			OPENAL,
-			XAUDIO2
-		};
-		enum class EndPointDevice : uint32_t
-		{
-			DEFAULT,
-			HEADPHONES_XBOX_CONTROLLER,
-			//HEADSET_MICROPHONE_XBOX_CONTROLLER
-		};
+		public:
+			enum class API
+			{
+				UNKNOWN,
+				OPENAL,
+				XAUDIO2
+			};
+			enum class EndPointDevice : uint32_t
+			{
+				DEFAULT,
+				HEADPHONES_XBOX_CONTROLLER,
+				//HEADSET_MICROPHONE_XBOX_CONTROLLER
+			};
 
-		struct CreateInfo
-		{
-			API				audioAPI;
-			EndPointDevice	endPointDevice;
-		};
+			struct CreateInfo
+			{
+				API				audioAPI;
+				EndPointDevice	endPointDevice;
+			};
 
-	private:
-		CreateInfo m_CI;
-		static API s_API;
-	
-	public:
-		objects::Transform m_Transform;
+		private:
+			CreateInfo m_CI;
+			static API s_API;
 
-	public:
-		AudioListenerInterface(CreateInfo* pCreateInfo);
-		~AudioListenerInterface();
+		public:
+			objects::Transform m_Transform;
 
-		const CreateInfo& GetCreateInfo() { return m_CI; }
+		public:
+			AudioListenerInterface(CreateInfo* pCreateInfo);
+			~AudioListenerInterface();
 
-		static inline const API& GetAPI() { return s_API; }
+			const CreateInfo& GetCreateInfo() { return m_CI; }
 
-	//OpenAL
-	public:
-		ALCdevice* m_ALCdevice;
-		ALCcontext* m_ALCcontext;
+			static inline const API& GetAPI() { return s_API; }
 
-	private:
-		void OpenAL_CreateDeviceAndContext();
-		void OpenAL_DestroyDeviceAndContext();
+			//OpenAL
+		public:
+			ALCdevice* m_ALCdevice;
+			ALCcontext* m_ALCcontext;
 
-	//XAudio2
-	#if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
-	public:
-		IXAudio2* m_IXAudio2;
-		IXAudio2MasteringVoice* m_IXAudio2MasteringVoice;
+		private:
+			void OpenAL_CreateDeviceAndContext();
+			void OpenAL_DestroyDeviceAndContext();
 
-	private:
-		void XAudio2_CreateXAudio2AndMasteringVoice();
-		void XAudio2_DestroyXAudio2AndMasteringVoice();
-	#endif
+			//XAudio2
+		#if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
+		public:
+			IXAudio2* m_IXAudio2;
+			IXAudio2MasteringVoice* m_IXAudio2MasteringVoice;
 
-	};
-
-	class AudioSourceInterface
-	{
-	public:
-		struct CreateInfo
-		{
-			std::string					filepath;
-			Ref<AudioListenerInterface>	pAudioListener;
+		private:
+			void XAudio2_CreateXAudio2AndMasteringVoice();
+			void XAudio2_DestroyXAudio2AndMasteringVoice();
+		#endif
 		};
 
-	private:
-		CreateInfo m_CI;
-		Ref<file_utils::WavData>m_WavData;
-		bool m_Ended = false;
+		class AudioSourceInterface
+		{
+		public:
+			struct CreateInfo
+			{
+				std::string					filepath;
+				Ref<AudioListenerInterface>	pAudioListener;
+			};
 
-		AudioListenerInterface::API m_API;
+		private:
+			CreateInfo m_CI;
+			Ref<utils::WavData> m_WavData;
+			bool m_Ended = false;
 
-	public:
-		objects::Transform m_Transform;
+			AudioListenerInterface::API m_API;
 
-	public:
-		AudioSourceInterface(CreateInfo* pCreateInfo);
-		~AudioSourceInterface();
+		public:
+			objects::Transform m_Transform;
 
-		const CreateInfo& GetCreateInfo() { return m_CI; }
+		public:
+			AudioSourceInterface(CreateInfo* pCreateInfo);
+			~AudioSourceInterface();
 
-		void Stream();
-		
-		//In semitones (-12.0f < value < 12.0f).
-		void SetPitch(float value);  
-		//In decibels.
-		void SetVolume(float value);  
+			const CreateInfo& GetCreateInfo() { return m_CI; }
 
-		inline void Loop() { m_WavData->loopBufferQueue = true; };
-		inline void Unloop() { m_WavData->loopBufferQueue = false; };
+			void Stream();
 
-		inline const AudioListenerInterface::API& GetAPI() const { return m_API; }
-		inline const Ref<file_utils::WavData>& GetWavData() const { return m_WavData; }
+			//In semitones (-12.0f < value < 12.0f).
+			void SetPitch(float value);
+			//In decibels.
+			void SetVolume(float value);
 
-		//OpenAL
-	private:
-		ALuint m_BufferID[2];
-		ALuint m_SourceID;
+			inline void Loop() { m_WavData->loopBufferQueue = true; };
+			inline void Unloop() { m_WavData->loopBufferQueue = false; };
 
-	private:
-		void OpenAL_CreateBufferAndSource();
-		void OpenAL_DestroyBufferAndSource();
-		
-		void OpenAL_SubmitBuffer();
-		void OpenAL_Play();
-		void OpenAL_Stop();
-		void OpenAL_Pause();
-		void OpenAL_Stream();
-		
-		void OpenAL_SetPitch(float value);
-		void OpenAL_SetVolume(float value);
+			inline const AudioListenerInterface::API& GetAPI() const { return m_API; }
+			inline const Ref<utils::WavData>& GetWavData() const { return m_WavData; }
 
-		//XAudio2
-#if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
-	private:
-		IXAudio2SourceVoice* m_IXAudio2SourceVoice;
+		public:
+			static constexpr float MuteVolume = -3.402823466e+38f;
 
-		X3DAUDIO_HANDLE m_X3DAudioHandle;
-		X3DAUDIO_LISTENER m_X3DAudioListener;
-		X3DAUDIO_EMITTER m_X3DAudioEmitter;
-		X3DAUDIO_DSP_SETTINGS m_X3DAudioDSPSettings;
-		XAUDIO2_VOICE_DETAILS m_XAudio2VoiceDetails;
+			//OpenAL
+		private:
+			ALuint m_BufferID[2];
+			ALuint m_SourceID;
 
-	private:
-		void XAudio2_CreateIXAudio2SourceVoiceAndX3DAUDIO();
-		void XAudio2_DestroyIXAudio2SourceVoiceAndX3DAUDIO();
-		
-		void XAudio2_SubmitBuffer();
-		void XAudio2_Play();
-		void XAudio2_Stop();
-		void XAudio2_Pause();
-		void XAudio2_Stream();
+		private:
+			void OpenAL_CreateBufferAndSource();
+			void OpenAL_DestroyBufferAndSource();
 
-		void XAudio2_SetPitch(float value);
-		void XAudio2_SetVolume(float value);
-#endif
-	};
+			void OpenAL_SubmitBuffer();
+			void OpenAL_Play();
+			void OpenAL_Stop();
+			void OpenAL_Pause();
+			void OpenAL_Stream();
 
-	#define GEAR_AUDIO_MUTE_VOLUME -3.402823466e+38f
-}
+			void OpenAL_SetPitch(float value);
+			void OpenAL_SetVolume(float value);
+
+			//XAudio2
+		#if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
+		private:
+			IXAudio2SourceVoice* m_IXAudio2SourceVoice;
+
+			X3DAUDIO_HANDLE m_X3DAudioHandle;
+			X3DAUDIO_LISTENER m_X3DAudioListener;
+			X3DAUDIO_EMITTER m_X3DAudioEmitter;
+			X3DAUDIO_DSP_SETTINGS m_X3DAudioDSPSettings;
+			XAUDIO2_VOICE_DETAILS m_XAudio2VoiceDetails;
+
+		private:
+			void XAudio2_CreateIXAudio2SourceVoiceAndX3DAUDIO();
+			void XAudio2_DestroyIXAudio2SourceVoiceAndX3DAUDIO();
+
+			void XAudio2_SubmitBuffer();
+			void XAudio2_Play();
+			void XAudio2_Stop();
+			void XAudio2_Pause();
+			void XAudio2_Stream();
+
+			void XAudio2_SetPitch(float value);
+			void XAudio2_SetVolume(float value);
+		#endif
+		};
+	}
 }

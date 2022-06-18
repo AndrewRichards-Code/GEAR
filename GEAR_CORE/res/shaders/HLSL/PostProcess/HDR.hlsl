@@ -3,17 +3,17 @@
 #include "ColourFunctions.h"
 
 MIRU_UNIFORM_BUFFER(0, 0, HDRInfo, hdrInfo);
-MIRU_SUBPASS_INPUT(0, 1, 0, float4, hdrInput);
+MIRU_IMAGE_2D(0, 1, float4, hdrInput);
 
 struct VS_OUT
 {
-    MIRU_LOCATION(0, float4, v_Position, SV_POSITION);
+	MIRU_LOCATION(0, float4, v_Position, SV_POSITION);
 };
 typedef VS_OUT PS_IN;
 
 struct PS_OUT
 {
-    MIRU_LOCATION(0, float4, colour, SV_TARGET0);
+	MIRU_LOCATION(0, float4, colour, SV_TARGET0);
 };
 
 VS_OUT vs_main(uint VertexIndex : SV_VertexID)
@@ -28,7 +28,7 @@ PS_OUT ps_main(PS_IN IN)
 	PS_OUT OUT;
 	
 	//Calculate irradiance
-	float4 irradiance = MIRU_SUBPASS_LOAD(hdrInput, IN.v_Position);
+	float4 irradiance = hdrInput.Load(int3(IN.v_Position.xy, 0));
 	
 	//Exposure tone mapping
 	float3 mapped = float3(1.0, 1.0, 1.0) - exp(-irradiance.rgb * hdrInfo.exposure);

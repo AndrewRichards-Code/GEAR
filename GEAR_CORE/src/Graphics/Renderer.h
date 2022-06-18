@@ -1,140 +1,111 @@
 #pragma once
+#include "Graphics/RenderGraph.h"
 #include "Graphics/RenderSurface.h"
 #include "Graphics/RenderPipeline.h"
 #include "Objects/Camera.h"
 #include "Objects/Light.h"
 #include "Objects/Skybox.h"
 #include "Objects/Model.h"
-#include "UI/UIContext.h"
 
 namespace gear 
 {
-namespace graphics 
-{
-	class GEAR_API Renderer
+	namespace ui
 	{
-	public:
-		struct CreateInfo
+		class UIContext;
+	}
+	namespace graphics
+	{
+		class GEAR_API Renderer
 		{
-			Ref<Window> window;
-			bool		shouldCopyToSwapchian;
-			bool		shouldDrawExternalUI;
-			bool		shouldPresent;
+		public:
+			struct CreateInfo
+			{
+				Ref<Window> window;
+				bool		shouldCopyToSwapchian;
+				bool		shouldDrawExternalUI;
+				bool		shouldPresent;
+			};
+
+		private:
+			CreateInfo m_CI;
+
+			//Context and Device
+			void* m_Device;
+			miru::base::ContextRef m_Context;
+
+			Ref<RenderSurface> m_RenderSurface;
+			static std::map<std::string, Ref<graphics::RenderPipeline>> s_RenderPipelines;
+
+			RenderGraph renderGraph;
+
+			//Present Synchronisation Primitives
+			std::vector<miru::base::FenceRef> m_DrawFences;
+			miru::base::Fence::CreateInfo m_DrawFenceCI;
+			miru::base::SemaphoreRef m_AcquireSemaphore;
+			miru::base::Semaphore::CreateInfo m_AcquireSemaphoreCI;
+			miru::base::SemaphoreRef m_SubmitSemaphore;
+			miru::base::Semaphore::CreateInfo m_SubmitSemaphoreCI;
+
+			//Renderering Objects
+			Ref<objects::Camera> m_MainRenderCamera;
+			Ref<objects::Camera> m_TextCamera;
+			std::vector<Ref<objects::Camera>> m_AllCameras;
+			std::vector<Ref<objects::Light>> m_Lights;
+			Ref<objects::Skybox> m_Skybox;
+			std::vector<Ref<objects::Model>> m_ModelQueue;
+			std::vector<Ref<objects::Model>> m_TextQueue;
+			ui::UIContext* m_UIContext = nullptr;
+
+			//Default Objects
+			Ref<Uniformbuffer<UniformBufferStructures::Lights>> m_EmptyLightsUB;
+			Ref<Texture> m_Black2DTexture;
+			Ref<Texture> m_BlackCubeTexture;
+
+			uint32_t m_FrameIndex = 0;
+			uint32_t m_FrameCount = 0;
+			uint32_t m_SwapchainImageCount = 0;
+
+			bool m_ReloadTextures = false;
+
+		public:
+			Renderer(CreateInfo* pCreateInfo);
+			virtual ~Renderer();
+
+		private:
+			void InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface);
+			void UninitialiseRenderPipelines();
+
+		public:
+			void SubmitRenderSurface(const Ref<RenderSurface>& renderSurface);
+			void SubmitCamera(const Ref<objects::Camera>& camera, uint32_t usage);
+			void SubmitLight(const Ref<objects::Light>& lights);
+			void SubmitSkybox(const Ref<objects::Skybox>& skybox);
+			void SubmitModel(const Ref<objects::Model>& obj);
+			void SubmitTextLine(const Ref<objects::Model>& obj);
+			void SubmitUIContext(ui::UIContext* uiContext);
+
+		private:
+			void AcquireNextImage();
+			void Draw();
+			void Present();
+
+		public:
+			void Execute();
+
+		public:
+			void RecompileRenderPipelineShaders();
+			void ReloadTextures();
+
+			inline miru::base::ContextRef GetContext() { return m_Context; }
+			inline void* GetDevice() { return m_Device; }
+			inline Ref<Window> GetWindow() { return m_CI.window; }
+			static inline std::map<std::string, Ref<graphics::RenderPipeline>> GetRenderPipelines() { return s_RenderPipelines; }
+			inline Ref<RenderSurface> GetRenderSurface() { return m_RenderSurface; }
+			inline Ref<objects::Camera> GetCamera() { return m_MainRenderCamera; }
+
+			inline const uint32_t& GetFrameIndex() const { return m_FrameIndex; }
+			inline const uint32_t& GetFrameCount() const { return m_FrameCount; }
+
 		};
-		struct CommandPoolAndBuffers
-		{
-			Ref<miru::crossplatform::CommandPool> cmdPool;
-			miru::crossplatform::CommandPool::CreateInfo cmdPoolCI;
-			Ref<miru::crossplatform::CommandBuffer> cmdBuffer;
-			miru::crossplatform::CommandBuffer::CreateInfo cmdBufferCI;
-		};
-		struct DescriptorPoolAndSets
-		{
-			Ref<miru::crossplatform::DescriptorPool> pool;
-			miru::crossplatform::DescriptorPool::CreateInfo poolCI;
-
-			std::map<Ref<objects::ObjectViewInterface>, std::map<Ref<graphics::RenderPipeline>, Ref<miru::crossplatform::DescriptorSet>>> setPerViewPerRenderPipeline;
-			std::map<Ref<objects::Model>, Ref<miru::crossplatform::DescriptorSet>> setPerModel;
-			std::map<Ref<objects::Material>, Ref<miru::crossplatform::DescriptorSet>> setPerMaterial;
-		};
-
-	private:
-		CreateInfo m_CI;
-
-		//Context and Device
-		void* m_Device;
-		Ref<miru::crossplatform::Context> m_Context;
-		
-		Ref<RenderSurface> m_RenderSurface;
-		static std::map<std::string, Ref<graphics::RenderPipeline>> s_RenderPipelines;
-
-		//Cmd Pools and CmdBuffers
-		std::map<miru::crossplatform::CommandPool::QueueType, CommandPoolAndBuffers> m_CommandPoolAndBuffers;
-
-		//Descriptor Pool and Sets
-		std::vector<DescriptorPoolAndSets> m_DescPoolAndSets;
-
-		//Present Synchronisation Primitives
-		std::vector<Ref<miru::crossplatform::Fence>> m_DrawFences;
-		miru::crossplatform::Fence::CreateInfo m_DrawFenceCI;
-		Ref<miru::crossplatform::Semaphore> m_AcquireSemaphore;
-		miru::crossplatform::Semaphore::CreateInfo m_AcquireSemaphoreCI;
-		Ref<miru::crossplatform::Semaphore> m_SubmitSemaphore;
-		miru::crossplatform::Semaphore::CreateInfo m_SubmitSemaphoreCI;
-
-		//Renderering Objects
-		Ref<objects::Camera> m_MainRenderCamera;
-		Ref<objects::Camera> m_TextCamera;
-		std::vector<Ref<objects::Camera>> m_AllCameras;
-		std::vector<Ref<objects::Light>> m_Lights;
-		Ref<objects::Skybox> m_Skybox;
-		std::vector<Ref<objects::Model>> m_ModelQueue;
-		std::vector<Ref<objects::Model>> m_TextQueue;
-		ui::UIContext* m_UIContext = nullptr;
-
-		//Default Objects
-		Ref<Uniformbuffer<UniformBufferStructures::Lights>> m_EmptyLightsUB;
-		Ref<Texture> m_Black2DTexture;
-		Ref<Texture> m_BlackCubeTexture;
-		
-		uint32_t m_FrameIndex = 0;
-		uint32_t m_FrameCount = 0;
-		uint32_t m_SwapchainImageCount = 0;
-
-		bool m_ReloadTextures = false;
-
-	public:
-		Renderer(CreateInfo* pCreateInfo);
-		virtual ~Renderer();
-
-	private:
-		void InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface);
-		void UninitialiseRenderPipelines();
-		
-	public:
-		void SubmitRenderSurface(const Ref<RenderSurface>& renderSurface);
-		void SubmitCamera(const Ref<objects::Camera>& camera, uint32_t usage);
-		void SubmitLight(const Ref<objects::Light>& lights);
-		void SubmitSkybox(const Ref<objects::Skybox>& skybox);
-		void SubmitModel(const Ref<objects::Model>& obj);
-		void SubmitTextLine(const Ref<objects::Model>& obj);
-		void SubmitUIContext(ui::UIContext* uiContext);
-
-	private:
-		void AcquireNextImage();
-		void Upload();
-		void BuildDescriptorSetandPools();
-		void Draw();
-		void Present();
-
-	public:
-		void Execute();
-
-	private:
-		void MainRenderLoop(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets);
-		void HDRMapping(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets);
-		void DrawTextLines(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets);
-		void DrawCoordinateAxes(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets);
-		void CopyToSwapchain(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets);
-		void DrawExternalUI(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets);
-
-	public:
-		typedef void(Renderer::*PFN_RendererFunction)(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets);
-
-		void ResizeRenderPipelineViewports(uint32_t width, uint32_t height);
-		void RecompileRenderPipelineShaders();
-		void ReloadTextures();
-
-		inline Ref<miru::crossplatform::Context> GetContext() { return m_Context; }
-		inline void* GetDevice() { return m_Device; }
-		inline Ref<Window> GetWindow() { return m_CI.window; }
-		static inline std::map<std::string, Ref<graphics::RenderPipeline>> GetRenderPipelines() { return s_RenderPipelines; }
-		inline Ref<RenderSurface> GetRenderSurface() { return m_RenderSurface; }
-		inline Ref<objects::Camera> GetCamera() { return m_MainRenderCamera; }
-
-		inline const uint32_t& GetFrameIndex() const { return m_FrameIndex; }
-		inline const uint32_t& GetFrameCount() const { return m_FrameCount; }
-
-	};
-}
+	}
 }

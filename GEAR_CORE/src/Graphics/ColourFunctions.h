@@ -1,5 +1,4 @@
-#ifndef COLOUR_FUNCTIONS_H
-#define COLOUR_FUNCTIONS_H
+#pragma once
 
 #include "../Core/TypesCppHlsl.h"
 
@@ -10,7 +9,6 @@
 #endif
 
 #ifdef __cplusplus
-#pragma once
 namespace gear
 {
 	namespace colour
@@ -237,5 +235,3 @@ namespace gear
 	}
 }
 #endif
-
-#endif // COLOUR_FUNCTIONS_H

@@ -18,30 +18,30 @@
 
 namespace gear
 {
-namespace scene
-{
-	class GEAR_SCRIPT_API INativeScript
+	namespace scene
 	{
-	public:
-		INativeScript() = default;
-		virtual ~INativeScript() = default;
-	
-		virtual void OnCreate() {}
-		virtual void OnDestroy() {}
-		virtual void OnUpdate(float deltaTime) {}
+		class GEAR_SCRIPT_API INativeScript
+		{
+		public:
+			INativeScript() = default;
+			virtual ~INativeScript() = default;
 
-		Entity& GetEntity() { return m_Entity; }
+			virtual void OnCreate() {}
+			virtual void OnDestroy() {}
+			virtual void OnUpdate(float deltaTime) {}
 
-	private:
-		//This function can not be called by a GEAR_NATIVE_SCRIPT.dll
-		void SetEntity(const Entity& entity) { m_Entity = entity; }
+			Entity& GetEntity() { return m_Entity; }
 
-	private:
-		Entity m_Entity;
-		
-		friend class gear::scene::Scene;
-	};
-}
+		private:
+			//This function can not be called by a GEAR_NATIVE_SCRIPT.dll
+			void SetEntity(const Entity& entity) { m_Entity = entity; }
+
+		private:
+			Entity m_Entity;
+
+			friend class gear::scene::Scene;
+		};
+	}
 }
 
 #define GEAR_LOAD_SCRIPT(T) extern "C" GEAR_SCRIPT_API INativeScript* LoadScript_##T() { return (INativeScript*)(new T()); }

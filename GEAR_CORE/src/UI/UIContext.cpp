@@ -1,22 +1,23 @@
 #include "gear_core_common.h"
-#include "UIContext.h"
 #include "MenuBar.h"
+#include "UI/UIContext.h"
+#include "Graphics/Window.h"
 
-#include "vulkan/VKContext.h"
-#include "vulkan/VKCommandPoolBuffer.h"
-#include "vulkan/VKDescriptorPoolSet.h"
-#include "vulkan/VKPipeline.h"
+#include "MIRU/MIRU_CORE/src/vulkan/VKContext.h"
+#include "MIRU/MIRU_CORE/src/vulkan/VKCommandPoolBuffer.h"
+#include "MIRU/MIRU_CORE/src/vulkan/VKDescriptorPoolSet.h"
+#include "MIRU/MIRU_CORE/src/vulkan/VKPipeline.h"
 
-#include "directx12/D3D12Context.h"
-#include "directx12/D3D12CommandPoolBuffer.h"
-#include "directx12/D3D12Swapchain.h"
+#include "MIRU/MIRU_CORE/src/d3d12/D3D12Context.h"
+#include "MIRU/MIRU_CORE/src/d3d12/D3D12CommandPoolBuffer.h"
+#include "MIRU/MIRU_CORE/src/d3d12/D3D12Swapchain.h"
 
 using namespace gear;
 using namespace ui;
 using namespace panels;
 
 using namespace miru;
-using namespace miru::crossplatform;
+using namespace base;
 
 UIContext* UIContext::s_UIContext = nullptr;
 
@@ -74,6 +75,16 @@ void UIContext::Draw()
 	EndFrame();
 }
 
+void* UIContext::GetDevice()
+{
+	return m_CI.window->GetDevice();
+}
+
+miru::base::ContextRef UIContext::GetContext()
+{
+	return m_CI.window->GetContext();
+}
+
 void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 {
 	m_API = window->GetCreateInfo().api;
@@ -97,7 +108,7 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 
 	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
 	ImGuiStyle& style = ImGui::GetStyle();
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	if (arc::BitwiseCheck(ImGuiConfigFlags_(io.ConfigFlags), ImGuiConfigFlags_ViewportsEnable))
 	{
 		style.WindowRounding = 0.0f;
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
@@ -109,7 +120,7 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 		// Initialise ImGui with the GLFW window
 		ImGui_ImplGlfw_InitForVulkan(window->GetGLFWwindow(), true);
 
-		Ref<vulkan::Context> vkContext = ref_cast<vulkan::Context>(window->GetContext());
+		vulkan::ContextRef vkContext = ref_cast<vulkan::Context>(window->GetContext());
 		
 		VkDescriptorPoolSize poolSizes[] =
 		{
@@ -164,14 +175,16 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 		imGuiVulkanInitInfo.DescriptorPool = m_VulkanDescriptorPool;
 		imGuiVulkanInitInfo.MinImageCount = 2;
 		imGuiVulkanInitInfo.ImageCount = window->GetSwapchain()->GetCreateInfo().swapchainCount;
-		ImGui_ImplVulkan_Init(&imGuiVulkanInitInfo, ref_cast<vulkan::RenderPass>(window->GetSwapchainRenderPass())->m_RenderPass);
+		imGuiVulkanInitInfo.UseDynamicRendering = true;
+		imGuiVulkanInitInfo.ColorAttachmentFormat = static_cast<VkFormat>(window->GetSwapchain()->m_SwapchainImages[0]->GetCreateInfo().format);
+		ImGui_ImplVulkan_Init(&imGuiVulkanInitInfo, nullptr);
 	}
 	else if (m_API == GraphicsAPI::API::D3D12)
 	{
 		// Initialise ImGui with the GLFW window
 		ImGui_ImplGlfw_InitForOther(window->GetGLFWwindow(), true);
 
-		Ref<d3d12::Context> d3d12Context = ref_cast<d3d12::Context>(window->GetContext());
+		d3d12::ContextRef d3d12Context = ref_cast<d3d12::Context>(window->GetContext());
 
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 		desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -198,17 +211,17 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 	{
 		CommandPool::CreateInfo cmdPoolCI;
 		cmdPoolCI.debugName = "GEARBOX: ImGui: CommandPool";
-		cmdPoolCI.pContext = window->GetContext();
+		cmdPoolCI.context = window->GetContext();
 		cmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
 		cmdPoolCI.queueType = CommandPool::QueueType::GRAPHICS;
-		Ref<CommandPool> cmdPool = CommandPool::Create(&cmdPoolCI);
+		CommandPoolRef cmdPool = CommandPool::Create(&cmdPoolCI);
 
 		CommandBuffer::CreateInfo cmdBufferCI;
 		cmdBufferCI.debugName = "GEARBOX: ImGui: CommandBuffer";
-		cmdBufferCI.pCommandPool = cmdPool;
+		cmdBufferCI.commandPool = cmdPool;
 		cmdBufferCI.level = CommandBuffer::Level::PRIMARY;
 		cmdBufferCI.commandBufferCount = 1;
-		Ref<CommandBuffer> cmdBuffer = CommandBuffer::Create(&cmdBufferCI);
+		CommandBufferRef cmdBuffer = CommandBuffer::Create(&cmdBufferCI);
 		
 		cmdBuffer->Reset(0, false);
 		cmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
@@ -315,7 +328,7 @@ void UIContext::BeginDockspace()
 
 	// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
 	// and handle the pass-thru hole, so we ask Begin() to not render a background.
-	if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+	if (arc::BitwiseCheck(ImGuiDockNodeFlags_(dockspace_flags), ImGuiDockNodeFlags_PassthruCentralNode))
 		window_flags |= ImGuiWindowFlags_NoBackground;
 
 	// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
@@ -334,7 +347,7 @@ void UIContext::BeginDockspace()
 
 	// Submit the DockSpace
 	ImGuiIO& io = ImGui::GetIO();
-	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+	if (arc::BitwiseCheck(ImGuiConfigFlags_(io.ConfigFlags), ImGuiConfigFlags_DockingEnable))
 	{
 		ImGuiID dockspace_id = ImGui::GetID("GEARBOX: Dockspace");
 		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
@@ -352,7 +365,7 @@ void UIContext::EndDockspace()
 	ImGui::End();
 }
 
-void UIContext::RenderDrawData(const Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+void UIContext::RenderDrawData(const CommandBufferRef& cmdBuffer, uint32_t frameIndex)
 {
 	ImDrawData* drawData = ImGui::GetDrawData();
 	if (drawData)
@@ -376,19 +389,19 @@ void UIContext::RenderDrawData(const Ref<CommandBuffer>& cmdBuffer, uint32_t fra
 
 	// Update and Render additional Platform Windows
 	ImGuiIO& io = ImGui::GetIO();
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	if (arc::BitwiseCheck(ImGuiConfigFlags_(io.ConfigFlags), ImGuiConfigFlags_ViewportsEnable))
 	{
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
 	}
 }
 
-ID3D12GraphicsCommandList* UIContext::GetID3D12GraphicsCommandList(const Ref<CommandBuffer> cmdBuffer, uint32_t index)
+ID3D12GraphicsCommandList* UIContext::GetID3D12GraphicsCommandList(const CommandBufferRef cmdBuffer, uint32_t index)
 {
 	return reinterpret_cast<ID3D12GraphicsCommandList*>(ref_cast<d3d12::CommandBuffer>(cmdBuffer)->m_CmdBuffers[index]);
 }
 
-VkCommandBuffer UIContext::GetVkCommandBuffer(const Ref<CommandBuffer> cmdBuffer, uint32_t index)
+VkCommandBuffer UIContext::GetVkCommandBuffer(const CommandBufferRef cmdBuffer, uint32_t index)
 {
 	return ref_cast<vulkan::CommandBuffer>(cmdBuffer)->m_CmdBuffers[index];
 }

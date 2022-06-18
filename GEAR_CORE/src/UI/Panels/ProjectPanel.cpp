@@ -1,8 +1,8 @@
 #include "gear_core_common.h"
-#include "ProjectPanel.h"
-#include "Panels.h"
+#include "UI/Panels/ProjectPanel.h"
 #include "UI/UIContext.h"
 #include "UI/ComponentUI/ComponentUI.h"
+#include "Build/Project.h"
 
 using namespace gear;
 using namespace ui;

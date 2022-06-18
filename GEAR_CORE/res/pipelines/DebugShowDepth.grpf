@@ -56,8 +56,8 @@
 			{
 				"x": 0.0,
 				"y": 0.0,
-				"width": 256,
-				"height": 256,
+				"width": 0.0,
+				"height": 0.0,
 				"minDepth": 0.0,
 				"maxDepth": 1.0
 			}

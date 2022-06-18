@@ -1,27 +1,27 @@
 #pragma once
-#include "BasePanel.h"
+#include "UI/Panels/BasePanel.h"
 
 namespace gear
 {
-namespace ui
-{
-namespace panels
-{
-	class GEAR_API ProjectPanel final : public Panel
+	namespace ui
 	{
-		//enums/structs
-	public:
+		namespace panels
+		{
+			class GEAR_API ProjectPanel final : public Panel
+			{
+				//enums/structs
+			public:
 
-		//Methods
-	public:
-		ProjectPanel();
-		~ProjectPanel();
+				//Methods
+			public:
+				ProjectPanel();
+				~ProjectPanel();
 
-		void Draw() override;
+				void Draw() override;
 
-		//Members
-	private:
-	};
-}
-}
+				//Members
+			private:
+			};
+		}
+	}
 }

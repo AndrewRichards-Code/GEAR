@@ -1,14 +1,18 @@
 #include "gear_core_common.h"
-#include "Text.h"
+#include "Objects/Camera.h"
+#include "Objects/Mesh.h"
+#include "Objects/Text.h"
+#include "Utils/ModelLoader.h"
 
 using namespace gear;
 using namespace graphics;
 using namespace objects;
 using namespace core;
+using namespace utils;
 using namespace mars;
 
 using namespace miru;
-using namespace miru::crossplatform;
+using namespace base;
 
 Text::Text(CreateInfo* pCreateInfo)
 {

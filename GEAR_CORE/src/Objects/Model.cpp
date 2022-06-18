@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
-#include "Model.h"
+#include "Objects/Model.h"
+#include "Objects/Mesh.h"
 
 using namespace gear;
 using namespace graphics;

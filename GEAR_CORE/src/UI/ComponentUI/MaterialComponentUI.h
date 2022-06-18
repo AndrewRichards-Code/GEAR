@@ -1,15 +1,23 @@
 #pragma once
-#include "ComponentUI.h"
-#include "Objects/Material.h"
 
 namespace gear
 {
-namespace ui
-{
-namespace componentui
-{
-	void DrawMaterialUI(Ref<gear::objects::Material>& material, UIContext* uiContext, bool fileFunctions = true);
-	void DrawRenderPipelineUI(gear::graphics::RenderPipeline* renderPipeline);
-}
-}
+	namespace graphics
+	{
+		class RenderPipeline;
+	}
+	namespace objects
+	{
+		class Material;
+	}
+	namespace ui
+	{
+		class UIContext;
+
+		namespace componentui
+		{
+			void DrawMaterialUI(Ref<objects::Material>& material, UIContext* uiContext, bool fileFunctions = true);
+			void DrawRenderPipelineUI(graphics::RenderPipeline* renderPipeline);
+		}
+	}
 }

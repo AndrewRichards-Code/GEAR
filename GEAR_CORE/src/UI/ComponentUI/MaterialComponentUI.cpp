@@ -1,20 +1,25 @@
 #include "gear_core_common.h"
-#include "MaterialComponentUI.h"
+#include "UI/ComponentUI/MaterialComponentUI.h"
+#include "UI/ComponentUI/ComponentUI.h"
+#include "UI/UIContext.h"
+#include "Graphics/RenderPipeline.h"
+#include "Objects/Material.h"
 
 using namespace gear;
 using namespace scene;
 using namespace objects;
 using namespace graphics;
+using namespace core;
 
 using namespace ui;
 using namespace componentui;
 
 using namespace miru;
-using namespace crossplatform;
+using namespace base;
 
 using namespace mars;
 
-void gear::ui::componentui::DrawMaterialUI(Ref<objects::Material>& material, UIContext* uiContext, bool fileFunctions)
+void gear::ui::componentui::DrawMaterialUI(Ref<Material>& material, UIContext* uiContext, bool fileFunctions)
 {
 	if (DrawTreeNode("Material", false))
 	{
@@ -43,20 +48,20 @@ void gear::ui::componentui::DrawMaterialUI(Ref<objects::Material>& material, UIC
 			}
 		};
 
-		auto DrawPBRTexture = [&](const Material::TextureType& type, Ref<graphics::Texture>& texture, float width = DefaultWidth)
+		auto DrawPBRTexture = [&](const Material::TextureType& type, Ref<Texture>& texture, float width = DefaultWidth)
 		{
 			ImGui::PushID(texture.get());
 
-			ImTextureID textureID = GetTextureID(texture->GetTextureImageView(), uiContext, false);
+			ImTextureID textureID = GetTextureID(texture->GetImageView(), uiContext, false);
 			std::string textureTypeStr = MaterialTextureTypeToString(type);
 
 			BeginColumnLabel(textureTypeStr, width);
 			const float& iconSize = ImGui::CalcItemWidth();
 			ImGui::ImageButton(textureID, ImVec2(iconSize, iconSize));
 
-			graphics::GammaSpace& gammaSpace = texture->GetCreateInfo().gammaSpace;
+			GammaSpace& gammaSpace = texture->GetCreateInfo().gammaSpace;
 			DrawDropDownMenu("Gamma Space", gammaSpace, DefaultWidth);
-			bool linear = gammaSpace == graphics::GammaSpace::LINEAR;
+			bool linear = gammaSpace == GammaSpace::LINEAR;
 
 			if (ImGui::Button("Reset Texture"))
 			{
@@ -74,20 +79,20 @@ void gear::ui::componentui::DrawMaterialUI(Ref<objects::Material>& material, UIC
 					if (std::filesystem::exists(filepath))
 					{
 						bool linear = Material::IsTextureTypeLinear(type);
-						graphics::Texture::CreateInfo textureCI;
+						Texture::CreateInfo textureCI;
 						textureCI.debugName = filepath;
 						textureCI.device = uiContext->GetDevice();
-						textureCI.dataType = graphics::Texture::DataType::FILE;
+						textureCI.dataType = Texture::DataType::FILE;
 						textureCI.file.filepaths.push_back(filepath);
-						textureCI.mipLevels = graphics::Texture::MaxMipLevel;
+						textureCI.mipLevels = Texture::MaxMipLevel;
 						textureCI.arrayLayers = 1;
-						textureCI.type = miru::crossplatform::Image::Type::TYPE_2D;
-						textureCI.format = linear ? miru::crossplatform::Image::Format::R32G32B32A32_SFLOAT : miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
-						textureCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-						textureCI.usage = miru::crossplatform::Image::UsageBit(0);
+						textureCI.type = Image::Type::TYPE_2D;
+						textureCI.format = linear ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::R8G8B8A8_UNORM;
+						textureCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+						textureCI.usage = Image::UsageBit(0);
 						textureCI.generateMipMaps = true;
-						textureCI.gammaSpace = linear ? graphics::GammaSpace::LINEAR : graphics::GammaSpace::SRGB;
-						texture = CreateRef<graphics::Texture>(&textureCI);
+						textureCI.gammaSpace = linear ? GammaSpace::LINEAR : GammaSpace::SRGB;
+						texture = CreateRef<Texture>(&textureCI);
 					}
 				}
 			}
@@ -129,27 +134,27 @@ void gear::ui::componentui::DrawMaterialUI(Ref<objects::Material>& material, UIC
 					std::string filepath = (char*)payload->Data;
 					if (std::filesystem::exists(filepath))
 					{
-						core::AssetFile assetFile(filepath);
+						AssetFile assetFile(filepath);
 						material->LoadFromAssetFile(assetFile);
 					}
 				}
 			}
 			if (ImGui::Button("Open"))
 			{
-				std::string filepath = core::AssetFile::FileDialog_Open();
+				std::string filepath = AssetFile::FileDialog_Open();
 				if (!filepath.empty())
 				{
-					core::AssetFile assetFile(filepath);
+					AssetFile assetFile(filepath);
 					material->LoadFromAssetFile(assetFile);
 				}
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Save"))
 			{
-				std::string filepath = core::AssetFile::FileDialog_Save();
+				std::string filepath = AssetFile::FileDialog_Save();
 				if (!filepath.empty())
 				{
-					core::AssetFile assetFile(filepath);
+					AssetFile assetFile(filepath);
 					material->SaveToAssetFile(assetFile);
 					assetFile.Save();
 				}
@@ -159,7 +164,7 @@ void gear::ui::componentui::DrawMaterialUI(Ref<objects::Material>& material, UIC
 	}
 }
 
-void gear::ui::componentui::DrawRenderPipelineUI(gear::graphics::RenderPipeline* renderPipeline)
+void gear::ui::componentui::DrawRenderPipelineUI(RenderPipeline* renderPipeline)
 {
 	if (DrawTreeNode("Render Pipeline", false))
 	{
@@ -197,7 +202,7 @@ void gear::ui::componentui::DrawRenderPipelineUI(gear::graphics::RenderPipeline*
 
 					if (DrawTreeNode("Recompile Arguments", false, (void*)id++))
 					{
-						miru::crossplatform::Shader::CompileArguments& RA = shaderCI.recompileArguments;
+						Shader::CompileArguments& RA = shaderCI.recompileArguments;
 
 						DrawInputText("HLSL Filepath", RA.hlslFilepath);
 						DrawInputText("Output Directory", RA.outputDirectory);

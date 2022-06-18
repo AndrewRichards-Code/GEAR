@@ -1,41 +1,38 @@
 #pragma once
-
 #include "gear_core_common.h"
-#include "AudioInterfaces.h"
-#include "Objects/Transform.h"
+#include "Audio/AudioInterfaces.h"
 
-namespace gear 
+namespace gear
 {
-namespace audio 
-{
-	class GEAR_API AudioListener
+	namespace audio
 	{
-	public:
-		struct CreateInfo
+		class GEAR_API AudioListener
 		{
-			AudioListenerInterface::API				audioAPI;
-			AudioListenerInterface::EndPointDevice	endPointDevice;
+		public:
+			struct CreateInfo
+			{
+				AudioListenerInterface::API				audioAPI;
+				AudioListenerInterface::EndPointDevice	endPointDevice;
+			};
+
+		private:
+			CreateInfo m_CI;
+
+			Ref<AudioListenerInterface> m_ALI;
+			AudioListenerInterface::CreateInfo m_ALICI;
+
+			float m_ListenerPosition[3];
+			float m_ListenerVelocity[3];
+			float m_ListenerOrientation[6];
+
+		public:
+			AudioListener(CreateInfo* pCreateInfo);
+			~AudioListener();
+
+			const CreateInfo& GetCreateInfo() { return m_CI; }
+			const Ref<AudioListenerInterface>& GetAudioListenerInterface() { return m_ALI; }
+
+			//void UpdateListener(const objects::Transform& transform);
 		};
-
-	private:
-		CreateInfo m_CI;
-		
-		Ref<AudioListenerInterface> m_ALI;
-		AudioListenerInterface::CreateInfo m_ALICI;
-
-		float m_ListenerPosition[3];
-		float m_ListenerVelocity[3];
-		float m_ListenerOrientation[6];
-
-	public:
-		AudioListener(CreateInfo* pCreateInfo);
-		~AudioListener();
-
-		const CreateInfo& GetCreateInfo() { return m_CI; }
-		const Ref<AudioListenerInterface>& GetAudioListenerInterface() { return m_ALI; }
-
-		//void UpdateListener(const objects::Transform& transform);
-	};
+	}
 }
-}
-

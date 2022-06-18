@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "AudioSource.h"
+#include "Audio/AudioSource.h"
 
 using namespace gear;
 using namespace audio;

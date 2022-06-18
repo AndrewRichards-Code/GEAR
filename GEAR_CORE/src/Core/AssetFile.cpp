@@ -1,8 +1,7 @@
 #include "gear_core_common.h"
-#include "AssetFile.h"
-#include "JsonFileHelper.h"
-#include "FileDialog.h"
-#include "Graphics/Window.h"
+#include "Core/AssetFile.h"
+#include "Core/JsonFileHelper.h"
+#include "Core/FileDialog.h"
 
 using namespace gear;
 using namespace core;

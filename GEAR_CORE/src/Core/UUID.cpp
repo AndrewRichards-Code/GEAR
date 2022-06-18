@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "UUID.h"
+#include "Core/UUID.h"
 #include <random>
 
 static std::random_device s_RandomDevice;

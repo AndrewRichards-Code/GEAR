@@ -1,16 +1,17 @@
 #include "gear_core_common.h"
-#include "STBI/stb_image.h"
-#include "Window.h"
+#include "Graphics/Window.h"
 
 #include "ARC/src/StringConversion.h"
-#include "directx12/D3D12Context.h"
-#include "vulkan/VKContext.h"
+#include "STBI/stb_image.h"
+
+#include "MIRU/MIRU_CORE/src/d3d12/D3D12Context.h"
+#include "MIRU/MIRU_CORE/src/vulkan/VKContext.h"
 
 using namespace gear;
 using namespace graphics;
 
 using namespace miru;
-using namespace miru::crossplatform;
+using namespace base;
 
 Window::Window(CreateInfo* pCreateInfo)
 {
@@ -256,12 +257,12 @@ bool Window::Init()
 #else
 	m_ContextCI.debugValidationLayers = false;
 #endif
-	m_ContextCI.extensions = Context::ExtensionsBit::SHADER_VIEWPORT_INDEX_LAYER;
+	m_ContextCI.extensions = Context::ExtensionsBit::DYNAMIC_RENDERING | Context::ExtensionsBit::SHADER_VIEWPORT_INDEX_LAYER;
 	m_ContextCI.deviceDebugName = "GEAR_CORE_Context";
 	m_Context = Context::Create(&m_ContextCI);
 
 	m_SwapchainCI.debugName = "GEAR_CORE_Swapchain";
-	m_SwapchainCI.pContext = m_Context;
+	m_SwapchainCI.context = m_Context;
 	m_SwapchainCI.pWindow = glfwGetWin32Window(m_Window);
 	m_SwapchainCI.width = m_CurrentWidth;
 	m_SwapchainCI.height = m_CurrentHeight;
@@ -277,62 +278,7 @@ bool Window::Init()
 	m_RenderSurfaceCI.samples = m_CI.samples;
 	m_RenderSurface = CreateRef<RenderSurface>(&m_RenderSurfaceCI);
 
-	m_SwapchainRenderPassCI.debugName = "GEAR_CORE_Window: SwapchainRenderPass";
-	m_SwapchainRenderPassCI.device = m_Context->GetDevice();
-	m_SwapchainRenderPassCI.attachments =
-	{
-		{	//0 - Swapchain
-			m_Swapchain->m_SwapchainImages[0]->GetCreateInfo().format,
-			Image::SampleCountBit::SAMPLE_COUNT_1_BIT,
-			RenderPass::AttachmentLoadOp::CLEAR,
-			RenderPass::AttachmentStoreOp::STORE,
-			RenderPass::AttachmentLoadOp::DONT_CARE,
-			RenderPass::AttachmentStoreOp::DONT_CARE,
-			Image::Layout::UNKNOWN,
-			Image::Layout::PRESENT_SRC
-		}
-	};
-	m_SwapchainRenderPassCI.subpassDescriptions =
-	{
-		{
-			PipelineType::GRAPHICS,
-			{},
-			{{0, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL}},
-			{},
-			{},
-			{}
-		}
-	};
-	m_SwapchainRenderPassCI.subpassDependencies =
-	{
-		{
-			MIRU_SUBPASS_EXTERNAL,
-			0,
-			PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT,
-			(Barrier::AccessBit)0,
-			Barrier::AccessBit::COLOUR_ATTACHMENT_READ_BIT | Barrier::AccessBit::COLOUR_ATTACHMENT_WRITE_BIT,
-			DependencyBit::NONE_BIT
-		}
-	};
-	m_SwapchainRenderPass = RenderPass::Create(&m_SwapchainRenderPassCI);
-	CreateSwapchainFramebuffer();
-
 	return true;
-}
-
-void Window::CreateSwapchainFramebuffer()
-{
-	for (size_t i = 0; i < _countof(m_SwapchainFramebuffers); i++)
-	{
-		m_SwapchainFramebufferCI.debugName = "GEAR_CORE_Window: SwapchainFramebuffer";
-		m_SwapchainFramebufferCI.device = m_Context->GetDevice();
-		m_SwapchainFramebufferCI.renderPass = m_SwapchainRenderPass;
-		m_SwapchainFramebufferCI.attachments = { m_Swapchain->m_SwapchainImageViews[i] };
-		m_SwapchainFramebufferCI.width = m_CurrentWidth;
-		m_SwapchainFramebufferCI.height = m_CurrentHeight;
-		m_SwapchainFramebufferCI.layers = 1;
-		m_SwapchainFramebuffers[i] = Framebuffer::Create(&m_SwapchainFramebufferCI);
-	}
 }
 
 void Window::window_resize(GLFWwindow* window, int width, int height)
@@ -356,7 +302,6 @@ void Window::window_resize(GLFWwindow* window, int width, int height)
 
 	win->m_Swapchain->Resize(win->m_CurrentWidth, win->m_CurrentHeight);
 	win->m_RenderSurface->Resize(win->m_CurrentWidth, win->m_CurrentHeight);
-	win->CreateSwapchainFramebuffer();
 }
 
 void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)

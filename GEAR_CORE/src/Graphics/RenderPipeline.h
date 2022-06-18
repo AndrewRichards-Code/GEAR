@@ -4,74 +4,72 @@
 
 namespace gear 
 {
-namespace graphics 
-{
-	class GEAR_API RenderPipeline
+	namespace graphics
 	{
-	public:
-		enum class ShaderBuildMode : uint32_t
+		class GEAR_API RenderPipeline
 		{
-			NEVER,
-			INCREMENTAL,
-			ALWAYS
+		public:
+			enum class ShaderBuildMode : uint32_t
+			{
+				NEVER,
+				INCREMENTAL,
+				ALWAYS
+			};
+
+			struct CreateInfo
+			{
+				std::string											debugName;
+				std::vector<miru::base::Shader::CreateInfo>			shaderCreateInfo;
+				miru::base::Pipeline::InputAssemblyState			inputAssemblyState;
+				miru::base::Pipeline::ViewportState					viewportState;
+				miru::base::Pipeline::RasterisationState			rasterisationState;
+				miru::base::Pipeline::MultisampleState				multisampleState;
+				miru::base::Pipeline::DepthStencilState				depthStencilState;
+				miru::base::Pipeline::ColourBlendState				colourBlendState;
+				miru::base::Pipeline::DynamicRenderingCreateInfo	dynamicRendering;
+			};
+			struct LoadInfo
+			{
+				void* device;
+				std::string								filepath;
+				miru::base::Image::SampleCountBit		samples;
+				std::vector<miru::base::Image::Format>	colourAttachmentFormats;
+				miru::base::Image::Format				depthAttachmentFormat;
+			};
+			typedef std::vector<std::vector<miru::base::Shader::ResourceBindingDescription>> ResourceBindingDescriptions;
+
+		private:
+			void* m_Device;
+			miru::base::PipelineRef m_Pipeline;
+			miru::base::Pipeline::CreateInfo m_PipelineCI;
+
+			std::vector<miru::base::DescriptorSetLayoutRef> m_DescSetLayouts;
+			std::vector<miru::base::DescriptorSetLayout::CreateInfo> m_DescSetLayoutCIs;
+
+			std::vector<miru::base::ShaderRef> m_Shaders;
+			ResourceBindingDescriptions m_RBDs;
+
+			static ShaderBuildMode s_ShaderBuildMode;
+
+		public:
+			CreateInfo m_CI;
+
+		public:
+			RenderPipeline(CreateInfo* pCreateInfo);
+			RenderPipeline(LoadInfo* pLoadInfo);
+			~RenderPipeline();
+
+			const CreateInfo& GetCreateInfo() { return m_CI; }
+
+			void FinalisePipline();
+			void RecompileShaders();
+			void Rebuild();
+
+			inline static void SetShaderBuildMode(ShaderBuildMode buildMode) { s_ShaderBuildMode = buildMode; }
+
+			inline const miru::base::PipelineRef& GetPipeline() const { return m_Pipeline; };
+			inline const std::vector<miru::base::DescriptorSetLayoutRef>& GetDescriptorSetLayouts() { return m_DescSetLayouts; };
+			inline const ResourceBindingDescriptions& GetRBDs() { return m_RBDs; };
 		};
-
-		struct CreateInfo
-		{
-			std::string												debugName;
-			std::vector<miru::crossplatform::Shader::CreateInfo>	shaderCreateInfo;
-			miru::crossplatform::Pipeline::InputAssemblyState		inputAssemblyState;
-			miru::crossplatform::Pipeline::ViewportState			viewportState;
-			miru::crossplatform::Pipeline::RasterisationState		rasterisationState;
-			miru::crossplatform::Pipeline::MultisampleState			multisampleState;
-			miru::crossplatform::Pipeline::DepthStencilState		depthStencilState;
-			miru::crossplatform::Pipeline::ColourBlendState			colourBlendState;
-			Ref<miru::crossplatform::RenderPass>					renderPass;
-			uint32_t												subpassIndex;
-		};
-		struct LoadInfo
-		{
-			void*										device;
-			std::string									filepath;
-			float										viewportWidth;
-			float										viewportHeight;
-			miru::crossplatform::Image::SampleCountBit	samples;
-			Ref<miru::crossplatform::RenderPass>		renderPass;
-			uint32_t									subpassIndex;
-		};
-
-	private:
-		void* m_Device;
-		Ref<miru::crossplatform::Pipeline> m_Pipeline;
-		miru::crossplatform::Pipeline::CreateInfo m_PipelineCI;
-
-		std::vector<Ref<miru::crossplatform::DescriptorSetLayout>> m_DescSetLayouts;
-		std::vector<miru::crossplatform::DescriptorSetLayout::CreateInfo> m_DescSetLayoutCIs;
-
-		std::vector<Ref<miru::crossplatform::Shader>> m_Shaders;
-		std::vector<std::vector<miru::crossplatform::Shader::ResourceBindingDescription>> m_RBDs;
-
-		static ShaderBuildMode s_ShaderBuildMode;
-
-	public:
-		CreateInfo m_CI;
-
-	public:
-		RenderPipeline(CreateInfo* pCreateInfo);
-		RenderPipeline(LoadInfo* pLoadInfo);
-		~RenderPipeline();
-
-		const CreateInfo& GetCreateInfo() { return m_CI; }
-
-		void FinalisePipline();
-		void RecompileShaders();
-		void Rebuild();
-
-		inline static void SetShaderBuildMode(ShaderBuildMode buildMode) { s_ShaderBuildMode = buildMode; }
-
-		inline const Ref<miru::crossplatform::Pipeline>& GetPipeline() const { return m_Pipeline; };
-		inline const std::vector<Ref<miru::crossplatform::DescriptorSetLayout>>& GetDescriptorSetLayouts() { return m_DescSetLayouts; };
-		inline const std::vector<std::vector<miru::crossplatform::Shader::ResourceBindingDescription>>& GetRBDs() { return m_RBDs; };
-	};
-}
+	}
 }

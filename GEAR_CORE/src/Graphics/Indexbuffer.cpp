@@ -1,12 +1,12 @@
 #include "gear_core_common.h"
-#include "Indexbuffer.h"
+#include "Graphics/Indexbuffer.h"
 #include "Graphics/AllocatorManager.h"
 
 using namespace gear;
 using namespace graphics;
 
 using namespace miru;
-using namespace miru::crossplatform;
+using namespace base;
 
 Indexbuffer::Indexbuffer(CreateInfo* pCreateInfo)
 {
@@ -27,7 +27,7 @@ Indexbuffer::Indexbuffer(CreateInfo* pCreateInfo)
 	m_IndexBufferUploadCI.usage = Buffer::UsageBit::TRANSFER_SRC_BIT;
 	m_IndexBufferUploadCI.size = m_CI.size;
 	m_IndexBufferUploadCI.data = m_CI.data;
-	m_IndexBufferUploadCI.pAllocator = AllocatorManager::GetCPUAllocator();
+	m_IndexBufferUploadCI.allocator = AllocatorManager::GetCPUAllocator();
 	m_IndexBufferUpload = Buffer::Create(&m_IndexBufferUploadCI);
 
 	m_IndexBufferCI.debugName = "GEAR_CORE_IndexBuffer: " + m_CI.debugName;
@@ -35,13 +35,22 @@ Indexbuffer::Indexbuffer(CreateInfo* pCreateInfo)
 	m_IndexBufferCI.usage = Buffer::UsageBit::TRANSFER_DST_BIT | Buffer::UsageBit::INDEX_BIT;
 	m_IndexBufferCI.size = m_CI.size;
 	m_IndexBufferCI.data = nullptr;
-	m_IndexBufferCI.pAllocator =AllocatorManager::GetGPUAllocator();
+	m_IndexBufferCI.allocator = AllocatorManager::GetGPUAllocator();
 	m_IndexBuffer = Buffer::Create(&m_IndexBufferCI);
 
-	m_IndexBufferViewCI.debugName = "GEAR_CORE_VertexBufferView: " + m_CI.debugName;
+	m_IndexBufferViewUploadCI.debugName = "GEAR_CORE_IndexBufferViewUpload: " + m_CI.debugName;
+	m_IndexBufferViewUploadCI.device = m_CI.device;
+	m_IndexBufferViewUploadCI.type = BufferView::Type::INDEX;
+	m_IndexBufferViewUploadCI.buffer = m_IndexBufferUpload;
+	m_IndexBufferViewUploadCI.offset = 0;
+	m_IndexBufferViewUploadCI.size = m_CI.size;
+	m_IndexBufferViewUploadCI.stride = m_CI.stride;
+	m_IndexBufferViewUpload = BufferView::Create(&m_IndexBufferViewUploadCI);
+
+	m_IndexBufferViewCI.debugName = "GEAR_CORE_IndexBufferView: " + m_CI.debugName;
 	m_IndexBufferViewCI.device = m_CI.device;
 	m_IndexBufferViewCI.type = BufferView::Type::INDEX;
-	m_IndexBufferViewCI.pBuffer = m_IndexBuffer;
+	m_IndexBufferViewCI.buffer = m_IndexBuffer;
 	m_IndexBufferViewCI.offset = 0;
 	m_IndexBufferViewCI.size = m_CI.size;
 	m_IndexBufferViewCI.stride = m_CI.stride;
@@ -50,13 +59,4 @@ Indexbuffer::Indexbuffer(CreateInfo* pCreateInfo)
 
 Indexbuffer::~Indexbuffer()
 {
-}
-
-void Indexbuffer::Upload(const Ref<CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex, bool force)
-{
-	if (!m_Upload || force)
-	{
-		cmdBuffer->CopyBuffer(cmdBufferIndex, m_IndexBufferUpload, m_IndexBuffer, { {0, 0, m_CI.size } });
-		m_Upload = true;
-	}
 }

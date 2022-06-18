@@ -2,6 +2,7 @@
 
 #include "Components.h"
 #include "Scene.h"
+#include "Graphics/Window.h"
 
 using namespace gear;
 using namespace scene;

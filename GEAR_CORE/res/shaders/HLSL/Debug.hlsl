@@ -169,11 +169,17 @@ PS_OUT ps_show_depth_image2D(PS_IN IN)
 {
 	PS_OUT OUT;
 	float2 textureCoords = (IN.v_NDCPosition.xy / 2.0) + float2(0.5, 0.5);
+	
+	//Texture flipped between D3D12 and Vulkan. Usually handled by our projection matrix, but we don't have one here.
+	//https://github.com/gpuweb/gpuweb/issues/416
+#if MIRU_D3D12
+	textureCoords.y = 1.0 - textureCoords.y; 
+#endif
+	
 	float depth = LineariseDepth(image2D_ImageCIS.Sample(image2D_SamplerCIS, textureCoords).x, debugCamera.proj);
 	OUT.colour = float4(depth, depth, depth, 1.0);
 	return OUT;
 }
-
 
 VS_OUT vs_show_depth_cubemap(VS_IN IN)
 {

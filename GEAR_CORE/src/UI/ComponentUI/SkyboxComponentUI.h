@@ -1,14 +1,17 @@
 #pragma once
-#include "ComponentUI.h"
 
 namespace gear
 {
-namespace ui
-{
-namespace componentui
-{
-	void DrawSkyboxComponentUI(gear::scene::Entity entity);
-	void AddSkyboxComponent(gear::scene::Entity entity, void* device);
-}
-}
+	namespace scene
+	{
+		class Entity;
+	}
+	namespace ui
+	{
+		namespace componentui
+		{
+			void DrawSkyboxComponentUI(scene::Entity entity);
+			void AddSkyboxComponent(scene::Entity entity, void* device);
+		}
+	}
 }

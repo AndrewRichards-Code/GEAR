@@ -1,5 +1,5 @@
 #pragma once
-#include "Application.h"
+#include "Core/Application.h"
 
 #ifndef GEAR_EXTERNAL_ENTRY_POINT
 

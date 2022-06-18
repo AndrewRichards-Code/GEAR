@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "NativeScriptManager.h"
+#include "Scene/NativeScriptManager.h"
 
 using namespace arc;
 using namespace gear;

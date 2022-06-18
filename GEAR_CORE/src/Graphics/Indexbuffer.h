@@ -2,44 +2,45 @@
 
 #include "gear_core_common.h"
 
-namespace gear 
+namespace gear
 {
-namespace graphics 
-{
-	class GEAR_API Indexbuffer
+	namespace graphics
 	{
-	public:
-		struct CreateInfo
+		class GEAR_API Indexbuffer
 		{
-			std::string debugName;
-			void*		device;
-			void*		data;
-			size_t		size;
-			size_t		stride;
+		public:
+			struct CreateInfo
+			{
+				std::string debugName;
+				void* device;
+				void* data;
+				size_t		size;
+				size_t		stride;
+			};
+
+		private:
+			miru::base::BufferRef m_IndexBuffer, m_IndexBufferUpload;
+			miru::base::Buffer::CreateInfo m_IndexBufferCI, m_IndexBufferUploadCI;
+
+			miru::base::BufferViewRef m_IndexBufferView, m_IndexBufferViewUpload;
+			miru::base::BufferView::CreateInfo m_IndexBufferViewCI, m_IndexBufferViewUploadCI;
+
+			CreateInfo m_CI;
+
+			uint32_t m_Count;
+
+		public:
+			Indexbuffer(CreateInfo* pCreateInfo);
+			~Indexbuffer();
+
+			const CreateInfo& GetCreateInfo() { return m_CI; }
+
+			inline miru::base::BufferRef GetCPUBuffer() { return m_IndexBufferUpload; };
+			inline miru::base::BufferRef GetGPUBuffer() { return m_IndexBuffer; };
+			inline miru::base::BufferViewRef GetCPUBufferView() { return m_IndexBufferViewUpload; };
+			inline miru::base::BufferViewRef GetGPUBufferView() { return m_IndexBufferView; };
+
+			inline uint32_t GetCount() const { return m_Count; }
 		};
-
-	private:
-		Ref<miru::crossplatform::Buffer> m_IndexBuffer, m_IndexBufferUpload;
-		miru::crossplatform::Buffer::CreateInfo m_IndexBufferCI, m_IndexBufferUploadCI;
-
-		Ref<miru::crossplatform::BufferView> m_IndexBufferView;
-		miru::crossplatform::BufferView::CreateInfo m_IndexBufferViewCI;
-
-		CreateInfo m_CI;
-
-		uint32_t m_Count;
-		bool m_Upload = false;
-
-	public:
-		Indexbuffer(CreateInfo* pCreateInfo);
-		~Indexbuffer();
-
-		const CreateInfo& GetCreateInfo() { return m_CI; }
-
-		void Upload(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
-		inline Ref<miru::crossplatform::BufferView> GetIndexBufferView() { return m_IndexBufferView; };
-
-		inline uint32_t GetCount() const { return m_Count; }
-	};
-}
+	}
 }

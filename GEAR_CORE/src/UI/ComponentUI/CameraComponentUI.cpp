@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
-#include "CameraComponentUI.h"
+#include "UI/ComponentUI/CameraComponentUI.h"
+#include "UI/ComponentUI/ComponentUI.h"
 #include "Scene/Entity.h"
 
 using namespace gear;
@@ -11,7 +12,7 @@ using namespace componentui;
 
 using namespace mars;
 
-void gear::ui::componentui::DrawCameraComponentUI(gear::scene::Entity entity, float screenRatio)
+void gear::ui::componentui::DrawCameraComponentUI(Entity entity, float screenRatio)
 {
 	Ref<Camera>& camera = entity.GetComponent<CameraComponent>().camera;
 	Camera::CreateInfo& CI = camera->m_CI;
@@ -52,7 +53,7 @@ void gear::ui::componentui::DrawCameraComponentUI(gear::scene::Entity entity, fl
 	camera->Update(entity.GetComponent<TransformComponent>());
 }
 
-void gear::ui::componentui::AddCameraComponent(gear::scene::Entity entity, float screenRatio, void* device)
+void gear::ui::componentui::AddCameraComponent(Entity entity, float screenRatio, void* device)
 {
 	if (!entity.HasComponent<CameraComponent>())
 	{

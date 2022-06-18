@@ -1,12 +1,15 @@
 #include "gear_core_common.h"
-#include "Mesh.h"
-#include "Material.h"
+#include "Objects/Mesh.h"
+#include "Objects/Material.h"
+#include "Graphics/Vertexbuffer.h"
+#include "Graphics/Indexbuffer.h"
 
 using namespace gear;
 using namespace objects;
+using namespace utils;
 
 using namespace miru;
-using namespace miru::crossplatform;
+using namespace base;
 
 Mesh::Mesh(CreateInfo* pCreateInfo)
 {

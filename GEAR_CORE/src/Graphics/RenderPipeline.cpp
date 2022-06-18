@@ -1,16 +1,17 @@
 #include "gear_core_common.h"
-#include "RenderPipeline.h"
-#include "Utils/ModelLoader.h"
+
+#include "Graphics/RenderPipeline.h"
 
 #include "Core/EnumStringMaps.h"
 #include "Core/JsonFileHelper.h"
+#include "Utils/ModelLoader.h"
 
 using namespace gear;
 using namespace core;
 using namespace graphics;
 
 using namespace miru;
-using namespace miru::crossplatform;
+using namespace base;
 
 RenderPipeline::ShaderBuildMode RenderPipeline::s_ShaderBuildMode = RenderPipeline::ShaderBuildMode::INCREMENTAL;
 
@@ -114,8 +115,8 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 		rpCI.viewportState.viewports.push_back({
 			viewport["x"],
 			viewport["y"],
-			(viewport["width"].is_string() && std::string(viewport["width"]).compare("VIEWPORT_WIDTH") == 0) ? pLoadInfo->viewportWidth : viewport["width"],
-			(viewport["height"].is_string() && std::string(viewport["height"]).compare("VIEWPORT_HEIGHT") == 0) ? pLoadInfo->viewportHeight : viewport["height"],
+			viewport["width"],
+			viewport["height"],
 			viewport["minDepth"],
 			viewport["maxDepth"]
 			});
@@ -128,8 +129,8 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 				scissor["y"]
 			},
 			{
-				(uint32_t)((scissor["width"].is_string() && std::string(scissor["width"]).compare("VIEWPORT_WIDTH") == 0) ? pLoadInfo->viewportWidth : scissor["width"]),
-				(uint32_t)((scissor["height"].is_string() && std::string(scissor["height"]).compare("VIEWPORT_HEIGHT") == 0) ? pLoadInfo->viewportHeight : scissor["height"]),
+				scissor["width"],
+				scissor["height"]
 			}
 			});
 	}
@@ -216,9 +217,8 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 	rpCI.colourBlendState.blendConstants[2] = colourBlendState["blendConstants"][2];
 	rpCI.colourBlendState.blendConstants[3] = colourBlendState["blendConstants"][3];
 
-	//RenderPass
-	rpCI.renderPass = pLoadInfo->renderPass;
-	rpCI.subpassIndex = pLoadInfo->subpassIndex;
+	//Dynamic Rendering
+	rpCI.dynamicRendering = { 0, pLoadInfo->colourAttachmentFormats, pLoadInfo->depthAttachmentFormat, Image::Format::UNKNOWN };
 
 	*this = graphics::RenderPipeline(&rpCI);
 }
@@ -285,12 +285,13 @@ void RenderPipeline::FinalisePipline()
 		m_PipelineCI.multisampleState = m_CI.multisampleState;
 		m_PipelineCI.depthStencilState = m_CI.depthStencilState;
 		m_PipelineCI.colourBlendState = m_CI.colourBlendState;
-		m_PipelineCI.dynamicStates = {};
+		m_PipelineCI.dynamicStates = { { DynamicState::VIEWPORT, DynamicState::SCISSOR } };
 		m_PipelineCI.layout.descriptorSetLayouts = m_DescSetLayouts;
 		m_PipelineCI.layout.pushConstantRanges = {};
-		m_PipelineCI.renderPass = m_CI.renderPass;
-		m_PipelineCI.subpassIndex = m_CI.subpassIndex;
-		m_Pipeline = crossplatform::Pipeline::Create(&m_PipelineCI);
+		m_PipelineCI.renderPass = nullptr;
+		m_PipelineCI.subpassIndex = 0;
+		m_PipelineCI.dynamicRendering = m_CI.dynamicRendering;
+		m_Pipeline = Pipeline::Create(&m_PipelineCI);
 	}
 	else
 	{
@@ -324,7 +325,7 @@ void RenderPipeline::FinalisePipline()
 		m_PipelineCI.shaders = m_Shaders;
 		m_PipelineCI.layout.descriptorSetLayouts = m_DescSetLayouts;
 		m_PipelineCI.layout.pushConstantRanges = {};
-		m_Pipeline = crossplatform::Pipeline::Create(&m_PipelineCI);
+		m_Pipeline = Pipeline::Create(&m_PipelineCI);
 	}
 }
 
@@ -364,7 +365,6 @@ void RenderPipeline::Rebuild()
 	m_PipelineCI.multisampleState = m_CI.multisampleState;
 	m_PipelineCI.depthStencilState = m_CI.depthStencilState;
 	m_PipelineCI.colourBlendState = m_CI.colourBlendState;
-	m_PipelineCI.renderPass = m_CI.renderPass;
-	m_PipelineCI.subpassIndex = m_CI.subpassIndex;
-	m_Pipeline = crossplatform::Pipeline::Create(&m_PipelineCI);
+	m_PipelineCI.dynamicRendering = m_CI.dynamicRendering;
+	m_Pipeline = Pipeline::Create(&m_PipelineCI);
 }

@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
-#include "TransformComponentUI.h"
+#include "UI/ComponentUI/TransformComponentUI.h"
+#include "UI/ComponentUI/ComponentUI.h"
 #include "Scene/Entity.h"
 
 using namespace gear;
@@ -12,7 +13,7 @@ using namespace componentui;
 
 using namespace mars;
 
-void gear::ui::componentui::DrawTransformComponentUI(gear::scene::Entity entity)
+void gear::ui::componentui::DrawTransformComponentUI(Entity entity)
 {
 	objects::Transform& transform = entity.GetComponent<TransformComponent>().transform;
 

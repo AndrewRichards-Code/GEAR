@@ -1,17 +1,19 @@
 #include "gear_core_common.h"
-#include "ModelComponentUI.h"
-#include "UI/Panels/Panels.h"
-#include "UI/Panels/MaterialPanel.h"
+#include "UI/ComponentUI/ModelComponentUI.h"
+#include "UI/ComponentUI/ComponentUI.h"
+#include "UI/UIContext.h"
 
-#include "Core/AssetFile.h"
+#include "Animation/Animation.h"
 #include "Graphics/Renderer.h"
 #include "Scene/Entity.h"
 
 using namespace gear;
 using namespace scene;
 using namespace objects;
+using namespace graphics;
 
 using namespace ui;
+using namespace panels;
 using namespace componentui;
 
 using namespace mars;
@@ -27,13 +29,13 @@ void gear::ui::componentui::DrawModelComponentUI(Entity entity, UIContext* uiCon
 	DrawFloat("Scaling Y", CI.materialTextureScaling.y, 0.0f);
 	DrawInputText("Render Pipeline", CI.renderPipelineName);
 
-	Ref<panels::ViewportPanel> viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<panels::ViewportPanel>()[0];
+	Ref<ViewportPanel> viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
 	if (viewportPanel)
 	{
-		Ref<graphics::Renderer>& renderer = viewportPanel->GetCreateInfo().renderer;
-		graphics::RenderPipeline* renderPipeline = renderer->GetRenderPipelines()[CI.renderPipelineName].get();
+		Ref<Renderer>& renderer = viewportPanel->GetCreateInfo().renderer;
+		RenderPipeline* renderPipeline = renderer->GetRenderPipelines()[CI.renderPipelineName].get();
 
-		Ref<panels::MaterialPanel> materialPanel = UIContext::GetUIContext()->GetEditorPanelsByType<panels::MaterialPanel>()[0];
+		Ref<MaterialPanel> materialPanel = UIContext::GetUIContext()->GetEditorPanelsByType<MaterialPanel>()[0];
 		if (materialPanel)
 		{
 			materialPanel->SetSelectedRenderPipline(renderPipeline);
@@ -98,7 +100,7 @@ void gear::ui::componentui::DrawMeshUI(Ref<Mesh>& mesh, UIContext* uiContext)
 					DrawStaticText("Name", subMesh.meshName);
 					if (ImGui::Button("View Material"))
 					{
-						Ref<panels::MaterialPanel> materialPanel = UIContext::GetUIContext()->GetEditorPanelsByType<panels::MaterialPanel>()[0];
+						Ref<MaterialPanel> materialPanel = UIContext::GetUIContext()->GetEditorPanelsByType<MaterialPanel>()[0];
 						if (materialPanel)
 						{
 							materialPanel->SetSelectedMaterial(mesh->GetMaterial(i));

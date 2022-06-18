@@ -1,16 +1,10 @@
 #include "gear_core_common.h"
-#include "PropertiesPanel.h"
-#include "Panels.h"
-
-#include "UI/ComponentUI/NameComponentUI.h"
-#include "UI/ComponentUI/TransformComponentUI.h"
-#include "UI/ComponentUI/CameraComponentUI.h"
-#include "UI/ComponentUI/LightComponentUI.h"
-#include "UI/ComponentUI/SkyboxComponentUI.h"
-#include "UI/ComponentUI/ModelComponentUI.h"
+#include "UI/Panels/PropertiesPanel.h"
+#include "UI/Panels/Panels.h"
+#include "UI/UIContext.h"
+#include "UI/ComponentUI/ComponentUIs.h"
 
 #include "Graphics/Renderer.h"
-#include "Scene/Entity.h"
 
 using namespace gear;
 using namespace scene;

@@ -1,22 +1,24 @@
 #include "gear_core_common.h"
-#include "Renderer.h"
+
+#include "Graphics/Renderer.h"
+#include "Graphics/DebugRender.h"
+#include "Graphics/Window.h"
+
+#include "Objects/Probe.h"
+#include "UI/UIContext.h"
 #include "ARC/src/StringConversion.h"
-#include "DebugRender.h"
-#include "ImageProcessing.h"
-#include "PostProcessing.h"
-#include "FrameGraph.h"
-#include "Window.h"
 
 using namespace gear;
 using namespace graphics;
 using namespace objects;
 
 using namespace miru;
-using namespace miru::crossplatform;
+using namespace base;
 
 std::map<std::string, Ref<RenderPipeline>> Renderer::s_RenderPipelines;
 
 Renderer::Renderer(CreateInfo* pCreateInfo)
+	:renderGraph(pCreateInfo->window->GetContext(), pCreateInfo->window->GetSwapchain()->GetCreateInfo().swapchainCount)
 {
 	m_CI = *pCreateInfo;
 
@@ -24,47 +26,6 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 	m_Device = m_Context->GetDevice();
 	m_SwapchainImageCount = m_CI.window->GetSwapchain()->GetCreateInfo().swapchainCount;
 
-	//CmdPools and CmdBuffers
-	for (uint32_t i = 0; i < (uint32_t(CommandPool::QueueType::TRANSFER) + uint32_t(1)); i++)
-	{
-		CommandPool::QueueType type = CommandPool::QueueType(i);
-		uint32_t cmdBufferCount;
-		std::string name;
-		switch (type)
-		{
-		case CommandPool::QueueType::GRAPHICS:
-			name = "Graphics";
-			cmdBufferCount = m_SwapchainImageCount + 2; // Extra for upload assistant for the transfer queue.
-			break;
-		case CommandPool::QueueType::COMPUTE:
-			name = "Compute";
-			cmdBufferCount = 1;
-			break;
-		case CommandPool::QueueType::TRANSFER:
-			name = "Transfer";
-			cmdBufferCount = 1;
-			break;
-		default:
-			break;
-		}
-
-		auto& cmd = m_CommandPoolAndBuffers[type];
-		cmd.cmdPoolCI.debugName = "GEAR_CORE_CommandPool_Renderer_" + name;
-		cmd.cmdPoolCI.pContext = m_Context;
-		cmd.cmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
-		cmd.cmdPoolCI.queueType = type;
-		cmd.cmdPool = CommandPool::Create(&cmd.cmdPoolCI);
-
-		cmd.cmdBufferCI.debugName = "GEAR_CORE_CommandBuffer_Renderer_" + name;
-		cmd.cmdBufferCI.pCommandPool = cmd.cmdPool;
-		cmd.cmdBufferCI.level = CommandBuffer::Level::PRIMARY;
-		cmd.cmdBufferCI.commandBufferCount = cmdBufferCount;
-		cmd.cmdBuffer = CommandBuffer::Create(&cmd.cmdBufferCI);
-	}
-
-	//Descriptor Pool and Sets
-	m_DescPoolAndSets.resize(m_SwapchainImageCount);
-	
 	//Present Synchronisation
 	for (uint32_t i = 0; i < m_SwapchainImageCount; i++)
 	{
@@ -106,10 +67,10 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 	texCI.data.depth = 1;
 	texCI.mipLevels = 1;
 	texCI.arrayLayers = 1;
-	texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
-	texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
-	texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-	texCI.usage = miru::crossplatform::Image::UsageBit(0);
+	texCI.type = miru::base::Image::Type::TYPE_2D;
+	texCI.format = miru::base::Image::Format::R8G8B8A8_UNORM;
+	texCI.samples = miru::base::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	texCI.usage = miru::base::Image::UsageBit(0);
 	texCI.generateMipMaps = false;
 	texCI.gammaSpace = GammaSpace::LINEAR;
 	m_Black2DTexture = CreateRef<Texture>(&texCI);
@@ -126,7 +87,7 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 	texCI.data.data = dataBlackCube;
 	texCI.data.size = 24;
 	texCI.arrayLayers = 6;
-	texCI.type = miru::crossplatform::Image::Type::TYPE_CUBE;
+	texCI.type = miru::base::Image::Type::TYPE_CUBE;
 	m_BlackCubeTexture = CreateRef<Texture>(&texCI);
 }
 
@@ -135,9 +96,6 @@ Renderer::~Renderer()
 	m_Context->DeviceWaitIdle();
 
 	UninitialiseRenderPipelines();
-
-	ImageProcessing::ClearState();
-	PostProcessing::ClearState();
 }
 
 void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface)
@@ -146,51 +104,48 @@ void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface
 		return;
 
 	DebugRender::Initialise(m_Device);
+
+	const Image::Format& swapchainFormat = m_CI.window->GetSwapchain()->m_SwapchainImages[0]->GetCreateInfo().format;
 	
 	//Filepath, RenderPass Index, Subpass Index
-	std::vector<std::tuple<std::string, size_t, uint32_t>> filepaths =
+	std::vector<std::tuple<std::string, std::vector<Image::Format>, Image::Format>> filepaths =
 	{
-		{ "res/pipelines/PBROpaque.grpf",				0, 0 },
-		{ "res/pipelines/Cube.grpf",					0, 0 },
-		{ "res/pipelines/Text.grpf",					1, 0 },
-		{ "res/pipelines/HDR.grpf",						1, 0 },
-		{ "res/pipelines/DebugCoordinateAxes.grpf",		1, 0 },
-		{ "res/pipelines/DebugCopy.grpf",				2, 0 },
-		{ "res/pipelines/DebugShowDepth.grpf",			3, 0 },
-		{ "res/pipelines/DebugShowDepthCubemap.grpf",	3, 0 },
-	};
-
-	Ref<RenderPass> renderPasses[4] =
-	{
-			renderSurface->GetMainRenderPass(),
-			renderSurface->GetHDRRenderPass(),
-			m_CI.window->GetSwapchainRenderPass(),
-			DebugRender::GetDefaultRenderPass()
+		{ "res/pipelines/PBROpaque.grpf",				{ RenderSurface::HDRFormat },	RenderSurface::DepthFormat },
+		{ "res/pipelines/Cube.grpf",					{ RenderSurface::HDRFormat },	RenderSurface::DepthFormat },
+		{ "res/pipelines/Text.grpf",					{ RenderSurface::SRGBFormat },	Image::Format::UNKNOWN },
+		{ "res/pipelines/HDR.grpf",						{ RenderSurface::SRGBFormat },	Image::Format::UNKNOWN },
+		{ "res/pipelines/DebugCoordinateAxes.grpf",		{ RenderSurface::SRGBFormat },	Image::Format::UNKNOWN },
+		{ "res/pipelines/DebugCopy.grpf",				{ swapchainFormat },			Image::Format::UNKNOWN},
+		{ "res/pipelines/DebugShowDepth.grpf",			{ RenderSurface::SRGBFormat },	Image::Format::UNKNOWN },
+		{ "res/pipelines/DebugShowDepthCubemap.grpf",	{ RenderSurface::SRGBFormat },	Image::Format::UNKNOWN },
+		{ "res/pipelines/Mipmap.grpf",					{},								Image::Format::UNKNOWN },
+		{ "res/pipelines/MipmapArray.grpf",				{},								Image::Format::UNKNOWN },
+		{ "res/pipelines/EquirectangularToCube.grpf",	{},								Image::Format::UNKNOWN },
+		{ "res/pipelines/DiffuseIrradiance.grpf",		{},								Image::Format::UNKNOWN },
+		{ "res/pipelines/SpecularIrradiance.grpf",		{},								Image::Format::UNKNOWN },
+		{ "res/pipelines/SpecularBRDF_LUT.grpf",		{},								Image::Format::UNKNOWN },
+		{ "res/pipelines/BloomPrefilter.grpf",			{},								Image::Format::UNKNOWN },
+		{ "res/pipelines/BloomDownsample.grpf",			{},								Image::Format::UNKNOWN },
+		{ "res/pipelines/BloomUpsample.grpf",			{},								Image::Format::UNKNOWN },
 	};
 
 	RenderPipeline::LoadInfo renderPipelineLI;
 	for (auto& filepath : filepaths)
 	{
+		auto& [filename, colourFormats, depthFormat] = filepath;
+
 		renderPipelineLI.device = m_Device;
-		renderPipelineLI.filepath = filepath._Myfirst._Val;
-		renderPipelineLI.viewportWidth = static_cast<float>(renderSurface->GetWidth());
-		renderPipelineLI.viewportHeight = static_cast<float>(renderSurface->GetHeight());
+		renderPipelineLI.filepath = filename;
 		renderPipelineLI.samples = renderSurface->GetCreateInfo().samples;
-		renderPipelineLI.renderPass = renderPasses[filepath._Get_rest()._Myfirst._Val];
-		renderPipelineLI.subpassIndex = filepath._Get_rest()._Get_rest()._Myfirst._Val;
+		renderPipelineLI.colourAttachmentFormats = colourFormats;
+		renderPipelineLI.depthAttachmentFormat = depthFormat;
 		Ref<RenderPipeline> renderPipeline = CreateRef<RenderPipeline>(&renderPipelineLI);
 		s_RenderPipelines[renderPipeline->m_CI.debugName] = renderPipeline;
 	}
-
-	ImageProcessing::InitialiseRenderPipelines();
-	PostProcessing::InitialiseRenderPipelines();
 }
 
 void Renderer::UninitialiseRenderPipelines()
 {
-	ImageProcessing::UninitialiseRenderPipelines();
-	PostProcessing::UninitialiseRenderPipelines();
-
 	DebugRender::Uninitialise();
 
 	for (auto& pipeline : s_RenderPipelines)
@@ -228,10 +183,6 @@ void Renderer::SubmitSkybox(const Ref<Skybox>& skybox)
 	{
 		m_Skybox = skybox; 
 	}
-	if (m_Skybox)
-	{
-		SubmitModel(m_Skybox->GetModel());
-	}
 }
 
 void Renderer::SubmitModel(const Ref<Model>& obj)
@@ -260,25 +211,16 @@ void Renderer::AcquireNextImage()
 	m_DrawFences[m_FrameIndex]->Reset();
 }
 
-void Renderer::Upload()
+void Renderer::Draw()
 {
-	//Get Texture Barries and/or Reload Textures
-	std::set<Ref<Texture>> texturesToProcess;
-	std::vector<Ref<Texture>> texturesToGenerateMipmaps;
-
-	std::vector<Ref<Barrier>> textureUnknownToTransferDstBarrier;
-	std::vector<Ref<Barrier>> textureTransferDstToShaderReadOnlyBarrier;
-	std::vector<Ref<Barrier>> textureShaderReadOnlyToTransferDst;
-	std::vector<Ref<Barrier>> textureGeneralToShaderReadOnlyBarrier;
-	std::vector<Ref<Barrier>> textureShaderReadOnlyToGeneralBarrier;
+	renderGraph.Reset();
 
 	std::vector<Ref<objects::Model>> allQueue;
 	allQueue.insert(allQueue.end(), m_ModelQueue.begin(), m_ModelQueue.end());
 	allQueue.insert(allQueue.end(), m_TextQueue.begin(), m_TextQueue.end());
 
-	//Get Renderer Default Textures
-	texturesToProcess.insert(m_Black2DTexture);
-	texturesToProcess.insert(m_BlackCubeTexture);
+	std::set<Ref<Texture>> texturesToProcess;
+	std::vector<Ref<Texture>> texturesToGenerateMipmaps;
 
 	//Get all unique textures
 	for (auto& model : allQueue)
@@ -288,984 +230,855 @@ void Renderer::Upload()
 			for (auto& texture : material->GetTextures())
 			{
 				texturesToProcess.insert(texture.second);
-			}
-		}
-	}
-
-	//Deal with Skybox Textures first
-	if (m_Skybox)
-	{
-		if (!m_Skybox->m_Generated)
-		{
-			auto SkyboxTextureStateUpdate = [&](Ref<Texture> texture)
-			{
-				if (texture->m_ShaderReadable)
+				if (texture.second->m_GenerateMipMaps && !texture.second->m_GeneratedMipMaps)
 				{
-					texture->TransitionSubResources(textureShaderReadOnlyToGeneralBarrier,
-						{ { Barrier::AccessBit::SHADER_READ_BIT, 
-						Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT,
-						Image::Layout::SHADER_READ_ONLY_OPTIMAL, 
-						Image::Layout::GENERAL, 
-						{}, true } });
-					texture->m_ShaderReadable = false;
+					texturesToGenerateMipmaps.push_back(texture.second);
 				}
-				texture->TransitionSubResources(textureGeneralToShaderReadOnlyBarrier,
-					{ { Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT, 
-					Barrier::AccessBit::SHADER_READ_BIT ,
-					Image::Layout::GENERAL,
-					Image::Layout::SHADER_READ_ONLY_OPTIMAL, 
-					{}, true } });
-				texture->m_ShaderReadable = true;
-			};
-			SkyboxTextureStateUpdate(m_Skybox->GetGeneratedSpecularBRDF_LUT());
-			SkyboxTextureStateUpdate(m_Skybox->GetGeneratedSpecularCubemap());
-			SkyboxTextureStateUpdate(m_Skybox->GetGeneratedDiffuseCubemap());
-			SkyboxTextureStateUpdate(m_Skybox->GetGeneratedCubemap());
-			SkyboxTextureStateUpdate(m_Skybox->GetHDRTexture());
-				
-			if (m_Skybox->GetHDRTexture()->m_PreUpload)
-			{
-				m_Skybox->GetHDRTexture()->TransitionSubResources(textureUnknownToTransferDstBarrier,
-					{ { Barrier::AccessBit::NONE_BIT, Barrier::AccessBit::TRANSFER_WRITE_BIT,
-					Image::Layout::UNKNOWN, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
-				m_Skybox->GetHDRTexture()->m_PreUpload = false;
 			}
-			
 		}
-		texturesToProcess.erase(m_Skybox->GetGeneratedSpecularBRDF_LUT());
-		texturesToProcess.erase(m_Skybox->GetGeneratedSpecularCubemap());
-		texturesToProcess.erase(m_Skybox->GetGeneratedDiffuseCubemap());
-		texturesToProcess.erase(m_Skybox->GetGeneratedCubemap());
-		texturesToProcess.erase(m_Skybox->GetHDRTexture());
 	}
+	texturesToProcess.insert(m_Black2DTexture);
+	texturesToProcess.insert(m_BlackCubeTexture);
 
-	//Process them
-	for (auto& texture : texturesToProcess)
+	//Reload textures
+	if (m_ReloadTextures)
 	{
-		if (m_ReloadTextures)
-		{
+		for (auto& texture : texturesToProcess)
 			texture->Reload();
-			texture->m_ShaderReadable = false;
-			texture->TransitionSubResources(textureShaderReadOnlyToTransferDst,
-				{ { Barrier::AccessBit::SHADER_READ_BIT, Barrier::AccessBit::TRANSFER_WRITE_BIT,
-				Image::Layout::SHADER_READ_ONLY_OPTIMAL, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
-		}
-
-		if (texture->m_PreUpload)
-		{
-			texture->TransitionSubResources(textureUnknownToTransferDstBarrier,
-				{ { Barrier::AccessBit::NONE_BIT, Barrier::AccessBit::TRANSFER_WRITE_BIT,
-				Image::Layout::UNKNOWN, Image::Layout::TRANSFER_DST_OPTIMAL, {}, true } });
-			texture->m_PreUpload = false;
-		}
-
-		if (!texture->m_ShaderReadable)
-		{
-			if (texture->m_GenerateMipMaps && !texture->m_Generated)
-			{
-				texturesToGenerateMipmaps.push_back(texture);
-				texture->TransitionSubResources(textureGeneralToShaderReadOnlyBarrier,
-					{ { Barrier::AccessBit::SHADER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT,
-					Image::Layout::GENERAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
-			}
-			else
-			{
-				texture->TransitionSubResources(textureTransferDstToShaderReadOnlyBarrier,
-					{ { Barrier::AccessBit::TRANSFER_WRITE_BIT, Barrier::AccessBit::SHADER_READ_BIT,
-					Image::Layout::TRANSFER_DST_OPTIMAL, Image::Layout::SHADER_READ_ONLY_OPTIMAL, {}, true } });
-			}
-			texture->m_ShaderReadable = true;
-		}
 	}
 	m_ReloadTextures = false;
 
-	bool preTransferGraphicsTask1 = textureShaderReadOnlyToTransferDst.size();
-	bool preTransferGraphicsTask2 = textureShaderReadOnlyToGeneralBarrier.size();
-	bool preUploadTransferTask = textureUnknownToTransferDstBarrier.size();
-
-	bool transferTask = true;
-	bool asyncComputeTask = texturesToGenerateMipmaps.size() || (m_Skybox && !m_Skybox->m_Generated);
-
-	bool postComputeGraphicsTask = textureGeneralToShaderReadOnlyBarrier.size();
-	bool postTransferGraphicsTask = textureTransferDstToShaderReadOnlyBarrier.size();
-
-	Ref<GPUTask> preTransferGraphicsGPUTask1, preTransferGraphicsGPUTask2, preUploadForTextrueTransferGPUTask, uploadTransferGPUTask, postComputeGraphicsGPUTask, postTransferGraphicsGPUTask;
-	Ref<GPUTask> beginAsyncComputeGPUTask, endAsyncComputeGPUTask;
-	std::vector<Ref<GPUTask>> generateMipmapsComputeGPUTasks;
-	std::vector<Ref<GPUTask>> generateSkyboxComputeGPUTasks;
-
-	GPUTask::TransitionResourcesTaskInfo trti;
-
-	//Pre-Transfer Graphics Task
+	//Upload Transfer
+	if (!m_AllCameras.empty() || m_Skybox || !m_Lights.empty() || !allQueue.empty())
 	{
-		trti.srcPipelineStage = PipelineStageBit::FRAGMENT_SHADER_BIT;
-		trti.dstPipelineStage = PipelineStageBit::TRANSFER_BIT;
-		trti.barriers = textureShaderReadOnlyToTransferDst;
-		GPUTask::CreateInfo preTransferGraphicsGPUTaskCI;
-		preTransferGraphicsGPUTaskCI.debugName = "Pre-Transfer - Graphics 1";
-		preTransferGraphicsGPUTaskCI.task = GPUTask::Task::TRANSITION_RESOURCES;
-		preTransferGraphicsGPUTaskCI.pTaskInfo = &trti;
-		preTransferGraphicsGPUTaskCI.srcGPUTasks = {};
-		preTransferGraphicsGPUTaskCI.srcPipelineStages = {};
-		preTransferGraphicsGPUTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::GRAPHICS].cmdBuffer;
-		preTransferGraphicsGPUTaskCI.cmdBufferIndex = 3;
-		preTransferGraphicsGPUTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::RESET_BEGIN;
-		preTransferGraphicsGPUTaskCI.resetCmdBufferReleaseResource = false;
-		preTransferGraphicsGPUTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-		preTransferGraphicsGPUTaskCI.skipTask = !preTransferGraphicsTask1;
-		preTransferGraphicsGPUTask1 = CreateRef<GPUTask>(&preTransferGraphicsGPUTaskCI);
-		preTransferGraphicsGPUTask1->Execute();
+		Ref<TransferPassParameters> uploadPassParameters = CreateRef<TransferPassParameters>();
+		for (const auto& camera : m_AllCameras)
+		{
+			if (camera && camera->GetUpdateGPUFlag())
+			{
+				uploadPassParameters->AddResource(camera->GetCameraUB());
+				uploadPassParameters->AddResource(camera->GetHDRInfoUB());
+				camera->ResetUpdateGPUFlag();
+			}
+		}
+		if (m_Skybox && m_Skybox->GetUpdateGPUFlag())
+		{
+			uploadPassParameters->AddResource(m_Skybox->GetHDRTexture());
+			m_Skybox->ResetUpdateGPUFlag();
+		}
+		for (const auto& light : m_Lights)
+		{
+			if (light && light->GetUpdateGPUFlag())
+			{
+				uploadPassParameters->AddResource(light->GetUB());
+				light->ResetUpdateGPUFlag();
+			}
+		}
+		for (const auto& model : allQueue)
+		{
+			if (model && model->GetUpdateGPUFlag())
+			{
+				for (const auto& vb : model->GetMesh()->GetVertexBuffers())
+					uploadPassParameters->AddResource(vb);
+				for (const auto& ib : model->GetMesh()->GetIndexBuffers())
+					uploadPassParameters->AddResource(ib);
 
-		trti.srcPipelineStage = PipelineStageBit::FRAGMENT_SHADER_BIT;
-		trti.dstPipelineStage = PipelineStageBit::COMPUTE_SHADER_BIT;
-		trti.barriers = textureShaderReadOnlyToGeneralBarrier;
-		preTransferGraphicsGPUTaskCI.debugName = "Pre-Transfer - Graphics 2 ";
-		preTransferGraphicsGPUTaskCI.pTaskInfo = &trti;
-		preTransferGraphicsGPUTaskCI.srcGPUTasks = { preTransferGraphicsGPUTask1 };
-		preTransferGraphicsGPUTaskCI.srcPipelineStages = { PipelineStageBit::TRANSFER_BIT };
-		preTransferGraphicsGPUTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::END_SUBMIT;
-		preTransferGraphicsGPUTaskCI.skipTask = !preTransferGraphicsTask2;
-		preTransferGraphicsGPUTask2 = CreateRef<GPUTask>(&preTransferGraphicsGPUTaskCI);
-		preTransferGraphicsGPUTask2->Execute();
-	}
+				uploadPassParameters->AddResource(model->GetUB());
+				model->ResetUpdateGPUFlag();
 
-	//Pre-Upload Transfer Task
-	{
-		trti.srcPipelineStage = PipelineStageBit::TOP_OF_PIPE_BIT;
-		trti.dstPipelineStage = PipelineStageBit::TRANSFER_BIT;
-		trti.barriers = textureUnknownToTransferDstBarrier;
-		GPUTask::CreateInfo preUploadForTextrueTransferGPUTaskCI;
-		preUploadForTextrueTransferGPUTaskCI.debugName = "Pre-Upload - Transfer";
-		preUploadForTextrueTransferGPUTaskCI.task = GPUTask::Task::TRANSITION_RESOURCES;
-		preUploadForTextrueTransferGPUTaskCI.pTaskInfo = &trti;
-		preUploadForTextrueTransferGPUTaskCI.srcGPUTasks = { preTransferGraphicsGPUTask2 };
-		preUploadForTextrueTransferGPUTaskCI.srcPipelineStages = { PipelineStageBit::TRANSFER_BIT };
-		preUploadForTextrueTransferGPUTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::TRANSFER].cmdBuffer;
-		preUploadForTextrueTransferGPUTaskCI.cmdBufferIndex = 0;
-		preUploadForTextrueTransferGPUTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::RESET_BEGIN;
-		preUploadForTextrueTransferGPUTaskCI.resetCmdBufferReleaseResource = false;
-		preUploadForTextrueTransferGPUTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-		preUploadForTextrueTransferGPUTaskCI.skipTask = !preUploadTransferTask;
-		preUploadForTextrueTransferGPUTask = CreateRef<GPUTask>(&preUploadForTextrueTransferGPUTaskCI);
-		preUploadForTextrueTransferGPUTask->Execute();
-	}
+				for (const auto& material : model->GetMesh()->GetMaterials())
+				{
+					uploadPassParameters->AddResource(material->GetUB());
+					for (const auto& texture : material->GetTextures())
+						uploadPassParameters->AddResource(texture.second);
 
-	//Upload Transfer Task
-	{
-		GPUTask::UploadResourceTaskInfo urti;
-		urti.cameras = m_AllCameras;
-		urti.cameras.push_back(DebugRender::GetCamera());
-		urti.skybox = m_Skybox;
-		urti.lights = m_Lights;
-		urti.models = allQueue;
-		GPUTask::CreateInfo uploadTransferGPUTaskCI;
-		uploadTransferGPUTaskCI.debugName = "Upload - Transfer";
-		uploadTransferGPUTaskCI.task = GPUTask::Task::UPLOAD_RESOURCES;
-		uploadTransferGPUTaskCI.pTaskInfo = &urti;
-		uploadTransferGPUTaskCI.srcGPUTasks = { preUploadForTextrueTransferGPUTask };
-		uploadTransferGPUTaskCI.srcPipelineStages = { (PipelineStageBit)0 };
-		uploadTransferGPUTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::TRANSFER].cmdBuffer;
-		uploadTransferGPUTaskCI.cmdBufferIndex = 0;
-		uploadTransferGPUTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::END_SUBMIT;
-		uploadTransferGPUTaskCI.resetCmdBufferReleaseResource = false;
-		uploadTransferGPUTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-		uploadTransferGPUTaskCI.skipTask = !transferTask;
-		uploadTransferGPUTask = CreateRef<GPUTask>(&uploadTransferGPUTaskCI);
-		uploadTransferGPUTask->Execute();
+					material->ResetUpdateGPUFlag();
+				}
+			}
+		}
+		renderGraph.AddPass("Upload Transfer", uploadPassParameters, CommandPool::QueueType::TRANSFER, nullptr);
 	}
 
 	//Async Compute Task
 	{
-		GPUTask::CreateInfo beginAsyncComputeGPUTaskCI;
-		beginAsyncComputeGPUTaskCI.debugName = "Async Compute Begin";
-		beginAsyncComputeGPUTaskCI.task = GPUTask::Task::NONE;
-		beginAsyncComputeGPUTaskCI.pTaskInfo = nullptr;
-		beginAsyncComputeGPUTaskCI.srcGPUTasks = { uploadTransferGPUTask };
-		beginAsyncComputeGPUTaskCI.srcPipelineStages = { PipelineStageBit::TRANSFER_BIT };
-		beginAsyncComputeGPUTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
-		beginAsyncComputeGPUTaskCI.cmdBufferIndex = 0;
-		beginAsyncComputeGPUTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::RESET_BEGIN;
-		beginAsyncComputeGPUTaskCI.resetCmdBufferReleaseResource = false;
-		beginAsyncComputeGPUTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-		beginAsyncComputeGPUTaskCI.skipTask = !asyncComputeTask;
-		beginAsyncComputeGPUTask = CreateRef<GPUTask>(&beginAsyncComputeGPUTaskCI);
-		beginAsyncComputeGPUTask->Execute();
-
-		for (auto& texture : texturesToGenerateMipmaps)
+		//Generate Mip Maps
+		for (const auto& texture : texturesToGenerateMipmaps)
 		{
-			GPUTask::ImageProcessingFunctionTaskInfo1 ipfti1;
-			ipfti1.pfn = ImageProcessing::GenerateMipMaps;
-			ipfti1.tri1 = { texture, Barrier::AccessBit::TRANSFER_WRITE_BIT, Image::Layout::TRANSFER_DST_OPTIMAL, PipelineStageBit::TRANSFER_BIT };
-			GPUTask::CreateInfo generateMipmapsGPUTaskCI;
-			generateMipmapsGPUTaskCI.debugName = "Generate Mips : " + texture->GetCreateInfo().debugName;
-			generateMipmapsGPUTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_1;
-			generateMipmapsGPUTaskCI.pTaskInfo = &ipfti1;
-			if (generateMipmapsComputeGPUTasks.empty())
-				generateMipmapsGPUTaskCI.srcGPUTasks = { beginAsyncComputeGPUTask };
-			else
-				generateMipmapsGPUTaskCI.srcGPUTasks = { generateMipmapsComputeGPUTasks.back() };
+			const uint32_t& levels = texture->GetCreateInfo().mipLevels;
+			const uint32_t& layers = texture->GetCreateInfo().arrayLayers;
 
-			generateMipmapsGPUTaskCI.srcPipelineStages = { (PipelineStageBit)0 };
-			generateMipmapsGPUTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
-			generateMipmapsGPUTaskCI.cmdBufferIndex = 0;
-			generateMipmapsGPUTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-			generateMipmapsGPUTaskCI.resetCmdBufferReleaseResource = false;
-			generateMipmapsGPUTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-			generateMipmapsGPUTaskCI.skipTask = texture->m_Generated;
-			generateMipmapsComputeGPUTasks.emplace_back(CreateRef<GPUTask>(&generateMipmapsGPUTaskCI));
-			generateMipmapsComputeGPUTasks.back()->Execute();
+			std::vector<Ref<ImageView>> mipImageViews;
+			for (uint32_t i = 0; i < levels; i++)
+				mipImageViews.push_back(renderGraph.CreateImageView(texture->GetImage(), layers > 1 ? Image::Type::TYPE_2D_ARRAY : Image::Type::TYPE_2D, {Image::AspectBit::COLOUR_BIT, i, 1, 0, layers}));
+
+			Ref<RenderPassParameters> generateMipMapsPassParameters;
+			if (layers > 1)
+			{
+				generateMipMapsPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["MipmapArray"], std::vector<size_t>({levels - 1}));
+				for (uint32_t i = 0; i < (levels - 1); i++)
+				{
+					generateMipMapsPassParameters->SetResource("inputImageArray", Resource(mipImageViews[i + 0], Resource::State::SHADER_READ_ONLY), i);
+					generateMipMapsPassParameters->SetResource("outputImageArray", Resource(mipImageViews[i + 1], Resource::State::SHADER_READ_WRITE), i);
+				}
+			}
+			else
+			{
+				generateMipMapsPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["Mipmap"], std::vector<size_t>({ levels - 1 }));
+				for (uint32_t i = 0; i < (levels - 1); i++)
+				{
+					generateMipMapsPassParameters->SetResource("inputImage", Resource(mipImageViews[i + 0], Resource::State::SHADER_READ_ONLY), i);
+					generateMipMapsPassParameters->SetResource("outputImage", Resource(mipImageViews[i + 1], Resource::State::SHADER_READ_WRITE), i);
+				}
+			}
+				
+			renderGraph.AddPass("Generate Mip Maps", generateMipMapsPassParameters, CommandPool::QueueType::COMPUTE,
+				[generateMipMapsPassParameters, levels, layers, texture](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+				{
+					std::vector<Ref<Barrier>> barriers;
+					Barrier::CreateInfo barrierCI;
+
+					for (uint32_t i = 1; i < levels; i++)
+					{
+						barrierCI.type = Barrier::Type::IMAGE;
+						barrierCI.srcAccess = Barrier::AccessBit::SHADER_WRITE_BIT;
+						barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;
+						barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+						barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+						barrierCI.image = texture->GetImage();
+						barrierCI.oldLayout = Image::Layout::GENERAL;
+						barrierCI.newLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL;
+						barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, layers };
+
+						barriers.clear();
+						barriers.emplace_back(Barrier::Create(&barrierCI));
+						cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
+
+						cmdBuffer->BindDescriptorSets(frameIndex, { generateMipMapsPassParameters->GetDescriptorSet(0, (i - 1))}, 0, generateMipMapsPassParameters->GetPipeline());
+						uint32_t width = std::max((texture->GetWidth() >> i) / 8, uint32_t(1));
+						uint32_t height = std::max((texture->GetHeight() >> i) / 8, uint32_t(1));
+						uint32_t depth = layers;
+						cmdBuffer->Dispatch(frameIndex, width, height, depth);
+
+						barrierCI.type = Barrier::Type::IMAGE;
+						barrierCI.srcAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;
+						barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
+						barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+						barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+						barrierCI.image = texture->GetImage();
+						barrierCI.oldLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL;
+						barrierCI.newLayout = Image::Layout::GENERAL;
+						barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, layers };
+
+						barriers.clear();
+						barriers.emplace_back(Barrier::Create(&barrierCI));
+						cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
+					}
+
+					barrierCI.type = Barrier::Type::IMAGE;
+					barrierCI.srcAccess = Barrier::AccessBit::SHADER_WRITE_BIT;
+					barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
+					barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+					barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+					barrierCI.image = texture->GetImage();
+					barrierCI.oldLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_NON_PIXEL_SHADER_READ_ONLY_OPTIMAL : Image::Layout::GENERAL; //D3D12: D3D12_RESOURCE_STATE_COMMON is promoted to D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE after Dispatch() for SRV accesses.
+					barrierCI.newLayout = Image::Layout::GENERAL;
+					barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, levels, 0, layers };
+
+					barriers.clear();
+					barriers.emplace_back(Barrier::Create(&barrierCI));
+					cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
+
+					texture->m_GeneratedMipMaps = true;
+				});
 		}
 
 		if (m_Skybox && !m_Skybox->m_Generated)
 		{
-			GPUTask::ImageProcessingFunctionTaskInfo2 ipfti2;
-			ipfti2.pfn = ImageProcessing::EquirectangularToCube;
-			ipfti2.tri1 = { m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT };
-			ipfti2.tri2 = { m_Skybox->GetHDRTexture(), Barrier::AccessBit::TRANSFER_WRITE_BIT, Image::Layout::TRANSFER_DST_OPTIMAL, PipelineStageBit::TRANSFER_BIT };
-			GPUTask::CreateInfo generateSkyboxTaskCI;
-			generateSkyboxTaskCI.debugName = "EquirectangularToCube : " + m_Skybox->GetHDRTexture()->GetCreateInfo().debugName;
-			generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_2;
-			generateSkyboxTaskCI.pTaskInfo = &ipfti2;
-			if (!generateMipmapsComputeGPUTasks.empty())
-				generateSkyboxTaskCI.srcGPUTasks = { generateMipmapsComputeGPUTasks.back() };
-			else
-				generateSkyboxTaskCI.srcGPUTasks = { beginAsyncComputeGPUTask };
-			generateSkyboxTaskCI.srcPipelineStages = { (PipelineStageBit)0 };
-			generateSkyboxTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
-			generateSkyboxTaskCI.cmdBufferIndex = 0;
-			generateSkyboxTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-			generateSkyboxTaskCI.resetCmdBufferReleaseResource = false;
-			generateSkyboxTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-			generateSkyboxTaskCI.skipTask = m_Skybox->m_Generated;
-			generateSkyboxComputeGPUTasks.emplace_back(CreateRef<GPUTask>(&generateSkyboxTaskCI));
-			generateSkyboxComputeGPUTasks.back()->Execute();
-
-			GPUTask::ImageProcessingFunctionTaskInfo1 ipfti1;
-			ipfti1.pfn = ImageProcessing::GenerateMipMaps;
-			ipfti1.tri1 = { m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT };
-			generateSkyboxTaskCI.debugName = "GenerateMipMaps : " + m_Skybox->GetHDRTexture()->GetCreateInfo().debugName;
-			generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_1;
-			generateSkyboxTaskCI.pTaskInfo = &ipfti1;
-			generateSkyboxTaskCI.srcGPUTasks = { generateSkyboxComputeGPUTasks.back() };
-			generateSkyboxTaskCI.srcPipelineStages = { PipelineStageBit::COMPUTE_SHADER_BIT };
-			generateSkyboxTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
-			generateSkyboxTaskCI.cmdBufferIndex = 0;
-			generateSkyboxTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-			generateSkyboxTaskCI.resetCmdBufferReleaseResource = false;
-			generateSkyboxTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-			generateSkyboxTaskCI.skipTask = m_Skybox->m_Generated;
-			generateSkyboxComputeGPUTasks.emplace_back(CreateRef<GPUTask>(&generateSkyboxTaskCI));
-			generateSkyboxComputeGPUTasks.back()->Execute();
-
-			ipfti2.pfn = ImageProcessing::DiffuseIrradiance;
-			ipfti2.tri1 = { m_Skybox->GetGeneratedDiffuseCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT };
-			ipfti2.tri2 = { m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT };
-			generateSkyboxTaskCI.debugName = "DiffuseIrradiance : " + m_Skybox->GetHDRTexture()->GetCreateInfo().debugName;
-			generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_2;
-			generateSkyboxTaskCI.pTaskInfo = &ipfti2;
-			generateSkyboxTaskCI.srcGPUTasks = { generateSkyboxComputeGPUTasks.back() };
-			generateSkyboxTaskCI.srcPipelineStages = { PipelineStageBit::COMPUTE_SHADER_BIT };
-			generateSkyboxTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
-			generateSkyboxTaskCI.cmdBufferIndex = 0;
-			generateSkyboxTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-			generateSkyboxTaskCI.resetCmdBufferReleaseResource = false;
-			generateSkyboxTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-			generateSkyboxTaskCI.skipTask = m_Skybox->m_Generated;
-			generateSkyboxComputeGPUTasks.emplace_back(CreateRef<GPUTask>(&generateSkyboxTaskCI));
-			generateSkyboxComputeGPUTasks.back()->Execute();
-
-			ipfti2.pfn = ImageProcessing::SpecularIrradiance;
-			ipfti2.tri1 = { m_Skybox->GetGeneratedSpecularCubemap(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT };
-			ipfti2.tri2 = { m_Skybox->GetGeneratedCubemap(), Barrier::AccessBit::SHADER_WRITE_BIT, Image::Layout::GENERAL, PipelineStageBit::COMPUTE_SHADER_BIT };
-			generateSkyboxTaskCI.debugName = "SpecularIrradiance : " + m_Skybox->GetHDRTexture()->GetCreateInfo().debugName;
-			generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_2;
-			generateSkyboxTaskCI.pTaskInfo = &ipfti2;
-			generateSkyboxTaskCI.srcGPUTasks = { generateSkyboxComputeGPUTasks.back() };
-			generateSkyboxTaskCI.srcPipelineStages = { PipelineStageBit::COMPUTE_SHADER_BIT };
-			generateSkyboxTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
-			generateSkyboxTaskCI.cmdBufferIndex = 0;
-			generateSkyboxTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-			generateSkyboxTaskCI.resetCmdBufferReleaseResource = false;
-			generateSkyboxTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-			generateSkyboxTaskCI.skipTask = m_Skybox->m_Generated;
-			generateSkyboxComputeGPUTasks.emplace_back(CreateRef<GPUTask>(&generateSkyboxTaskCI));
-			generateSkyboxComputeGPUTasks.back()->Execute();
-
-			ipfti1.pfn = ImageProcessing::SpecularBRDF_LUT;
-			ipfti1.tri1 = { m_Skybox->GetGeneratedSpecularBRDF_LUT(), Barrier::AccessBit::NONE_BIT, Image::Layout::UNKNOWN, PipelineStageBit::TOP_OF_PIPE_BIT };
-			generateSkyboxTaskCI.debugName = "SpecularBRDF_LUT : " + m_Skybox->GetHDRTexture()->GetCreateInfo().debugName;
-			generateSkyboxTaskCI.task = GPUTask::Task::IMAGE_PROCESSING_FUNCTION_1;
-			generateSkyboxTaskCI.pTaskInfo = &ipfti1;
-			generateSkyboxTaskCI.srcGPUTasks = { generateSkyboxComputeGPUTasks.back() };
-			generateSkyboxTaskCI.srcPipelineStages = { PipelineStageBit::COMPUTE_SHADER_BIT };
-			generateSkyboxTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
-			generateSkyboxTaskCI.cmdBufferIndex = 0;
-			generateSkyboxTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-			generateSkyboxTaskCI.resetCmdBufferReleaseResource = false;
-			generateSkyboxTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-			generateSkyboxTaskCI.skipTask = m_Skybox->m_Generated;
-			generateSkyboxComputeGPUTasks.emplace_back(CreateRef<GPUTask>(&generateSkyboxTaskCI));
-			generateSkyboxComputeGPUTasks.back()->Execute();
-			
-			m_Skybox->m_Generated = true;
-		}
-
-		GPUTask::CreateInfo endAsyncComputeGPUTaskCI;
-		endAsyncComputeGPUTaskCI.debugName = "Async Compute End";
-		endAsyncComputeGPUTaskCI.task = GPUTask::Task::NONE;
-		endAsyncComputeGPUTaskCI.pTaskInfo = nullptr;
-		if (generateMipmapsComputeGPUTasks.empty())
-			endAsyncComputeGPUTaskCI.srcGPUTasks = { beginAsyncComputeGPUTask };
-		else
-			endAsyncComputeGPUTaskCI.srcGPUTasks = { generateMipmapsComputeGPUTasks.back() };
-		for(auto& i : endAsyncComputeGPUTaskCI.srcGPUTasks)
-			endAsyncComputeGPUTaskCI.srcPipelineStages.push_back(PipelineStageBit::COMPUTE_SHADER_BIT);
-		endAsyncComputeGPUTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::COMPUTE].cmdBuffer;
-		endAsyncComputeGPUTaskCI.cmdBufferIndex = 0;
-		endAsyncComputeGPUTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::END_SUBMIT;
-		endAsyncComputeGPUTaskCI.resetCmdBufferReleaseResource = false;
-		endAsyncComputeGPUTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-		endAsyncComputeGPUTaskCI.skipTask = !asyncComputeTask;
-		endAsyncComputeGPUTask = CreateRef<GPUTask>(&endAsyncComputeGPUTaskCI);
-		endAsyncComputeGPUTask->Execute();
-	}
-
-	//Post-Compute Graphics Task
-	{
-		trti.srcPipelineStage = PipelineStageBit::COMPUTE_SHADER_BIT;
-		trti.dstPipelineStage = PipelineStageBit::FRAGMENT_SHADER_BIT;
-		trti.barriers = textureGeneralToShaderReadOnlyBarrier;
-		GPUTask::CreateInfo postComputeGraphicsGPUTaskCI;
-		postComputeGraphicsGPUTaskCI.debugName = "Post-Compute - Graphics";
-		postComputeGraphicsGPUTaskCI.task = GPUTask::Task::TRANSITION_RESOURCES;
-		postComputeGraphicsGPUTaskCI.pTaskInfo = &trti;
-		postComputeGraphicsGPUTaskCI.srcGPUTasks = { endAsyncComputeGPUTask };
-		postComputeGraphicsGPUTaskCI.srcPipelineStages = { PipelineStageBit::COMPUTE_SHADER_BIT };
-		postComputeGraphicsGPUTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::GRAPHICS].cmdBuffer;
-		postComputeGraphicsGPUTaskCI.cmdBufferIndex = 2;
-		postComputeGraphicsGPUTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::RESET_BEGIN;
-		postComputeGraphicsGPUTaskCI.resetCmdBufferReleaseResource = false;
-		postComputeGraphicsGPUTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-		postComputeGraphicsGPUTaskCI.skipTask = !postComputeGraphicsTask;
-		postComputeGraphicsGPUTask = CreateRef<GPUTask>(&postComputeGraphicsGPUTaskCI);
-		postComputeGraphicsGPUTask->Execute();
-	}
-
-	//Post-Transfer Graphics CmdBuffer
-	{
-		trti.srcPipelineStage = PipelineStageBit::TRANSFER_BIT;
-		trti.dstPipelineStage = PipelineStageBit::FRAGMENT_SHADER_BIT;
-		trti.barriers = textureTransferDstToShaderReadOnlyBarrier;
-		GPUTask::CreateInfo postTransferGraphicsGPUTaskCI;
-		postTransferGraphicsGPUTaskCI.debugName = "Post-Transfer - Graphics";
-		postTransferGraphicsGPUTaskCI.task = GPUTask::Task::TRANSITION_RESOURCES;
-		postTransferGraphicsGPUTaskCI.pTaskInfo = &trti;
-		postTransferGraphicsGPUTaskCI.srcGPUTasks = { postComputeGraphicsGPUTask };
-		postTransferGraphicsGPUTaskCI.srcPipelineStages = { (PipelineStageBit)0 };
-		postTransferGraphicsGPUTaskCI.cmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::GRAPHICS].cmdBuffer;
-		postTransferGraphicsGPUTaskCI.cmdBufferIndex = 2;
-		postTransferGraphicsGPUTaskCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::END_SUBMIT;
-		postTransferGraphicsGPUTaskCI.resetCmdBufferReleaseResource = false;
-		postTransferGraphicsGPUTaskCI.beginCmdBufferUsage = CommandBuffer::UsageBit::ONE_TIME_SUBMIT;
-		postTransferGraphicsGPUTaskCI.skipTask = !postTransferGraphicsTask;
-		postTransferGraphicsGPUTask = CreateRef<GPUTask>(&postTransferGraphicsGPUTaskCI);
-		postTransferGraphicsGPUTask->Execute();
-	}
-
-	//Wait for all Task Fences
-	preTransferGraphicsGPUTask2->GetFence()->Wait();
-	uploadTransferGPUTask->GetFence()->Wait();
-	endAsyncComputeGPUTask->GetFence()->Wait();
-	postTransferGraphicsGPUTask->GetFence()->Wait();
-
-	ImageProcessing::ClearImageViewsAndDescriptorSets();
-}
-
-void Renderer::BuildDescriptorSetandPools()
-{
-	DescriptorPoolAndSets& descPoolAndSets = m_DescPoolAndSets[m_FrameIndex];
-	std::string indexString = std::to_string(m_FrameIndex);
-
-	//Desriptor Pool
-	std::map<DescriptorType, uint32_t> poolSizesMap;
-	size_t m_RenderQueueMaterialCount = 0;
-	auto AddToPoolSizeMap = [&](const std::vector<std::vector<Shader::ResourceBindingDescription>>& rbds, uint32_t materialCount = 1) -> void
-	{
-		uint32_t set = 0;
-		uint32_t binding = 0;
-		for (auto& set_rbds : rbds)
-		{
-			for (auto& binding_rbds : set_rbds)
+			//Skybox: Equirectangular To Cube
 			{
-				uint32_t& descCount = poolSizesMap[binding_rbds.type];
-				descCount += (binding_rbds.descriptorCount * (set == 2 ? static_cast<uint32_t>(materialCount) : 1));
-				binding++;
-			}
-			set++;
-		}
-	};
-	std::vector<Ref<ObjectViewInterface>> viewObjects;
-	for (auto& camera : m_AllCameras)
-		viewObjects.push_back(ref_cast<ObjectViewInterface>(camera));
-	for (auto& light : m_Lights)
-		viewObjects.push_back(ref_cast<ObjectViewInterface>(light->GetProbe()));
+				Ref<ImageView> generatedCubemap_2DArrayView = renderGraph.CreateImageView(m_Skybox->GetGeneratedCubemap()->GetImage(), Image::Type::TYPE_2D_ARRAY, { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 6 });
+				Ref<RenderPassParameters> equirectangularToCubePassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["EquirectangularToCube"]);
+				equirectangularToCubePassParameters->SetResource("equirectangularImage", Resource(m_Skybox->GetHDRTexture(), DescriptorType::COMBINED_IMAGE_SAMPLER));
+				equirectangularToCubePassParameters->SetResource("cubeImage", Resource(generatedCubemap_2DArrayView, Resource::State::SHADER_READ_WRITE));
 
-	std::vector<Ref<objects::Model>> allQueue;
-	allQueue.insert(allQueue.end(), m_ModelQueue.begin(), m_ModelQueue.end());
-	allQueue.insert(allQueue.end(), m_TextQueue.begin(), m_TextQueue.end());
-	for (auto& model : allQueue)
-	{
-		const Ref<Pipeline>& pipeline = s_RenderPipelines[model->GetPipelineName()]->GetPipeline();
-		const std::vector<std::vector<Shader::ResourceBindingDescription>>& rbds = s_RenderPipelines[model->GetPipelineName()]->GetRBDs();
-		size_t materialCount = model->GetMesh()->GetMaterials().size();
-		m_RenderQueueMaterialCount += materialCount;
-
-		AddToPoolSizeMap(rbds, static_cast<uint32_t>(materialCount));
-	}
-	for (const Ref<Light>& light : m_Lights)
-	{
-		const auto& shadowRenderPipeline = light->GetProbe()->m_ShadowRenderPipeline;
-		const auto& shadowRenderPipelineViewIDStr = light->GetProbe()->GetViewIDString();
-		s_RenderPipelines[shadowRenderPipeline->m_CI.debugName + shadowRenderPipelineViewIDStr] = shadowRenderPipeline;
-		AddToPoolSizeMap(s_RenderPipelines[shadowRenderPipeline->m_CI.debugName + shadowRenderPipelineViewIDStr]->GetRBDs());
-	}
-	AddToPoolSizeMap(s_RenderPipelines["HDR"]->GetRBDs());
-	AddToPoolSizeMap(s_RenderPipelines["DebugCoordinateAxes"]->GetRBDs());
-	AddToPoolSizeMap(s_RenderPipelines["DebugCopy"]->GetRBDs());
-	AddToPoolSizeMap(s_RenderPipelines["DebugShowDepth"]->GetRBDs());
-	AddToPoolSizeMap(s_RenderPipelines["DebugShowDepthCubemap"]->GetRBDs());
-
-	descPoolAndSets.poolCI.debugName = "GEAR_CORE_DescriptorPool_Renderer_" + indexString;
-	descPoolAndSets.poolCI.device = m_Device;
-	for (auto& poolSize : poolSizesMap)
-		descPoolAndSets.poolCI.poolSizes.push_back({ poolSize.first, poolSize.second });
-	descPoolAndSets.poolCI.maxSets = static_cast<uint32_t>((s_RenderPipelines.size() + allQueue.size() + m_RenderQueueMaterialCount) * viewObjects.size());
-	descPoolAndSets.pool = DescriptorPool::Create(&descPoolAndSets.poolCI);
-
-	//Per View Descriptor Set
-	descPoolAndSets.setPerViewPerRenderPipeline.clear();
-	for (auto& view : viewObjects)
-	{
-		for (auto& pipeline : s_RenderPipelines)
-		{
-			const std::vector<Ref<DescriptorSetLayout>>& descriptorSetLayouts = pipeline.second->GetDescriptorSetLayouts();
-			const std::vector<std::vector<Shader::ResourceBindingDescription>> rbds = pipeline.second->GetRBDs();
-
-			if (descriptorSetLayouts.empty() || rbds.empty())
-				continue;
-
-			DescriptorSet::CreateInfo descSetPerViewCI;
-			descSetPerViewCI.debugName = "GEAR_CORE_DescriptorSet_PerView_" + indexString + ": " + pipeline.second->GetPipeline()->GetCreateInfo().debugName + ": " + std::to_string(view->GetViewID());
-			descSetPerViewCI.pDescriptorPool = descPoolAndSets.pool;
-			descSetPerViewCI.pDescriptorSetLayouts = { descriptorSetLayouts[0] };
-			descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second] = DescriptorSet::Create(&descSetPerViewCI);
-
-			for (auto& rbd : rbds[0])
-			{
-				const uint32_t& binding = rbd.binding;
-				const std::string& name = arc::ToUpper(rbd.name);
-				if (rbd.structSize > 0)
-				{
-					if (SetUpdateTypeMap.find(name) == SetUpdateTypeMap.end())
-						continue;
-					if (SetUpdateTypeMap[name] != SetUpdateType::PER_VIEW)
-						continue;
-				}
-
-				if (name.compare("CAMERA") == 0 && m_MainRenderCamera)
-				{
-					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddBuffer(0, binding, { { m_MainRenderCamera->GetCameraUB()->GetBufferView() } });
-				}
-				else if (name.compare("TEXTCAMERA") == 0 && m_TextCamera)
-				{
-					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddBuffer(0, binding, { { m_TextCamera->GetCameraUB()->GetBufferView() } });
-				}
-				else if (name.compare("DEBUGCAMERA") == 0)
-				{
-					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddBuffer(0, binding, { { DebugRender::GetCamera()->GetCameraUB()->GetBufferView()} });
-				}
-				else if (name.compare("LIGHTS") == 0)
-				{
-					const Ref<Uniformbuffer<UniformBufferStructures::Lights>>& lightUB = m_Lights.size() ? m_Lights[0]->GetUB() : m_EmptyLightsUB;
-					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddBuffer(0, binding, { { lightUB->GetBufferView() } });
-				}
-				else if (name.compare("PROBEINFO") == 0 && m_Lights.size()) //TODO: Multiple lights!
-				{
-					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddBuffer(0, binding, { { m_Lights[0]->GetProbe()->GetUB()->GetBufferView()} });
-				}
-
-				else if (name.find("DIFFUSEIRRADIANCE") == 0)
-				{
-					const Ref<Texture>& skyboxTexture = m_Skybox ? m_Skybox->GetGeneratedDiffuseCubemap() : m_BlackCubeTexture;
-					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
-				}
-				else if (name.find("SPECULARIRRADIANCE") == 0)
-				{
-					const Ref<Texture>& skyboxTexture = m_Skybox ? m_Skybox->GetGeneratedSpecularCubemap() : m_BlackCubeTexture;
-					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
-				}
-				else if (name.find("SPECULARBRDF_LUT") == 0)
-				{
-					const Ref<Texture>& skyboxTexture = m_Skybox ? m_Skybox->GetGeneratedSpecularBRDF_LUT() : m_Black2DTexture;
-					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
-				}
-
-				else if (name.compare("HDRINFO") == 0 && m_MainRenderCamera)
-				{
-					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddBuffer(0, binding, { { m_MainRenderCamera->GetHDRInfoUB()->GetBufferView() } });
-				}
-				else if (name.compare("HDRINPUT") == 0 && m_RenderSurface)
-				{
-					const Ref<ImageView>& colourImageView = m_RenderSurface->GetHDRFramebuffers()[0]->GetCreateInfo().attachments[1];
-					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddImage(0, binding, { { nullptr, colourImageView, Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
-				}
-				else if (name.compare("SOURCEIMAGE") == 0 && m_RenderSurface)
-				{
-					const Ref<ImageView>& sourceImageView = m_RenderSurface->GetHDRFramebuffers()[0]->GetCreateInfo().attachments[0];
-					descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddImage(0, binding, { { nullptr, sourceImageView, Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
-				}
-				else if (name.find("CUBEMAP") == 0) //TODO: Multiple lights!
-				{
-					Ref<Probe>& probe = ref_cast<Probe>(view);
-					if (probe && probe->m_DepthTexture && probe->m_CI.directionType == Probe::DirectionType::OMNI)
+				renderGraph.AddPass("Skybox: Equirectangular To Cube", equirectangularToCubePassParameters, CommandPool::QueueType::COMPUTE,
+					[equirectangularToCubePassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 					{
-						const Ref<Texture>& cubemapTexture = probe->m_DepthTexture;
-						descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddImage(0, binding, { { cubemapTexture->GetTextureSampler(), cubemapTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL} });
-					}
-				}
-				else if (name.find("IMAGE2D") == 0) //TODO: Multiple lights!
-				{
-					Ref<Probe>& probe = ref_cast<Probe>(view);
-					if (probe && probe->m_DepthTexture && probe->m_CI.directionType == Probe::DirectionType::MONO)
-					{
-						const Ref<Texture>& image2DTexture = probe->m_DepthTexture;
-						descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->AddImage(0, binding, { { image2DTexture->GetTextureSampler(), image2DTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL} });
-					}
-				}
-				else
-					continue;
+						std::vector<Ref<Barrier>> barriers;
+						Barrier::CreateInfo barrierCI;
+
+						cmdBuffer->BindDescriptorSets(frameIndex, { equirectangularToCubePassParameters->GetDescriptorSet(0) }, 0, equirectangularToCubePassParameters->GetPipeline());
+						uint32_t width = std::max(m_Skybox->GetGeneratedCubemap()->GetWidth() / 32, uint32_t(1));
+						uint32_t height = std::max(m_Skybox->GetGeneratedCubemap()->GetHeight() / 32, uint32_t(1));
+						uint32_t depth = 6;
+						cmdBuffer->Dispatch(frameIndex, width, height, depth);
+
+						barrierCI.type = Barrier::Type::IMAGE;
+						barrierCI.srcAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;;
+						barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
+						barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+						barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+						barrierCI.image = m_Skybox->GetGeneratedCubemap()->GetImage();
+						barrierCI.oldLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL; //D3D12: D3D12_RESOURCE_STATE_COMMON is promoted to D3D12_RESOURCE_STATE_UNORDERED_ACCESS after Dispatch() for UAV accesses.
+						barrierCI.newLayout = Image::Layout::GENERAL;
+						barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 6 };
+
+						barriers.clear();
+						barriers.emplace_back(Barrier::Create(&barrierCI));
+						cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
+					});
 			}
-			descPoolAndSets.setPerViewPerRenderPipeline[view][pipeline.second]->Update();
-		}
-	}
 
-	//Per model Descriptor Sets
-	descPoolAndSets.setPerModel.clear();
-	for (auto& model : allQueue)
-	{
-		const std::vector<Ref<DescriptorSetLayout>>& descriptorSetLayouts = s_RenderPipelines[model->GetPipelineName()]->GetDescriptorSetLayouts();
-		const std::vector<std::vector<Shader::ResourceBindingDescription>> rbds = s_RenderPipelines[model->GetPipelineName()]->GetRBDs();
+			//Skybox: Generate Mip Maps
+			{ 
+				const Ref<Texture>& texture = m_Skybox->GetGeneratedCubemap();
+				const uint32_t& levels = texture->GetCreateInfo().mipLevels;
+				const uint32_t& layers = texture->GetCreateInfo().arrayLayers;
 
-		if (descriptorSetLayouts.empty() || rbds.empty())
-			continue;
+				std::vector<Ref<ImageView>> mipImageViews;
+				for (uint32_t i = 0; i < levels; i++)
+					mipImageViews.push_back(renderGraph.CreateImageView(texture->GetImage(), Image::Type::TYPE_2D_ARRAY, { Image::AspectBit::COLOUR_BIT, i, 1, 0, layers }));
 
-		DescriptorSet::CreateInfo descSetPerModelCI;
-		descSetPerModelCI.debugName = "GEAR_CORE_DescriptorSet_PerModel_" + indexString + ": " + model->GetDebugName();
-		descSetPerModelCI.pDescriptorPool = descPoolAndSets.pool;
-		descSetPerModelCI.pDescriptorSetLayouts = { descriptorSetLayouts[1] };
-		descPoolAndSets.setPerModel[model] = DescriptorSet::Create(&descSetPerModelCI);
-
-		for (auto& rbd : rbds[1])
-		{
-			const uint32_t& binding = rbd.binding;
-			const std::string& name = arc::ToUpper(rbd.name);
-			if (rbd.structSize > 0)
-			{
-				if (SetUpdateTypeMap.find(name) == SetUpdateTypeMap.end())
-					continue;
-				if (SetUpdateTypeMap[name] != SetUpdateType::PER_MODEL)
-					continue;
-
-				if (name.compare("MODEL") == 0)
+				Ref<RenderPassParameters> generateMipMapsPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["MipmapArray"], std::vector<size_t>({ levels - 1 }));
+				for (uint32_t i = 0; i < (levels - 1); i++)
 				{
-					descPoolAndSets.setPerModel[model]->AddBuffer(0, binding, { { model->GetUB()->GetBufferView() } });
-				}
-				else
-					continue;
-			}
-		}
-		descPoolAndSets.setPerModel[model]->Update();
-	}
-
-	//Per material Descriptor Sets
-	descPoolAndSets.setPerMaterial.clear();
-	for (auto& model : allQueue)
-	{
-		const std::vector<Ref<DescriptorSetLayout>>& descriptorSetLayouts = s_RenderPipelines[model->GetPipelineName()]->GetDescriptorSetLayouts();
-		const std::vector<std::vector<Shader::ResourceBindingDescription>> rbds = s_RenderPipelines[model->GetPipelineName()]->GetRBDs();
-		
-		if (descriptorSetLayouts.empty() || rbds.empty())
-			continue;
-
-		for (auto& material : model->GetMesh()->GetMaterials())
-		{
-			DescriptorSet::CreateInfo descSetPerMaterialCI;
-			descSetPerMaterialCI.debugName = "GEAR_CORE_DescriptorSet_PerMaterial_" + indexString + ": " + material->GetDebugName();
-			descSetPerMaterialCI.pDescriptorPool = descPoolAndSets.pool;
-			descSetPerMaterialCI.pDescriptorSetLayouts = { descriptorSetLayouts[2] };
-			descPoolAndSets.setPerMaterial[material] = DescriptorSet::Create(&descSetPerMaterialCI);
-
-			for (auto& rbd : rbds[2])
-			{
-				const uint32_t& binding = rbd.binding;
-				const std::string& name = arc::ToUpper(rbd.name);
-				if (rbd.structSize > 0)
-				{
-					if (SetUpdateTypeMap.find(name) == SetUpdateTypeMap.end())
-						continue;
-					if (SetUpdateTypeMap[name] != SetUpdateType::PER_MATERIAL)
-						continue;
+					generateMipMapsPassParameters->SetResource("inputImageArray", Resource(mipImageViews[i + 0], Resource::State::SHADER_READ_ONLY), i);
+					generateMipMapsPassParameters->SetResource("outputImageArray", Resource(mipImageViews[i + 1], Resource::State::SHADER_READ_WRITE), i);
 				}
 				
-				if (name.find("SKYBOX") == 0)
-				{
-					const Ref<Texture>& skyboxTexture = m_Skybox->GetGeneratedCubemap();
-					descPoolAndSets.setPerMaterial[material]->AddImage(0, binding, { { skyboxTexture->GetTextureSampler(), skyboxTexture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
-				}
+				renderGraph.AddPass("Skybox: Generate Mip Maps", generateMipMapsPassParameters, CommandPool::QueueType::COMPUTE,
+					[generateMipMapsPassParameters, levels, layers, texture](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+					{
+						std::vector<Ref<Barrier>> barriers;
+						Barrier::CreateInfo barrierCI;
 
-				else if (name.find("FONTATLAS") == 0)
-				{
-					const Ref<Texture>& texture = material->GetTextures()[Material::TextureType::ALBEDO];
-					descPoolAndSets.setPerMaterial[material]->AddImage(0, binding, { { texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } });
-				}
+						for (uint32_t i = 1; i < levels; i++)
+						{
+							barrierCI.type = Barrier::Type::IMAGE;
+							barrierCI.srcAccess = Barrier::AccessBit::SHADER_WRITE_BIT;
+							barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;
+							barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+							barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+							barrierCI.image = texture->GetImage();
+							barrierCI.oldLayout = Image::Layout::GENERAL;
+							barrierCI.newLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL;
+							barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, layers };
 
-				else if (name.compare("PBRCONSTANTS") == 0)
-				{
-					descPoolAndSets.setPerMaterial[material]->AddBuffer(0, binding, { { material->GetUB()->GetBufferView() } });
-				}
-				else if (name.find("NORMAL") == 0)
-				{
-					const Ref<Texture>& texture = material->GetTextures()[Material::TextureType::NORMAL];
-					descPoolAndSets.setPerMaterial[material]->AddImage(0, binding, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
-				}
-				else if (name.find("ALBEDO") == 0)
-				{
-					const Ref<Texture>& texture = material->GetTextures()[Material::TextureType::ALBEDO];
-					descPoolAndSets.setPerMaterial[material]->AddImage(0, binding, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
-				}
-				else if (name.find("METALLIC") == 0)
-				{
-					const Ref<Texture>& texture = material->GetTextures()[Material::TextureType::METALLIC];
-					descPoolAndSets.setPerMaterial[material]->AddImage(0, binding, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
-				}
-				else if (name.find("ROUGHNESS") == 0)
-				{
-					const Ref<Texture>& texture = material->GetTextures()[Material::TextureType::ROUGHNESS];
-					descPoolAndSets.setPerMaterial[material]->AddImage(0, binding, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
-				}
-				else if (name.find("AMBIENTOCCLUSION") == 0)
-				{
-					const Ref<Texture>& texture = material->GetTextures()[Material::TextureType::AMBIENT_OCCLUSION];
-					descPoolAndSets.setPerMaterial[material]->AddImage(0, binding, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
-				}
-				else if (name.find("EMISSIVE") == 0)
-				{
-					const Ref<Texture>& texture = material->GetTextures()[Material::TextureType::EMISSIVE];
-					descPoolAndSets.setPerMaterial[material]->AddImage(0, binding, { {texture->GetTextureSampler(), texture->GetTextureImageView(), Image::Layout::SHADER_READ_ONLY_OPTIMAL } }); continue;
-				}
-				else
-					continue;
-			
+							barriers.clear();
+							barriers.emplace_back(Barrier::Create(&barrierCI));
+							cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
+
+							cmdBuffer->BindDescriptorSets(frameIndex, { generateMipMapsPassParameters->GetDescriptorSet(0, (i - 1)) }, 0, generateMipMapsPassParameters->GetPipeline());
+							uint32_t width = std::max((texture->GetWidth() >> i) / 8, uint32_t(1));
+							uint32_t height = std::max((texture->GetHeight() >> i) / 8, uint32_t(1));
+							uint32_t depth = layers;
+							cmdBuffer->Dispatch(frameIndex, width, height, depth);
+
+							barrierCI.type = Barrier::Type::IMAGE;
+							barrierCI.srcAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;
+							barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
+							barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+							barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+							barrierCI.image = texture->GetImage();
+							barrierCI.oldLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL;
+							barrierCI.newLayout = Image::Layout::GENERAL;
+							barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, layers };
+
+							barriers.clear();
+							barriers.emplace_back(Barrier::Create(&barrierCI));
+							cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
+						}
+
+						barrierCI.type = Barrier::Type::IMAGE;
+						barrierCI.srcAccess = Barrier::AccessBit::SHADER_WRITE_BIT;
+						barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
+						barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+						barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+						barrierCI.image = texture->GetImage();
+						barrierCI.oldLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_NON_PIXEL_SHADER_READ_ONLY_OPTIMAL : Image::Layout::GENERAL; //D3D12: D3D12_RESOURCE_STATE_COMMON is promoted to D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE after Dispatch() for SRV accesses.
+						barrierCI.newLayout = Image::Layout::GENERAL;
+						barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, levels, 0, layers };
+
+						barriers.clear();
+						barriers.emplace_back(Barrier::Create(&barrierCI));
+						cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
+
+						texture->m_GeneratedMipMaps = true;
+					});
 			}
-			descPoolAndSets.setPerMaterial[material]->Update();
+			
+			//Skybox: Diffuse Irradiance
+			{
+				Ref<ImageView> generatedDiffuseCubemap_2DArrayView = renderGraph.CreateImageView(m_Skybox->GetGeneratedDiffuseCubemap()->GetImage(), Image::Type::TYPE_2D_ARRAY, { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 6 });
+				Ref<RenderPassParameters> diffuseIrradiancePassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["DiffuseIrradiance"]);
+				diffuseIrradiancePassParameters->SetResource("environment", Resource(m_Skybox->GetGeneratedCubemap(), DescriptorType::COMBINED_IMAGE_SAMPLER));
+				diffuseIrradiancePassParameters->SetResource("diffuseIrradiance", Resource(generatedDiffuseCubemap_2DArrayView, Resource::State::SHADER_READ_WRITE));
+
+				renderGraph.AddPass("Skybox: Diffuse Irradiance", diffuseIrradiancePassParameters, CommandPool::QueueType::COMPUTE,
+					[diffuseIrradiancePassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+					{
+						cmdBuffer->BindDescriptorSets(frameIndex, { diffuseIrradiancePassParameters->GetDescriptorSet(0) }, 0, diffuseIrradiancePassParameters->GetPipeline());
+						uint32_t width = std::max(m_Skybox->GetGeneratedDiffuseCubemap()->GetWidth() / 32, uint32_t(1));
+						uint32_t height = std::max(m_Skybox->GetGeneratedDiffuseCubemap()->GetHeight() / 32, uint32_t(1));
+						uint32_t depth = 6;
+						cmdBuffer->Dispatch(frameIndex, width, height, depth);
+					});
+			}
+
+			//Skybox: Specular Irradiance
+			{
+				const Ref<Texture>& texture = m_Skybox->GetGeneratedSpecularCubemap();
+				const uint32_t& levels = texture->GetCreateInfo().mipLevels;
+
+				std::vector<Ref<ImageView>> generatedSpecularCubemap_2DArrayViews;
+				for (uint32_t i = 0; i < levels; i++)
+					generatedSpecularCubemap_2DArrayViews.push_back(renderGraph.CreateImageView(texture->GetImage(), Image::Type::TYPE_2D_ARRAY, { Image::AspectBit::COLOUR_BIT, i, 1, 0, 6 }));
+
+				float zero[sizeof(UniformBufferStructures::SpecularIrradianceInfo)] = { 0 };
+				Uniformbuffer<UniformBufferStructures::SpecularIrradianceInfo>::CreateInfo ubCI;
+				ubCI.debugName = "GEAR_CORE_Uniformbuffer_SpecularIrradianceInfoUB";
+				ubCI.device = m_Device;
+				ubCI.data = zero;
+
+				std::vector<Ref<Uniformbuffer<UniformBufferStructures::SpecularIrradianceInfo>>> specularIrradianceInfoUBs;
+				specularIrradianceInfoUBs.resize(levels);
+				for (uint32_t i = 0; i < levels; i++)
+				{
+					specularIrradianceInfoUBs[i] = CreateRef<Uniformbuffer<UniformBufferStructures::SpecularIrradianceInfo>>(&ubCI);
+					specularIrradianceInfoUBs[i]->roughness = float(i) / float(levels);
+					specularIrradianceInfoUBs[i]->SubmitData();
+				}
+
+				Ref<RenderPassParameters> specularIrradiancePassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["SpecularIrradiance"], std::vector<size_t>(levels));
+				for (uint32_t i = 0; i < levels; i++)
+				{
+					specularIrradiancePassParameters->SetResource("environment", Resource(m_Skybox->GetGeneratedCubemap(), DescriptorType::COMBINED_IMAGE_SAMPLER), i);
+					specularIrradiancePassParameters->SetResource("diffuseIrradiance", Resource(generatedSpecularCubemap_2DArrayViews[i], Resource::State::SHADER_READ_WRITE), i);
+					specularIrradiancePassParameters->SetResource("specularIrradianceInfo", Resource(specularIrradianceInfoUBs[i]), i);
+				}
+
+				renderGraph.AddPass("Skybox: Specular Irradiance", specularIrradiancePassParameters, CommandPool::QueueType::COMPUTE,
+					[specularIrradiancePassParameters, texture, levels, specularIrradianceInfoUBs, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+					{
+						for (uint32_t i = 0; i < levels; i++)
+						{
+							cmdBuffer->CopyBuffer(frameIndex, specularIrradianceInfoUBs[i]->GetCPUBuffer(), specularIrradianceInfoUBs[i]->GetGPUBuffer(), { {0, 0, specularIrradianceInfoUBs[i]->GetSize()} });
+							if (GraphicsAPI::IsD3D12())
+							{
+								Barrier::CreateInfo bCI;
+								bCI.type = Barrier::Type::BUFFER;
+								bCI.srcAccess = Barrier::AccessBit::TRANSFER_READ_BIT;
+								bCI.dstAccess = Barrier::AccessBit::UNIFORM_READ_BIT;
+								bCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+								bCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+								bCI.buffer = specularIrradianceInfoUBs[i]->GetGPUBuffer();
+								bCI.offset = 0;
+								bCI.size = specularIrradianceInfoUBs[i]->GetSize();
+								Ref<Barrier> b = Barrier::Create(&bCI);
+								cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, { b });
+							};
+
+							cmdBuffer->BindDescriptorSets(frameIndex, { specularIrradiancePassParameters->GetDescriptorSet(0, i) }, 0, specularIrradiancePassParameters->GetPipeline());
+							uint32_t width = std::max((texture->GetWidth() >> i) / 32, uint32_t(1));
+							uint32_t height = std::max((texture->GetHeight() >> i) / 32, uint32_t(1));
+							uint32_t depth = 6;
+							cmdBuffer->Dispatch(frameIndex, width, height, depth);
+						}
+					});
+			}
+
+			//Skybox: Specular BRDF LUT
+			{
+				Ref<RenderPassParameters> specularBRDF_LUT_PassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["SpecularBRDF_LUT"]);
+				specularBRDF_LUT_PassParameters->SetResource("brdf_lut", Resource(m_Skybox->GetGeneratedSpecularBRDF_LUT(), DescriptorType::STORAGE_IMAGE));
+
+				renderGraph.AddPass("Skybox: Specular BRDF LUT", specularBRDF_LUT_PassParameters, CommandPool::QueueType::COMPUTE,
+					[specularBRDF_LUT_PassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+					{
+						cmdBuffer->BindDescriptorSets(frameIndex, { specularBRDF_LUT_PassParameters->GetDescriptorSet(0) }, 0, specularBRDF_LUT_PassParameters->GetPipeline());
+						uint32_t width = std::max(m_Skybox->GetGeneratedSpecularBRDF_LUT()->GetWidth() / 32, uint32_t(1));
+						uint32_t height = std::max(m_Skybox->GetGeneratedSpecularBRDF_LUT()->GetHeight() / 32, uint32_t(1));
+						uint32_t depth = 1;
+						cmdBuffer->Dispatch(frameIndex, width, height, depth);
+					});
+			}
+
+			m_Skybox->m_Generated = true;
 		}
 	}
-}
 
-void Renderer::Draw()
-{
-	Ref<CommandBuffer>& graphicsCmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::GRAPHICS].cmdBuffer;
-
-	//Main Render
-	GPUTask::GraphicsRenderPassBeginTaskInfo graphicsRenderPassBeginTI;
-	graphicsRenderPassBeginTI.framebuffer = m_RenderSurface->GetMainFramebuffers()[m_FrameIndex];
-	graphicsRenderPassBeginTI.clearValues = { {1.0f, 0}, {0.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 0.0f} };
-	GPUTask::CreateInfo beginMainRenderPassCI;
-	beginMainRenderPassCI.debugName = "Main Render Pass";
-	beginMainRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_BEGIN;
-	beginMainRenderPassCI.pTaskInfo = &graphicsRenderPassBeginTI;
-	beginMainRenderPassCI.srcGPUTasks = {};
-	beginMainRenderPassCI.srcPipelineStages = {};
-	beginMainRenderPassCI.cmdBuffer = graphicsCmdBuffer;
-	beginMainRenderPassCI.cmdBufferIndex = m_FrameIndex;
-	beginMainRenderPassCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::RESET_BEGIN;
-	beginMainRenderPassCI.resetCmdBufferReleaseResource = false;
-	beginMainRenderPassCI.beginCmdBufferUsage = CommandBuffer::UsageBit::SIMULTANEOUS;
-	beginMainRenderPassCI.skipTask = false;
-	Ref<GPUTask> beginMainRenderPass = CreateRef<GPUTask>(&beginMainRenderPassCI);
-	beginMainRenderPass->Execute();
-
-	GPUTask::RendererFunctionTaskInfo rendererFunctionTI;
-	rendererFunctionTI.pRenderer = this;
-	rendererFunctionTI.pfn = &Renderer::MainRenderLoop;
-	rendererFunctionTI.pDescPoolAndSets = &(m_DescPoolAndSets[m_FrameIndex]);
-	GPUTask::CreateInfo mainRenderLoopCI;
-	mainRenderLoopCI.debugName = "Main Render Loop";
-	mainRenderLoopCI.task = GPUTask::Task::RENDERER_FUNCTION;
-	mainRenderLoopCI.pTaskInfo = &rendererFunctionTI;
-	mainRenderLoopCI.srcGPUTasks = { beginMainRenderPass };
-	mainRenderLoopCI.srcPipelineStages = { PipelineStageBit(0) };
-	mainRenderLoopCI.cmdBuffer = graphicsCmdBuffer;
-	mainRenderLoopCI.cmdBufferIndex = m_FrameIndex;
-	mainRenderLoopCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	mainRenderLoopCI.skipTask = !m_MainRenderCamera;
-	Ref<GPUTask> mainRenderLoop = CreateRef<GPUTask>(&mainRenderLoopCI);
-	mainRenderLoop->Execute();
-
-	GPUTask::GraphicsRenderPassEndTaskInfo graphicsRenderPassEndTI;
-	GPUTask::CreateInfo endMainRenderPassCI;
-	endMainRenderPassCI.debugName = "Main Render Pass";
-	endMainRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_END;
-	endMainRenderPassCI.pTaskInfo = &graphicsRenderPassEndTI;
-	endMainRenderPassCI.srcGPUTasks = { mainRenderLoop };
-	endMainRenderPassCI.srcPipelineStages = { PipelineStageBit(0) };
-	endMainRenderPassCI.cmdBuffer = graphicsCmdBuffer;
-	endMainRenderPassCI.cmdBufferIndex = m_FrameIndex;
-	endMainRenderPassCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	endMainRenderPassCI.skipTask = false;
-	Ref<GPUTask> endMainRenderPass = CreateRef<GPUTask>(&endMainRenderPassCI);
-	endMainRenderPass->Execute();
-
-	//Shadow Pass Light
-	graphicsCmdBuffer->BeginDebugLabel(m_FrameIndex, "Shadow Render Pass");
-	for (const Ref<Light> light : m_Lights)
+	if (!m_Lights.empty())
 	{
-		graphicsCmdBuffer->BeginDebugLabel(m_FrameIndex, "Depth Render Pass: " + light->m_CI.debugName);
-		graphicsCmdBuffer->BeginRenderPass(m_FrameIndex, light->GetProbe()->m_Framebuffer, { { 1.0f, 0 } });
-		
-		const Ref<graphics::RenderPipeline>& renderPipeline = s_RenderPipelines["Shadow"+light->GetProbe()->GetViewIDString()];
-		const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
-		graphicsCmdBuffer->BindPipeline(m_FrameIndex, pipeline);
-		graphicsCmdBuffer->BindDescriptorSets(m_FrameIndex, { m_DescPoolAndSets[m_FrameIndex].setPerViewPerRenderPipeline.at(light->GetProbe()).at(renderPipeline)}, 0, pipeline);
-
-		for (auto& model : m_ModelQueue)
+		//Shadow Pass
 		{
-			graphicsCmdBuffer->BindDescriptorSets(m_FrameIndex, { m_DescPoolAndSets[m_FrameIndex].setPerModel.at(model) }, 1, pipeline);
+			const Ref<Probe>& probe = m_Lights[0]->GetProbe();
+			bool omni = probe->m_CI.directionType == Probe::DirectionType::OMNI;
+			uint32_t width = probe->m_DepthTexture->GetCreateInfo().data.width;
+			uint32_t height = probe->m_DepthTexture->GetCreateInfo().data.height;
 
+			Ref<RenderPassParameters> shadowPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["Shadow"], std::vector<size_t>({ 1, m_ModelQueue.size() }));
+			shadowPassParameters->SetResource("probeInfo", Resource(probe->GetUB()));
+			size_t modelIndex = 0;
+			for (const auto& model : m_ModelQueue)
+				shadowPassParameters->SetResource("model", Resource(model->GetUB()), (uint32_t)modelIndex++);
+			shadowPassParameters->AddAttachment(0, Resource(probe->m_DepthTexture, Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
+			shadowPassParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height), probe->m_DepthTexture->GetCreateInfo().arrayLayers);
+
+			renderGraph.AddPass("Shadow Pass", shadowPassParameters, CommandPool::QueueType::GRAPHICS,
+				[shadowPassParameters, omni, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+				{
+					cmdBuffer->BindDescriptorSets(frameIndex, { shadowPassParameters->GetDescriptorSet(0) }, 0, shadowPassParameters->GetPipeline());
+					uint32_t modelIndex = 0;
+					for (const auto& model : m_ModelQueue)
+					{
+						cmdBuffer->BindDescriptorSets(frameIndex, { shadowPassParameters->GetDescriptorSet(1, modelIndex++) }, 1, shadowPassParameters->GetPipeline());
+
+						for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
+						{
+							cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[i]->GetGPUBufferView() });
+							cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetGPUBufferView());
+							cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetCount(), omni ? 6 : 1);
+						}
+					}
+				});
+		}
+
+		//Shadow - DebugShowDepth
+		{
+			const Ref<Probe>& probe = m_Lights[0]->GetProbe();
+			if (probe->m_RenderDebugView)
+			{
+				Ref<Texture>& debugShowDepthTexture = probe->m_DebugTexture;
+				if (!debugShowDepthTexture)
+				{
+					Texture::CreateInfo tCI;
+					tCI.debugName = "GEAR_CORE_Texture_Probe_DebugTexture: " + probe->m_CI.debugName;
+					tCI.device = m_Device;
+					tCI.dataType = Texture::DataType::DATA;
+					tCI.data = { nullptr, 0, 0, 0, 0 };
+					tCI.mipLevels = 1;
+					tCI.arrayLayers = 1;
+					tCI.type = Image::Type::TYPE_2D;
+					tCI.format = RenderSurface::SRGBFormat;
+					tCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+					tCI.usage = Image::UsageBit::COLOUR_ATTACHMENT_BIT | Image::UsageBit::SAMPLED_BIT;
+					tCI.generateMipMaps = false;
+					tCI.gammaSpace = GammaSpace::SRGB;
+					debugShowDepthTexture = CreateRef<Texture>(&tCI);
+				}
+				bool omni = probe->m_CI.directionType == Probe::DirectionType::OMNI;
+				uint32_t width = debugShowDepthTexture->GetCreateInfo().data.width;
+				uint32_t height = debugShowDepthTexture->GetCreateInfo().data.height;
+
+				std::string renderPipelineName = omni ? "DebugShowDepthCubemap" : "DebugShowDepth";
+
+				Ref<RenderPassParameters> debugShowDepthParameters = CreateRef<RenderPassParameters>(s_RenderPipelines[renderPipelineName]);
+				debugShowDepthParameters->SetResource("debugCamera", Resource(DebugRender::GetCamera()->GetCameraUB()));
+				debugShowDepthParameters->SetResource(omni ? "cubemap" : "image2D", Resource(probe->m_DepthTexture, DescriptorType::COMBINED_IMAGE_SAMPLER));
+				debugShowDepthParameters->AddAttachment(0, Resource(debugShowDepthTexture, Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 1.0f });
+				debugShowDepthParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height));
+
+				renderGraph.AddPass("Shadow - " + renderPipelineName, debugShowDepthParameters, CommandPool::QueueType::GRAPHICS,
+					[debugShowDepthParameters](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+					{
+						cmdBuffer->BindDescriptorSets(frameIndex, { debugShowDepthParameters->GetDescriptorSet(0) }, 0, debugShowDepthParameters->GetPipeline());
+						cmdBuffer->Draw(frameIndex, 6);
+					});
+			}
+		}
+	}
+
+	//Main Render PBROpaque - Skybox
+	if (m_MainRenderCamera && !m_Lights.empty() && m_Skybox)
+	{
+		uint32_t width = m_RenderSurface->GetWidth();
+		uint32_t height = m_RenderSurface->GetHeight();
+		size_t modelCount = 0;
+		size_t materialCount = 0;
+		for (const auto& model : m_ModelQueue)
+		{
+			modelCount++;
+			materialCount += model->GetMesh()->GetVertexBuffers().size();
+		}
+
+		Ref<RenderPassParameters> mainRenderPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["PBROpaque"], std::vector<size_t>({ 1, modelCount, materialCount }));
+		mainRenderPassParameters->SetResource("camera", Resource(m_MainRenderCamera->GetCameraUB()));
+		mainRenderPassParameters->SetResource("lights", Resource(m_Lights[0]->GetUB()));
+		mainRenderPassParameters->SetResource("diffuseIrradiance", Resource(m_Skybox->GetGeneratedDiffuseCubemap(), DescriptorType::COMBINED_IMAGE_SAMPLER));
+		mainRenderPassParameters->SetResource("specularIrradiance", Resource(m_Skybox->GetGeneratedSpecularCubemap(), DescriptorType::COMBINED_IMAGE_SAMPLER));
+		mainRenderPassParameters->SetResource("specularBRDF_LUT", Resource(m_Skybox->GetGeneratedSpecularBRDF_LUT(), DescriptorType::COMBINED_IMAGE_SAMPLER));
+		uint32_t modelIndex = 0;
+		uint32_t materialIndex = 0;
+		for (const auto& model : m_ModelQueue)
+		{
+			mainRenderPassParameters->SetResource("model", Resource(model->GetUB()), modelIndex++);
 			for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
 			{
-				graphicsCmdBuffer->BindVertexBuffers(m_FrameIndex, { model->GetMesh()->GetVertexBuffers()[i]->GetVertexBufferView() });
-				graphicsCmdBuffer->BindIndexBuffer(m_FrameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetIndexBufferView());
-
-				const uint32_t& instanceCount = light->GetProbe()->m_CI.directionType == Probe::DirectionType::OMNI ? 6 : 1;
-				graphicsCmdBuffer->DrawIndexed(m_FrameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetCount(), instanceCount);
+				const Ref<objects::Material>& material = model->GetMesh()->GetMaterial(i);
+				mainRenderPassParameters->SetResource("pbrConstants", Resource(material->GetUB()), materialIndex);
+				mainRenderPassParameters->SetResource("normal", Resource(material->GetTextures()[Material::TextureType::NORMAL], DescriptorType::COMBINED_IMAGE_SAMPLER), materialIndex);
+				mainRenderPassParameters->SetResource("albedo", Resource(material->GetTextures()[Material::TextureType::ALBEDO], DescriptorType::COMBINED_IMAGE_SAMPLER), materialIndex);
+				mainRenderPassParameters->SetResource("metallic", Resource(material->GetTextures()[Material::TextureType::METALLIC], DescriptorType::COMBINED_IMAGE_SAMPLER), materialIndex);
+				mainRenderPassParameters->SetResource("roughness", Resource(material->GetTextures()[Material::TextureType::ROUGHNESS], DescriptorType::COMBINED_IMAGE_SAMPLER), materialIndex);
+				mainRenderPassParameters->SetResource("ambientOcclusion", Resource(material->GetTextures()[Material::TextureType::AMBIENT_OCCLUSION], DescriptorType::COMBINED_IMAGE_SAMPLER), materialIndex);
+				mainRenderPassParameters->SetResource("emissive", Resource(material->GetTextures()[Material::TextureType::EMISSIVE], DescriptorType::COMBINED_IMAGE_SAMPLER), materialIndex++);
 			}
 		}
-		graphicsCmdBuffer->EndRenderPass(m_FrameIndex);
-		graphicsCmdBuffer->EndDebugLabel(m_FrameIndex);
 
-		//TODO: Should be controlled by the editor
-		if (!light->GetProbe()->m_DebugFramebuffer[m_FrameIndex])
-			light->GetProbe()->m_DebugFramebuffer[m_FrameIndex] = DebugRender::CreateFramebuffer(DebugRender::CreateColourImageView());
-		graphicsCmdBuffer->BeginDebugLabel(m_FrameIndex, "Debug Show Depth: " + light->m_CI.debugName);
-		graphicsCmdBuffer->BeginRenderPass(m_FrameIndex, light->GetProbe()->m_DebugFramebuffer[m_FrameIndex], { {0.0f, 0.0f, 0.0f, 1.0f} });
-		if (light->GetProbe()->m_CI.directionType == Probe::DirectionType::OMNI)
-		{
+		mainRenderPassParameters->AddAttachmentWithResolve(0, Resource(m_RenderSurface->GetMSAAColourImageView(), Resource::State::COLOUR_ATTACHMENT),
+			Resource(m_RenderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
+		mainRenderPassParameters->AddAttachment(0, Resource(m_RenderSurface->GetDepthImageView(), Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
+		mainRenderPassParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height));
 
-			const Ref<graphics::RenderPipeline>& renderPipeline = s_RenderPipelines["DebugShowDepthCubemap"];
-			const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
-			graphicsCmdBuffer->BindPipeline(m_FrameIndex, pipeline);
-			graphicsCmdBuffer->BindDescriptorSets(m_FrameIndex, { m_DescPoolAndSets[m_FrameIndex].setPerViewPerRenderPipeline.at(light->GetProbe()).at(renderPipeline) }, 0, pipeline);
-			graphicsCmdBuffer->Draw(m_FrameIndex, 6);
+		renderGraph.AddPass("Main Render PBROpaque", mainRenderPassParameters, CommandPool::QueueType::GRAPHICS,
+			[mainRenderPassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+			{
+				cmdBuffer->BindDescriptorSets(frameIndex, { mainRenderPassParameters->GetDescriptorSet(0) }, 0, mainRenderPassParameters->GetPipeline());
+				uint32_t modelIndex = 0;
+				for (auto& model : m_ModelQueue)
+				{
+					cmdBuffer->BindDescriptorSets(frameIndex, { mainRenderPassParameters->GetDescriptorSet(1, modelIndex++) }, 1, mainRenderPassParameters->GetPipeline());
+					for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
+					{
+						cmdBuffer->BindDescriptorSets(frameIndex, { mainRenderPassParameters->GetDescriptorSet(2, static_cast<uint32_t>(i)) }, 2, mainRenderPassParameters->GetPipeline());
+						cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[i]->GetGPUBufferView() });
+						cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetGPUBufferView());
+						cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetCount());
+					}
+				}
+			});
 
-		}
-		else
-		{
-			const Ref<graphics::RenderPipeline>& renderPipeline = s_RenderPipelines["DebugShowDepth"];
-			const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
-			graphicsCmdBuffer->BindPipeline(m_FrameIndex, pipeline);
-			graphicsCmdBuffer->BindDescriptorSets(m_FrameIndex, { m_DescPoolAndSets[m_FrameIndex].setPerViewPerRenderPipeline.at(light->GetProbe()).at(renderPipeline) }, 0, pipeline);
-			graphicsCmdBuffer->Draw(m_FrameIndex, 6);
-		}
-		graphicsCmdBuffer->EndRenderPass(m_FrameIndex);
-		graphicsCmdBuffer->EndDebugLabel(m_FrameIndex);
+		Ref<RenderPassParameters> skyboxPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["Cube"]);
+		skyboxPassParameters->SetResource("camera", Resource(m_MainRenderCamera->GetCameraUB()));
+		skyboxPassParameters->SetResource("model", Resource(m_Skybox->GetModel()->GetUB()));
+		skyboxPassParameters->SetResource("skybox", Resource(m_Skybox->GetGeneratedCubemap(), Resource::State::SHADER_READ_ONLY));
+		skyboxPassParameters->AddAttachmentWithResolve(0, Resource(m_RenderSurface->GetMSAAColourImageView(), Resource::State::COLOUR_ATTACHMENT),
+			Resource(m_RenderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
+		skyboxPassParameters->AddAttachment(0, Resource(m_RenderSurface->GetDepthImageView(), Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
+		skyboxPassParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height));
+
+		renderGraph.AddPass("Main Render Skybox", skyboxPassParameters, CommandPool::QueueType::GRAPHICS,
+			[skyboxPassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+			{
+				const Ref<Model>& model = m_Skybox->GetModel();
+				cmdBuffer->BindDescriptorSets(frameIndex, { skyboxPassParameters->GetDescriptorSet(0), skyboxPassParameters->GetDescriptorSet(1), skyboxPassParameters->GetDescriptorSet(2) }, 0, skyboxPassParameters->GetPipeline());
+				cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[0]->GetGPUBufferView() });
+				cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[0]->GetGPUBufferView());
+				cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[0]->GetCount());
+			});
 	}
-	graphicsCmdBuffer->EndDebugLabel(m_FrameIndex);
 
-	//Post Processing Compute shaders
-	GPUTask::CreateInfo postProcessingBeginCI;
-	postProcessingBeginCI.debugName = "PostProcessing";
-	postProcessingBeginCI.task = GPUTask::Task::DEBUG_LABEL_BEGIN;
-	postProcessingBeginCI.pTaskInfo = nullptr;
-	postProcessingBeginCI.srcGPUTasks = { endMainRenderPass };
-	postProcessingBeginCI.srcPipelineStages = { PipelineStageBit(0) };
-	postProcessingBeginCI.cmdBuffer = graphicsCmdBuffer;
-	postProcessingBeginCI.cmdBufferIndex = m_FrameIndex;
-	postProcessingBeginCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	postProcessingBeginCI.skipTask = false;
-	Ref<GPUTask> postProcessingBegin = CreateRef<GPUTask>(&postProcessingBeginCI);
-	postProcessingBegin->Execute();
+	//Post Processing Bloom Prefilter - Downsample - Upsample
+	if (m_MainRenderCamera)
+	{
+		//Prefilter
+		const ImageViewRef& colourImageView = m_RenderSurface->GetColourImageView();
+		const ImageRef& colourImage = colourImageView->GetCreateInfo().image;
 
-	GPUTask::PostProcessingFunctionTaskInfo ppfti;
-	ppfti.pfn = PostProcessing::Bloom;
-	ppfti.frameIndex = m_FrameIndex;
-	const Ref<Image>& colourInputImage = graphicsRenderPassBeginTI.framebuffer->GetCreateInfo().attachments.back()->GetCreateInfo().pImage;
-	ppfti.iri = { colourInputImage, Barrier::AccessBit::COLOUR_ATTACHMENT_WRITE_BIT, Image::Layout::COLOUR_ATTACHMENT_OPTIMAL, PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT };
-	GPUTask::CreateInfo postProcessingBloomCI;
-	postProcessingBloomCI.debugName = "Bloom";
-	postProcessingBloomCI.task = GPUTask::Task::POST_PROCESSING_FUNCTION;
-	postProcessingBloomCI.pTaskInfo = &ppfti;
-	postProcessingBloomCI.srcGPUTasks = { postProcessingBegin };
-	postProcessingBloomCI.srcPipelineStages = {};
-	postProcessingBloomCI.cmdBuffer = graphicsCmdBuffer;
-	postProcessingBloomCI.cmdBufferIndex = m_FrameIndex;
-	postProcessingBloomCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	postProcessingBloomCI.skipTask = !m_MainRenderCamera;
-	Ref<GPUTask> postProcessingBloom = CreateRef<GPUTask>(&postProcessingBloomCI);
-	postProcessingBloom->Execute();
+		uint32_t width = colourImage->GetCreateInfo().width;
+		uint32_t height = colourImage->GetCreateInfo().height;
+		uint32_t minSize = std::min(colourImage->GetCreateInfo().width, colourImage->GetCreateInfo().height);
+		uint32_t levels = std::max(static_cast<uint32_t>(log2(static_cast<double>(minSize / 8))), uint32_t(1));
+		
+		ImageRef prefilterOutputImage = renderGraph.CreateImage({ Image::Type::TYPE_2D, Image::Format::R16G16B16A16_SFLOAT, width, height, 1, levels, 1, Image::SampleCountBit::SAMPLE_COUNT_1_BIT, RenderGraph::ImageDesc::UsageBit::SHADER_READ_WRITE }, "Bloom_Prefilter_Output");
+		ImageViewRef prefilterOutputImageView = renderGraph.CreateImageView(prefilterOutputImage, Image::Type::TYPE_2D,{ Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 });
+		
+		float zero[sizeof(UniformBufferStructures::BloomInfo)] = { 0 };
+		Uniformbuffer<UniformBufferStructures::BloomInfo>::CreateInfo ubCI;
+		ubCI.debugName = "GEAR_CORE_Buffer_BloomInfoUB";
+		ubCI.device = m_Device;
+		ubCI.data = zero;
+		Ref<Uniformbuffer<UniformBufferStructures::BloomInfo>> bloomInfoUB = CreateRef<Uniformbuffer<UniformBufferStructures::BloomInfo>>(&ubCI);
+		bloomInfoUB->threshold = 3.0f;
+		bloomInfoUB->upsampleScale = 2.0f;
+		bloomInfoUB->SubmitData();
 
-	GPUTask::CreateInfo postProcessingEndCI;
-	postProcessingEndCI.debugName = "PostProcessing";
-	postProcessingEndCI.task = GPUTask::Task::DEBUG_LABEL_END;
-	postProcessingEndCI.pTaskInfo = nullptr;
-	postProcessingEndCI.srcGPUTasks = { postProcessingBloom };
-	postProcessingEndCI.srcPipelineStages = {};
-	postProcessingEndCI.cmdBuffer = graphicsCmdBuffer;
-	postProcessingEndCI.cmdBufferIndex = m_FrameIndex;
-	postProcessingEndCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	postProcessingEndCI.skipTask = false;
-	Ref<GPUTask> postProcessingEnd = CreateRef<GPUTask>(&postProcessingEndCI);
-	postProcessingEnd->Execute();
+		Ref<RenderPassParameters> bloomPreFilterPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["BloomPreFilter"]);
+		bloomPreFilterPassParameters->SetResource("inputImage", Resource(colourImageView, Resource::State::SHADER_READ_WRITE));
+		bloomPreFilterPassParameters->SetResource("outputImage", Resource(prefilterOutputImageView, Resource::State::SHADER_READ_WRITE));
+		bloomPreFilterPassParameters->SetResource("bloomInfo", Resource(bloomInfoUB));
 
-	//HDRMapping
-	graphicsRenderPassBeginTI.framebuffer = m_RenderSurface->GetHDRFramebuffers()[m_FrameIndex];
-	graphicsRenderPassBeginTI.clearValues = { {0.25f, 0.25f, 0.25f, 1.0f} };
-	GPUTask::CreateInfo beginHDRRenderPassCI;
-	beginHDRRenderPassCI.debugName = "HDR Render Pass";
-	beginHDRRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_BEGIN;
-	beginHDRRenderPassCI.pTaskInfo = &graphicsRenderPassBeginTI;
-	beginHDRRenderPassCI.srcGPUTasks = { postProcessingEnd };
-	beginHDRRenderPassCI.srcPipelineStages = {};
-	beginHDRRenderPassCI.cmdBuffer = graphicsCmdBuffer;
-	beginHDRRenderPassCI.cmdBufferIndex = m_FrameIndex;
-	beginHDRRenderPassCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	beginHDRRenderPassCI.resetCmdBufferReleaseResource = false;
-	beginHDRRenderPassCI.beginCmdBufferUsage = CommandBuffer::UsageBit::SIMULTANEOUS;
-	beginHDRRenderPassCI.skipTask = false;
-	Ref<GPUTask> beginHDRRenderPass = CreateRef<GPUTask>(&beginHDRRenderPassCI);
-	beginHDRRenderPass->Execute();
+		renderGraph.AddPass("Post Processing Bloom Prefilter", bloomPreFilterPassParameters, CommandPool::QueueType::COMPUTE,
+			[bloomPreFilterPassParameters, bloomInfoUB, width, height](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+			{
+				cmdBuffer->CopyBuffer(frameIndex, bloomInfoUB->GetCPUBuffer(), bloomInfoUB->GetGPUBuffer(), { { 0, 0, bloomInfoUB->GetSize() } });
+				cmdBuffer->BindDescriptorSets(frameIndex, { bloomPreFilterPassParameters->GetDescriptorSet(0) }, 0, bloomPreFilterPassParameters->GetPipeline());
+				uint32_t _width = std::max(width / 8, uint32_t(1));
+				uint32_t _height = std::max(height / 8, uint32_t(1));
+				uint32_t _depth = 1;
+				_width += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
+				_height += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
+				cmdBuffer->Dispatch(frameIndex, _width, _height, _depth);
+			});
+		
+		//Downsample
+		std::vector<ImageViewRef> bloomImageViews;
+		for (uint32_t i = 0; i < levels; i++)
+			bloomImageViews.push_back(renderGraph.CreateImageView(prefilterOutputImage, Image::Type::TYPE_2D,{ Image::AspectBit::COLOUR_BIT, i, 1, 0, 1 }));
+		
+		Sampler::CreateInfo samplerCI;
+		samplerCI.debugName = "GEAR_CORE_Sampler_Bloom";
+		samplerCI.device = m_Device;
+		samplerCI.magFilter = Sampler::Filter::LINEAR;
+		samplerCI.minFilter = Sampler::Filter::LINEAR;
+		samplerCI.mipmapMode = Sampler::MipmapMode::NEAREST;
+		samplerCI.addressModeU = Sampler::AddressMode::CLAMP_TO_EDGE;
+		samplerCI.addressModeV = Sampler::AddressMode::CLAMP_TO_EDGE;
+		samplerCI.addressModeW = Sampler::AddressMode::CLAMP_TO_EDGE;
+		samplerCI.mipLodBias = 0.0f;
+		samplerCI.anisotropyEnable = false;
+		samplerCI.maxAnisotropy = 1.0f;
+		samplerCI.compareEnable = false;
+		samplerCI.compareOp = CompareOp::NEVER;
+		samplerCI.minLod = 0.0f;
+		samplerCI.maxLod = 0.0f;
+		samplerCI.borderColour = Sampler::BorderColour::FLOAT_TRANSPARENT_BLACK;
+		samplerCI.unnormalisedCoordinates = false;
+		SamplerRef sampler = Sampler::Create(&samplerCI);
 
-	rendererFunctionTI.pfn = &Renderer::HDRMapping;
-	GPUTask::CreateInfo hdrMappingCI;
-	hdrMappingCI.debugName = "HDR Mapping";
-	hdrMappingCI.task = GPUTask::Task::RENDERER_FUNCTION;
-	hdrMappingCI.pTaskInfo = &rendererFunctionTI;
-	hdrMappingCI.srcGPUTasks = { beginHDRRenderPass };
-	hdrMappingCI.srcPipelineStages = { PipelineStageBit(0) };
-	hdrMappingCI.cmdBuffer = graphicsCmdBuffer;
-	hdrMappingCI.cmdBufferIndex = m_FrameIndex;
-	hdrMappingCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	hdrMappingCI.skipTask = !m_MainRenderCamera;
-	Ref<GPUTask> hdrMapping = CreateRef<GPUTask>(&hdrMappingCI);
-	hdrMapping->Execute();
+		Ref<RenderPassParameters> bloomDownsamplePassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["BloomDownsample"], std::vector<size_t>({ levels - 1 }));
+		for (uint32_t i = 0; i < (levels - 1); i++)
+		{
+			bloomDownsamplePassParameters->SetResource("inputImageRO", Resource(bloomImageViews[i + 0], sampler), i);
+			bloomDownsamplePassParameters->SetResource("outputImage", Resource(bloomImageViews[i + 1], Resource::State::SHADER_READ_WRITE), i);
+		}
+
+		renderGraph.AddPass("Post Processing Bloom Downsample", bloomDownsamplePassParameters, CommandPool::QueueType::COMPUTE,
+			[bloomDownsamplePassParameters, levels, prefilterOutputImage, width, height](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+			{
+				Image::Layout imageLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL;
+				std::vector<BarrierRef> barriers;
+
+				for (uint32_t i = 1; i < levels; i++)
+				{
+					Barrier::CreateInfo barrierCI;
+					barrierCI.type = Barrier::Type::IMAGE;
+					barrierCI.srcAccess = Barrier::AccessBit::SHADER_WRITE_BIT;
+					barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;
+					barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+					barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+					barrierCI.image = prefilterOutputImage;
+					barrierCI.oldLayout = imageLayout;
+					barrierCI.newLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
+					barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i - 1, 1, 0, 1 };
+
+					barriers.clear();
+					barriers.emplace_back(Barrier::Create(&barrierCI));
+					cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
+
+					cmdBuffer->BindDescriptorSets(frameIndex, { bloomDownsamplePassParameters->GetDescriptorSet(0, i - 1) }, 0, bloomDownsamplePassParameters->GetPipeline());
+					uint32_t _width = std::max((width >> i) / 8, uint32_t(1));
+					uint32_t _height = std::max((height >> i) / 8, uint32_t(1));
+					uint32_t _depth = 1;
+					_width += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
+					_height += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
+					cmdBuffer->Dispatch(frameIndex, _width, _height, _depth);
+
+					barrierCI.type = Barrier::Type::IMAGE;
+					barrierCI.srcAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;
+					barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
+					barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+					barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+					barrierCI.image = prefilterOutputImage;
+					barrierCI.oldLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
+					barrierCI.newLayout = imageLayout;
+					barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i - 1, 1, 0, 1 };
+
+					barriers.clear();
+					barriers.emplace_back(Barrier::Create(&barrierCI));
+					cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
+				}
+			});
+
+		//Upsample
+		bloomImageViews[0] = colourImageView;
+		Ref<RenderPassParameters> bloomUpsamplePassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["BloomUpsample"], std::vector<size_t>({ levels - 1 }));
+		for (uint32_t i = 0; i < (levels - 1); i++)
+		{
+			bloomUpsamplePassParameters->SetResource("inputImageRO", Resource(bloomImageViews[i + 1], sampler), i);
+			bloomUpsamplePassParameters->SetResource("outputImage", Resource(bloomImageViews[i + 0], Resource::State::SHADER_READ_WRITE), i);
+			bloomUpsamplePassParameters->SetResource("bloomInfo", Resource(bloomInfoUB), i);
+		}
+
+		renderGraph.AddPass("Post Processing Bloom Upsample", bloomUpsamplePassParameters, CommandPool::QueueType::COMPUTE,
+			[bloomUpsamplePassParameters, levels, bloomImageViews, width, height](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+			{
+				Image::Layout imageLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL;
+				std::vector<BarrierRef> barriers;
+				Barrier::CreateInfo barrierCI;
+
+				for (uint32_t i = levels - 1; i >= 1; i--)
+				{
+					barrierCI.type = Barrier::Type::IMAGE;
+					barrierCI.srcAccess = Barrier::AccessBit::SHADER_WRITE_BIT;
+					barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;
+					barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+					barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+					barrierCI.image = bloomImageViews[i]->GetCreateInfo().image;
+					barrierCI.oldLayout = imageLayout;
+					barrierCI.newLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
+					barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, 1 };
+
+					barriers.clear();
+					barriers.emplace_back(Barrier::Create(&barrierCI));
+					cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
+
+					cmdBuffer->BindDescriptorSets(frameIndex, { bloomUpsamplePassParameters->GetDescriptorSet(0, i - 1) }, 0, bloomUpsamplePassParameters->GetPipeline());
+					uint32_t _width = std::max((width >> (i - 1)) / 8, uint32_t(1));
+					uint32_t _height = std::max((height >> (i - 1)) / 8, uint32_t(1));
+					uint32_t _depth = 1;
+					_width += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
+					_height += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
+					cmdBuffer->Dispatch(frameIndex, _width, _height, _depth);
+
+					barrierCI.type = Barrier::Type::IMAGE;
+					barrierCI.srcAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;
+					barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
+					barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+					barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+					barrierCI.image = bloomImageViews[i]->GetCreateInfo().image;
+					barrierCI.oldLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
+					barrierCI.newLayout = imageLayout;
+					barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, 1 };
+
+					barriers.clear();
+					barriers.emplace_back(Barrier::Create(&barrierCI));
+					cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
+				}
+			});
+	}
+
+	//HDR Mapping
+	if (m_MainRenderCamera)
+	{
+		uint32_t width = m_RenderSurface->GetWidth();
+		uint32_t height = m_RenderSurface->GetHeight();
+
+		Ref<RenderPassParameters> hdrMappingPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["HDR"]);
+		hdrMappingPassParameters->SetResource("hdrInfo", Resource(m_MainRenderCamera->GetHDRInfoUB()));
+		hdrMappingPassParameters->SetResource("hdrInput", Resource(m_RenderSurface->GetColourImageView(), Resource::State::SHADER_READ_ONLY));
+		hdrMappingPassParameters->AddAttachment(0, Resource(m_RenderSurface->GetColourSRGBImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
+		hdrMappingPassParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height));
+
+		renderGraph.AddPass("HDR Mapping", hdrMappingPassParameters, CommandPool::QueueType::GRAPHICS,
+			[hdrMappingPassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+			{
+				cmdBuffer->BindDescriptorSets(frameIndex, { hdrMappingPassParameters->GetDescriptorSet(0) }, 0, hdrMappingPassParameters->GetPipeline());
+				cmdBuffer->Draw(frameIndex, 3);
+			});
+	}
 
 	//OSD Text
-	rendererFunctionTI.pfn = &Renderer::DrawTextLines;
-	GPUTask::CreateInfo drawTextLinesCI;
-	drawTextLinesCI.debugName = "Draw Text Lines";
-	drawTextLinesCI.task = GPUTask::Task::RENDERER_FUNCTION;
-	drawTextLinesCI.pTaskInfo = &rendererFunctionTI;
-	drawTextLinesCI.srcGPUTasks = { hdrMapping };
-	drawTextLinesCI.srcPipelineStages = { PipelineStageBit(0) };
-	drawTextLinesCI.cmdBuffer = graphicsCmdBuffer;
-	drawTextLinesCI.cmdBufferIndex = m_FrameIndex;
-	drawTextLinesCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	drawTextLinesCI.skipTask = !m_TextCamera;
-	Ref<GPUTask> drawTextLines = CreateRef<GPUTask>(&drawTextLinesCI);
-	drawTextLines->Execute();
+	if (m_TextCamera)
+	{
+		uint32_t width = m_RenderSurface->GetWidth();
+		uint32_t height = m_RenderSurface->GetHeight();
+		size_t modelCount = 0;
+		size_t materialCount = 0;
+		for (const auto& model : m_TextQueue)
+		{
+			modelCount++;
+			materialCount += model->GetMesh()->GetVertexBuffers().size();
+		}
 
-	//OSD Axes
-	rendererFunctionTI.pfn = &Renderer::DrawCoordinateAxes;
-	GPUTask::CreateInfo drawCoordinateAxesCI;
-	drawCoordinateAxesCI.debugName = "Draw Coordinate Axes";
-	drawCoordinateAxesCI.task = GPUTask::Task::RENDERER_FUNCTION;
-	drawCoordinateAxesCI.pTaskInfo = &rendererFunctionTI;
-	drawCoordinateAxesCI.srcGPUTasks = { drawTextLines };
-	drawCoordinateAxesCI.srcPipelineStages = { PipelineStageBit(0) };
-	drawCoordinateAxesCI.cmdBuffer = graphicsCmdBuffer;
-	drawCoordinateAxesCI.cmdBufferIndex = m_FrameIndex;
-	drawCoordinateAxesCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	drawCoordinateAxesCI.skipTask = !m_MainRenderCamera;
-	Ref<GPUTask> drawCoordinateAxes = CreateRef<GPUTask>(&drawCoordinateAxesCI);
-	drawCoordinateAxes->Execute();
+		Ref<RenderPassParameters> osdTextPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["Text"]);
+		osdTextPassParameters->SetResource("textCamera", Resource(m_TextCamera->GetCameraUB()));
+		uint32_t modelIndex = 0;
+		uint32_t materialIndex = 0;
+		for (const auto& model : m_TextQueue)
+		{
+			osdTextPassParameters->SetResource("model", Resource(model->GetUB()), modelIndex++);
+			for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
+			{
+				const Ref<objects::Material>& material = model->GetMesh()->GetMaterial(i);
+				osdTextPassParameters->SetResource("fontAtlas", Resource(material->GetTextures()[Material::TextureType::ALBEDO], DescriptorType::COMBINED_IMAGE_SAMPLER), materialIndex++);
+			}
+		}
+		osdTextPassParameters->AddAttachment(0, Resource(m_RenderSurface->GetColourSRGBImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
+		osdTextPassParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height));
 
-	GPUTask::CreateInfo endHDRRenderPassCI;
-	endHDRRenderPassCI.debugName = "HDR Render Pass";
-	endHDRRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_END;
-	endHDRRenderPassCI.pTaskInfo = &graphicsRenderPassEndTI;
-	endHDRRenderPassCI.srcGPUTasks = { drawCoordinateAxes };
-	endHDRRenderPassCI.srcPipelineStages = { PipelineStageBit(0) };
-	endHDRRenderPassCI.cmdBuffer = graphicsCmdBuffer;
-	endHDRRenderPassCI.cmdBufferIndex = m_FrameIndex;
-	endHDRRenderPassCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	endHDRRenderPassCI.skipTask = false;
-	Ref<GPUTask>endHDRRenderPass = CreateRef<GPUTask>(&endHDRRenderPassCI);
-	endHDRRenderPass->Execute();
+		renderGraph.AddPass("OSD Text", osdTextPassParameters, CommandPool::QueueType::GRAPHICS,
+			[osdTextPassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+			{
+				cmdBuffer->BindDescriptorSets(frameIndex, { osdTextPassParameters->GetDescriptorSet(0) }, 0, osdTextPassParameters->GetPipeline());
+				uint32_t modelIndex = 0;
+				for (auto& model : m_TextQueue)
+				{
+					cmdBuffer->BindDescriptorSets(frameIndex, { osdTextPassParameters->GetDescriptorSet(1, modelIndex++) }, 1, osdTextPassParameters->GetPipeline());
+					for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
+					{
+						Ref<objects::Material> material = model->GetMesh()->GetMaterials()[i];
+						cmdBuffer->BindDescriptorSets(frameIndex, { osdTextPassParameters->GetDescriptorSet(2, static_cast<uint32_t>(i)) }, 2, osdTextPassParameters->GetPipeline());
+						cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[i]->GetGPUBufferView() });
+						cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetGPUBufferView());
+						cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetCount());
+					}
+				}
+			});
+	}
+	
+	//OSD Coordinate Axes
+	if (m_MainRenderCamera)
+	{
+		uint32_t width = m_RenderSurface->GetWidth();
+		uint32_t height = m_RenderSurface->GetHeight();
+
+		Ref<RenderPassParameters> osdCoordinateAxesPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["DebugCoordinateAxes"]);
+		osdCoordinateAxesPassParameters->SetResource("camera", Resource(m_MainRenderCamera->GetCameraUB()));
+		osdCoordinateAxesPassParameters->AddAttachment(0, Resource(m_RenderSurface->GetColourSRGBImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
+		osdCoordinateAxesPassParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height));
+
+		renderGraph.AddPass("OSD Coordinate Axes", osdCoordinateAxesPassParameters, CommandPool::QueueType::GRAPHICS,
+			[osdCoordinateAxesPassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+			{
+				cmdBuffer->BindDescriptorSets(frameIndex, { osdCoordinateAxesPassParameters->GetDescriptorSet(0) }, 0, osdCoordinateAxesPassParameters->GetPipeline());
+				cmdBuffer->Draw(frameIndex, 6);
+			});
+	}
 
 	//Copy To Swapchain
-	graphicsRenderPassBeginTI.framebuffer = m_CI.window->GetSwapchainFramebuffers()[m_FrameIndex];
-	graphicsRenderPassBeginTI.clearValues = { {0.25f, 0.25f, 0.25f, 1.0f} };
-	GPUTask::CreateInfo beginSwapchainRenderPassCI;
-	beginSwapchainRenderPassCI.debugName = "Swapchain Render Pass";
-	beginSwapchainRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_BEGIN;
-	beginSwapchainRenderPassCI.pTaskInfo = &graphicsRenderPassBeginTI;
-	beginSwapchainRenderPassCI.srcGPUTasks = { endHDRRenderPass };
-	beginSwapchainRenderPassCI.srcPipelineStages = {};
-	beginSwapchainRenderPassCI.cmdBuffer = graphicsCmdBuffer;
-	beginSwapchainRenderPassCI.cmdBufferIndex = m_FrameIndex;
-	beginSwapchainRenderPassCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-	beginSwapchainRenderPassCI.resetCmdBufferReleaseResource = false;
-	beginSwapchainRenderPassCI.beginCmdBufferUsage = CommandBuffer::UsageBit::SIMULTANEOUS;
-	beginSwapchainRenderPassCI.skipTask = false;
-	Ref<GPUTask> beginSwapchainRenderPass = CreateRef<GPUTask>(&beginSwapchainRenderPassCI);
-	beginSwapchainRenderPass->Execute();
-
-	Ref<GPUTask> copyToSwapchain;
 	if (m_CI.shouldCopyToSwapchian)
 	{
-		rendererFunctionTI.pfn = &Renderer::CopyToSwapchain;
-		GPUTask::CreateInfo copyToSwapchainCI;
-		copyToSwapchainCI.debugName = "Copy To Swapchain";
-		copyToSwapchainCI.task = GPUTask::Task::RENDERER_FUNCTION;
-		copyToSwapchainCI.pTaskInfo = &rendererFunctionTI;
-		copyToSwapchainCI.srcGPUTasks = { beginSwapchainRenderPass };
-		copyToSwapchainCI.srcPipelineStages = { PipelineStageBit(0) };
-		copyToSwapchainCI.cmdBuffer = graphicsCmdBuffer;
-		copyToSwapchainCI.cmdBufferIndex = m_FrameIndex;
-		copyToSwapchainCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-		copyToSwapchainCI.skipTask = false;
-		copyToSwapchain = CreateRef<GPUTask>(&copyToSwapchainCI);
-		copyToSwapchain->Execute();
-	}
-	if (m_CI.shouldDrawExternalUI)
-	{
-		rendererFunctionTI.pfn = &Renderer::DrawExternalUI;
-		GPUTask::CreateInfo copyToSwapchainCI;
-		copyToSwapchainCI.debugName = "Draw External UI";
-		copyToSwapchainCI.task = GPUTask::Task::RENDERER_FUNCTION;
-		copyToSwapchainCI.pTaskInfo = &rendererFunctionTI;
-		copyToSwapchainCI.srcGPUTasks = { beginSwapchainRenderPass };
-		copyToSwapchainCI.srcPipelineStages = { PipelineStageBit(0) };
-		copyToSwapchainCI.cmdBuffer = graphicsCmdBuffer;
-		copyToSwapchainCI.cmdBufferIndex = m_FrameIndex;
-		copyToSwapchainCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::NONE;
-		copyToSwapchainCI.skipTask = false;
-		copyToSwapchain = CreateRef<GPUTask>(&copyToSwapchainCI);
-		copyToSwapchain->Execute();
+		uint32_t width = m_CI.window->GetWidth();
+		uint32_t height = m_CI.window->GetHeight();
+		const ImageViewRef& swapchainImageView = m_CI.window->GetSwapchain()->m_SwapchainImageViews[m_FrameIndex];
+
+		Ref<RenderPassParameters> copyToSwapchainPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["DebugCopy"]);
+		copyToSwapchainPassParameters->SetResource("sourceImage", Resource(m_RenderSurface->GetColourSRGBImageView(), Resource::State::SHADER_READ_ONLY));
+		copyToSwapchainPassParameters->AddAttachment(0, Resource(swapchainImageView, Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
+		copyToSwapchainPassParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height));
+
+		renderGraph.AddPass("Copy To Swapchain", copyToSwapchainPassParameters, CommandPool::QueueType::GRAPHICS,
+			[copyToSwapchainPassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+			{
+				cmdBuffer->BindDescriptorSets(frameIndex, { copyToSwapchainPassParameters->GetDescriptorSet(0) }, 0, copyToSwapchainPassParameters->GetPipeline());
+				cmdBuffer->Draw(frameIndex, 3);
+			});
 	}
 
-	GPUTask::CreateInfo endSwapchainRenderPassCI;
-	endSwapchainRenderPassCI.debugName = "Swapchain Render Pass";
-	endSwapchainRenderPassCI.task = GPUTask::Task::GRAPHICS_RENDER_PASS_END;
-	endSwapchainRenderPassCI.pTaskInfo = &graphicsRenderPassEndTI;
-	endSwapchainRenderPassCI.srcGPUTasks = { copyToSwapchain };
-	endSwapchainRenderPassCI.srcPipelineStages = { PipelineStageBit(0) };
-	endSwapchainRenderPassCI.cmdBuffer = graphicsCmdBuffer;
-	endSwapchainRenderPassCI.cmdBufferIndex = m_FrameIndex;
-	endSwapchainRenderPassCI.cmdBufferControls = GPUTask::CommandBufferBasicControlsBit::END;
-	endSwapchainRenderPassCI.skipTask = false;
-	Ref<GPUTask>endSwapchainRenderPass = CreateRef<GPUTask>(&endSwapchainRenderPassCI);
-	endSwapchainRenderPass->Execute();
+	//External UI
+	if (m_CI.shouldDrawExternalUI)
+	{
+		uint32_t width = m_CI.window->GetWidth();
+		uint32_t height = m_CI.window->GetHeight();
+		const ImageViewRef& swapchainImageView = m_CI.window->GetSwapchain()->m_SwapchainImageViews[m_FrameIndex];
+
+		Ref<RenderPassParameters> externalUIPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["DebugCopy"]);
+		externalUIPassParameters->SetResource("sourceImage", Resource(m_RenderSurface->GetColourSRGBImageView(), Resource::State::SHADER_READ_ONLY));
+		externalUIPassParameters->AddAttachment(0, Resource(swapchainImageView, Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
+		externalUIPassParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height));
+
+		renderGraph.AddPass("External UI", externalUIPassParameters, CommandPool::QueueType::GRAPHICS,
+			[externalUIPassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+			{
+				if (m_UIContext)
+				{
+					m_UIContext->RenderDrawData(cmdBuffer, frameIndex);
+				}
+			});
+	}
+
+	renderGraph.Execute(m_FrameIndex);
 
 	m_ModelQueue.clear();
 	m_TextQueue.clear();
@@ -1275,11 +1088,11 @@ void Renderer::Draw()
 
 void Renderer::Present()
 {
-	const Ref<CommandBuffer>& graphicsCmdBuffer = m_CommandPoolAndBuffers[CommandPool::QueueType::GRAPHICS].cmdBuffer;
-	const Ref<CommandPool>& graphicsCmdPool = m_CommandPoolAndBuffers[CommandPool::QueueType::GRAPHICS].cmdPool;
+	const Ref<CommandBuffer>& graphicsCmdBuffer = renderGraph.GetCommandBuffer(CommandPool::QueueType::GRAPHICS);
+	const Ref<CommandPool>& graphicsCmdPool = graphicsCmdBuffer->GetCreateInfo().commandPool;
 	if (m_CI.shouldPresent)
 	{
-		graphicsCmdBuffer->Submit({ m_FrameIndex }, { m_AcquireSemaphore }, { crossplatform::PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT }, { m_SubmitSemaphore }, m_DrawFences[m_FrameIndex]);
+		graphicsCmdBuffer->Submit({ m_FrameIndex }, { m_AcquireSemaphore }, { base::PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT }, { m_SubmitSemaphore }, m_DrawFences[m_FrameIndex]);
 		m_CI.window->GetSwapchain()->Present(graphicsCmdPool, m_SubmitSemaphore, m_FrameIndex);
 	}
 	else
@@ -1299,120 +1112,13 @@ void Renderer::Execute()
 	{
 		AcquireNextImage();
 	}
-	//Record Upload CmdBuffers
-	{
-		Upload();
-	}
 	//Record Present CmdBuffers
 	{
-		BuildDescriptorSetandPools();
 		Draw();
 	}
 	//Present CmdBuffers
 	{
 		Present();
-	}
-}
-
-void Renderer::MainRenderLoop(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets)
-{
-	for (auto& model : m_ModelQueue)
-	{
-		const Ref<graphics::RenderPipeline>& renderPipeline = s_RenderPipelines[model->GetPipelineName()];
-		const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
-
-		cmdBuffer->BindPipeline(frameIndex, pipeline);
-		cmdBuffer->BindDescriptorSets(frameIndex, {descPoolAndSets.setPerViewPerRenderPipeline.at(m_MainRenderCamera).at(renderPipeline), descPoolAndSets.setPerModel.at(model)}, 0, pipeline);
-
-		for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
-		{
-			Ref<objects::Material> material = model->GetMesh()->GetMaterials()[i];
-			cmdBuffer->BindDescriptorSets(frameIndex, {descPoolAndSets.setPerMaterial.at(material)}, 2, pipeline);
-
-			cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[i]->GetVertexBufferView() });
-			cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetIndexBufferView());
-
-			cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetCount());
-		}
-	}
-}
-
-void Renderer::HDRMapping(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets)
-{
-	const Ref<graphics::RenderPipeline>& renderPipeline = s_RenderPipelines["HDR"];
-	const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
-
-	cmdBuffer->BindPipeline(frameIndex, pipeline);
-	cmdBuffer->BindDescriptorSets(frameIndex, { descPoolAndSets.setPerViewPerRenderPipeline.at(m_MainRenderCamera).at(renderPipeline) }, 0, pipeline);
-	cmdBuffer->Draw(frameIndex, 3);
-}
-
-void Renderer::DrawTextLines(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets)
-{
-	for (auto& model : m_TextQueue)
-	{
-		const Ref<graphics::RenderPipeline>& renderPipeline = s_RenderPipelines[model->GetPipelineName()];
-		const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
-
-		cmdBuffer->BindPipeline(frameIndex, pipeline);
-		cmdBuffer->BindDescriptorSets(frameIndex, { descPoolAndSets.setPerViewPerRenderPipeline.at(m_TextCamera).at(renderPipeline), descPoolAndSets.setPerModel.at(model) }, 0, pipeline);
-
-		for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
-		{
-			Ref<objects::Material> material = model->GetMesh()->GetMaterials()[i];
-			cmdBuffer->BindDescriptorSets(frameIndex, { descPoolAndSets.setPerMaterial.at(material) }, 2, pipeline);
-
-			cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[i]->GetVertexBufferView() });
-			cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetIndexBufferView());
-
-			cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetCount());
-		}
-	}
-}
-
-void Renderer::DrawCoordinateAxes(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets)
-{
-	const Ref<graphics::RenderPipeline>& renderPipeline = s_RenderPipelines["DebugCoordinateAxes"];
-	const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
-
-	cmdBuffer->BindPipeline(frameIndex, pipeline);
-	cmdBuffer->BindDescriptorSets(frameIndex, { descPoolAndSets.setPerViewPerRenderPipeline.at(m_MainRenderCamera).at(renderPipeline) }, 0, pipeline);
-	cmdBuffer->Draw(frameIndex, 6);
-}
-
-void Renderer::CopyToSwapchain(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets)
-{
-	const Ref<graphics::RenderPipeline>& renderPipeline = s_RenderPipelines["DebugCopy"];
-	const Ref<Pipeline>& pipeline = renderPipeline->GetPipeline();
-
-	cmdBuffer->BindPipeline(frameIndex, pipeline);
-	cmdBuffer->BindDescriptorSets(m_FrameIndex, { descPoolAndSets.setPerViewPerRenderPipeline.at(m_MainRenderCamera).at(renderPipeline) }, 0, pipeline);
-	cmdBuffer->Draw(frameIndex, 3);
-}
-
-void Renderer::DrawExternalUI(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t frameIndex, const DescriptorPoolAndSets& descPoolAndSets)
-{
-	if (m_UIContext)
-	{
-		m_UIContext->RenderDrawData(cmdBuffer, frameIndex);
-	}
-}
-
-void Renderer::ResizeRenderPipelineViewports(uint32_t width, uint32_t height)
-{
-	m_Context->DeviceWaitIdle();
-	for (auto& renderPipeline : s_RenderPipelines)
-	{
-		if (renderPipeline.first.find("Shadow") == 0)
-			continue;
-		if (renderPipeline.first.find("DebugShowDepth") == 0)
-			continue;
-		if (renderPipeline.first.find("DebugShowDepthCubemap") == 0)
-			continue;
-
-		renderPipeline.second->m_CI.viewportState.viewports = { { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f } };
-		renderPipeline.second->m_CI.viewportState.scissors = { { { 0, 0 },{ width, height } } };
-		renderPipeline.second->Rebuild();
 	}
 }
 

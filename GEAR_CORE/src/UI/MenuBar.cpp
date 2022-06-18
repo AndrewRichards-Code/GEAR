@@ -1,10 +1,16 @@
 #include "gear_core_common.h"
-#include "MenuBar.h"
-#include "Panels/Panels.h"
-#include "ComponentUI/ComponentUI.h"
+#include "UI/MenuBar.h"
+#include "UI/UIContext.h"
+#include "UI/Panels/Panels.h"
+#include "UI/ComponentUI/ComponentUI.h"
+
 #include "Core/FileDialog.h"
 #include "Core/JsonFileHelper.h"
+
 #include "Graphics/Renderer.h"
+#include "Graphics/Window.h"
+
+#include "Build/Project.h"
 
 using namespace gear;
 using namespace build;
@@ -16,7 +22,7 @@ using namespace panels;
 using namespace componentui;
 
 using namespace miru;
-using namespace crossplatform;
+using namespace base;
 
 MenuBar::MenuBar()
 {
@@ -185,7 +191,7 @@ void MenuBar::DrawMenuWindows()
 			Ref<Renderer> renderer = CreateRef<Renderer>(&rendererCI);
 
 			static uint32_t idx = 0;
-			RenderSurface::CreateInfo renderSurfaceCI = rendererCI.window->GetRenderSurface()->GetCreateInfo();;
+			RenderSurface::CreateInfo renderSurfaceCI = rendererCI.window->GetRenderSurface()->GetCreateInfo();
 			renderSurfaceCI.debugName = "Viewport " + std::to_string(idx++);
 			renderer->SubmitRenderSurface(CreateRef<RenderSurface>(&renderSurfaceCI));
 

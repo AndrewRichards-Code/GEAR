@@ -1,10 +1,12 @@
 #pragma once
 #include "gear_core_common.h"
-#include "ModelLoader.h"
+#include "Utils/ModelLoader.h"
+#include "Animation/Animation.h"
 #include "Objects/Material.h"
 #include "Objects/Transform.h"
 
 using namespace gear;
+using namespace utils;
 using namespace graphics;
 using namespace animation;
 using namespace objects;
@@ -302,10 +304,10 @@ void ModelLoader::FillOutMaterialCreateInfo(aiMaterial* aiMaterial, Material::Cr
 			textureCI.file.filepaths.push_back(filepath);
 			textureCI.mipLevels = graphics::Texture::MaxMipLevel;
 			textureCI.arrayLayers = 1;
-			textureCI.type = miru::crossplatform::Image::Type::TYPE_2D;
-			textureCI.format = linear ? miru::crossplatform::Image::Format::R32G32B32A32_SFLOAT : miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
-			textureCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-			textureCI.usage = miru::crossplatform::Image::UsageBit(0);
+			textureCI.type = miru::base::Image::Type::TYPE_2D;
+			textureCI.format = linear ? miru::base::Image::Format::R32G32B32A32_SFLOAT : miru::base::Image::Format::R8G8B8A8_UNORM;
+			textureCI.samples = miru::base::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+			textureCI.usage = miru::base::Image::UsageBit(0);
 			textureCI.generateMipMaps = true;
 			textureCI.gammaSpace = linear ? graphics::GammaSpace::LINEAR : graphics::GammaSpace::SRGB;
 			textures[type] = CreateRef<Texture>(&textureCI);

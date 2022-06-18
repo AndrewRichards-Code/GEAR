@@ -1,41 +1,41 @@
 #pragma once
-
 #include "gear_core_common.h"
 
 namespace gear 
 {
-namespace graphics 
-{
-	class GEAR_API Vertexbuffer
+	namespace graphics
 	{
-	public: 
-		struct CreateInfo
+		class GEAR_API Vertexbuffer
 		{
-			std::string debugName;
-			void*		device;
-			void*		data;
-			size_t		size;
-			size_t		stride;
+		public:
+			struct CreateInfo
+			{
+				std::string debugName;
+				void* device;
+				void* data;
+				size_t		size;
+				size_t		stride;
+			};
+
+		private:
+			miru::base::BufferRef m_VertexBuffer, m_VertexBufferUpload;
+			miru::base::Buffer::CreateInfo m_VertexBufferCI, m_VertexBufferUploadCI;
+
+			miru::base::BufferViewRef m_VertexBufferView, m_VertexBufferViewUpload;
+			miru::base::BufferView::CreateInfo m_VertexBufferViewCI, m_VertexBufferViewUploadCI;
+
+			CreateInfo m_CI;
+
+		public:
+			Vertexbuffer(CreateInfo* pCreateInfo);
+			~Vertexbuffer();
+
+			const CreateInfo& GetCreateInfo() { return m_CI; }
+
+			inline const miru::base::BufferRef& GetCPUBuffer() { return m_VertexBufferUpload; };
+			inline const miru::base::BufferRef& GetGPUBuffer() { return m_VertexBuffer; };
+			inline const miru::base::BufferViewRef& GetCPUBufferView() { return m_VertexBufferViewUpload; };
+			inline const miru::base::BufferViewRef& GetGPUBufferView() { return m_VertexBufferView; };
 		};
-	
-	private:
-		Ref<miru::crossplatform::Buffer> m_VertexBuffer, m_VertexBufferUpload;
-		miru::crossplatform::Buffer::CreateInfo m_VertexBufferCI, m_VertexBufferUploadCI;
-		
-		Ref<miru::crossplatform::BufferView> m_VertexBufferView;
-		miru::crossplatform::BufferView::CreateInfo m_VertexBufferViewCI;
-
-		CreateInfo m_CI;
-		bool m_Upload = false;
-
-	public:
-		Vertexbuffer(CreateInfo* pCreateInfo);
-		~Vertexbuffer();
-
-		const CreateInfo& GetCreateInfo() { return m_CI; }
-
-		void Upload(const Ref<miru::crossplatform::CommandBuffer>& cmdBuffer, uint32_t cmdBufferIndex = 0, bool force = false);
-		inline const Ref<miru::crossplatform::BufferView>& GetVertexBufferView() { return m_VertexBufferView; };
-	};
-}
+	}
 }

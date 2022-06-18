@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
-#include "SkyboxComponentUI.h"
+#include "UI/ComponentUI/SkyboxComponentUI.h"
+#include "UI/ComponentUI/ComponentUI.h"
 #include "Scene/Entity.h"
 
 using namespace gear;
@@ -11,7 +12,7 @@ using namespace componentui;
 
 using namespace mars;
 
-void gear::ui::componentui::DrawSkyboxComponentUI(gear::scene::Entity entity)
+void gear::ui::componentui::DrawSkyboxComponentUI(Entity entity)
 {
 	Ref<Skybox>& skybox = entity.GetComponent<SkyboxComponent>().skybox;
 	Skybox::CreateInfo& CI = skybox->m_CI;
@@ -41,7 +42,7 @@ void gear::ui::componentui::DrawSkyboxComponentUI(gear::scene::Entity entity)
 	skybox->Update(entity.GetComponent<TransformComponent>());
 }
 
-void gear::ui::componentui::AddSkyboxComponent(gear::scene::Entity entity, void* device)
+void gear::ui::componentui::AddSkyboxComponent(Entity entity, void* device)
 {
 	if (!entity.HasComponent<SkyboxComponent>())
 	{

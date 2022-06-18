@@ -1,6 +1,4 @@
-#ifndef UNIFORM_BUFFER_STRUCTURES_H
-#define UNIFORM_BUFFER_STRUCTURES_H
-
+#pragma once
 #include "../Core/TypesCppHlsl.h"
 
 #ifdef __cplusplus
@@ -43,7 +41,7 @@ namespace gear
 				GEAR_FLOAT		threshold;
 				GEAR_FLOAT		upsampleScale;
 			};
-#
+
 			struct ProbeInfo
 			{
 				GEAR_FLOAT4X4	proj;
@@ -119,5 +117,3 @@ namespace gear
 	}
 }
 #endif
-
-#endif // UNIFORM_BUFFER_STRUCTURES_H

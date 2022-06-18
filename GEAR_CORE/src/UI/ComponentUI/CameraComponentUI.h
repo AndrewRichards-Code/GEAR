@@ -1,14 +1,17 @@
 #pragma once
-#include "ComponentUI.h"
 
 namespace gear
 {
-namespace ui
-{
-namespace componentui
-{
-	void DrawCameraComponentUI(gear::scene::Entity entity, float screenRatio);
-	void AddCameraComponent(gear::scene::Entity entity, float screenRatio, void* device);
-}
-}
+	namespace scene
+	{
+		class Entity;
+	}
+	namespace ui
+	{
+		namespace componentui
+		{
+			void DrawCameraComponentUI(scene::Entity entity, float screenRatio);
+			void AddCameraComponent(scene::Entity entity, float screenRatio, void* device);
+		}
+	}
 }

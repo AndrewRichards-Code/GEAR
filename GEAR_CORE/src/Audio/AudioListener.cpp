@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "AudioListener.h"
+#include "Audio/AudioListener.h"
 
 using namespace gear;
 using namespace audio;
@@ -13,11 +13,9 @@ AudioListener::AudioListener(CreateInfo* pCreateInfo)
 	m_ALI = CreateRef<AudioListenerInterface>(&m_ALICI);
 }
 
-
 AudioListener::~AudioListener()
 {
 }
-
 
 /*void AudioListener::UpdateListener(const objects::Transform& transform)
 {

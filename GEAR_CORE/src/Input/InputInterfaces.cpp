@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "InputInterfaces.h"
+#include "Input/InputInterfaces.h"
 
 using namespace gear;
 using namespace input;

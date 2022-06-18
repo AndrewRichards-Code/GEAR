@@ -1,7 +1,7 @@
 #include "gear_core_common.h"
-#include "Animator.h"
+#include "Animation/Animator.h"
+#include "Animation/Animation.h"
 #include "Objects/Mesh.h"
-#include "Objects/Transform.h"
 
 using namespace gear;
 using namespace animation;

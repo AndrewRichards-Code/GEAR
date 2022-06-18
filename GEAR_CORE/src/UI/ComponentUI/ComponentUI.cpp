@@ -1,17 +1,17 @@
 #include "gear_core_common.h"
 #include "ComponentUI.h"
+#include "UI/UIContext.h"
 
-#include "directx12/D3D12Image.h"
+#include "d3d12/D3D12Image.h"
 #include "vulkan/VKImage.h"
 
 using namespace gear;
 using namespace scene;
-using namespace objects;
 
 using namespace ui;
 using namespace componentui;
 
-using namespace miru::crossplatform;
+using namespace miru::base;
 
 using namespace mars;
 
@@ -269,7 +269,7 @@ ComponentSettingsBit gear::ui::componentui::DrawComponentSetting()
 	return result;
 }
 
-ImTextureID gear::ui::componentui::GetTextureID(const Ref<miru::crossplatform::ImageView>& imageView, UIContext* uiContext, bool resized)
+ImTextureID gear::ui::componentui::GetTextureID(const miru::base::ImageViewRef& imageView, UIContext* uiContext, bool resized)
 {
 
 	bool found = uiContext->m_TextureIDs.find(imageView) != uiContext->m_TextureIDs.end();
@@ -282,8 +282,8 @@ ImTextureID gear::ui::componentui::GetTextureID(const Ref<miru::crossplatform::I
 		ImTextureID& ImageID = uiContext->m_TextureIDs[imageView];
 		if (GraphicsAPI::IsD3D12())
 		{
-			const Ref<miru::d3d12::Image>& d3d12ColourImage = ref_cast<miru::d3d12::Image>(imageView->GetCreateInfo().pImage);
-			const Ref<miru::d3d12::ImageView>& d3d12ColourImageView = ref_cast<miru::d3d12::ImageView>(imageView);
+			const miru::d3d12::ImageRef& d3d12ColourImage = ref_cast<miru::d3d12::Image>(imageView->GetCreateInfo().image);
+			const miru::d3d12::ImageViewRef& d3d12ColourImageView = ref_cast<miru::d3d12::ImageView>(imageView);
 
 			ID3D12Device* device = (ID3D12Device*)uiContext->GetDevice();
 			UINT handleIncrement = 0;
@@ -312,7 +312,7 @@ ImTextureID gear::ui::componentui::GetTextureID(const Ref<miru::crossplatform::I
 		else
 		{
 			VkDevice device = *(VkDevice*)uiContext->GetDevice();
-			const Ref<miru::vulkan::ImageView>& vkColourImageView = ref_cast<miru::vulkan::ImageView>(imageView);
+			const miru::vulkan::ImageViewRef& vkColourImageView = ref_cast<miru::vulkan::ImageView>(imageView);
 
 			//Free old descriptor set
 			if (found && resized)

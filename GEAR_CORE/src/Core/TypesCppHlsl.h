@@ -1,5 +1,4 @@
-#ifndef TYPES_CPP_HLSL_H
-#define TYPES_CPP_HLSL_H
+#pragma once
 
 //CPP
 #ifdef __cplusplus
@@ -177,5 +176,3 @@ float4x4 inverse(float4x4 value)
 }
 
 #endif
-
-#endif // TYPES_CPP_HLSL_H

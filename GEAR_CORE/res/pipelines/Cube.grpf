@@ -56,8 +56,8 @@
       {
         "x": 0.0,
         "y": 0.0,
-        "width": "VIEWPORT_WIDTH",
-        "height": "VIEWPORT_HEIGHT",
+        "width": 0.0,
+        "height": 0.0,
         "minDepth": 0.0,
         "maxDepth": 1.0
       }
@@ -66,8 +66,8 @@
       {
         "x": 0.0,
         "y": 0.0,
-        "width": "VIEWPORT_WIDTH",
-        "height": "VIEWPORT_HEIGHT"
+        "width": 0.0,
+        "height": 0.0
       }
     ]
   },

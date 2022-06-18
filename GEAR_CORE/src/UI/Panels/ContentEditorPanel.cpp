@@ -1,10 +1,11 @@
 #include "gear_core_common.h"
-#include "ContentEditorPanel.h"
-#include "Panels.h"
+#include "UI/Panels/ContentEditorPanel.h"
 
+#include "UI/UIContext.h"
 #include "UI/ComponentUI/ComponentUI.h"
 #include "UI/ComponentUI/ModelComponentUI.h"
 #include "UI/ComponentUI/MaterialComponentUI.h"
+
 #include "Core/AssetFile.h"
 #include "Core/FileDialog.h"
 
@@ -16,7 +17,8 @@ using namespace componentui;
 using namespace core;
 using namespace objects;
 
-using namespace miru::crossplatform;
+using namespace miru;
+using namespace base;
 
 ContentEditorPanel::ContentEditorPanel(CreateInfo* pCreateInfo)
 {

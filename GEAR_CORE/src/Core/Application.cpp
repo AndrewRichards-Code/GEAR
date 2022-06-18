@@ -1,10 +1,10 @@
 #include "gear_core_common.h"
-#include "Application.h"
+#include "Core/Application.h"
 
 using namespace gear;
 using namespace core;
 
 Ref<Application> CreateApplication()
 {
-    return Ref<Application>();
+	return Ref<Application>();
 }

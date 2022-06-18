@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
-#include "Material.h"
+#include "Graphics/Texture.h"
+#include "Objects/Material.h"
 
 using namespace gear;
 using namespace graphics;
@@ -120,10 +121,10 @@ void Material::CreateDefaultColourTextures()
 	texCI.data.depth = 1;
 	texCI.mipLevels = 1;
 	texCI.arrayLayers = 1;
-	texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
-	texCI.format = miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
-	texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-	texCI.usage = miru::crossplatform::Image::UsageBit(0);
+	texCI.type = miru::base::Image::Type::TYPE_2D;
+	texCI.format = miru::base::Image::Format::R8G8B8A8_UNORM;
+	texCI.samples = miru::base::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	texCI.usage = miru::base::Image::UsageBit(0);
 	texCI.generateMipMaps = false;
 	texCI.gammaSpace = GammaSpace::LINEAR;
 	s_WhiteTexture = CreateRef<Texture>(&texCI);
@@ -203,10 +204,10 @@ void Material::LoadFromAssetFile(const core::AssetFile& inAssetFile)
 		texCI.file.filepaths = { texture["filepath"] };
 		texCI.mipLevels = graphics::Texture::MaxMipLevel;
 		texCI.arrayLayers = 1;
-		texCI.type = miru::crossplatform::Image::Type::TYPE_2D;
-		texCI.format = linear ? miru::crossplatform::Image::Format::R32G32B32A32_SFLOAT : miru::crossplatform::Image::Format::R8G8B8A8_UNORM;
-		texCI.samples = miru::crossplatform::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-		texCI.usage = miru::crossplatform::Image::UsageBit(0);
+		texCI.type = miru::base::Image::Type::TYPE_2D;
+		texCI.format = linear ? miru::base::Image::Format::R32G32B32A32_SFLOAT : miru::base::Image::Format::R8G8B8A8_UNORM;
+		texCI.samples = miru::base::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+		texCI.usage = miru::base::Image::UsageBit(0);
 		texCI.generateMipMaps = true;
 		texCI.gammaSpace = linear ? GammaSpace::LINEAR : GammaSpace::SRGB;
 		m_CI.pbrTextures[textureType] = CreateRef<Texture>(&texCI);

@@ -88,6 +88,9 @@
 //JSON
 #include "JSON/json.hpp"
 
+//magic_enum
+#include "magic_enum/include/magic_enum.hpp"
+
 //MARS
 #include "MARS/src/mars.h"
 
@@ -207,6 +210,15 @@ namespace gear
 	
 		return str;
 	}
+}
+
+//GEAR DebugName
+template<typename T>
+std::string GenereateDebugName(const std::string& name)
+{
+	std::string _typenameFull = typeid(T).name();
+	std::string _typename = _typenameFull.substr(_typenameFull.find_last_of("::") + 2);
+	return "GEAR: " + _typename + ": " + name;
 }
 
 //GEAR printf and logging

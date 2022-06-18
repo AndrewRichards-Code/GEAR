@@ -136,7 +136,7 @@ PS_OUT ps_main(PS_IN IN)
 		else if (light.type_valid_spotInner_spotOuter.x == 2.0)
 		{
 			Wi = normalize(light.position.xyz - IN.worldSpace.xyz);
-			float3 spotWi = normalize(light.direction.xyz);
+			float3 spotWi = normalize(-light.direction.xyz);
 			float theta = dot(spotWi, Wi);
 			float epsilon = cos(light.type_valid_spotInner_spotOuter.z) - cos(light.type_valid_spotInner_spotOuter.w);
 			intensity = saturate(lerp(0.0, 1.0, ((theta - cos(light.type_valid_spotInner_spotOuter.w)) / max(epsilon, 0.000001))));

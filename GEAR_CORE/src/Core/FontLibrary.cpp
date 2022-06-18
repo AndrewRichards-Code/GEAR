@@ -2,7 +2,7 @@
 #include "STBI/stb_image.h"
 #include "STBI/stb_image_write.h"
 
-#include "FontLibrary.h"
+#include "Core/FontLibrary.h"
 #include "Graphics/AllocatorManager.h"
 #include "Graphics/Texture.h"
 
@@ -12,7 +12,7 @@ using namespace core;
 using namespace mars;
 
 using namespace miru;
-using namespace miru::crossplatform;
+using namespace base;
 
 FontLibrary::FontLibrary()
 {
@@ -246,7 +246,7 @@ Ref<Texture> FontLibrary::GenerateTextureAtlas(const GenerateInfo& GI, const Tex
 	texCI.type = Image::Type::TYPE_2D;
 	texCI.format = Image::Format::R8G8B8A8_UNORM;
 	texCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-	texCI.usage = miru::crossplatform::Image::UsageBit(0);
+	texCI.usage = miru::base::Image::UsageBit(0);
 	texCI.generateMipMaps = false;
 
 	return CreateRef<Texture>(&texCI);
