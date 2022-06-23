@@ -1,6 +1,10 @@
 #include "gear_core_common.h"
 #include "UI/ComponentUI/CameraComponentUI.h"
 #include "UI/ComponentUI/ComponentUI.h"
+#include "UI/Panels/Panels.h"
+#include "UI/UIContext.h"
+
+#include "Graphics/Renderer.h"
 #include "Scene/Entity.h"
 
 using namespace gear;
@@ -8,12 +12,16 @@ using namespace scene;
 using namespace objects;
 
 using namespace ui;
+using namespace panels;
 using namespace componentui;
 
 using namespace mars;
 
-void gear::ui::componentui::DrawCameraComponentUI(Entity entity, float screenRatio)
+void gear::ui::componentui::DrawCameraComponentUI(Entity entity)
 {
+	const Ref<ViewportPanel>& viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
+	const float& screenRatio = viewportPanel->GetCreateInfo().renderer->GetRenderSurface()->GetRatio();
+
 	Ref<Camera>& camera = entity.GetComponent<CameraComponent>().camera;
 	Camera::CreateInfo& CI = camera->m_CI;
 
@@ -53,10 +61,13 @@ void gear::ui::componentui::DrawCameraComponentUI(Entity entity, float screenRat
 	camera->Update(entity.GetComponent<TransformComponent>());
 }
 
-void gear::ui::componentui::AddCameraComponent(Entity entity, float screenRatio, void* device)
+void gear::ui::componentui::AddCameraComponent(Entity entity, void* device)
 {
 	if (!entity.HasComponent<CameraComponent>())
 	{
+		const Ref<ViewportPanel>& viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
+		const float& screenRatio = viewportPanel->GetCreateInfo().renderer->GetRenderSurface()->GetRatio();
+
 		Camera::CreateInfo cameraCI;
 		cameraCI.debugName = entity.GetComponent<NameComponent>();
 		cameraCI.device = device;

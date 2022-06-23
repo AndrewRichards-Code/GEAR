@@ -229,7 +229,9 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 		ImGui_ImplVulkan_CreateFontsTexture(GetVkCommandBuffer(cmdBuffer, 0));
 
 		cmdBuffer->End(0);
-		cmdBuffer->Submit({ 0 }, {}, {}, {}, nullptr);
+
+		CommandBuffer::SubmitInfo si = { {0}, {}, {}, {}, {}, {} };
+		cmdBuffer->Submit({ si }, nullptr);
 
 		window->GetContext()->DeviceWaitIdle();
 		ImGui_ImplVulkan_DestroyFontUploadObjects();

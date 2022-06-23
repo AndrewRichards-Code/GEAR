@@ -10,8 +10,8 @@ namespace gear
 	{
 		namespace componentui
 		{
-			void DrawCameraComponentUI(scene::Entity entity, float screenRatio);
-			void AddCameraComponent(scene::Entity entity, float screenRatio, void* device);
+			void DrawCameraComponentUI(scene::Entity entity);
+			void AddCameraComponent(scene::Entity entity, void* device);
 		}
 	}
 }

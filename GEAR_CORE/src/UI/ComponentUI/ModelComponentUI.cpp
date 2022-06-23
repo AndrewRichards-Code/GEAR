@@ -18,13 +18,13 @@ using namespace componentui;
 
 using namespace mars;
 
-void gear::ui::componentui::DrawModelComponentUI(Entity entity, UIContext* uiContext)
+void gear::ui::componentui::DrawModelComponentUI(Entity entity)
 {
 	Ref<Model>& model = entity.GetComponent<ModelComponent>().model;
 	Model::CreateInfo& CI = model->m_CI;
 	
 	DrawInputText("Name", CI.debugName);
-	DrawMeshUI(CI.pMesh, uiContext);
+	DrawMeshUI(CI.pMesh);
 	DrawFloat("Scaling X", CI.materialTextureScaling.x, 0.0f);
 	DrawFloat("Scaling Y", CI.materialTextureScaling.y, 0.0f);
 	DrawInputText("Render Pipeline", CI.renderPipelineName);
@@ -68,7 +68,7 @@ void gear::ui::componentui::AddModelComponent(Entity entity, void* device)
 	}
 }
 
-void gear::ui::componentui::DrawMeshUI(Ref<Mesh>& mesh, UIContext* uiContext)
+void gear::ui::componentui::DrawMeshUI(Ref<Mesh>& mesh)
 {
 	Mesh::CreateInfo& CI = mesh->m_CI;
 

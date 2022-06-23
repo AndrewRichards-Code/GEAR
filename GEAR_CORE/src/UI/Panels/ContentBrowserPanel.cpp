@@ -101,7 +101,8 @@ ContentBrowserPanel::ContentBrowserPanel(CreateInfo* pCreateInfo)
 		barriers.clear();
 
 		cmdBuffer->End(0);
-		cmdBuffer->Submit({ 0 }, {}, {}, {}, fence);
+		CommandBuffer::SubmitInfo si = { {0}, {}, {}, {}, {}, {} };
+		cmdBuffer->Submit({ si }, fence);
 		fence->Wait();
 	}
 

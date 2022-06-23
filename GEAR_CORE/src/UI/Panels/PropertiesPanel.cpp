@@ -59,10 +59,10 @@ void PropertiesPanel::Draw()
 			{
 				DrawComponentUI<NameComponent>("Name", entity, true, DrawNameComponentUI, entity);
 				DrawComponentUI<TransformComponent>("Transform", entity, true, DrawTransformComponentUI, entity);
-				DrawComponentUI<CameraComponent>("Camera", entity, true, DrawCameraComponentUI, entity, screenRatio);
+				DrawComponentUI<CameraComponent>("Camera", entity, true, DrawCameraComponentUI, entity);
 				DrawComponentUI<LightComponent>("Light", entity, true, DrawLightComponentUI, entity);
 				DrawComponentUI<SkyboxComponent>("Skybox", entity, true, DrawSkyboxComponentUI, entity);
-				DrawComponentUI<ModelComponent>("Model", entity, true, DrawModelComponentUI, entity, UIContext::GetUIContext());
+				DrawComponentUI<ModelComponent>("Model", entity, true, DrawModelComponentUI, entity);
 				
 				if (ImGui::Button("Add Component"))
 					ImGui::OpenPopup("AddComponents");
@@ -71,7 +71,7 @@ void PropertiesPanel::Draw()
 				{
 					if (ImGui::MenuItem("Camera"))
 					{
-						AddCameraComponent(entity, screenRatio, device);
+						AddCameraComponent(entity, device);
 						ImGui::CloseCurrentPopup();
 					}
 					if (ImGui::MenuItem("Light"))

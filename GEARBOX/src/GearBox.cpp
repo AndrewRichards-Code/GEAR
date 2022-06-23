@@ -38,7 +38,7 @@ void GEARBOX::InternalRun()
 	m_AllowReRun = false;
 
 	Window::CreateInfo mainWindowCI;
-	mainWindowCI.api = GraphicsAPI::API::VULKAN;;
+	mainWindowCI.api = GraphicsAPI::API::VULKAN;
 	mainWindowCI.title = "GEARBOX";
 	mainWindowCI.width = 1920;
 	mainWindowCI.height = 1080;

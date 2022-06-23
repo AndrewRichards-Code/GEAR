@@ -83,13 +83,12 @@ void SceneHierarchyPanel::Draw()
 			if (viewportPanel)
 			{
 				void* device = viewportPanel->GetCreateInfo().renderer->GetDevice();
-				const float& screenRatio = viewportPanel->GetCreateInfo().renderer->GetRenderSurface()->GetRatio();
 
 				if (ImGui::MenuItem("Create Camera"))
 				{
 					Entity newEntity = scene->CreateEntity();
 					newEntity.GetComponent<NameComponent>().name = "Camera";
-					AddCameraComponent(newEntity, screenRatio, device);
+					AddCameraComponent(newEntity, device);
 				}
 				if (ImGui::MenuItem("Create Light"))
 				{

@@ -48,11 +48,6 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 #define NOMINMAX
-
-#ifdef GEAR_NO_CONSOLE
-#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
-#endif
-
 #endif
 
 //Dependencies
