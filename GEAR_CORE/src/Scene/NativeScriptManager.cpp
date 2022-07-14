@@ -83,12 +83,12 @@ INativeScript* NativeScriptManager::LoadScript(DynamicLibrary::LibraryHandle& li
 {
 	typedef INativeScript* (*PFN_LoadScript)();
 	
-	INativeScript* ns = nullptr;
+	INativeScript* nativeScript = nullptr;
 	PFN_LoadScript LoadScript = (PFN_LoadScript)DynamicLibrary::LoadFunction(libraryHandle, "LoadScript_" + nativeScriptName);
 	if(LoadScript)
-		ns = (INativeScript*)LoadScript();
+		nativeScript = (INativeScript*)LoadScript();
 	
-	return ns;
+	return nativeScript;
 }
 
 void NativeScriptManager::UnloadScript(DynamicLibrary::LibraryHandle& libraryHandle, const std::string& nativeScriptName, INativeScript*& nativeScript)
@@ -101,7 +101,6 @@ void NativeScriptManager::UnloadScript(DynamicLibrary::LibraryHandle& libraryHan
 		UnloadScript(nativeScript);
 		nativeScript = nullptr;
 	}
-
 }
 
 std::filesystem::path NativeScriptManager::GetMSBuildPath()
