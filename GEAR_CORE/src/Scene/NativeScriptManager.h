@@ -7,8 +7,6 @@ namespace gear
 	{
 		class INativeScript;
 
-		typedef std::string ScriptingLibrary;
-
 		class GEAR_API NativeScriptManager
 		{
 		public:
@@ -19,11 +17,15 @@ namespace gear
 			static INativeScript* LoadScript(arc::DynamicLibrary::LibraryHandle& libraryHandle, const std::string& nativeScriptName);
 			static void UnloadScript(arc::DynamicLibrary::LibraryHandle& libraryHandle, const std::string& nativeScriptName, INativeScript*& nativeScript);
 
+		private:
+			static std::filesystem::path GetMSBuildPath();
+			static bool CheckPath(const std::filesystem::path& directory);
+			static std::filesystem::file_time_type GetLibraryLastWriteTime();
+			static std::filesystem::file_time_type GetSourceLastWriteTime(const std::filesystem::path& nativeScriptPath);
+			static void CheckWin32BOOL(BOOL success);
 
 		private:
-			static bool CheckPath(const std::string& directory);
-
-			static std::string s_BuildScriptPath;
+			static std::filesystem::path s_BuildScriptPath;
 		};
 	}
 }
