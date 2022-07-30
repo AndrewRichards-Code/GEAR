@@ -23,6 +23,7 @@ namespace gear
 			static std::filesystem::file_time_type GetLibraryLastWriteTime();
 			static std::filesystem::file_time_type GetSourceLastWriteTime(const std::filesystem::path& nativeScriptPath);
 			static void CheckWin32BOOL(BOOL success);
+			static void ForceUnloadPDB();
 
 		private:
 			static std::filesystem::path s_BuildScriptPath;

@@ -75,6 +75,8 @@ DynamicLibrary::LibraryHandle NativeScriptManager::Load()
 
 void NativeScriptManager::Unload(DynamicLibrary::LibraryHandle& libraryHandle)
 {
+	ForceUnloadPDB();
+
 	DynamicLibrary::Unload(libraryHandle);
 	libraryHandle = 0;
 }
@@ -166,7 +168,7 @@ bool NativeScriptManager::CheckPath(const std::filesystem::path& directory)
 {
 	if (!std::filesystem::exists(directory))
 	{
-		GEAR_WARN(ErrorCode::SCENE | ErrorCode::INVALID_PATH, "%s does not exist.", directory.c_str());
+		GEAR_WARN(ErrorCode::SCENE | ErrorCode::INVALID_PATH, "%s does not exist.", directory.string().c_str());
 		return false;
 	}
 	return true;
@@ -203,4 +205,129 @@ void NativeScriptManager::CheckWin32BOOL(BOOL success)
 	{
 		GEAR_ASSERT(ErrorCode::SCENE | ErrorCode::FUNC_FAILED, "Call to Win32 API failed with error: %s", arc::GetLastErrorToString(GetLastError()));
 	}
+}
+
+#include <RestartManager.h>
+#pragma comment(lib, "Rstrtmgr.lib")
+
+#include <Winternl.h>
+#pragma warning(push)
+#pragma warning(disable : 4005)
+#include <ntstatus.h>
+#pragma warning(pop)
+#include <Psapi.h>
+#pragma comment(lib, "Ntdll.lib")
+
+typedef struct _SYSTEM_HANDLE {
+	ULONG ProcessId;
+	BYTE ObjectTypeNumber;
+	BYTE Flags;
+	USHORT Handle;
+	PVOID Object;
+	ACCESS_MASK GrantedAccess;
+} SYSTEM_HANDLE, * PSYSTEM_HANDLE;
+
+typedef struct _SYSTEM_HANDLE_INFORMATION {
+	ULONG HandleCount;
+	SYSTEM_HANDLE Handles[1];
+} SYSTEM_HANDLE_INFORMATION, * PSYSTEM_HANDLE_INFORMATION;
+
+void NativeScriptManager::ForceUnloadPDB()
+{
+	//https://blog-molecular--matters-com.cdn.ampproject.org/v/s/blog.molecular-matters.com/2017/05/09/deleting-pdb-files-locked-by-visual-studio/amp/?amp_gsa=1&amp_js_v=a9&usqp=mq331AQKKAFQArABIIACAw%3D%3D#amp_tf=From%20%251%24s&aoh=16578355814075&referrer=https%3A%2F%2Fwww.google.com&ampshare=https%3A%2F%2Fblog.molecular-matters.com%2F2017%2F05%2F09%2Fdeleting-pdb-files-locked-by-visual-studio%2F
+	//https://devblogs.microsoft.com/oldnewthing/20120217-00/?p=8283
+	//http://undocumented.ntinternals.net/index.html?page=UserMode%2FUndocumented%20Functions%2FNT%20Objects%2FFile%2FNtDeleteFile.html
+
+	DWORD session;
+	WCHAR sessionKey[CCH_RM_SESSION_KEY + 1] = { 0 };
+	DWORD error = RmStartSession(&session, 0, sessionKey);
+	if (error == ERROR_SUCCESS)
+	{
+		std::filesystem::path path = s_BuildScriptPath / "GEAR_NATIVE_SCRIPT.pdb";
+		const wchar_t* cwstr_path = path.native().c_str();
+		error = RmRegisterResources(session, 1, &cwstr_path, 0, NULL, 0, NULL);
+		if (error == ERROR_SUCCESS)
+		{
+			DWORD reason;
+			UINT procInfoNeeded;
+			UINT procInfoCount = 1;
+			std::vector<RM_PROCESS_INFO> procInfos(procInfoCount);
+
+			error = RmGetList(session, &procInfoNeeded, &procInfoCount, procInfos.data(), &reason);
+			procInfoCount = procInfoNeeded;
+			procInfos.resize(procInfoCount);
+			error = RmGetList(session, &procInfoNeeded, &procInfoCount, procInfos.data(), &reason);
+
+			if (error == ERROR_SUCCESS)
+			{
+				int SystemHandleInformation = 16;
+				PSYSTEM_HANDLE_INFORMATION pshi = nullptr;
+				SYSTEM_HANDLE_INFORMATION shi = {0};
+				NTSTATUS status = NtQuerySystemInformation((SYSTEM_INFORMATION_CLASS)SystemHandleInformation, &shi, sizeof(SYSTEM_HANDLE_INFORMATION), NULL);
+				ULONG shiSize = (shi.HandleCount + 10000) * sizeof(SYSTEM_HANDLE) + sizeof(ULONG);
+
+				pshi = (PSYSTEM_HANDLE_INFORMATION)malloc(shiSize);
+				status = NtQuerySystemInformation((SYSTEM_INFORMATION_CLASS)SystemHandleInformation, pshi, shiSize, NULL);
+				if (status == 0)
+				{
+					std::vector<SYSTEM_HANDLE> systemHandles;
+					for (ULONG i = 0; i < pshi->HandleCount; i++)
+					{
+						const BYTE ObjectTypeFile = 0x27;
+						SYSTEM_HANDLE& sh = pshi->Handles[i];
+						if (sh.ObjectTypeNumber != ObjectTypeFile)
+							continue;
+
+						for (const RM_PROCESS_INFO& procInfo : procInfos)
+						{
+							if (sh.ProcessId == (ULONG)procInfo.Process.dwProcessId && sh.GrantedAccess != 0x00120189)
+							{
+								HANDLE process = OpenProcess(PROCESS_DUP_HANDLE, FALSE, sh.ProcessId);
+								HANDLE dupHandle = 0;
+								BOOL success = DuplicateHandle(process, (HANDLE)sh.Handle, GetCurrentProcess(), &dupHandle, 0, 0, 0);
+								if (success)
+								{
+									int ObjectNameInformation = 1;
+									PVOID objectNameInfo = malloc(0x1000);
+									ULONG returnLength = 0;
+									status = NtQueryObject(dupHandle, (OBJECT_INFORMATION_CLASS)ObjectNameInformation, objectNameInfo, 0x1000, &returnLength);
+									if (status == 0)
+									{
+										UNICODE_STRING objectName = *(PUNICODE_STRING)objectNameInfo;
+										std::wstring objectName_wstr = objectName.Length ? std::wstring(((PUNICODE_STRING)objectNameInfo)->Buffer) : L"";
+										if (objectName_wstr.find(L"GEAR_NATIVE_SCRIPT.pdb") != std::wstring::npos)
+										{
+											systemHandles.push_back(sh);
+										}
+									}
+									free(objectNameInfo);
+								}
+								CloseHandle(dupHandle);
+								CloseHandle(process);
+							}
+						}
+					}
+
+					for (const SYSTEM_HANDLE& sh : systemHandles)
+					{
+						HANDLE process = OpenProcess(PROCESS_DUP_HANDLE, FALSE, sh.ProcessId);
+						status = DuplicateHandle(process, (HANDLE)sh.Handle, 0, NULL, 0, FALSE, DUPLICATE_CLOSE_SOURCE);
+						CloseHandle((HANDLE)sh.Handle);
+						CloseHandle(process);
+					}
+					HANDLE file = CreateFileW(path.native().c_str(),
+						(GENERIC_READ | GENERIC_WRITE),
+						FILE_SHARE_DELETE,
+						NULL,
+						OPEN_EXISTING,
+						FILE_FLAG_DELETE_ON_CLOSE,
+						NULL);
+					CloseHandle(file);
+				}
+				free(pshi);
+			}
+		}
+	}
+	RmEndSession(session);
+
 }
