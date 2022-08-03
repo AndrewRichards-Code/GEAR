@@ -26,12 +26,15 @@
 #include "Core/UUID.h"
 
 //Graphics
+#include "Graphics/Rendering/Pass.h"
+#include "Graphics/Rendering/PassParameters.h"
+#include "Graphics/Rendering/Renderer.h"
+#include "Graphics/Rendering/RenderGraph.h"
+#include "Graphics/Rendering/Resource.h"
 #include "Graphics/AllocatorManager.h"
 #include "Graphics/Colour.h"
 #include "Graphics/DebugRender.h"
 #include "Graphics/Indexbuffer.h"
-#include "Graphics/Renderer.h"
-#include "Graphics/RenderGraph.h"
 #include "Graphics/RenderPipeline.h"
 #include "Graphics/RenderSurface.h"
 #include "Graphics/Storagebuffer.h"

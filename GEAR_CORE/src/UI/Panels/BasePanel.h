@@ -19,6 +19,7 @@ namespace gear
 					MATERIAL,
 					PROJECT,
 					PROPERTIES,
+					RENDERER_PROPERTIES,
 					SCENE_HIERARCHY,
 					VIEWPORT,
 				};

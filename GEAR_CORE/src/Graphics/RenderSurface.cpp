@@ -125,7 +125,7 @@ void RenderSurface::CreateAttachments()
 		m_ColourImageCI.mipLevels = 1;
 		m_ColourImageCI.arrayLayers = 1;
 		m_ColourImageCI.sampleCount = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-		m_ColourImageCI.usage = Image::UsageBit::COLOUR_ATTACHMENT_BIT | Image::UsageBit::STORAGE_BIT | Image::UsageBit::INPUT_ATTACHMENT_BIT;
+		m_ColourImageCI.usage = Image::UsageBit::COLOUR_ATTACHMENT_BIT | Image::UsageBit::STORAGE_BIT | Image::UsageBit::SAMPLED_BIT;
 		m_ColourImageCI.layout = Image::Layout::UNKNOWN;
 		m_ColourImageCI.size = 0;
 		m_ColourImageCI.data = nullptr;

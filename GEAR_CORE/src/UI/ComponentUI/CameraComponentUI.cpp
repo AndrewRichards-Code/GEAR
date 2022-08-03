@@ -4,7 +4,7 @@
 #include "UI/Panels/Panels.h"
 #include "UI/UIContext.h"
 
-#include "Graphics/Renderer.h"
+#include "Graphics/Rendering/Renderer.h"
 #include "Scene/Entity.h"
 
 using namespace gear;
@@ -65,7 +65,7 @@ void gear::ui::componentui::AddCameraComponent(Entity entity, void* device)
 {
 	if (!entity.HasComponent<CameraComponent>())
 	{
-		const Ref<ViewportPanel>& viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
+		Ref<ViewportPanel> viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
 		const float& screenRatio = viewportPanel->GetCreateInfo().renderer->GetRenderSurface()->GetRatio();
 
 		Camera::CreateInfo cameraCI;

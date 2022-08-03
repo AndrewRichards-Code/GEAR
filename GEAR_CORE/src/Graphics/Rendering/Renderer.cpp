@@ -1,7 +1,9 @@
 #include "gear_core_common.h"
 
-#include "Graphics/Renderer.h"
+#include "Graphics/Rendering/Renderer.h"
 #include "Graphics/DebugRender.h"
+#include "Graphics/IndexBuffer.h"
+#include "Graphics/VertexBuffer.h"
 #include "Graphics/Window.h"
 
 #include "Objects/Probe.h"
@@ -10,6 +12,7 @@
 
 using namespace gear;
 using namespace graphics;
+using namespace rendering;
 using namespace objects;
 
 using namespace miru;
@@ -38,10 +41,12 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 
 	m_AcquireSemaphoreCI.debugName = "GEAR_CORE_Seamphore_Renderer_Acquire";
 	m_AcquireSemaphoreCI.device = m_Device;
+	m_AcquireSemaphoreCI.type = Semaphore::Type::BINARY;
 	m_AcquireSemaphore = Semaphore::Create(&m_AcquireSemaphoreCI);
 
 	m_SubmitSemaphoreCI.debugName = "GEAR_CORE_Seamphore_Renderer_Submit";
 	m_SubmitSemaphoreCI.device = m_Device;
+	m_SubmitSemaphoreCI.type = Semaphore::Type::BINARY;
 	m_SubmitSemaphore = Semaphore::Create(&m_SubmitSemaphoreCI);
 
 	SubmitRenderSurface(m_CI.window->GetRenderSurface());
@@ -127,6 +132,7 @@ void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface
 		{ "res/pipelines/BloomPrefilter.grpf",			{},								Image::Format::UNKNOWN },
 		{ "res/pipelines/BloomDownsample.grpf",			{},								Image::Format::UNKNOWN },
 		{ "res/pipelines/BloomUpsample.grpf",			{},								Image::Format::UNKNOWN },
+		{ "res/pipelines/Shadow.grpf",					{},								RenderSurface::DepthFormat },
 	};
 
 	RenderPipeline::LoadInfo renderPipelineLI;
@@ -218,6 +224,8 @@ void Renderer::Draw()
 	std::vector<Ref<objects::Model>> allQueue;
 	allQueue.insert(allQueue.end(), m_ModelQueue.begin(), m_ModelQueue.end());
 	allQueue.insert(allQueue.end(), m_TextQueue.begin(), m_TextQueue.end());
+	if (m_Skybox)
+		allQueue.push_back(m_Skybox->GetModel());
 
 	std::set<Ref<Texture>> texturesToProcess;
 	std::vector<Ref<Texture>> texturesToGenerateMipmaps;
@@ -306,90 +314,37 @@ void Renderer::Draw()
 		{
 			const uint32_t& levels = texture->GetCreateInfo().mipLevels;
 			const uint32_t& layers = texture->GetCreateInfo().arrayLayers;
-
+			const std::string& name = texture->GetCreateInfo().debugName;
 			std::vector<Ref<ImageView>> mipImageViews;
-			for (uint32_t i = 0; i < levels; i++)
+
+			for (uint32_t i = 1; i < levels; i++)
+			{
 				mipImageViews.push_back(renderGraph.CreateImageView(texture->GetImage(), layers > 1 ? Image::Type::TYPE_2D_ARRAY : Image::Type::TYPE_2D, {Image::AspectBit::COLOUR_BIT, i, 1, 0, layers}));
 
-			Ref<RenderPassParameters> generateMipMapsPassParameters;
-			if (layers > 1)
-			{
-				generateMipMapsPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["MipmapArray"], std::vector<size_t>({levels - 1}));
-				for (uint32_t i = 0; i < (levels - 1); i++)
+				Ref<TaskPassParameters> generateMipMapsPassParameters;
+				if (layers > 1)
 				{
-					generateMipMapsPassParameters->SetResource("inputImageArray", Resource(mipImageViews[i + 0], Resource::State::SHADER_READ_ONLY), i);
-					generateMipMapsPassParameters->SetResource("outputImageArray", Resource(mipImageViews[i + 1], Resource::State::SHADER_READ_WRITE), i);
+					generateMipMapsPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["MipmapArray"]);
+					generateMipMapsPassParameters->SetResource("inputImageArray", Resource(mipImageViews[std::min(i + 0, levels)], Resource::State::SHADER_READ_ONLY));
+					generateMipMapsPassParameters->SetResource("outputImageArray", Resource(mipImageViews[std::min(i + 1, levels)], Resource::State::SHADER_READ_WRITE));
 				}
-			}
-			else
-			{
-				generateMipMapsPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["Mipmap"], std::vector<size_t>({ levels - 1 }));
-				for (uint32_t i = 0; i < (levels - 1); i++)
+				else
 				{
-					generateMipMapsPassParameters->SetResource("inputImage", Resource(mipImageViews[i + 0], Resource::State::SHADER_READ_ONLY), i);
-					generateMipMapsPassParameters->SetResource("outputImage", Resource(mipImageViews[i + 1], Resource::State::SHADER_READ_WRITE), i);
+					generateMipMapsPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["Mipmap"]);
+					generateMipMapsPassParameters->SetResource("inputImage", Resource(mipImageViews[std::min(i + 0, levels)], Resource::State::SHADER_READ_ONLY));
+					generateMipMapsPassParameters->SetResource("outputImage", Resource(mipImageViews[std::min(i + 1, levels)], Resource::State::SHADER_READ_WRITE));
 				}
-			}
-				
-			renderGraph.AddPass("Generate Mip Maps", generateMipMapsPassParameters, CommandPool::QueueType::COMPUTE,
-				[generateMipMapsPassParameters, levels, layers, texture](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
-				{
-					std::vector<Ref<Barrier>> barriers;
-					Barrier::CreateInfo barrierCI;
-
-					for (uint32_t i = 1; i < levels; i++)
+					
+				renderGraph.AddPass("Generate Mip Maps  - " + name + " - Level: " + std::to_string(i), generateMipMapsPassParameters, CommandPool::QueueType::COMPUTE,
+					[generateMipMapsPassParameters, i, layers, texture](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 					{
-						barrierCI.type = Barrier::Type::IMAGE;
-						barrierCI.srcAccess = Barrier::AccessBit::SHADER_WRITE_BIT;
-						barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;
-						barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-						barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-						barrierCI.image = texture->GetImage();
-						barrierCI.oldLayout = Image::Layout::GENERAL;
-						barrierCI.newLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL;
-						barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, layers };
-
-						barriers.clear();
-						barriers.emplace_back(Barrier::Create(&barrierCI));
-						cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
-
-						cmdBuffer->BindDescriptorSets(frameIndex, { generateMipMapsPassParameters->GetDescriptorSet(0, (i - 1))}, 0, generateMipMapsPassParameters->GetPipeline());
-						uint32_t width = std::max((texture->GetWidth() >> i) / 8, uint32_t(1));
-						uint32_t height = std::max((texture->GetHeight() >> i) / 8, uint32_t(1));
-						uint32_t depth = layers;
-						cmdBuffer->Dispatch(frameIndex, width, height, depth);
-
-						barrierCI.type = Barrier::Type::IMAGE;
-						barrierCI.srcAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;
-						barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
-						barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-						barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-						barrierCI.image = texture->GetImage();
-						barrierCI.oldLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL;
-						barrierCI.newLayout = Image::Layout::GENERAL;
-						barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, layers };
-
-						barriers.clear();
-						barriers.emplace_back(Barrier::Create(&barrierCI));
-						cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
-					}
-
-					barrierCI.type = Barrier::Type::IMAGE;
-					barrierCI.srcAccess = Barrier::AccessBit::SHADER_WRITE_BIT;
-					barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
-					barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-					barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-					barrierCI.image = texture->GetImage();
-					barrierCI.oldLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_NON_PIXEL_SHADER_READ_ONLY_OPTIMAL : Image::Layout::GENERAL; //D3D12: D3D12_RESOURCE_STATE_COMMON is promoted to D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE after Dispatch() for SRV accesses.
-					barrierCI.newLayout = Image::Layout::GENERAL;
-					barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, levels, 0, layers };
-
-					barriers.clear();
-					barriers.emplace_back(Barrier::Create(&barrierCI));
-					cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
-
-					texture->m_GeneratedMipMaps = true;
-				});
+							uint32_t width = std::max((texture->GetWidth() >> i) / 8, uint32_t(1));
+							uint32_t height = std::max((texture->GetHeight() >> i) / 8, uint32_t(1));
+							uint32_t depth = layers;
+							cmdBuffer->Dispatch(frameIndex, width, height, depth);
+					});
+			}
+			texture->m_GeneratedMipMaps = true;
 		}
 
 		if (m_Skybox && !m_Skybox->m_Generated)
@@ -397,35 +352,17 @@ void Renderer::Draw()
 			//Skybox: Equirectangular To Cube
 			{
 				Ref<ImageView> generatedCubemap_2DArrayView = renderGraph.CreateImageView(m_Skybox->GetGeneratedCubemap()->GetImage(), Image::Type::TYPE_2D_ARRAY, { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 6 });
-				Ref<RenderPassParameters> equirectangularToCubePassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["EquirectangularToCube"]);
+				Ref<TaskPassParameters> equirectangularToCubePassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["EquirectangularToCube"]);
 				equirectangularToCubePassParameters->SetResource("equirectangularImage", Resource(m_Skybox->GetHDRTexture(), DescriptorType::COMBINED_IMAGE_SAMPLER));
 				equirectangularToCubePassParameters->SetResource("cubeImage", Resource(generatedCubemap_2DArrayView, Resource::State::SHADER_READ_WRITE));
 
 				renderGraph.AddPass("Skybox: Equirectangular To Cube", equirectangularToCubePassParameters, CommandPool::QueueType::COMPUTE,
 					[equirectangularToCubePassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 					{
-						std::vector<Ref<Barrier>> barriers;
-						Barrier::CreateInfo barrierCI;
-
-						cmdBuffer->BindDescriptorSets(frameIndex, { equirectangularToCubePassParameters->GetDescriptorSet(0) }, 0, equirectangularToCubePassParameters->GetPipeline());
 						uint32_t width = std::max(m_Skybox->GetGeneratedCubemap()->GetWidth() / 32, uint32_t(1));
 						uint32_t height = std::max(m_Skybox->GetGeneratedCubemap()->GetHeight() / 32, uint32_t(1));
 						uint32_t depth = 6;
 						cmdBuffer->Dispatch(frameIndex, width, height, depth);
-
-						barrierCI.type = Barrier::Type::IMAGE;
-						barrierCI.srcAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;;
-						barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
-						barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-						barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-						barrierCI.image = m_Skybox->GetGeneratedCubemap()->GetImage();
-						barrierCI.oldLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL; //D3D12: D3D12_RESOURCE_STATE_COMMON is promoted to D3D12_RESOURCE_STATE_UNORDERED_ACCESS after Dispatch() for UAV accesses.
-						barrierCI.newLayout = Image::Layout::GENERAL;
-						barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 6 };
-
-						barriers.clear();
-						barriers.emplace_back(Barrier::Create(&barrierCI));
-						cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
 					});
 			}
 
@@ -437,87 +374,37 @@ void Renderer::Draw()
 
 				std::vector<Ref<ImageView>> mipImageViews;
 				for (uint32_t i = 0; i < levels; i++)
+				{
 					mipImageViews.push_back(renderGraph.CreateImageView(texture->GetImage(), Image::Type::TYPE_2D_ARRAY, { Image::AspectBit::COLOUR_BIT, i, 1, 0, layers }));
 
-				Ref<RenderPassParameters> generateMipMapsPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["MipmapArray"], std::vector<size_t>({ levels - 1 }));
-				for (uint32_t i = 0; i < (levels - 1); i++)
-				{
-					generateMipMapsPassParameters->SetResource("inputImageArray", Resource(mipImageViews[i + 0], Resource::State::SHADER_READ_ONLY), i);
-					generateMipMapsPassParameters->SetResource("outputImageArray", Resource(mipImageViews[i + 1], Resource::State::SHADER_READ_WRITE), i);
-				}
-				
-				renderGraph.AddPass("Skybox: Generate Mip Maps", generateMipMapsPassParameters, CommandPool::QueueType::COMPUTE,
-					[generateMipMapsPassParameters, levels, layers, texture](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
-					{
-						std::vector<Ref<Barrier>> barriers;
-						Barrier::CreateInfo barrierCI;
+					Ref<TaskPassParameters> generateMipMapsPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["MipmapArray"]);
+					
+					generateMipMapsPassParameters->SetResource("inputImageArray", Resource(mipImageViews[std::min(i + 0, levels)], Resource::State::SHADER_READ_ONLY));
+					generateMipMapsPassParameters->SetResource("outputImageArray", Resource(mipImageViews[std::min(i + 1, levels)], Resource::State::SHADER_READ_WRITE));
 
-						for (uint32_t i = 1; i < levels; i++)
+					renderGraph.AddPass("Skybox: Generate Mip Maps - Level: " + std::to_string(i), generateMipMapsPassParameters, CommandPool::QueueType::COMPUTE,
+						[generateMipMapsPassParameters, i, levels, layers, texture](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 						{
-							barrierCI.type = Barrier::Type::IMAGE;
-							barrierCI.srcAccess = Barrier::AccessBit::SHADER_WRITE_BIT;
-							barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;
-							barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-							barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-							barrierCI.image = texture->GetImage();
-							barrierCI.oldLayout = Image::Layout::GENERAL;
-							barrierCI.newLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL;
-							barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, layers };
-
-							barriers.clear();
-							barriers.emplace_back(Barrier::Create(&barrierCI));
-							cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
-
-							cmdBuffer->BindDescriptorSets(frameIndex, { generateMipMapsPassParameters->GetDescriptorSet(0, (i - 1)) }, 0, generateMipMapsPassParameters->GetPipeline());
 							uint32_t width = std::max((texture->GetWidth() >> i) / 8, uint32_t(1));
 							uint32_t height = std::max((texture->GetHeight() >> i) / 8, uint32_t(1));
 							uint32_t depth = layers;
 							cmdBuffer->Dispatch(frameIndex, width, height, depth);
 
-							barrierCI.type = Barrier::Type::IMAGE;
-							barrierCI.srcAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;
-							barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
-							barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-							barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-							barrierCI.image = texture->GetImage();
-							barrierCI.oldLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL;
-							barrierCI.newLayout = Image::Layout::GENERAL;
-							barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, layers };
-
-							barriers.clear();
-							barriers.emplace_back(Barrier::Create(&barrierCI));
-							cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
-						}
-
-						barrierCI.type = Barrier::Type::IMAGE;
-						barrierCI.srcAccess = Barrier::AccessBit::SHADER_WRITE_BIT;
-						barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
-						barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-						barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-						barrierCI.image = texture->GetImage();
-						barrierCI.oldLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_NON_PIXEL_SHADER_READ_ONLY_OPTIMAL : Image::Layout::GENERAL; //D3D12: D3D12_RESOURCE_STATE_COMMON is promoted to D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE after Dispatch() for SRV accesses.
-						barrierCI.newLayout = Image::Layout::GENERAL;
-						barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, levels, 0, layers };
-
-						barriers.clear();
-						barriers.emplace_back(Barrier::Create(&barrierCI));
-						cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
-
-						texture->m_GeneratedMipMaps = true;
-					});
+							texture->m_GeneratedMipMaps = true;
+						});
+				}
 			}
 			
 			//Skybox: Diffuse Irradiance
 			{
 				Ref<ImageView> generatedDiffuseCubemap_2DArrayView = renderGraph.CreateImageView(m_Skybox->GetGeneratedDiffuseCubemap()->GetImage(), Image::Type::TYPE_2D_ARRAY, { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 6 });
-				Ref<RenderPassParameters> diffuseIrradiancePassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["DiffuseIrradiance"]);
+				Ref<TaskPassParameters> diffuseIrradiancePassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["DiffuseIrradiance"]);
 				diffuseIrradiancePassParameters->SetResource("environment", Resource(m_Skybox->GetGeneratedCubemap(), DescriptorType::COMBINED_IMAGE_SAMPLER));
 				diffuseIrradiancePassParameters->SetResource("diffuseIrradiance", Resource(generatedDiffuseCubemap_2DArrayView, Resource::State::SHADER_READ_WRITE));
 
 				renderGraph.AddPass("Skybox: Diffuse Irradiance", diffuseIrradiancePassParameters, CommandPool::QueueType::COMPUTE,
 					[diffuseIrradiancePassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 					{
-						cmdBuffer->BindDescriptorSets(frameIndex, { diffuseIrradiancePassParameters->GetDescriptorSet(0) }, 0, diffuseIrradiancePassParameters->GetPipeline());
 						uint32_t width = std::max(m_Skybox->GetGeneratedDiffuseCubemap()->GetWidth() / 32, uint32_t(1));
 						uint32_t height = std::max(m_Skybox->GetGeneratedDiffuseCubemap()->GetHeight() / 32, uint32_t(1));
 						uint32_t depth = 6;
@@ -531,36 +418,30 @@ void Renderer::Draw()
 				const uint32_t& levels = texture->GetCreateInfo().mipLevels;
 
 				std::vector<Ref<ImageView>> generatedSpecularCubemap_2DArrayViews;
-				for (uint32_t i = 0; i < levels; i++)
-					generatedSpecularCubemap_2DArrayViews.push_back(renderGraph.CreateImageView(texture->GetImage(), Image::Type::TYPE_2D_ARRAY, { Image::AspectBit::COLOUR_BIT, i, 1, 0, 6 }));
 
 				float zero[sizeof(UniformBufferStructures::SpecularIrradianceInfo)] = { 0 };
-				Uniformbuffer<UniformBufferStructures::SpecularIrradianceInfo>::CreateInfo ubCI;
-				ubCI.debugName = "GEAR_CORE_Uniformbuffer_SpecularIrradianceInfoUB";
-				ubCI.device = m_Device;
-				ubCI.data = zero;
-
 				std::vector<Ref<Uniformbuffer<UniformBufferStructures::SpecularIrradianceInfo>>> specularIrradianceInfoUBs;
 				specularIrradianceInfoUBs.resize(levels);
+
 				for (uint32_t i = 0; i < levels; i++)
 				{
+					generatedSpecularCubemap_2DArrayViews.push_back(renderGraph.CreateImageView(texture->GetImage(), Image::Type::TYPE_2D_ARRAY, { Image::AspectBit::COLOUR_BIT, i, 1, 0, 6 }));
+
+					Uniformbuffer<UniformBufferStructures::SpecularIrradianceInfo>::CreateInfo ubCI;
+					ubCI.debugName = "GEAR_CORE_Uniformbuffer_SpecularIrradianceInfoUB";
+					ubCI.device = m_Device;
+					ubCI.data = zero;
 					specularIrradianceInfoUBs[i] = CreateRef<Uniformbuffer<UniformBufferStructures::SpecularIrradianceInfo>>(&ubCI);
 					specularIrradianceInfoUBs[i]->roughness = float(i) / float(levels);
 					specularIrradianceInfoUBs[i]->SubmitData();
-				}
 
-				Ref<RenderPassParameters> specularIrradiancePassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["SpecularIrradiance"], std::vector<size_t>(levels));
-				for (uint32_t i = 0; i < levels; i++)
-				{
-					specularIrradiancePassParameters->SetResource("environment", Resource(m_Skybox->GetGeneratedCubemap(), DescriptorType::COMBINED_IMAGE_SAMPLER), i);
-					specularIrradiancePassParameters->SetResource("diffuseIrradiance", Resource(generatedSpecularCubemap_2DArrayViews[i], Resource::State::SHADER_READ_WRITE), i);
-					specularIrradiancePassParameters->SetResource("specularIrradianceInfo", Resource(specularIrradianceInfoUBs[i]), i);
-				}
+					Ref<TaskPassParameters> specularIrradiancePassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["SpecularIrradiance"]);
+					specularIrradiancePassParameters->SetResource("environment", Resource(m_Skybox->GetGeneratedCubemap(), DescriptorType::COMBINED_IMAGE_SAMPLER));
+					specularIrradiancePassParameters->SetResource("specularIrradiance", Resource(generatedSpecularCubemap_2DArrayViews[i], Resource::State::SHADER_READ_WRITE));
+					specularIrradiancePassParameters->SetResource("specularIrradianceInfo", Resource(specularIrradianceInfoUBs[i]));
 
-				renderGraph.AddPass("Skybox: Specular Irradiance", specularIrradiancePassParameters, CommandPool::QueueType::COMPUTE,
-					[specularIrradiancePassParameters, texture, levels, specularIrradianceInfoUBs, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
-					{
-						for (uint32_t i = 0; i < levels; i++)
+					renderGraph.AddPass("Skybox: Specular Irradiance - Level: " + std::to_string(i), specularIrradiancePassParameters, CommandPool::QueueType::COMPUTE,
+						[specularIrradiancePassParameters, texture, i, specularIrradianceInfoUBs, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 						{
 							cmdBuffer->CopyBuffer(frameIndex, specularIrradianceInfoUBs[i]->GetCPUBuffer(), specularIrradianceInfoUBs[i]->GetGPUBuffer(), { {0, 0, specularIrradianceInfoUBs[i]->GetSize()} });
 							if (GraphicsAPI::IsD3D12())
@@ -578,24 +459,22 @@ void Renderer::Draw()
 								cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, { b });
 							};
 
-							cmdBuffer->BindDescriptorSets(frameIndex, { specularIrradiancePassParameters->GetDescriptorSet(0, i) }, 0, specularIrradiancePassParameters->GetPipeline());
 							uint32_t width = std::max((texture->GetWidth() >> i) / 32, uint32_t(1));
 							uint32_t height = std::max((texture->GetHeight() >> i) / 32, uint32_t(1));
 							uint32_t depth = 6;
 							cmdBuffer->Dispatch(frameIndex, width, height, depth);
-						}
-					});
+						});
+				}
 			}
 
 			//Skybox: Specular BRDF LUT
 			{
-				Ref<RenderPassParameters> specularBRDF_LUT_PassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["SpecularBRDF_LUT"]);
+				Ref<TaskPassParameters> specularBRDF_LUT_PassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["SpecularBRDF_LUT"]);
 				specularBRDF_LUT_PassParameters->SetResource("brdf_lut", Resource(m_Skybox->GetGeneratedSpecularBRDF_LUT(), DescriptorType::STORAGE_IMAGE));
 
 				renderGraph.AddPass("Skybox: Specular BRDF LUT", specularBRDF_LUT_PassParameters, CommandPool::QueueType::COMPUTE,
 					[specularBRDF_LUT_PassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 					{
-						cmdBuffer->BindDescriptorSets(frameIndex, { specularBRDF_LUT_PassParameters->GetDescriptorSet(0) }, 0, specularBRDF_LUT_PassParameters->GetPipeline());
 						uint32_t width = std::max(m_Skybox->GetGeneratedSpecularBRDF_LUT()->GetWidth() / 32, uint32_t(1));
 						uint32_t height = std::max(m_Skybox->GetGeneratedSpecularBRDF_LUT()->GetHeight() / 32, uint32_t(1));
 						uint32_t depth = 1;
@@ -616,31 +495,25 @@ void Renderer::Draw()
 			uint32_t width = probe->m_DepthTexture->GetCreateInfo().data.width;
 			uint32_t height = probe->m_DepthTexture->GetCreateInfo().data.height;
 
-			Ref<RenderPassParameters> shadowPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["Shadow"], std::vector<size_t>({ 1, m_ModelQueue.size() }));
-			shadowPassParameters->SetResource("probeInfo", Resource(probe->GetUB()));
-			size_t modelIndex = 0;
 			for (const auto& model : m_ModelQueue)
-				shadowPassParameters->SetResource("model", Resource(model->GetUB()), (uint32_t)modelIndex++);
-			shadowPassParameters->AddAttachment(0, Resource(probe->m_DepthTexture, Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
-			shadowPassParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height), probe->m_DepthTexture->GetCreateInfo().arrayLayers);
-
-			renderGraph.AddPass("Shadow Pass", shadowPassParameters, CommandPool::QueueType::GRAPHICS,
-				[shadowPassParameters, omni, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+			{
+				for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
 				{
-					cmdBuffer->BindDescriptorSets(frameIndex, { shadowPassParameters->GetDescriptorSet(0) }, 0, shadowPassParameters->GetPipeline());
-					uint32_t modelIndex = 0;
-					for (const auto& model : m_ModelQueue)
-					{
-						cmdBuffer->BindDescriptorSets(frameIndex, { shadowPassParameters->GetDescriptorSet(1, modelIndex++) }, 1, shadowPassParameters->GetPipeline());
+					Ref<TaskPassParameters> shadowPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["Shadow"]);
+					shadowPassParameters->SetResource("probeInfo", Resource(probe->GetUB()));
+					shadowPassParameters->SetResource("model", Resource(model->GetUB()));
+					shadowPassParameters->AddAttachment(0, Resource(probe->m_DepthTexture, Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
+					shadowPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height), probe->m_DepthTexture->GetCreateInfo().arrayLayers);
 
-						for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
+					renderGraph.AddPass("Shadow Pass - " + model->GetDebugName() + ": " + std::to_string(i), shadowPassParameters, CommandPool::QueueType::GRAPHICS,
+						[shadowPassParameters, model, i, omni, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 						{
 							cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[i]->GetGPUBufferView() });
 							cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetGPUBufferView());
 							cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetCount(), omni ? 6 : 1);
-						}
-					}
-				});
+						});
+				}
+			}
 		}
 
 		//Shadow - DebugShowDepth
@@ -672,102 +545,88 @@ void Renderer::Draw()
 
 				std::string renderPipelineName = omni ? "DebugShowDepthCubemap" : "DebugShowDepth";
 
-				Ref<RenderPassParameters> debugShowDepthParameters = CreateRef<RenderPassParameters>(s_RenderPipelines[renderPipelineName]);
+				Ref<TaskPassParameters> debugShowDepthParameters = CreateRef<TaskPassParameters>(s_RenderPipelines[renderPipelineName]);
 				debugShowDepthParameters->SetResource("debugCamera", Resource(DebugRender::GetCamera()->GetCameraUB()));
 				debugShowDepthParameters->SetResource(omni ? "cubemap" : "image2D", Resource(probe->m_DepthTexture, DescriptorType::COMBINED_IMAGE_SAMPLER));
 				debugShowDepthParameters->AddAttachment(0, Resource(debugShowDepthTexture, Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 1.0f });
-				debugShowDepthParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height));
+				debugShowDepthParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
 				renderGraph.AddPass("Shadow - " + renderPipelineName, debugShowDepthParameters, CommandPool::QueueType::GRAPHICS,
 					[debugShowDepthParameters](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 					{
-						cmdBuffer->BindDescriptorSets(frameIndex, { debugShowDepthParameters->GetDescriptorSet(0) }, 0, debugShowDepthParameters->GetPipeline());
 						cmdBuffer->Draw(frameIndex, 6);
 					});
 			}
 		}
 	}
 
-	//Main Render PBROpaque - Skybox
-	if (m_MainRenderCamera && !m_Lights.empty() && m_Skybox)
+	//Main Render PBROpaque
+	if (m_MainRenderCamera && !m_Lights.empty() && m_Skybox && !m_ModelQueue.empty())
 	{
 		uint32_t width = m_RenderSurface->GetWidth();
 		uint32_t height = m_RenderSurface->GetHeight();
-		size_t modelCount = 0;
-		size_t materialCount = 0;
-		for (const auto& model : m_ModelQueue)
-		{
-			modelCount++;
-			materialCount += model->GetMesh()->GetVertexBuffers().size();
-		}
 
-		Ref<RenderPassParameters> mainRenderPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["PBROpaque"], std::vector<size_t>({ 1, modelCount, materialCount }));
-		mainRenderPassParameters->SetResource("camera", Resource(m_MainRenderCamera->GetCameraUB()));
-		mainRenderPassParameters->SetResource("lights", Resource(m_Lights[0]->GetUB()));
-		mainRenderPassParameters->SetResource("diffuseIrradiance", Resource(m_Skybox->GetGeneratedDiffuseCubemap(), DescriptorType::COMBINED_IMAGE_SAMPLER));
-		mainRenderPassParameters->SetResource("specularIrradiance", Resource(m_Skybox->GetGeneratedSpecularCubemap(), DescriptorType::COMBINED_IMAGE_SAMPLER));
-		mainRenderPassParameters->SetResource("specularBRDF_LUT", Resource(m_Skybox->GetGeneratedSpecularBRDF_LUT(), DescriptorType::COMBINED_IMAGE_SAMPLER));
-		uint32_t modelIndex = 0;
-		uint32_t materialIndex = 0;
 		for (const auto& model : m_ModelQueue)
 		{
-			mainRenderPassParameters->SetResource("model", Resource(model->GetUB()), modelIndex++);
 			for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
 			{
+				Ref<TaskPassParameters> mainRenderPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["PBROpaque"]);
 				const Ref<objects::Material>& material = model->GetMesh()->GetMaterial(i);
-				mainRenderPassParameters->SetResource("pbrConstants", Resource(material->GetUB()), materialIndex);
-				mainRenderPassParameters->SetResource("normal", Resource(material->GetTextures()[Material::TextureType::NORMAL], DescriptorType::COMBINED_IMAGE_SAMPLER), materialIndex);
-				mainRenderPassParameters->SetResource("albedo", Resource(material->GetTextures()[Material::TextureType::ALBEDO], DescriptorType::COMBINED_IMAGE_SAMPLER), materialIndex);
-				mainRenderPassParameters->SetResource("metallic", Resource(material->GetTextures()[Material::TextureType::METALLIC], DescriptorType::COMBINED_IMAGE_SAMPLER), materialIndex);
-				mainRenderPassParameters->SetResource("roughness", Resource(material->GetTextures()[Material::TextureType::ROUGHNESS], DescriptorType::COMBINED_IMAGE_SAMPLER), materialIndex);
-				mainRenderPassParameters->SetResource("ambientOcclusion", Resource(material->GetTextures()[Material::TextureType::AMBIENT_OCCLUSION], DescriptorType::COMBINED_IMAGE_SAMPLER), materialIndex);
-				mainRenderPassParameters->SetResource("emissive", Resource(material->GetTextures()[Material::TextureType::EMISSIVE], DescriptorType::COMBINED_IMAGE_SAMPLER), materialIndex++);
-			}
-		}
+				mainRenderPassParameters->SetResource("camera", Resource(m_MainRenderCamera->GetCameraUB()));
+				mainRenderPassParameters->SetResource("lights", Resource(m_Lights[0]->GetUB()));
+				mainRenderPassParameters->SetResource("diffuseIrradiance", Resource(m_Skybox->GetGeneratedDiffuseCubemap(), DescriptorType::COMBINED_IMAGE_SAMPLER));
+				mainRenderPassParameters->SetResource("specularIrradiance", Resource(m_Skybox->GetGeneratedSpecularCubemap(), DescriptorType::COMBINED_IMAGE_SAMPLER));
+				mainRenderPassParameters->SetResource("specularBRDF_LUT", Resource(m_Skybox->GetGeneratedSpecularBRDF_LUT(), DescriptorType::COMBINED_IMAGE_SAMPLER));
+				mainRenderPassParameters->SetResource("model", Resource(model->GetUB()));
+				mainRenderPassParameters->SetResource("pbrConstants", Resource(material->GetUB()));
+				mainRenderPassParameters->SetResource("normal", Resource(material->GetTextures()[Material::TextureType::NORMAL], DescriptorType::COMBINED_IMAGE_SAMPLER));
+				mainRenderPassParameters->SetResource("albedo", Resource(material->GetTextures()[Material::TextureType::ALBEDO], DescriptorType::COMBINED_IMAGE_SAMPLER));
+				mainRenderPassParameters->SetResource("metallic", Resource(material->GetTextures()[Material::TextureType::METALLIC], DescriptorType::COMBINED_IMAGE_SAMPLER));
+				mainRenderPassParameters->SetResource("roughness", Resource(material->GetTextures()[Material::TextureType::ROUGHNESS], DescriptorType::COMBINED_IMAGE_SAMPLER));
+				mainRenderPassParameters->SetResource("ambientOcclusion", Resource(material->GetTextures()[Material::TextureType::AMBIENT_OCCLUSION], DescriptorType::COMBINED_IMAGE_SAMPLER));
+				mainRenderPassParameters->SetResource("emissive", Resource(material->GetTextures()[Material::TextureType::EMISSIVE], DescriptorType::COMBINED_IMAGE_SAMPLER));
+				mainRenderPassParameters->AddAttachmentWithResolve(0, Resource(m_RenderSurface->GetMSAAColourImageView(), Resource::State::COLOUR_ATTACHMENT),
+					Resource(m_RenderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
+				mainRenderPassParameters->AddAttachment(0, Resource(m_RenderSurface->GetDepthImageView(), Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
+				mainRenderPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
-		mainRenderPassParameters->AddAttachmentWithResolve(0, Resource(m_RenderSurface->GetMSAAColourImageView(), Resource::State::COLOUR_ATTACHMENT),
-			Resource(m_RenderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
-		mainRenderPassParameters->AddAttachment(0, Resource(m_RenderSurface->GetDepthImageView(), Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
-		mainRenderPassParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height));
-
-		renderGraph.AddPass("Main Render PBROpaque", mainRenderPassParameters, CommandPool::QueueType::GRAPHICS,
-			[mainRenderPassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
-			{
-				cmdBuffer->BindDescriptorSets(frameIndex, { mainRenderPassParameters->GetDescriptorSet(0) }, 0, mainRenderPassParameters->GetPipeline());
-				uint32_t modelIndex = 0;
-				for (auto& model : m_ModelQueue)
-				{
-					cmdBuffer->BindDescriptorSets(frameIndex, { mainRenderPassParameters->GetDescriptorSet(1, modelIndex++) }, 1, mainRenderPassParameters->GetPipeline());
-					for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
+				renderGraph.AddPass("Main Render PBROpaque - " + model->GetDebugName() + ": " + std::to_string(i), mainRenderPassParameters, CommandPool::QueueType::GRAPHICS,
+					[mainRenderPassParameters, model, i, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 					{
-						cmdBuffer->BindDescriptorSets(frameIndex, { mainRenderPassParameters->GetDescriptorSet(2, static_cast<uint32_t>(i)) }, 2, mainRenderPassParameters->GetPipeline());
 						cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[i]->GetGPUBufferView() });
 						cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetGPUBufferView());
 						cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetCount());
-					}
-				}
-			});
+					});
+			}
+		}
+	}
 
-		Ref<RenderPassParameters> skyboxPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["Cube"]);
+	//Main Render Skybox
+	if (m_MainRenderCamera && m_Skybox)
+	{
+		uint32_t width = m_RenderSurface->GetWidth();
+		uint32_t height = m_RenderSurface->GetHeight();
+
+		Ref<TaskPassParameters> skyboxPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["Cube"]);
 		skyboxPassParameters->SetResource("camera", Resource(m_MainRenderCamera->GetCameraUB()));
 		skyboxPassParameters->SetResource("model", Resource(m_Skybox->GetModel()->GetUB()));
 		skyboxPassParameters->SetResource("skybox", Resource(m_Skybox->GetGeneratedCubemap(), Resource::State::SHADER_READ_ONLY));
 		skyboxPassParameters->AddAttachmentWithResolve(0, Resource(m_RenderSurface->GetMSAAColourImageView(), Resource::State::COLOUR_ATTACHMENT),
 			Resource(m_RenderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
 		skyboxPassParameters->AddAttachment(0, Resource(m_RenderSurface->GetDepthImageView(), Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
-		skyboxPassParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height));
+		skyboxPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
 		renderGraph.AddPass("Main Render Skybox", skyboxPassParameters, CommandPool::QueueType::GRAPHICS,
 			[skyboxPassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 			{
 				const Ref<Model>& model = m_Skybox->GetModel();
-				cmdBuffer->BindDescriptorSets(frameIndex, { skyboxPassParameters->GetDescriptorSet(0), skyboxPassParameters->GetDescriptorSet(1), skyboxPassParameters->GetDescriptorSet(2) }, 0, skyboxPassParameters->GetPipeline());
 				cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[0]->GetGPUBufferView() });
 				cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[0]->GetGPUBufferView());
 				cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[0]->GetCount());
 			});
 	}
 
+#if 0
 	//Post Processing Bloom Prefilter - Downsample - Upsample
 	if (m_MainRenderCamera)
 	{
@@ -779,10 +638,10 @@ void Renderer::Draw()
 		uint32_t height = colourImage->GetCreateInfo().height;
 		uint32_t minSize = std::min(colourImage->GetCreateInfo().width, colourImage->GetCreateInfo().height);
 		uint32_t levels = std::max(static_cast<uint32_t>(log2(static_cast<double>(minSize / 8))), uint32_t(1));
-		
+
 		ImageRef prefilterOutputImage = renderGraph.CreateImage({ Image::Type::TYPE_2D, Image::Format::R16G16B16A16_SFLOAT, width, height, 1, levels, 1, Image::SampleCountBit::SAMPLE_COUNT_1_BIT, RenderGraph::ImageDesc::UsageBit::SHADER_READ_WRITE }, "Bloom_Prefilter_Output");
-		ImageViewRef prefilterOutputImageView = renderGraph.CreateImageView(prefilterOutputImage, Image::Type::TYPE_2D,{ Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 });
-		
+		ImageViewRef prefilterOutputImageView = renderGraph.CreateImageView(prefilterOutputImage, Image::Type::TYPE_2D, { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 });
+
 		float zero[sizeof(UniformBufferStructures::BloomInfo)] = { 0 };
 		Uniformbuffer<UniformBufferStructures::BloomInfo>::CreateInfo ubCI;
 		ubCI.debugName = "GEAR_CORE_Buffer_BloomInfoUB";
@@ -793,7 +652,7 @@ void Renderer::Draw()
 		bloomInfoUB->upsampleScale = 2.0f;
 		bloomInfoUB->SubmitData();
 
-		Ref<RenderPassParameters> bloomPreFilterPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["BloomPreFilter"]);
+		Ref<TaskPassParameters> bloomPreFilterPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["BloomPreFilter"]);
 		bloomPreFilterPassParameters->SetResource("inputImage", Resource(colourImageView, Resource::State::SHADER_READ_WRITE));
 		bloomPreFilterPassParameters->SetResource("outputImage", Resource(prefilterOutputImageView, Resource::State::SHADER_READ_WRITE));
 		bloomPreFilterPassParameters->SetResource("bloomInfo", Resource(bloomInfoUB));
@@ -802,7 +661,6 @@ void Renderer::Draw()
 			[bloomPreFilterPassParameters, bloomInfoUB, width, height](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 			{
 				cmdBuffer->CopyBuffer(frameIndex, bloomInfoUB->GetCPUBuffer(), bloomInfoUB->GetGPUBuffer(), { { 0, 0, bloomInfoUB->GetSize() } });
-				cmdBuffer->BindDescriptorSets(frameIndex, { bloomPreFilterPassParameters->GetDescriptorSet(0) }, 0, bloomPreFilterPassParameters->GetPipeline());
 				uint32_t _width = std::max(width / 8, uint32_t(1));
 				uint32_t _height = std::max(height / 8, uint32_t(1));
 				uint32_t _depth = 1;
@@ -810,12 +668,8 @@ void Renderer::Draw()
 				_height += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
 				cmdBuffer->Dispatch(frameIndex, _width, _height, _depth);
 			});
-		
+
 		//Downsample
-		std::vector<ImageViewRef> bloomImageViews;
-		for (uint32_t i = 0; i < levels; i++)
-			bloomImageViews.push_back(renderGraph.CreateImageView(prefilterOutputImage, Image::Type::TYPE_2D,{ Image::AspectBit::COLOUR_BIT, i, 1, 0, 1 }));
-		
 		Sampler::CreateInfo samplerCI;
 		samplerCI.debugName = "GEAR_CORE_Sampler_Bloom";
 		samplerCI.device = m_Device;
@@ -835,118 +689,52 @@ void Renderer::Draw()
 		samplerCI.borderColour = Sampler::BorderColour::FLOAT_TRANSPARENT_BLACK;
 		samplerCI.unnormalisedCoordinates = false;
 		SamplerRef sampler = Sampler::Create(&samplerCI);
-
-		Ref<RenderPassParameters> bloomDownsamplePassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["BloomDownsample"], std::vector<size_t>({ levels - 1 }));
-		for (uint32_t i = 0; i < (levels - 1); i++)
+		std::vector<ImageViewRef> bloomImageViews;
+		
+		for (uint32_t i = 0; i < levels; i++)
 		{
-			bloomDownsamplePassParameters->SetResource("inputImageRO", Resource(bloomImageViews[i + 0], sampler), i);
-			bloomDownsamplePassParameters->SetResource("outputImage", Resource(bloomImageViews[i + 1], Resource::State::SHADER_READ_WRITE), i);
-		}
+			bloomImageViews.push_back(renderGraph.CreateImageView(prefilterOutputImage, Image::Type::TYPE_2D, { Image::AspectBit::COLOUR_BIT, i, 1, 0, 1 }));
 
-		renderGraph.AddPass("Post Processing Bloom Downsample", bloomDownsamplePassParameters, CommandPool::QueueType::COMPUTE,
-			[bloomDownsamplePassParameters, levels, prefilterOutputImage, width, height](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
-			{
-				Image::Layout imageLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL;
-				std::vector<BarrierRef> barriers;
+			Ref<TaskPassParameters> bloomDownsamplePassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["BloomDownsample"]);
+			bloomDownsamplePassParameters->SetResource("inputImageRO", Resource(bloomImageViews[std::min(i + 0, levels)], sampler));
+			bloomDownsamplePassParameters->SetResource("outputImage", Resource(bloomImageViews[std::min(i + 1, levels)], Resource::State::SHADER_READ_WRITE));
 
-				for (uint32_t i = 1; i < levels; i++)
+			renderGraph.AddPass("Post Processing Bloom Downsample: " + std::to_string(i), bloomDownsamplePassParameters, CommandPool::QueueType::COMPUTE,
+				[bloomDownsamplePassParameters, i, prefilterOutputImage, width, height](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 				{
-					Barrier::CreateInfo barrierCI;
-					barrierCI.type = Barrier::Type::IMAGE;
-					barrierCI.srcAccess = Barrier::AccessBit::SHADER_WRITE_BIT;
-					barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;
-					barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-					barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-					barrierCI.image = prefilterOutputImage;
-					barrierCI.oldLayout = imageLayout;
-					barrierCI.newLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
-					barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i - 1, 1, 0, 1 };
+					Image::Layout imageLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL;
 
-					barriers.clear();
-					barriers.emplace_back(Barrier::Create(&barrierCI));
-					cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
-
-					cmdBuffer->BindDescriptorSets(frameIndex, { bloomDownsamplePassParameters->GetDescriptorSet(0, i - 1) }, 0, bloomDownsamplePassParameters->GetPipeline());
 					uint32_t _width = std::max((width >> i) / 8, uint32_t(1));
 					uint32_t _height = std::max((height >> i) / 8, uint32_t(1));
 					uint32_t _depth = 1;
 					_width += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
 					_height += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
 					cmdBuffer->Dispatch(frameIndex, _width, _height, _depth);
-
-					barrierCI.type = Barrier::Type::IMAGE;
-					barrierCI.srcAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;
-					barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
-					barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-					barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-					barrierCI.image = prefilterOutputImage;
-					barrierCI.oldLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
-					barrierCI.newLayout = imageLayout;
-					barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i - 1, 1, 0, 1 };
-
-					barriers.clear();
-					barriers.emplace_back(Barrier::Create(&barrierCI));
-					cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
-				}
-			});
+				});
+		}
 
 		//Upsample
 		bloomImageViews[0] = colourImageView;
-		Ref<RenderPassParameters> bloomUpsamplePassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["BloomUpsample"], std::vector<size_t>({ levels - 1 }));
-		for (uint32_t i = 0; i < (levels - 1); i++)
+		for (uint32_t i = levels - 1; i >= 1; i--)
 		{
-			bloomUpsamplePassParameters->SetResource("inputImageRO", Resource(bloomImageViews[i + 1], sampler), i);
-			bloomUpsamplePassParameters->SetResource("outputImage", Resource(bloomImageViews[i + 0], Resource::State::SHADER_READ_WRITE), i);
-			bloomUpsamplePassParameters->SetResource("bloomInfo", Resource(bloomInfoUB), i);
-		}
+			Ref<TaskPassParameters> bloomUpsamplePassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["BloomUpsample"]);
+			bloomUpsamplePassParameters->SetResource("inputImageRO", Resource(bloomImageViews[i + 0], sampler));
+			bloomUpsamplePassParameters->SetResource("outputImage", Resource(bloomImageViews[i - 1], Resource::State::SHADER_READ_WRITE));
+			bloomUpsamplePassParameters->SetResource("bloomInfo", Resource(bloomInfoUB));
 
-		renderGraph.AddPass("Post Processing Bloom Upsample", bloomUpsamplePassParameters, CommandPool::QueueType::COMPUTE,
-			[bloomUpsamplePassParameters, levels, bloomImageViews, width, height](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
-			{
-				Image::Layout imageLayout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL;
-				std::vector<BarrierRef> barriers;
-				Barrier::CreateInfo barrierCI;
-
-				for (uint32_t i = levels - 1; i >= 1; i--)
+			renderGraph.AddPass("Post Processing Bloom Upsample: " + std::to_string(i), bloomUpsamplePassParameters, CommandPool::QueueType::COMPUTE,
+				[bloomUpsamplePassParameters, i, bloomImageViews, width, height](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 				{
-					barrierCI.type = Barrier::Type::IMAGE;
-					barrierCI.srcAccess = Barrier::AccessBit::SHADER_WRITE_BIT;
-					barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;
-					barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-					barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-					barrierCI.image = bloomImageViews[i]->GetCreateInfo().image;
-					barrierCI.oldLayout = imageLayout;
-					barrierCI.newLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
-					barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, 1 };
-
-					barriers.clear();
-					barriers.emplace_back(Barrier::Create(&barrierCI));
-					cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
-
-					cmdBuffer->BindDescriptorSets(frameIndex, { bloomUpsamplePassParameters->GetDescriptorSet(0, i - 1) }, 0, bloomUpsamplePassParameters->GetPipeline());
 					uint32_t _width = std::max((width >> (i - 1)) / 8, uint32_t(1));
 					uint32_t _height = std::max((height >> (i - 1)) / 8, uint32_t(1));
 					uint32_t _depth = 1;
 					_width += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
 					_height += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
 					cmdBuffer->Dispatch(frameIndex, _width, _height, _depth);
-
-					barrierCI.type = Barrier::Type::IMAGE;
-					barrierCI.srcAccess = Barrier::AccessBit::SHADER_READ_BIT | Barrier::AccessBit::SHADER_WRITE_BIT;
-					barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
-					barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-					barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-					barrierCI.image = bloomImageViews[i]->GetCreateInfo().image;
-					barrierCI.oldLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
-					barrierCI.newLayout = imageLayout;
-					barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, i, 1, 0, 1 };
-
-					barriers.clear();
-					barriers.emplace_back(Barrier::Create(&barrierCI));
-					cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
-				}
-			});
+				});
+		}
 	}
+#endif
 
 	//HDR Mapping
 	if (m_MainRenderCamera)
@@ -954,16 +742,15 @@ void Renderer::Draw()
 		uint32_t width = m_RenderSurface->GetWidth();
 		uint32_t height = m_RenderSurface->GetHeight();
 
-		Ref<RenderPassParameters> hdrMappingPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["HDR"]);
+		Ref<TaskPassParameters> hdrMappingPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["HDR"]);
 		hdrMappingPassParameters->SetResource("hdrInfo", Resource(m_MainRenderCamera->GetHDRInfoUB()));
 		hdrMappingPassParameters->SetResource("hdrInput", Resource(m_RenderSurface->GetColourImageView(), Resource::State::SHADER_READ_ONLY));
 		hdrMappingPassParameters->AddAttachment(0, Resource(m_RenderSurface->GetColourSRGBImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
-		hdrMappingPassParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height));
+		hdrMappingPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
 		renderGraph.AddPass("HDR Mapping", hdrMappingPassParameters, CommandPool::QueueType::GRAPHICS,
 			[hdrMappingPassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 			{
-				cmdBuffer->BindDescriptorSets(frameIndex, { hdrMappingPassParameters->GetDescriptorSet(0) }, 0, hdrMappingPassParameters->GetPipeline());
 				cmdBuffer->Draw(frameIndex, 3);
 			});
 	}
@@ -971,50 +758,25 @@ void Renderer::Draw()
 	//OSD Text
 	if (m_TextCamera)
 	{
-		uint32_t width = m_RenderSurface->GetWidth();
-		uint32_t height = m_RenderSurface->GetHeight();
-		size_t modelCount = 0;
-		size_t materialCount = 0;
 		for (const auto& model : m_TextQueue)
 		{
-			modelCount++;
-			materialCount += model->GetMesh()->GetVertexBuffers().size();
-		}
+			uint32_t width = m_RenderSurface->GetWidth();
+			uint32_t height = m_RenderSurface->GetHeight();
 
-		Ref<RenderPassParameters> osdTextPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["Text"]);
-		osdTextPassParameters->SetResource("textCamera", Resource(m_TextCamera->GetCameraUB()));
-		uint32_t modelIndex = 0;
-		uint32_t materialIndex = 0;
-		for (const auto& model : m_TextQueue)
-		{
-			osdTextPassParameters->SetResource("model", Resource(model->GetUB()), modelIndex++);
-			for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
-			{
-				const Ref<objects::Material>& material = model->GetMesh()->GetMaterial(i);
-				osdTextPassParameters->SetResource("fontAtlas", Resource(material->GetTextures()[Material::TextureType::ALBEDO], DescriptorType::COMBINED_IMAGE_SAMPLER), materialIndex++);
-			}
-		}
-		osdTextPassParameters->AddAttachment(0, Resource(m_RenderSurface->GetColourSRGBImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
-		osdTextPassParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height));
+			Ref<TaskPassParameters> osdTextPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["Text"]);
+			osdTextPassParameters->SetResource("model", Resource(model->GetUB()));
+			osdTextPassParameters->SetResource("fontAtlas", Resource(model->GetMesh()->GetMaterial(0)->GetTextures()[Material::TextureType::ALBEDO], DescriptorType::COMBINED_IMAGE_SAMPLER));
+			osdTextPassParameters->AddAttachment(0, Resource(m_RenderSurface->GetColourSRGBImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
+			osdTextPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
-		renderGraph.AddPass("OSD Text", osdTextPassParameters, CommandPool::QueueType::GRAPHICS,
-			[osdTextPassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
-			{
-				cmdBuffer->BindDescriptorSets(frameIndex, { osdTextPassParameters->GetDescriptorSet(0) }, 0, osdTextPassParameters->GetPipeline());
-				uint32_t modelIndex = 0;
-				for (auto& model : m_TextQueue)
+			renderGraph.AddPass("OSD Text" + model->GetDebugName(), osdTextPassParameters, CommandPool::QueueType::GRAPHICS,
+				[osdTextPassParameters, model, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 				{
-					cmdBuffer->BindDescriptorSets(frameIndex, { osdTextPassParameters->GetDescriptorSet(1, modelIndex++) }, 1, osdTextPassParameters->GetPipeline());
-					for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
-					{
-						Ref<objects::Material> material = model->GetMesh()->GetMaterials()[i];
-						cmdBuffer->BindDescriptorSets(frameIndex, { osdTextPassParameters->GetDescriptorSet(2, static_cast<uint32_t>(i)) }, 2, osdTextPassParameters->GetPipeline());
-						cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[i]->GetGPUBufferView() });
-						cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetGPUBufferView());
-						cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetCount());
-					}
-				}
-			});
+					cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[0]->GetGPUBufferView() });
+					cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[0]->GetGPUBufferView());
+					cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[0]->GetCount());
+				});
+		}
 	}
 	
 	//OSD Coordinate Axes
@@ -1023,15 +785,14 @@ void Renderer::Draw()
 		uint32_t width = m_RenderSurface->GetWidth();
 		uint32_t height = m_RenderSurface->GetHeight();
 
-		Ref<RenderPassParameters> osdCoordinateAxesPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["DebugCoordinateAxes"]);
+		Ref<TaskPassParameters> osdCoordinateAxesPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["DebugCoordinateAxes"]);
 		osdCoordinateAxesPassParameters->SetResource("camera", Resource(m_MainRenderCamera->GetCameraUB()));
 		osdCoordinateAxesPassParameters->AddAttachment(0, Resource(m_RenderSurface->GetColourSRGBImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
-		osdCoordinateAxesPassParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height));
+		osdCoordinateAxesPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
 		renderGraph.AddPass("OSD Coordinate Axes", osdCoordinateAxesPassParameters, CommandPool::QueueType::GRAPHICS,
 			[osdCoordinateAxesPassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 			{
-				cmdBuffer->BindDescriptorSets(frameIndex, { osdCoordinateAxesPassParameters->GetDescriptorSet(0) }, 0, osdCoordinateAxesPassParameters->GetPipeline());
 				cmdBuffer->Draw(frameIndex, 6);
 			});
 	}
@@ -1043,15 +804,14 @@ void Renderer::Draw()
 		uint32_t height = m_CI.window->GetHeight();
 		const ImageViewRef& swapchainImageView = m_CI.window->GetSwapchain()->m_SwapchainImageViews[m_FrameIndex];
 
-		Ref<RenderPassParameters> copyToSwapchainPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["DebugCopy"]);
+		Ref<TaskPassParameters> copyToSwapchainPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["DebugCopy"]);
 		copyToSwapchainPassParameters->SetResource("sourceImage", Resource(m_RenderSurface->GetColourSRGBImageView(), Resource::State::SHADER_READ_ONLY));
 		copyToSwapchainPassParameters->AddAttachment(0, Resource(swapchainImageView, Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
-		copyToSwapchainPassParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height));
+		copyToSwapchainPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
 		renderGraph.AddPass("Copy To Swapchain", copyToSwapchainPassParameters, CommandPool::QueueType::GRAPHICS,
 			[copyToSwapchainPassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 			{
-				cmdBuffer->BindDescriptorSets(frameIndex, { copyToSwapchainPassParameters->GetDescriptorSet(0) }, 0, copyToSwapchainPassParameters->GetPipeline());
 				cmdBuffer->Draw(frameIndex, 3);
 			});
 	}
@@ -1063,10 +823,10 @@ void Renderer::Draw()
 		uint32_t height = m_CI.window->GetHeight();
 		const ImageViewRef& swapchainImageView = m_CI.window->GetSwapchain()->m_SwapchainImageViews[m_FrameIndex];
 
-		Ref<RenderPassParameters> externalUIPassParameters = CreateRef<RenderPassParameters>(s_RenderPipelines["DebugCopy"]);
+		Ref<TaskPassParameters> externalUIPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["DebugCopy"]);
 		externalUIPassParameters->SetResource("sourceImage", Resource(m_RenderSurface->GetColourSRGBImageView(), Resource::State::SHADER_READ_ONLY));
 		externalUIPassParameters->AddAttachment(0, Resource(swapchainImageView, Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
-		externalUIPassParameters->SetRenderArea(RenderPassParameters::CreateScissor(width, height));
+		externalUIPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
 		renderGraph.AddPass("External UI", externalUIPassParameters, CommandPool::QueueType::GRAPHICS,
 			[externalUIPassParameters, this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
@@ -1092,12 +852,14 @@ void Renderer::Present()
 	const Ref<CommandPool>& graphicsCmdPool = graphicsCmdBuffer->GetCreateInfo().commandPool;
 	if (m_CI.shouldPresent)
 	{
-		graphicsCmdBuffer->Submit({ m_FrameIndex }, { m_AcquireSemaphore }, { base::PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT }, { m_SubmitSemaphore }, m_DrawFences[m_FrameIndex]);
+		CommandBuffer::SubmitInfo submitInfo = { { m_FrameIndex }, { m_AcquireSemaphore }, {}, { base::PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT }, { m_SubmitSemaphore }, {} };
+		graphicsCmdBuffer->Submit({ submitInfo }, m_DrawFences[m_FrameIndex]);
 		m_CI.window->GetSwapchain()->Present(graphicsCmdPool, m_SubmitSemaphore, m_FrameIndex);
 	}
 	else
 	{
-		graphicsCmdBuffer->Submit({ m_FrameIndex }, {}, {}, {}, m_DrawFences[m_FrameIndex]); 
+		CommandBuffer::SubmitInfo submitInfo = { { m_FrameIndex }, {}, {}, {}, {}, {} };
+		graphicsCmdBuffer->Submit({ submitInfo }, m_DrawFences[m_FrameIndex]);
 		
 		//Increment m_FrameIndex as AcquireNextImage() will not update it.
 		m_FrameIndex = (m_FrameIndex + 1) % m_SwapchainImageCount;

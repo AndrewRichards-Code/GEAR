@@ -4,13 +4,14 @@
 #include "UI/UIContext.h"
 
 #include "Animation/Animation.h"
-#include "Graphics/Renderer.h"
+#include "Graphics/Rendering/Renderer.h"
 #include "Scene/Entity.h"
 
 using namespace gear;
 using namespace scene;
 using namespace objects;
 using namespace graphics;
+using namespace rendering;
 
 using namespace ui;
 using namespace panels;

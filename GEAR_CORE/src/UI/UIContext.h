@@ -86,6 +86,11 @@ namespace gear
 						selectedPanels.push_back(panel);
 						continue;
 					}
+					if (typeid(T) == typeid(panels::RendererPropertiesPanel) && panel->GetPanelType() == panels::Panel::Type::RENDERER_PROPERTIES)
+					{
+						selectedPanels.push_back(panel);
+						continue;
+					}
 					if (typeid(T) == typeid(panels::ViewportPanel) && panel->GetPanelType() == panels::Panel::Type::VIEWPORT)
 					{
 						selectedPanels.push_back(panel);

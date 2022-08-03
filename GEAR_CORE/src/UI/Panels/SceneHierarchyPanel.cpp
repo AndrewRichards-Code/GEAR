@@ -6,7 +6,7 @@
 #include "UI/ComponentUI/ComponentUI.h"
 #include "UI/ComponentUI/ComponentUIs.h"
 
-#include "Graphics/Renderer.h"
+#include "Graphics/Rendering/Renderer.h"
 #include "Graphics/Window.h"
 
 using namespace gear;

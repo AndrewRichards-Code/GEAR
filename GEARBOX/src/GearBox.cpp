@@ -6,6 +6,7 @@ using namespace animation;
 using namespace audio;
 using namespace core;
 using namespace graphics;
+using namespace rendering;
 using namespace objects;
 using namespace scene;
 using namespace ui;
@@ -123,6 +124,11 @@ void GEARBOX::InternalRun()
 		case Panel::Type::PROPERTIES:
 		{
 			editorPanels.emplace_back(CreateRef<PropertiesPanel>());
+			break;
+		}
+		case Panel::Type::RENDERER_PROPERTIES:
+		{
+			editorPanels.emplace_back(CreateRef<RendererPropertiesPanel>());
 			break;
 		}
 		case Panel::Type::SCENE_HIERARCHY:

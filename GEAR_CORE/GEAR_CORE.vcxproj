@@ -115,7 +115,10 @@
     <ClCompile Include="src\Core\UUID.cpp" />
     <ClCompile Include="src\Graphics\Colour.cpp" />
     <ClCompile Include="src\Graphics\DebugRender.cpp" />
-    <ClCompile Include="src\Graphics\RenderGraph.cpp" />
+    <ClCompile Include="src\Graphics\Rendering\Pass.cpp" />
+    <ClCompile Include="src\Graphics\Rendering\PassParameters.cpp" />
+    <ClCompile Include="src\Graphics\Rendering\RenderGraph.cpp" />
+    <ClCompile Include="src\Graphics\Rendering\Resource.cpp" />
     <ClCompile Include="src\Graphics\RenderSurface.cpp" />
     <ClCompile Include="src\Audio\AudioInterfaces.cpp" />
     <ClCompile Include="src\Audio\AudioSource.cpp" />
@@ -127,7 +130,7 @@
     </ClCompile>
     <ClCompile Include="src\Graphics\Indexbuffer.cpp" />
     <ClCompile Include="src\Graphics\AllocatorManager.cpp" />
-    <ClCompile Include="src\Graphics\Renderer.cpp" />
+    <ClCompile Include="src\Graphics\Rendering\Renderer.cpp" />
     <ClCompile Include="src\Graphics\RenderPipeline.cpp" />
     <ClCompile Include="src\Graphics\Texture.cpp" />
     <ClCompile Include="src\Graphics\Vertexbuffer.cpp" />
@@ -160,6 +163,7 @@
     <ClCompile Include="src\UI\Panels\MaterialPanel.cpp" />
     <ClCompile Include="src\UI\Panels\ProjectPanel.cpp" />
     <ClCompile Include="src\UI\Panels\PropertiesPanel.cpp" />
+    <ClCompile Include="src\UI\Panels\RendererPropertiesPanel.cpp" />
     <ClCompile Include="src\UI\Panels\SceneHierarchyPanel.cpp" />
     <ClCompile Include="src\UI\Panels\ViewportPanel.cpp" />
     <ClCompile Include="src\UI\UIContext.cpp" />
@@ -184,7 +188,10 @@
     <ClInclude Include="src\Core\Sequencer.h" />
     <ClInclude Include="src\Graphics\ColourFunctions.h" />
     <ClInclude Include="src\Graphics\DebugRender.h" />
-    <ClInclude Include="src\Graphics\RenderGraph.h" />
+    <ClInclude Include="src\Graphics\Rendering\Pass.h" />
+    <ClInclude Include="src\Graphics\Rendering\PassParameters.h" />
+    <ClInclude Include="src\Graphics\Rendering\RenderGraph.h" />
+    <ClInclude Include="src\Graphics\Rendering\Resource.h" />
     <ClInclude Include="src\Graphics\RenderSurface.h" />
     <ClInclude Include="src\Audio\AudioInterfaces.h" />
     <ClInclude Include="src\Audio\AudioSource.h" />
@@ -193,7 +200,7 @@
     <ClInclude Include="src\Core\Timer.h" />
     <ClInclude Include="src\Graphics\Indexbuffer.h" />
     <ClInclude Include="src\Graphics\AllocatorManager.h" />
-    <ClInclude Include="src\Graphics\Renderer.h" />
+    <ClInclude Include="src\Graphics\Rendering\Renderer.h" />
     <ClInclude Include="src\Graphics\RenderPipeline.h" />
     <ClInclude Include="src\Graphics\Storagebuffer.h" />
     <ClInclude Include="src\Graphics\Texture.h" />
@@ -236,6 +243,7 @@
     <ClInclude Include="src\UI\Panels\Panels.h" />
     <ClInclude Include="src\UI\Panels\ProjectPanel.h" />
     <ClInclude Include="src\UI\Panels\PropertiesPanel.h" />
+    <ClInclude Include="src\UI\Panels\RendererPropertiesPanel.h" />
     <ClInclude Include="src\UI\Panels\SceneHierarchyPanel.h" />
     <ClInclude Include="src\UI\Panels\ViewportPanel.h" />
     <ClInclude Include="src\UI\UIContext.h" />

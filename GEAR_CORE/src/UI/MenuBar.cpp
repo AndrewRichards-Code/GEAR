@@ -7,7 +7,7 @@
 #include "Core/FileDialog.h"
 #include "Core/JsonFileHelper.h"
 
-#include "Graphics/Renderer.h"
+#include "Graphics/Rendering/Renderer.h"
 #include "Graphics/Window.h"
 
 #include "Build/Project.h"
@@ -16,6 +16,7 @@ using namespace gear;
 using namespace build;
 using namespace core;
 using namespace graphics;
+using namespace rendering;
 using namespace scene;
 using namespace ui;
 using namespace panels;
@@ -180,6 +181,10 @@ void MenuBar::DrawMenuWindows()
 		if (ImGui::MenuItem("Properties"))
 		{
 			editorPanels.emplace_back(CreateRef<PropertiesPanel>());
+		}
+		if (ImGui::MenuItem("Renderer Properties"))
+		{
+			editorPanels.emplace_back(CreateRef<RendererPropertiesPanel>());
 		}
 		if (ImGui::MenuItem("Viewport"))
 		{

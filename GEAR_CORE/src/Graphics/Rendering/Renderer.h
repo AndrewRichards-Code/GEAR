@@ -1,7 +1,8 @@
 #pragma once
-#include "Graphics/RenderGraph.h"
+#include "Graphics/Rendering/RenderGraph.h"
 #include "Graphics/RenderSurface.h"
 #include "Graphics/RenderPipeline.h"
+#include "Graphics/Window.h"
 #include "Objects/Camera.h"
 #include "Objects/Light.h"
 #include "Objects/Skybox.h"
@@ -13,7 +14,7 @@ namespace gear
 	{
 		class UIContext;
 	}
-	namespace graphics
+	namespace graphics::rendering
 	{
 		class GEAR_API Renderer
 		{
@@ -102,6 +103,7 @@ namespace gear
 			static inline std::map<std::string, Ref<graphics::RenderPipeline>> GetRenderPipelines() { return s_RenderPipelines; }
 			inline Ref<RenderSurface> GetRenderSurface() { return m_RenderSurface; }
 			inline Ref<objects::Camera> GetCamera() { return m_MainRenderCamera; }
+			inline const RenderGraph& GetRenderGraph() const { return renderGraph; }
 
 			inline const uint32_t& GetFrameIndex() const { return m_FrameIndex; }
 			inline const uint32_t& GetFrameCount() const { return m_FrameCount; }

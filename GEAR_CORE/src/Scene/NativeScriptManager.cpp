@@ -75,7 +75,7 @@ DynamicLibrary::LibraryHandle NativeScriptManager::Load()
 
 void NativeScriptManager::Unload(DynamicLibrary::LibraryHandle& libraryHandle)
 {
-	ForceUnloadPDB();
+	//ForceUnloadPDB();
 
 	DynamicLibrary::Unload(libraryHandle);
 	libraryHandle = 0;

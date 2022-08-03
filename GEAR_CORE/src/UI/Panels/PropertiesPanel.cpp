@@ -4,7 +4,7 @@
 #include "UI/UIContext.h"
 #include "UI/ComponentUI/ComponentUIs.h"
 
-#include "Graphics/Renderer.h"
+#include "Graphics/Rendering/Renderer.h"
 
 using namespace gear;
 using namespace scene;

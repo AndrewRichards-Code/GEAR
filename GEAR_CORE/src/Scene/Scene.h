@@ -11,7 +11,10 @@ namespace gear
 	}
 	namespace graphics
 	{ 
-		class Renderer;
+		namespace rendering
+		{
+			class Renderer;
+		}
 		class Window;
 	}
 	namespace objects
@@ -59,7 +62,7 @@ namespace gear
 			Entity CreateEntity();
 			void DestroyEntity(Entity entity);
 
-			void OnUpdate(Ref<graphics::Renderer>& m_Renderer, core::Timer& timer);
+			void OnUpdate(Ref<graphics::rendering::Renderer>& m_Renderer, core::Timer& timer);
 
 			entt::registry& GetRegistry();
 			inline void ClearEntities() { m_Registry.clear(); }

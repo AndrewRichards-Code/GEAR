@@ -36,7 +36,7 @@
     <ClCompile Include="src\graphics\indexbuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\renderer.cpp">
+    <ClCompile Include="src\Graphics\Rendering\Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\graphics\texture.cpp">
@@ -81,7 +81,7 @@
     <ClCompile Include="src\Graphics\AllocatorManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Graphics\RenderGraph.cpp">
+    <ClCompile Include="src\Graphics\Rendering\RenderGraph.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\FontLibrary.cpp">
@@ -186,6 +186,18 @@
     <ClCompile Include="src\Objects\ObjectInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Graphics\Rendering\Pass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Rendering\PassParameters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Graphics\Rendering\Resource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\UI\Panels\RendererPropertiesPanel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\utils\fileutils.h">
@@ -221,7 +233,7 @@
     <ClInclude Include="src\graphics\indexbuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\renderer.h">
+    <ClInclude Include="src\Graphics\Rendering\Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\graphics\texture.h">
@@ -293,7 +305,7 @@
     <ClInclude Include="src\Scene\INativeScript.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Graphics\RenderGraph.h">
+    <ClInclude Include="src\Graphics\Rendering\RenderGraph.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\FontLibrary.h">
@@ -417,6 +429,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\UI\ComponentUI\LightComponentUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Rendering\Pass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Rendering\PassParameters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Graphics\Rendering\Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\UI\Panels\RendererPropertiesPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -4,7 +4,7 @@
 #include "UI/ComponentUI/ComponentUI.h"
 #include "UI/UIContext.h"
 
-#include "Graphics/Renderer.h"
+#include "Graphics/Rendering/Renderer.h"
 #include "Graphics/Window.h"
 
 using namespace gear;
@@ -84,6 +84,19 @@ void ViewportPanel::Draw()
 						sceneHierarchyPanel->GetScene()->LoadFromFile(filepath, UIContext::GetUIContext()->GetWindow());
 						sceneHierarchyPanel->UpdateWindowTitle();
 					}
+				}
+			}
+		}
+
+		if (ImGui::IsWindowFocused())
+		{
+			Ref<RendererPropertiesPanel> rendererPropertiesPanel = UIContext::GetUIContext()->GetEditorPanelsByType<RendererPropertiesPanel>()[0];
+			if (rendererPropertiesPanel)
+			{
+				for (const Ref<ViewportPanel>& viewport : UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>())
+				{
+					if (viewport.get() == this)
+						rendererPropertiesPanel->SetViewportPanel(viewport);
 				}
 			}
 		}

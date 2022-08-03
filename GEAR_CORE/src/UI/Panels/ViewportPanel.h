@@ -3,7 +3,7 @@
 
 namespace gear
 {
-	namespace graphics
+	namespace graphics::rendering
 	{
 		class Renderer;
 	}
@@ -17,7 +17,7 @@ namespace gear
 			public:
 				struct CreateInfo
 				{
-					Ref<graphics::Renderer> renderer;
+					Ref<graphics::rendering::Renderer> renderer;
 				};
 
 				//Methods

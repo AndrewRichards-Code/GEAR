@@ -3,6 +3,7 @@
 #include "ContentEditorPanel.h"
 #include "MaterialPanel.h"
 #include "ProjectPanel.h"
-#include "SceneHierarchyPanel.h"
 #include "PropertiesPanel.h"
+#include "RendererPropertiesPanel.h"
+#include "SceneHierarchyPanel.h"
 #include "ViewportPanel.h"

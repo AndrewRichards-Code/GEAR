@@ -7,10 +7,11 @@
 
 #include "Core/Timer.h"
 #include "Core/JsonFileHelper.h"
-#include "Graphics/Renderer.h"
+#include "Graphics/Rendering/Renderer.h"
 
 using namespace gear;
 using namespace graphics;
+using namespace rendering;
 using namespace core;
 using namespace scene;
 using namespace objects;
