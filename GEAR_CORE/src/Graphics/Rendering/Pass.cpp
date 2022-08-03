@@ -166,7 +166,7 @@ Barrier2Ref Pass::TransitionResource(RenderGraph* renderGraph, Resource& passRes
 
 	Resource::State& oldState = resource.oldState;
 	Resource::State& newState = resource.newState;
-	const Shader::StageBit& stage = passResource.stage;
+	Shader::StageBit stage = passResource.stage;
 	passResource = resource;
 
 	Barrier::Type type;

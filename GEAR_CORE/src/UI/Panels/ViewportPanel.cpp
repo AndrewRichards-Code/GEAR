@@ -93,7 +93,7 @@ void ViewportPanel::Draw()
 			Ref<RendererPropertiesPanel> rendererPropertiesPanel = UIContext::GetUIContext()->GetEditorPanelsByType<RendererPropertiesPanel>()[0];
 			if (rendererPropertiesPanel)
 			{
-				for (const Ref<ViewportPanel>& viewport : UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>())
+				for (Ref<ViewportPanel> viewport : UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>())
 				{
 					if (viewport.get() == this)
 						rendererPropertiesPanel->SetViewportPanel(viewport);

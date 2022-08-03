@@ -5,7 +5,7 @@
         "fullscreen": false,
         "fullscreenMonitorIndex": 0,
         "graphicsDebugger": 0,
-        "maximised": false,
+        "maximised": true,
         "windowedHeight": 1080,
         "windowedWidth": 1920
     },

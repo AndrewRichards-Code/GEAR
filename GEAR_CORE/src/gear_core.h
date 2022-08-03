@@ -66,6 +66,7 @@
 #include "Scene/Scene.h"
 
 //UI
+#include "UI/ConfigFile.h"
 #include "UI/MenuBar.h"
 #include "UI/UIContext.h"
 #include "UI/ComponentUI/ComponentUIs.h"

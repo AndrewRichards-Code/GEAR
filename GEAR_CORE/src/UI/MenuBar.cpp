@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
 #include "UI/MenuBar.h"
+#include "UI/ConfigFile.h"
 #include "UI/UIContext.h"
 #include "UI/Panels/Panels.h"
 #include "UI/ComponentUI/ComponentUI.h"
@@ -373,21 +374,19 @@ void MenuBar::DrawItemGEARBOXOptions()
 		static uint32_t fullscreenMonitorIndex;
 		static bool maximised;
 
-		nlohmann::json data;
 		std::string configFilepath = (std::filesystem::current_path() / std::filesystem::path("config.gbcf")).string();
+		ConfigFile config;
 		static bool loaded = false;
-		if (std::filesystem::exists(configFilepath) && !loaded)
+		if (config.Load(configFilepath) && !loaded)
 		{
-			LoadJsonFile(configFilepath, ".gbcf", "GEARBOX_CONFIG_FILE", data);
-
-			api = (GraphicsAPI::API)data["options"]["api"];
-			graphicsDebugger = (debug::GraphicsDebugger::DebuggerType)data["options"]["graphicsDebugger"];
-			windowedWidth = (uint32_t)data["options"]["windowedWidth"];
-			windowedHeight = (uint32_t)data["options"]["windowedHeight"];
-			fullscreen = (bool)data["options"]["fullscreen"];
-			fullscreenMonitorIndex = (uint32_t)data["options"]["fullscreenMonitorIndex"];
-			maximised = (bool)data["options"]["maximised"];
-			loaded = true;
+			api						= config.GetOption<GraphicsAPI::API>("api");
+			graphicsDebugger		= config.GetOption<debug::GraphicsDebugger::DebuggerType>("graphicsDebugger");
+			windowedWidth			= config.GetOption<uint32_t>("windowedWidth");
+			windowedHeight			= config.GetOption<uint32_t>("windowedHeight");
+			fullscreen				= config.GetOption<bool>("fullscreen");
+			fullscreenMonitorIndex	= config.GetOption<uint32_t>("fullscreenMonitorIndex");
+			maximised				= config.GetOption<bool>("maximised");
+			loaded					= true;
 		}
 
 		DrawDropDownMenu("API", api, 130.0f);
@@ -400,14 +399,14 @@ void MenuBar::DrawItemGEARBOXOptions()
 
 		if (ImGui::Button("Save Options", ImVec2(90, 0)))
 		{
-			data["options"]["api"] = api;
-			data["options"]["graphicsDebugger"] = graphicsDebugger;
-			data["options"]["windowedWidth"] = windowedWidth;
-			data["options"]["windowedHeight"] = windowedHeight;
-			data["options"]["fullscreen"] = fullscreen;
-			data["options"]["fullscreenMonitorIndex"] = fullscreenMonitorIndex;
-			data["options"]["maximised"] = maximised;
-			SaveJsonFile(configFilepath, ".gbcf", "GEARBOX_CONFIG_FILE", data);
+			config.SetOption("api", api);
+			config.SetOption("graphicsDebugger", graphicsDebugger);
+			config.SetOption("windowedWidth", windowedWidth);
+			config.SetOption("windowedHeight", windowedHeight);
+			config.SetOption("fullscreen", fullscreen);
+			config.SetOption("fullscreenMonitorIndex", fullscreenMonitorIndex);
+			config.SetOption("maximised", maximised);
+			config.Save();
 		}
 		ImGui::SameLine();
 		/*if (ImGui::Button("Restart", ImVec2(90, 0)))
@@ -416,16 +415,16 @@ void MenuBar::DrawItemGEARBOXOptions()
 			DrawItemExit();
 		}*/
 		ImGui::SameLine();
-		if (ImGui::Button("Exit", ImVec2(90, 0)))
-		{
-			DrawItemExit();
-		}
-
 		if (ImGui::Button("Close", ImVec2(90, 0)))
 		{
 			loaded = false;
 			ImGui::CloseCurrentPopup();
 			m_PopupWindowFunction = nullptr;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Exit Editor", ImVec2(90, 0)))
+		{
+			DrawItemExit();
 		}
 		ImGui::EndPopup();
 	}

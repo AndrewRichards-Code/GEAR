@@ -50,20 +50,10 @@ void GEARBOX::InternalRun()
 	mainWindowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_4_BIT;
 	mainWindowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::NONE;
 
-	nlohmann::json data;
 	std::string configFilepath = (std::filesystem::current_path() / std::filesystem::path("config.gbcf")).string();
-	if (std::filesystem::exists(configFilepath))
-	{
-		gear::core::LoadJsonFile(configFilepath, ".gbcf", "GEARBOX_CONFIG_FILE", data);
-
-		mainWindowCI.api = (GraphicsAPI::API)data["options"]["api"];
-		mainWindowCI.graphicsDebugger = (debug::GraphicsDebugger::DebuggerType)data["options"]["graphicsDebugger"];
-		mainWindowCI.width = (uint32_t)data["options"]["windowedWidth"];
-		mainWindowCI.height = (uint32_t)data["options"]["windowedHeight"];
-		mainWindowCI.fullscreen = (bool)data["options"]["fullscreen"];
-		mainWindowCI.fullscreenMonitorIndex = (uint32_t)data["options"]["fullscreenMonitorIndex"];
-		mainWindowCI.maximised = (bool)data["options"]["maximised"];
-	}
+	ConfigFile config;
+	if (config.Load(configFilepath))
+		config.UpdateWindowCreateInfo(mainWindowCI);
 
 	Ref<Window> mainWindow = CreateRef<Window>(&mainWindowCI);
 
@@ -90,7 +80,7 @@ void GEARBOX::InternalRun()
 	Scope<UIContext> uiContext = CreateScope<UIContext>(&uiContextCI);
 	mainRenderer->SubmitUIContext(uiContext.get());
 
-	for (const Panel::Type& panelType : data["panels"])
+	for (const Panel::Type& panelType : config.GetPanels())
 	{
 		std::vector<Ref<Panel>>& editorPanels = uiContext->GetEditorPanels();
 
@@ -173,14 +163,12 @@ void GEARBOX::InternalRun()
 	mainWindow->GetContext()->DeviceWaitIdle();
 	AllocatorManager::Uninitialise();
 
-	if (std::filesystem::exists(configFilepath))
+	if (config.Load(configFilepath))
 	{
-		gear::core::LoadJsonFile(configFilepath, ".gbcf", "GEARBOX_CONFIG_FILE", data);
-		data["panels"].clear();
+		auto& configPanels = config.GetPanels();
+		configPanels.clear();
 		for (const auto& panel : uiContext->GetEditorPanels())
-		{
-			data["panels"].push_back(static_cast<uint32_t>(panel->GetPanelType()));
-		}
-		gear::core::SaveJsonFile(configFilepath, ".gbcf", "GEARBOX_CONFIG_FILE", data);
+			configPanels.push_back(static_cast<uint32_t>(panel->GetPanelType()));
+		config.Save();
 	}
 }

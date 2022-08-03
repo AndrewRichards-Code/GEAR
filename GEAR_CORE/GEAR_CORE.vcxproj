@@ -157,6 +157,7 @@
     <ClCompile Include="src\UI\ComponentUI\NameComponentUI.cpp" />
     <ClCompile Include="src\UI\ComponentUI\SkyboxComponentUI.cpp" />
     <ClCompile Include="src\UI\ComponentUI\TransformComponentUI.cpp" />
+    <ClCompile Include="src\UI\ConfigFile.cpp" />
     <ClCompile Include="src\UI\MenuBar.cpp" />
     <ClCompile Include="src\UI\Panels\ContentBrowserPanel.cpp" />
     <ClCompile Include="src\UI\Panels\ContentEditorPanel.cpp" />
@@ -235,6 +236,7 @@
     <ClInclude Include="src\UI\ComponentUI\NameComponentUI.h" />
     <ClInclude Include="src\UI\ComponentUI\SkyboxComponentUI.h" />
     <ClInclude Include="src\UI\ComponentUI\TransformComponentUI.h" />
+    <ClInclude Include="src\UI\ConfigFile.h" />
     <ClInclude Include="src\UI\MenuBar.h" />
     <ClInclude Include="src\UI\Panels\BasePanel.h" />
     <ClInclude Include="src\UI\Panels\ContentBrowserPanel.h" />
