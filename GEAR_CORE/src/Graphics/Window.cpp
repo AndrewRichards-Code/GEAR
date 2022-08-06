@@ -334,9 +334,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 	//Close Window
 	if (glfwGetKey(win->m_Window, GLFW_KEY_ESCAPE))
 	{
-		win->Closed();
-		win->~Window();
-		exit(EXIT_SUCCESS);
+		win->Close();
 	}
 }
 
