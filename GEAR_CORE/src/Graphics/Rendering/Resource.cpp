@@ -131,13 +131,23 @@ const std::string& gear::graphics::rendering::Resource::GetName() const
 
 bool Resource::operator== (const Resource& other) const
 {
-	if (IsImageView())
-		return imageView == other.imageView;
-	else if (IsSampler())
+	if (IsImageView() && other.IsImageView())
+	{
+		if (imageView == other.imageView)
+			return true;
+		else 
+			return imageView->GetCreateInfo().image == other.imageView->GetCreateInfo().image;
+	}
+	else if (IsSampler() && other.IsSampler())
 		return sampler == other.sampler;
-	else if (IsBufferView())
-		return bufferView == other.bufferView;
-	else if (IsAccelerationStructure())
+	else if (IsBufferView() && other.IsBufferView())
+	{
+		if (bufferView == other.bufferView)
+			return true;
+		else
+			return bufferView->GetCreateInfo().buffer == other.bufferView->GetCreateInfo().buffer;
+	}
+	else if (IsAccelerationStructure() && other.IsAccelerationStructure())
 		return accelerationStructure == other.accelerationStructure;
 	else
 		return false;

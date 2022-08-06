@@ -409,18 +409,18 @@ void MenuBar::DrawItemGEARBOXOptions()
 			config.Save();
 		}
 		ImGui::SameLine();
-		/*if (ImGui::Button("Restart", ImVec2(90, 0)))
-		{
-			GEARBOX::GetGEARBOX()->GetAllowReRun() = true;
-			DrawItemExit();
-		}*/
-		ImGui::SameLine();
 		if (ImGui::Button("Close", ImVec2(90, 0)))
 		{
 			loaded = false;
 			ImGui::CloseCurrentPopup();
 			m_PopupWindowFunction = nullptr;
 		}
+		/*ImGui::SameLine();
+		if (ImGui::Button("Restart Editor", ImVec2(90, 0)))
+		{
+			GEARBOX::GetGEARBOX()->GetAllowReRun() = true;
+			DrawItemExit();
+		}*/
 		ImGui::SameLine();
 		if (ImGui::Button("Exit Editor", ImVec2(90, 0)))
 		{

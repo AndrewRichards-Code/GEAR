@@ -31,6 +31,8 @@ void Pass::Execute(RenderGraph* renderGraph, CommandBufferRef cmdBuffer, uint32_
 	if (GetPassParameters()->GetType() == PassParameters::Type::TASK)
 	{
 		const Ref<TaskPassParameters>& passParameters = ref_cast<TaskPassParameters>(GetPassParameters());
+		std::vector<Resource>& inputResources = GetInputResources();
+		std::vector<Resource>& outputResources = GetOutputResources();
 		const RenderingInfo& renderingInfo = passParameters->GetRenderingInfo();
 
 		bool graphics = renderingInfo.colourAttachments.size();
@@ -49,13 +51,13 @@ void Pass::Execute(RenderGraph* renderGraph, CommandBufferRef cmdBuffer, uint32_
 
 			//Transition input resources
 			barriers.clear();
-			for (Resource& resource : GetInputResources())
+			for (Resource& resource : inputResources)
 				barriers.push_back(TransitionResource(renderGraph, resource));
 			cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
 
 			//Transition output resources
 			barriers.clear();
-			for (Resource& resource : GetOutputResources())
+			for (Resource& resource : outputResources)
 				barriers.push_back(TransitionResource(renderGraph, resource));
 			cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
 		}
@@ -81,7 +83,7 @@ void Pass::Execute(RenderGraph* renderGraph, CommandBufferRef cmdBuffer, uint32_
 
 		if (graphics && noForwardDependencies)
 		{
-			for (Resource& resource : GetOutputResources())
+			for (Resource& resource : outputResources)
 			{
 				if (resource.IsImageView() && resource.imageView->IsSwapchainImageView())
 				{
@@ -105,13 +107,23 @@ void Pass::Execute(RenderGraph* renderGraph, CommandBufferRef cmdBuffer, uint32_
 			cmdBuffer->BeginDebugLabel(frameIndex, m_PassName);
 		}
 
-		for (const auto& [src, dst, rcr] : passParameters->GetResourcesPairs())
+		//Transition resource pairs
+		CommandBuffer::DependencyInfo dependencyInfo = { DependencyBit::NONE_BIT, {} };
+		std::vector<Barrier2Ref>& barriers = dependencyInfo.barriers;
+		for (auto& [src, dst, rcr] : passParameters->GetResourcesPairs())
+		{
+			barriers.push_back(TransitionResource(renderGraph, src));
+			barriers.push_back(TransitionResource(renderGraph, dst));
+		}
+		cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
+
+		//Transfer resources
+		for (auto& [src, dst, rcr] : passParameters->GetResourcesPairs())
 		{
 			const bool& buffer_buffer = src.IsBufferView() && dst.IsBufferView();
 			const bool& buffer_image = src.IsBufferView() && dst.IsImageView();
 			const bool& image_buffer = src.IsImageView() && dst.IsBufferView();
 			const bool& image_image = src.IsImageView() && dst.IsImageView();
-
 
 			if (buffer_buffer)
 			{
@@ -282,7 +294,7 @@ Barrier2Ref Pass::TransitionResource(RenderGraph* renderGraph, Resource& passRes
 		case Resource::State::TRANSFER_DST:
 		{
 			accesses = Barrier::AccessBit::TRANSFER_READ_BIT;
-			layout = Image::Layout::TRANSFER_SRC_OPTIMAL;
+			layout = Image::Layout::TRANSFER_DST_OPTIMAL;
 			pipelineStage = PipelineStageBit::TRANSFER_BIT;
 			break;
 		}

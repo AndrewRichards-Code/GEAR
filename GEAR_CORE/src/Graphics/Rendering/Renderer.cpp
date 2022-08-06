@@ -317,11 +317,12 @@ void Renderer::Draw()
 			const std::string& name = texture->GetCreateInfo().debugName;
 			std::vector<Ref<ImageView>> mipImageViews;
 
-			for (uint32_t i = 1; i < levels; i++)
-			{
+			for (uint32_t i = 0; i < levels; i++)
 				mipImageViews.push_back(renderGraph.CreateImageView(texture->GetImage(), layers > 1 ? Image::Type::TYPE_2D_ARRAY : Image::Type::TYPE_2D, {Image::AspectBit::COLOUR_BIT, i, 1, 0, layers}));
-
-				Ref<TaskPassParameters> generateMipMapsPassParameters;
+		
+			Ref<TaskPassParameters> generateMipMapsPassParameters;
+			for (uint32_t i = 0; i < (levels - 1); i++)
+			{
 				if (layers > 1)
 				{
 					generateMipMapsPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["MipmapArray"]);
@@ -334,7 +335,8 @@ void Renderer::Draw()
 					generateMipMapsPassParameters->SetResource("inputImage", Resource(mipImageViews[std::min(i + 0, levels)], Resource::State::SHADER_READ_ONLY));
 					generateMipMapsPassParameters->SetResource("outputImage", Resource(mipImageViews[std::min(i + 1, levels)], Resource::State::SHADER_READ_WRITE));
 				}
-					
+			
+				i++;
 				renderGraph.AddPass("Generate Mip Maps  - " + name + " - Level: " + std::to_string(i), generateMipMapsPassParameters, CommandPool::QueueType::COMPUTE,
 					[generateMipMapsPassParameters, i, layers, texture](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 					{
@@ -343,6 +345,7 @@ void Renderer::Draw()
 							uint32_t depth = layers;
 							cmdBuffer->Dispatch(frameIndex, width, height, depth);
 					});
+				i--;
 			}
 			texture->m_GeneratedMipMaps = true;
 		}
@@ -365,7 +368,7 @@ void Renderer::Draw()
 						cmdBuffer->Dispatch(frameIndex, width, height, depth);
 					});
 			}
-
+#if 0
 			//Skybox: Generate Mip Maps
 			{ 
 				const Ref<Texture>& texture = m_Skybox->GetGeneratedCubemap();
@@ -374,14 +377,15 @@ void Renderer::Draw()
 
 				std::vector<Ref<ImageView>> mipImageViews;
 				for (uint32_t i = 0; i < levels; i++)
-				{
 					mipImageViews.push_back(renderGraph.CreateImageView(texture->GetImage(), Image::Type::TYPE_2D_ARRAY, { Image::AspectBit::COLOUR_BIT, i, 1, 0, layers }));
-
+				
+				for (uint32_t i = 0; i < (levels - 1); i++)
+				{
 					Ref<TaskPassParameters> generateMipMapsPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["MipmapArray"]);
-					
 					generateMipMapsPassParameters->SetResource("inputImageArray", Resource(mipImageViews[std::min(i + 0, levels)], Resource::State::SHADER_READ_ONLY));
 					generateMipMapsPassParameters->SetResource("outputImageArray", Resource(mipImageViews[std::min(i + 1, levels)], Resource::State::SHADER_READ_WRITE));
-
+					
+					i++;
 					renderGraph.AddPass("Skybox: Generate Mip Maps - Level: " + std::to_string(i), generateMipMapsPassParameters, CommandPool::QueueType::COMPUTE,
 						[generateMipMapsPassParameters, i, levels, layers, texture](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 						{
@@ -392,6 +396,7 @@ void Renderer::Draw()
 
 							texture->m_GeneratedMipMaps = true;
 						});
+					i--;
 				}
 			}
 			
@@ -481,11 +486,12 @@ void Renderer::Draw()
 						cmdBuffer->Dispatch(frameIndex, width, height, depth);
 					});
 			}
-
+#endif
 			m_Skybox->m_Generated = true;
 		}
 	}
 
+	//Shadow Pass
 	if (!m_Lights.empty())
 	{
 		//Shadow Pass
@@ -766,7 +772,7 @@ void Renderer::Draw()
 			Ref<TaskPassParameters> osdTextPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["Text"]);
 			osdTextPassParameters->SetResource("model", Resource(model->GetUB()));
 			osdTextPassParameters->SetResource("fontAtlas", Resource(model->GetMesh()->GetMaterial(0)->GetTextures()[Material::TextureType::ALBEDO], DescriptorType::COMBINED_IMAGE_SAMPLER));
-			osdTextPassParameters->AddAttachment(0, Resource(m_RenderSurface->GetColourSRGBImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
+			osdTextPassParameters->AddAttachment(0, Resource(m_RenderSurface->GetColourSRGBImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::LOAD, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
 			osdTextPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
 			renderGraph.AddPass("OSD Text" + model->GetDebugName(), osdTextPassParameters, CommandPool::QueueType::GRAPHICS,
@@ -787,7 +793,7 @@ void Renderer::Draw()
 
 		Ref<TaskPassParameters> osdCoordinateAxesPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["DebugCoordinateAxes"]);
 		osdCoordinateAxesPassParameters->SetResource("camera", Resource(m_MainRenderCamera->GetCameraUB()));
-		osdCoordinateAxesPassParameters->AddAttachment(0, Resource(m_RenderSurface->GetColourSRGBImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
+		osdCoordinateAxesPassParameters->AddAttachment(0, Resource(m_RenderSurface->GetColourSRGBImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::LOAD, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
 		osdCoordinateAxesPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
 		renderGraph.AddPass("OSD Coordinate Axes", osdCoordinateAxesPassParameters, CommandPool::QueueType::GRAPHICS,
@@ -870,6 +876,14 @@ void Renderer::Present()
 
 void Renderer::Execute()
 {
+	/*Ref<debug::RenderDoc> rd = ref_cast<debug::RenderDoc>(GraphicsAPI::GetGraphicsDebugger());
+	bool frameStart = false;
+	if (m_Skybox && !m_Skybox->m_Generated)
+	{
+		rd->m_RenderDocApi->StartFrameCapture(0, 0);
+		frameStart = true;
+	}*/
+
 	//Acquire Next Image
 	{
 		AcquireNextImage();
@@ -882,6 +896,11 @@ void Renderer::Execute()
 	{
 		Present();
 	}
+
+	/*if (frameStart)
+	{
+		rd->m_RenderDocApi->EndFrameCapture(0, 0);
+	}*/
 }
 
 void Renderer::RecompileRenderPipelineShaders()

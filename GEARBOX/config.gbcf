@@ -4,8 +4,8 @@
         "api": 2,
         "fullscreen": false,
         "fullscreenMonitorIndex": 0,
-        "graphicsDebugger": 0,
-        "maximised": true,
+        "graphicsDebugger": 1,
+        "maximised": false,
         "windowedHeight": 1080,
         "windowedWidth": 1920
     },

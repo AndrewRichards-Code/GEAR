@@ -377,6 +377,6 @@ void TransferPassParameters::AddResourcePair(const Resource& srcResource, const 
 	m_InputResources.push_back(srcResource);
 	m_InputResources.back().newState = Resource::State::TRANSFER_SRC;
 	m_OutputResources.push_back(dstResource);
-	m_InputResources.back().newState = Resource::State::TRANSFER_DST;
+	m_OutputResources.back().newState = Resource::State::TRANSFER_DST;
 	m_ResourcePairs.push_back({ srcResource, dstResource, copyRegion });
 }
