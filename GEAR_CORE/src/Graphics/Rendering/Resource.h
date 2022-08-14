@@ -64,44 +64,7 @@ namespace gear
 
 		private:
 			template<typename T>
-			void Init(const T& internalResource) 
-			{
-				if (typeid(T) == typeid(miru::base::ImageRef))
-				{
-					type = Type::IMAGE;
-					name = image->GetCreateInfo().debugName;
-					for(uint32_t level = 0; level < image->GetCreateInfo().mipLevels; level++)
-						for(uint32_t layer = 0; layer < image->GetCreateInfo().arrayLayers; layer++)
-							subresourceMap[level][layer] = State::UNKNOWN;
-				}
-				else if (typeid(T) == typeid(miru::base::SamplerRef))
-				{
-					type = Type::SAMPLER;
-					name = sampler->GetCreateInfo().debugName;
-					subresourceMap[0][0] = State::UNKNOWN;
-				}
-				else if (typeid(T) == typeid(miru::base::BufferRef))
-				{
-					type = Type::BUFFER;
-					name = buffer->GetCreateInfo().debugName;
-					subresourceMap[0][0] = State::UNKNOWN;
-				}
-				else if (typeid(T) == typeid(miru::base::AccelerationStructureRef))
-				{
-					type = Type::ACCELERATION_STRUCTURE;
-					name = accelerationStructure->GetCreateInfo().debugName;
-					subresourceMap[0][0] = State::UNKNOWN;
-				}
-				else
-				{
-					auto _break = []()
-					{
-						GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Unknown internal resource type."); 
-					};
-					_break();
-				}
-
-			}
+			void Init(const T& internalResource);
 
 			//Members
 		private:
