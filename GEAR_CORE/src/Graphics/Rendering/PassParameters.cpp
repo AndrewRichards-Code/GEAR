@@ -21,8 +21,8 @@ using namespace base;
 
 PassParameters::~PassParameters()
 {
-	m_InputResources.clear();
-	m_OutputResources.clear();
+	m_InputResourceViews.clear();
+	m_OutputResourceViews.clear();
 }
 
 ////////////////////////
@@ -82,7 +82,7 @@ void TaskPassParameters::Setup()
 		descSet.second->Update();
 }
 
-const std::pair<uint32_t, uint32_t> TaskPassParameters::FindResourceSetBinding(const std::string& name) const
+const std::pair<uint32_t, uint32_t> TaskPassParameters::FindResourceViewSetBinding(const std::string& name) const
 {
 	const RenderPipeline::ResourceBindingDescriptions& rbds = m_RenderPipeline->GetRBDs();
 	for (uint32_t set = 0; set < static_cast<uint32_t>(rbds.size()); set++)
@@ -103,64 +103,63 @@ const std::pair<uint32_t, uint32_t> TaskPassParameters::FindResourceSetBinding(c
 	return { 0, 0 };
 }
 
-void TaskPassParameters::SetResource(const std::pair<uint32_t, uint32_t>& set_binding, const Resource& resource)
+void TaskPassParameters::SetResourceView(const std::pair<uint32_t, uint32_t>& set_binding, ResourceView& resourceView)
 {
 	const uint32_t& set = set_binding.first;
 	const uint32_t& binding = set_binding.second;
 
 	const Shader::ResourceBindingDescription& rbd = m_RenderPipeline->GetRBDs()[set][binding];
-	if (rbd.type != resource.type)
+	if (rbd.type != resourceView.type)
 	{
 		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "The Resource DescriptorType does not match ResourceBindingDescription DescriptorType.");
 	}
+	
+	resourceView.stage = rbd.stage;
 
-	Resource _resource = resource;
-	_resource.stage = rbd.stage;
-
-	switch (resource.type)
+	switch (resourceView.type)
 	{
 	case DescriptorType::SAMPLER:
 	{
 		DescriptorSet::DescriptorImageInfo info;
-		info.sampler = resource.sampler;
+		info.sampler = resourceView.sampler;
 		info.imageView = nullptr;
 		info.imageLayout = Image::Layout(0);
 		m_DescriptorSets[set]->AddImage(0, binding, { info });
-
-		_resource.newState = Resource::State::SHADER_READ_ONLY;
+		
+		resourceView.state = Resource::State::SHADER_READ_ONLY;
 		break;
 	}
 	case DescriptorType::COMBINED_IMAGE_SAMPLER:
 	{
 		DescriptorSet::DescriptorImageInfo info;
-		info.sampler = resource.sampler;
-		info.imageView = resource.imageView;
+		info.sampler = resourceView.sampler;
+		info.imageView = resourceView.imageView;
 		info.imageLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
 		m_DescriptorSets[set]->AddImage(0, binding, { info });
 
-		_resource.newState = Resource::State::SHADER_READ_ONLY;
+		resourceView.state = Resource::State::SHADER_READ_ONLY;
 		break;
 	}
 	case DescriptorType::SAMPLED_IMAGE:
 	{
 		DescriptorSet::DescriptorImageInfo info;
 		info.sampler = nullptr;
-		info.imageView = resource.imageView;
+		info.imageView = resourceView.imageView;
 		info.imageLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
 		m_DescriptorSets[set]->AddImage(0, binding, { info });
 
-		_resource.newState = Resource::State::SHADER_READ_ONLY;
+		resourceView.state = Resource::State::SHADER_READ_ONLY;
 		break;
 	}
 	case DescriptorType::STORAGE_IMAGE:
 	{
 		DescriptorSet::DescriptorImageInfo info;
 		info.sampler = nullptr;
-		info.imageView = resource.imageView;
+		info.imageView = resourceView.imageView;
 		info.imageLayout = Image::Layout::GENERAL;
 		m_DescriptorSets[set]->AddImage(0, binding, { info });
 
-		_resource.newState = Resource::State::SHADER_READ_WRITE;
+		resourceView.state = Resource::State::SHADER_READ_WRITE;
 		break;
 	}
 	case DescriptorType::UNIFORM_TEXEL_BUFFER:
@@ -168,10 +167,10 @@ void TaskPassParameters::SetResource(const std::pair<uint32_t, uint32_t>& set_bi
 	case DescriptorType::UNIFORM_BUFFER_DYNAMIC:
 	{
 		DescriptorSet::DescriptorBufferInfo info;
-		info.bufferView = resource.bufferView;
+		info.bufferView = resourceView.bufferView;
 		m_DescriptorSets[set]->AddBuffer(0, binding, { info });
 
-		_resource.newState = Resource::State::SHADER_READ_ONLY;
+		resourceView.state = Resource::State::SHADER_READ_ONLY;
 		break;
 	}
 	case DescriptorType::STORAGE_TEXEL_BUFFER:
@@ -179,60 +178,60 @@ void TaskPassParameters::SetResource(const std::pair<uint32_t, uint32_t>& set_bi
 	case DescriptorType::STORAGE_BUFFER_DYNAMIC:
 	{
 		DescriptorSet::DescriptorBufferInfo info;
-		info.bufferView = resource.bufferView;
+		info.bufferView = resourceView.bufferView;
 		m_DescriptorSets[set]->AddBuffer(0, binding, { info });
 
-		_resource.newState = Resource::State::SHADER_READ_WRITE;
+		resourceView.state = Resource::State::SHADER_READ_WRITE;
 		break;
 	}
 	case DescriptorType::INPUT_ATTACHMENT:
 	{
 		DescriptorSet::DescriptorImageInfo info;
 		info.sampler = nullptr;
-		info.imageView = resource.imageView;
+		info.imageView = resourceView.imageView;
 		info.imageLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
 		m_DescriptorSets[set]->AddImage(0, binding, { info });
 
-		_resource.newState = Resource::State::SHADER_READ_ONLY;
+		resourceView.state = Resource::State::SHADER_READ_ONLY;
 		break;
 	}
 	case DescriptorType::ACCELERATION_STRUCTURE:
 	{
-		m_DescriptorSets[set]->AddAccelerationStructure(0, binding, { resource.accelerationStructure });
+		m_DescriptorSets[set]->AddAccelerationStructure(0, binding, { resourceView.accelerationStructure });
 
-		_resource.newState = Resource::State::SHADER_READ_ONLY;
+		resourceView.state = Resource::State::SHADER_READ_ONLY;
 		break;
 	}
 	}
 
-	if (_resource.newState == Resource::State::SHADER_READ_ONLY)
+	if (resourceView.state == Resource::State::SHADER_READ_ONLY)
 	{
-		m_InputResources.push_back(_resource);
+		m_InputResourceViews.push_back(resourceView);
 	}
-	else if (_resource.newState == Resource::State::SHADER_READ_WRITE)
+	else if (resourceView.state == Resource::State::SHADER_READ_WRITE)
 	{
-		m_InputResources.push_back(_resource);
-		m_OutputResources.push_back(_resource);
+		m_InputResourceViews.push_back(resourceView);
+		m_OutputResourceViews.push_back(resourceView);
 	}
 	else
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Resource::State is not SHADER_READ_ONLY or SHADER_READ_ONLY.");
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Resource::State is not SHADER_READ_ONLY or SHADER_READ_WRITE.");
 	}
 }
 
-void TaskPassParameters::SetResource(const std::string& name, const Resource& resource)
+void TaskPassParameters::SetResourceView(const std::string& name, ResourceView& resourceView)
 {
-	SetResource(FindResourceSetBinding(name), resource);
+	SetResourceView(FindResourceViewSetBinding(name), resourceView);
 }
 
-void TaskPassParameters::AddAttachment(uint32_t index, const Resource& resource, RenderPass::AttachmentLoadOp loadOp, RenderPass::AttachmentStoreOp storeOp, const Image::ClearValue& clearValue)
+void TaskPassParameters::AddAttachment(uint32_t index, const ResourceView& resourceView, RenderPass::AttachmentLoadOp loadOp, RenderPass::AttachmentStoreOp storeOp, const Image::ClearValue& clearValue)
 {
-	if (resource.imageView)
+	if (resourceView.imageView)
 	{
-		if (resource.newState == Resource::State::COLOUR_ATTACHMENT)
+		if (resourceView.state == Resource::State::COLOUR_ATTACHMENT)
 		{
 			RenderingAttachmentInfo& attachmentInfo = m_RenderingInfo.colourAttachments[index];
-			attachmentInfo.imageView = resource.imageView;
+			attachmentInfo.imageView = resourceView.imageView;
 			attachmentInfo.imageLayout = Image::Layout::COLOUR_ATTACHMENT_OPTIMAL;
 			attachmentInfo.resolveMode = ResolveModeBits::NONE_BIT;
 			attachmentInfo.resolveImageView = nullptr;
@@ -241,10 +240,10 @@ void TaskPassParameters::AddAttachment(uint32_t index, const Resource& resource,
 			attachmentInfo.storeOp = storeOp;
 			attachmentInfo.clearValue = clearValue;
 		}
-		else if (resource.newState == Resource::State::DEPTH_STENCIL_ATTACHMENT)
+		else if (resourceView.state == Resource::State::DEPTH_STENCIL_ATTACHMENT)
 		{
 			RenderingAttachmentInfo& attachmentInfo = m_DepthAttachmentInfo;
-			attachmentInfo.imageView = resource.imageView;
+			attachmentInfo.imageView = resourceView.imageView;
 			attachmentInfo.imageLayout = Image::Layout::DEPTH_ATTACHMENT_OPTIMAL;
 			attachmentInfo.resolveMode = ResolveModeBits::NONE_BIT;
 			attachmentInfo.resolveImageView = nullptr;
@@ -260,33 +259,34 @@ void TaskPassParameters::AddAttachment(uint32_t index, const Resource& resource,
 			GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Resource::State is not COLOUR_ATTACHMENT or DEPTH_STENCIL_ATTACHMENT.");
 		}
 
-		m_OutputResources.push_back(resource);
+		m_OutputResourceViews.push_back(resourceView);
+		m_OutputResourceViews.back().stage = Shader::StageBit::FRAGMENT_BIT;
 	}
 }
 
-void TaskPassParameters::AddAttachmentWithResolve(uint32_t index, const Resource& resource, const Resource& resolveResource, RenderPass::AttachmentLoadOp loadOp, RenderPass::AttachmentStoreOp storeOp, const Image::ClearValue& clearValue)
+void TaskPassParameters::AddAttachmentWithResolve(uint32_t index, const ResourceView& resourceView, const ResourceView& resolveResourceView, RenderPass::AttachmentLoadOp loadOp, RenderPass::AttachmentStoreOp storeOp, const Image::ClearValue& clearValue)
 {
-	if (resource.imageView && resolveResource.imageView)
+	if (resourceView.imageView && resolveResourceView.imageView)
 	{
-		if (resource.newState == Resource::State::COLOUR_ATTACHMENT)
+		if (resourceView.state== Resource::State::COLOUR_ATTACHMENT)
 		{
 			RenderingAttachmentInfo& attachmentInfo = m_RenderingInfo.colourAttachments[index];
-			attachmentInfo.imageView = resource.imageView;
+			attachmentInfo.imageView = resourceView.imageView;
 			attachmentInfo.imageLayout = Image::Layout::COLOUR_ATTACHMENT_OPTIMAL;
 			attachmentInfo.resolveMode = ResolveModeBits::AVERAGE_BIT;
-			attachmentInfo.resolveImageView = resolveResource.imageView;
+			attachmentInfo.resolveImageView = resolveResourceView.imageView;
 			attachmentInfo.resolveImageLayout = Image::Layout::COLOUR_ATTACHMENT_OPTIMAL;
 			attachmentInfo.loadOp = loadOp;
 			attachmentInfo.storeOp = storeOp;
 			attachmentInfo.clearValue = clearValue;
 		}
-		else if (resource.newState == Resource::State::DEPTH_STENCIL_ATTACHMENT)
+		else if (resourceView.state == Resource::State::DEPTH_STENCIL_ATTACHMENT)
 		{
 			RenderingAttachmentInfo& attachmentInfo = m_DepthAttachmentInfo;
-			attachmentInfo.imageView = resource.imageView;
+			attachmentInfo.imageView = resourceView.imageView;
 			attachmentInfo.imageLayout = Image::Layout::DEPTH_ATTACHMENT_OPTIMAL;
 			attachmentInfo.resolveMode = ResolveModeBits::AVERAGE_BIT;
-			attachmentInfo.resolveImageView = resolveResource.imageView;
+			attachmentInfo.resolveImageView = resolveResourceView.imageView;
 			attachmentInfo.resolveImageLayout = Image::Layout::DEPTH_ATTACHMENT_OPTIMAL;
 			attachmentInfo.loadOp = loadOp;
 			attachmentInfo.storeOp = storeOp;
@@ -299,16 +299,17 @@ void TaskPassParameters::AddAttachmentWithResolve(uint32_t index, const Resource
 			GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Resource::State is not COLOUR_ATTACHMENT or DEPTH_STENCIL_ATTACHMENT.");
 		}
 
-		m_OutputResources.push_back(resource);
-		m_OutputResources.push_back(resolveResource);
+		m_OutputResourceViews.push_back(resourceView); 
+		m_OutputResourceViews.back().stage = Shader::StageBit::FRAGMENT_BIT;
+		m_OutputResourceViews.push_back(resolveResourceView);
+		m_OutputResourceViews.back().stage = Shader::StageBit::FRAGMENT_BIT;
 	}
 }
 
-const PipelineRef& TaskPassParameters::GetPipeline() const 
+const PipelineRef& TaskPassParameters::GetPipeline() const
 {
 	return m_RenderPipeline->GetPipeline();
 }
-
 
 void TaskPassParameters::SetRenderArea(Rect2D renderArea, uint32_t layers, uint32_t viewMask)
 {
@@ -328,38 +329,38 @@ TransferPassParameters::TransferPassParameters()
 
 TransferPassParameters::~TransferPassParameters()
 {
-	m_ResourcePairs.clear();
+	m_ResourceViewPairs.clear();
 }
 
-void TransferPassParameters::AddResource(const Ref<Vertexbuffer>& vertexbuffer)
+void TransferPassParameters::AddResourceView(const Ref<Vertexbuffer>& vertexbuffer)
 {
 	ResourceCopyRegion rcr;
 	rcr.bufferCopy = { 0, 0, vertexbuffer->GetGPUBufferView()->GetCreateInfo().size };
-	AddResourcePair(Resource(vertexbuffer->GetCPUBufferView(), Resource::State::TRANSFER_SRC), Resource(vertexbuffer->GetGPUBufferView(), Resource::State::TRANSFER_DST), rcr);
+	AddResourceViewPair(ResourceView(vertexbuffer->GetCPUBufferView(), Resource::State::TRANSFER_SRC), ResourceView(vertexbuffer->GetGPUBufferView(), Resource::State::TRANSFER_DST), rcr);
 }
 
-void TransferPassParameters::AddResource(const Ref<Indexbuffer>& indexbuffer)
+void TransferPassParameters::AddResourceView(const Ref<Indexbuffer>& indexbuffer)
 {
 	ResourceCopyRegion rcr;
 	rcr.bufferCopy = { 0, 0, indexbuffer->GetGPUBufferView()->GetCreateInfo().size };
-	AddResourcePair(Resource(indexbuffer->GetCPUBufferView(), Resource::State::TRANSFER_SRC), Resource(indexbuffer->GetGPUBufferView(), Resource::State::TRANSFER_DST), rcr);
+	AddResourceViewPair(ResourceView(indexbuffer->GetCPUBufferView(), Resource::State::TRANSFER_SRC), ResourceView(indexbuffer->GetGPUBufferView(), Resource::State::TRANSFER_DST), rcr);
 }
 
-void TransferPassParameters::AddResource(const Ref<BaseUniformbuffer>& uniformbuffer)
+void TransferPassParameters::AddResourceView(const Ref<BaseUniformbuffer>& uniformbuffer)
 {
 	ResourceCopyRegion rcr;
 	rcr.bufferCopy = { 0, 0, uniformbuffer->GetGPUBufferView()->GetCreateInfo().size };
-	AddResourcePair(Resource(uniformbuffer->GetCPUBufferView(), Resource::State::TRANSFER_SRC), Resource(uniformbuffer->GetGPUBufferView(), Resource::State::TRANSFER_DST), rcr);
+	AddResourceViewPair(ResourceView(uniformbuffer->GetCPUBufferView(), Resource::State::TRANSFER_SRC), ResourceView(uniformbuffer->GetGPUBufferView(), Resource::State::TRANSFER_DST), rcr);
 }
 
-void TransferPassParameters::AddResource(const Ref<BaseStoragebuffer>& storagebuffer)
+void TransferPassParameters::AddResourceView(const Ref<BaseStoragebuffer>& storagebuffer)
 {
 	ResourceCopyRegion rcr;
 	rcr.bufferCopy = { 0, 0, storagebuffer->GetGPUBufferView()->GetCreateInfo().size };
-	AddResourcePair(Resource(storagebuffer->GetCPUBufferView(), Resource::State::TRANSFER_SRC), Resource(storagebuffer->GetGPUBufferView(), Resource::State::TRANSFER_DST), rcr);
+	AddResourceViewPair(ResourceView(storagebuffer->GetCPUBufferView(), Resource::State::TRANSFER_SRC), ResourceView(storagebuffer->GetGPUBufferView(), Resource::State::TRANSFER_DST), rcr);
 }
 
-void TransferPassParameters::AddResource(const Ref<Texture>& texture)
+void TransferPassParameters::AddResourceView(const Ref<Texture>& texture)
 {
 	ResourceCopyRegion rcr;
 	rcr.bufferImageCopy =
@@ -369,14 +370,14 @@ void TransferPassParameters::AddResource(const Ref<Texture>& texture)
 		{ 0, 0, 0 },
 		{ texture->GetWidth(), texture->GetHeight(), texture->GetDepth() }
 	};
-	AddResourcePair(Resource(texture->GetCPUBufferView(), Resource::State::TRANSFER_SRC), Resource(texture->GetImageView(), Resource::State::TRANSFER_DST), rcr);
+	AddResourceViewPair(ResourceView(texture->GetCPUBufferView(), Resource::State::TRANSFER_SRC), ResourceView(texture->GetImageView(), Resource::State::TRANSFER_DST), rcr);
 }
 
-void TransferPassParameters::AddResourcePair(const Resource& srcResource, const Resource& dstResource, const ResourceCopyRegion copyRegion)
+void TransferPassParameters::AddResourceViewPair(const ResourceView& srcResourceView, const ResourceView& dstResourceView, const ResourceCopyRegion& copyRegion)
 {
-	m_InputResources.push_back(srcResource);
-	m_InputResources.back().newState = Resource::State::TRANSFER_SRC;
-	m_OutputResources.push_back(dstResource);
-	m_OutputResources.back().newState = Resource::State::TRANSFER_DST;
-	m_ResourcePairs.push_back({ srcResource, dstResource, copyRegion });
+	m_InputResourceViews.push_back(srcResourceView);
+	m_InputResourceViews.back().state = Resource::State::TRANSFER_SRC;
+	m_OutputResourceViews.push_back(dstResourceView);
+	m_OutputResourceViews.back().state = Resource::State::TRANSFER_DST;
+	m_ResourceViewPairs.push_back({ srcResourceView, dstResourceView, copyRegion });
 }

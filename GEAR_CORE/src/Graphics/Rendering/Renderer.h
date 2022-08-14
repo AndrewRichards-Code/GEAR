@@ -37,7 +37,7 @@ namespace gear
 			Ref<RenderSurface> m_RenderSurface;
 			static std::map<std::string, Ref<graphics::RenderPipeline>> s_RenderPipelines;
 
-			RenderGraph renderGraph;
+			RenderGraph m_RenderGraph;
 
 			//Present Synchronisation Primitives
 			std::vector<miru::base::FenceRef> m_DrawFences;
@@ -103,7 +103,7 @@ namespace gear
 			static inline std::map<std::string, Ref<graphics::RenderPipeline>> GetRenderPipelines() { return s_RenderPipelines; }
 			inline Ref<RenderSurface> GetRenderSurface() { return m_RenderSurface; }
 			inline Ref<objects::Camera> GetCamera() { return m_MainRenderCamera; }
-			inline const RenderGraph& GetRenderGraph() const { return renderGraph; }
+			inline const RenderGraph& GetRenderGraph() const { return m_RenderGraph; }
 
 			inline const uint32_t& GetFrameIndex() const { return m_FrameIndex; }
 			inline const uint32_t& GetFrameCount() const { return m_FrameCount; }

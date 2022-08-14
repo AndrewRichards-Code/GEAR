@@ -26,30 +26,159 @@ Resource::~Resource()
 {
 }
 
-Resource::Resource(const Ref<Texture>& texture, DescriptorType _type)
+Resource::Resource(const ImageRef& image)
 {
-	type = _type;
+	this->image = image;
+	Init(image);
+}
+
+Resource::Resource(const SamplerRef& sampler)
+{
+	this->sampler = sampler;
+	Init(sampler);
+}
+
+Resource::Resource(const BufferRef& buffer)
+{
+	this->buffer = buffer;
+	Init(buffer);
+}
+
+Resource::Resource(const AccelerationStructureRef& accelerationStructure)
+{
+	this->accelerationStructure = accelerationStructure;
+	Init(accelerationStructure);
+}
+
+bool Resource::operator== (const Resource& other) const
+{
+	return (type == other.type
+		&& image == other.image
+		&& sampler == other.sampler
+		&& buffer == other.buffer
+		&& accelerationStructure == other.accelerationStructure);
+}
+
+bool Resource::operator!= (const Resource& other) const
+{
+	return !(*this == other);
+}
+
+const std::string& Resource::GetName() const
+{ 
+	return name;
+}
+std::string& Resource::GetName()
+{ 
+	return name;
+}
+
+const Resource::Type& Resource::GetType() const
+{ 
+	return type;
+}
+const Resource::Type& Resource::GetType()
+{ 
+	return type;
+}
+
+Resource::State Resource::GetSubresources(uint32_t mipLevel, uint32_t arrayLayer)
+{
+	return subresourceMap[mipLevel][arrayLayer];
+}
+
+Resource::State Resource::GetSubresources(const miru::base::Image::SubresourceRange& subresourceRange)
+{
+	bool same = AreSubresourcesInSameState(subresourceRange);
+	if (!same)
+	{
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "Not all subresources the range have the same State.");
+		return State::UNKNOWN;
+	}
+	else
+	{
+		return subresourceMap[subresourceRange.baseMipLevel][subresourceRange.baseArrayLayer];
+	}
+
+}
+
+void Resource::SetSubresources(State state)
+{
+	subresourceMap[0][0] = state;
+}
+
+void Resource::SetSubresources(State state, const miru::base::Image::SubresourceRange& subresourceRange)
+{
+	for (uint32_t level = subresourceRange.baseMipLevel; level < subresourceRange.baseMipLevel + subresourceRange.mipLevelCount; level++)
+		for (uint32_t layer = subresourceRange.baseArrayLayer; layer < subresourceRange.baseArrayLayer + subresourceRange.arrayLayerCount; layer++)
+			subresourceMap[level][layer] = state;
+}
+
+bool Resource::AreSubresourcesInSameState(const miru::base::Image::SubresourceRange& subresourceRange)
+{
+	std::vector<State> stateCheck;
+	for (uint32_t level = subresourceRange.baseMipLevel; level < subresourceRange.baseMipLevel + subresourceRange.mipLevelCount; level++)
+		for (uint32_t layer = subresourceRange.baseArrayLayer; layer < subresourceRange.baseArrayLayer + subresourceRange.arrayLayerCount; layer++)
+			stateCheck.push_back(subresourceMap[level][layer]);
+
+	if (stateCheck.empty())
+	{
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "Invalid Image::SubresourceRange.");
+	}
+
+	return std::equal(stateCheck.begin() + 1, stateCheck.end(), stateCheck.begin());
+}
+
+std::vector<std::pair<uint32_t, uint32_t>> Resource::GetSubresourcesToTransition(State state, const miru::base::Image::SubresourceRange& subresourceRange)
+{
+	std::vector<std::pair<uint32_t, uint32_t>> result;
+	for(uint32_t level = subresourceRange.baseMipLevel; level < subresourceRange.baseMipLevel + subresourceRange.mipLevelCount; level++)
+	{
+		for (uint32_t layer = subresourceRange.baseArrayLayer; layer < subresourceRange.baseArrayLayer + subresourceRange.arrayLayerCount; layer++)
+		{
+			if (state != GetSubresources(level, layer))
+				result.push_back({ level, layer });
+		}
+	}
+	return result;
+}
+
+////////////////
+//ResourceView//
+////////////////
+
+ResourceView::ResourceView()
+{
+}
+
+ResourceView::~ResourceView()
+{
+}
+
+ResourceView::ResourceView(const Ref<Texture>& texture, miru::base::DescriptorType type)
+{
+	this->type = type;
 	switch (type)
 	{
 	case DescriptorType::SAMPLER:
-		newState = State::SHADER_READ_ONLY;
+		state = Resource::State::SHADER_READ_ONLY;
 		sampler = texture->GetSampler();
 		break;
 	case DescriptorType::COMBINED_IMAGE_SAMPLER:
-		newState = State::SHADER_READ_ONLY;
+		state = Resource::State::SHADER_READ_ONLY;
 		sampler = texture->GetSampler();
 		imageView = texture->GetImageView();
 		break;
 	case DescriptorType::SAMPLED_IMAGE:
-		newState = State::SHADER_READ_ONLY;
+		state = Resource::State::SHADER_READ_ONLY;
 		imageView = texture->GetImageView();
 		break;
 	case DescriptorType::STORAGE_IMAGE:
-		newState = State::SHADER_READ_WRITE;
+		state = Resource::State::SHADER_READ_WRITE;
 		imageView = texture->GetImageView();
 		break;
 	case DescriptorType::INPUT_ATTACHMENT:
-		newState = State::SHADER_READ_ONLY;
+		state = Resource::State::SHADER_READ_ONLY;
 		imageView = texture->GetImageView();
 		break;
 	default:
@@ -57,85 +186,105 @@ Resource::Resource(const Ref<Texture>& texture, DescriptorType _type)
 	}
 }
 
-Resource::Resource(const Ref<Texture>& texture, State _state)
+ResourceView::ResourceView(const Ref<Texture>& texture, Resource::State state)
 {
-	newState = _state;
-	type = _state == State::SHADER_READ_ONLY ? DescriptorType::COMBINED_IMAGE_SAMPLER : _state == State::SHADER_READ_WRITE ? DescriptorType::STORAGE_IMAGE : DescriptorType(-1);
+	this->state = state;
+	type = state == Resource::State::SHADER_READ_ONLY ? DescriptorType::COMBINED_IMAGE_SAMPLER : state == Resource::State::SHADER_READ_WRITE ? DescriptorType::STORAGE_IMAGE : NonDescriptorType;
 	imageView = texture->GetImageView();
 
-	if (_state == State::SHADER_READ_ONLY)
+	if (state == Resource::State::SHADER_READ_ONLY)
 		sampler = texture->GetSampler();
-}
+} 
 
-Resource::Resource(const Ref<BaseUniformbuffer>& uniformBuffer)
+ResourceView::ResourceView(const Ref<BaseUniformbuffer>& uniformBuffer)
 {
 	type = DescriptorType::UNIFORM_BUFFER;
 	bufferView = uniformBuffer->GetGPUBufferView();
 }
 
-Resource::Resource(const Ref<BaseStoragebuffer>& storageBuffer)
+ResourceView::ResourceView(const Ref<BaseStoragebuffer>& storageBuffer)
 {
 	type = DescriptorType::STORAGE_BUFFER;
 	bufferView = storageBuffer->GetGPUBufferView();
 }
 
-Resource::Resource(const ImageViewRef& _imageView, const SamplerRef& _sampler)
+ResourceView::ResourceView(const miru::base::ImageViewRef& imageView, const miru::base::SamplerRef& sampler)
 {
-	newState = State::SHADER_READ_ONLY;
+	state = Resource::State::SHADER_READ_ONLY;
 	type = DescriptorType::COMBINED_IMAGE_SAMPLER;
-	imageView = _imageView;
-	sampler = _sampler;
+	this->imageView = imageView;
+	this->sampler = sampler;
 }
 
-Resource::Resource(const ImageViewRef& _imageView, State _state)
+ResourceView::ResourceView(const miru::base::ImageViewRef& imageView, Resource::State state)
 {
-	newState = _state;
-	type = _state == State::SHADER_READ_ONLY ? DescriptorType::SAMPLED_IMAGE : _state == State::SHADER_READ_WRITE ? DescriptorType::STORAGE_IMAGE : NonDescriptorType;
-	imageView = _imageView;
+	this->state = state;
+	type = state == Resource::State::SHADER_READ_ONLY ? DescriptorType::SAMPLED_IMAGE : state == Resource::State::SHADER_READ_WRITE ? DescriptorType::STORAGE_IMAGE : NonDescriptorType;
+	this->imageView = imageView;
 }
 
-Resource::Resource(const SamplerRef& _sampler)
+ResourceView::ResourceView(const miru::base::SamplerRef& sampler)
 {
-	newState = State::SHADER_READ_ONLY;
+	state = Resource::State::SHADER_READ_ONLY;
 	type = DescriptorType::SAMPLER;
-	sampler = _sampler;
+	this->sampler = sampler;
 }
 
-Resource::Resource(const BufferViewRef& _bufferView, State _state)
+ResourceView::ResourceView(const miru::base::BufferViewRef& bufferView, Resource::State state)
 {
-	newState = _state;
-	type = _state == State::SHADER_READ_ONLY ? DescriptorType::UNIFORM_BUFFER : _state == State::SHADER_READ_WRITE ? DescriptorType::STORAGE_BUFFER : NonDescriptorType;
-	bufferView = _bufferView;
+	this->state = state;
+	type = state == Resource::State::SHADER_READ_ONLY ? DescriptorType::UNIFORM_BUFFER : state == Resource::State::SHADER_READ_WRITE ? DescriptorType::STORAGE_BUFFER : NonDescriptorType;
+	this->bufferView = bufferView;
 }
 
-Resource::Resource(const AccelerationStructureRef& _accelerationStructure)
+ResourceView::ResourceView(const miru::base::AccelerationStructureRef& accelerationStructure)
 {
-	newState = State::SHADER_READ_ONLY;
+	this->state = Resource::State::SHADER_READ_ONLY;
 	type = DescriptorType::ACCELERATION_STRUCTURE;
-	accelerationStructure = _accelerationStructure;
+	this->accelerationStructure = accelerationStructure;
 }
 
-const std::string& gear::graphics::rendering::Resource::GetName() const
+Resource ResourceView::GetResource() const
 {
-	if (IsImageView())
-		return imageView->GetCreateInfo().debugName;
-	else if (IsSampler())
-		return sampler->GetCreateInfo().debugName;
-	else if (IsBufferView())
-		return bufferView->GetCreateInfo().debugName;
-	else if (IsAccelerationStructure())
-		return accelerationStructure->GetCreateInfo().debugName;
+	if (imageView)
+		return Resource(imageView->GetCreateInfo().image);
+	else if (sampler)
+		return Resource(sampler);
+	else if (bufferView)
+		return Resource(bufferView->GetCreateInfo().buffer);
+	else if (accelerationStructure)
+		return Resource(accelerationStructure);
 	else
-		return std::string("");
+	{
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "ResourceView is invalid.");
+		return Resource();
+	}
 }
 
-bool Resource::operator== (const Resource& other) const
+Resource ResourceView::GetResource()
+{
+	if (imageView)
+		return Resource(imageView->GetCreateInfo().image);
+	else if (sampler)
+		return Resource(sampler);
+	else if (bufferView)
+		return Resource(bufferView->GetCreateInfo().buffer);
+	else if (accelerationStructure)
+		return Resource(accelerationStructure);
+	else
+	{
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "ResourceView is invalid.");
+		return Resource();
+	}
+}
+
+bool ResourceView::operator== (const ResourceView& other) const
 {
 	if (IsImageView() && other.IsImageView())
 	{
 		if (imageView == other.imageView)
 			return true;
-		else 
+		else
 			return imageView->GetCreateInfo().image == other.imageView->GetCreateInfo().image;
 	}
 	else if (IsSampler() && other.IsSampler())
@@ -153,7 +302,7 @@ bool Resource::operator== (const Resource& other) const
 		return false;
 }
 
-bool Resource::operator!= (const Resource& other) const
+bool ResourceView::operator!= (const ResourceView& other) const
 {
 	return !(*this == other);
 }

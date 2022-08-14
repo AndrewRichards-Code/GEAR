@@ -20,8 +20,6 @@ Pass::Pass(const std::string& passName, const Ref<PassParameters>& passParameter
 
 Pass::~Pass()
 {
-	m_BackwardGraphicsDependentPasses.clear();
-	m_ForwardGraphicsDependentPasses.clear();
 	m_RenderFunction = nullptr;
 }
 
@@ -31,14 +29,12 @@ void Pass::Execute(RenderGraph* renderGraph, CommandBufferRef cmdBuffer, uint32_
 	if (GetPassParameters()->GetType() == PassParameters::Type::TASK)
 	{
 		const Ref<TaskPassParameters>& passParameters = ref_cast<TaskPassParameters>(GetPassParameters());
-		std::vector<Resource>& inputResources = GetInputResources();
-		std::vector<Resource>& outputResources = GetOutputResources();
+		std::vector<ResourceView>& inputResourceViews = GetInputResourceViews();
+		std::vector<ResourceView>& outputResourceViews = GetOutputResourceViews();
 		const RenderingInfo& renderingInfo = passParameters->GetRenderingInfo();
 
 		bool graphics = renderingInfo.colourAttachments.size();
-		bool noBackwardDependencies = m_BackwardGraphicsDependentPasses.empty();
-		bool noForwardDependencies = m_ForwardGraphicsDependentPasses.empty();
-
+		
 		if (cmdPoolType != CommandPool::QueueType::TRANSFER)
 		{
 			cmdBuffer->BeginDebugLabel(frameIndex, m_PassName);
@@ -49,16 +45,18 @@ void Pass::Execute(RenderGraph* renderGraph, CommandBufferRef cmdBuffer, uint32_
 			CommandBuffer::DependencyInfo dependencyInfo = { DependencyBit::NONE_BIT, {} };
 			std::vector<Barrier2Ref>& barriers = dependencyInfo.barriers;
 
-			//Transition input resources
+			//Transition input and output resources
 			barriers.clear();
-			for (Resource& resource : inputResources)
-				barriers.push_back(TransitionResource(renderGraph, resource));
-			cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
-
-			//Transition output resources
-			barriers.clear();
-			for (Resource& resource : outputResources)
-				barriers.push_back(TransitionResource(renderGraph, resource));
+			for (ResourceView& resourceView : inputResourceViews)
+			{
+				auto& inputBarriers = TransitionResource(renderGraph, resourceView);
+				barriers.insert(barriers.end(), inputBarriers.begin(), inputBarriers.end());
+			}
+			for (ResourceView& resourceView : outputResourceViews)
+			{
+				auto& outputBarriers = TransitionResource(renderGraph, resourceView);
+				barriers.insert(barriers.end(), outputBarriers.begin(), outputBarriers.end());
+			}
 			cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
 		}
 
@@ -72,22 +70,19 @@ void Pass::Execute(RenderGraph* renderGraph, CommandBufferRef cmdBuffer, uint32_
 			cmdBuffer->SetScissor(frameIndex, { TaskPassParameters::CreateScissor(width, height) });
 		}
 
-		cmdBuffer->BindDescriptorSets(frameIndex, passParameters->GetDescriptorSets(), 0, passParameters->GetPipeline());
 		cmdBuffer->BindPipeline(frameIndex, passParameters->GetPipeline());
+		cmdBuffer->BindDescriptorSets(frameIndex, passParameters->GetDescriptorSets(), 0, passParameters->GetPipeline());
 		m_RenderFunction(cmdBuffer, frameIndex);
 
 		if (graphics)
 		{
 			cmdBuffer->EndRendering(frameIndex);
-		}
 
-		if (graphics && noForwardDependencies)
-		{
-			for (Resource& resource : outputResources)
+			for (ResourceView& resourceView : outputResourceViews)
 			{
-				if (resource.IsImageView() && resource.imageView->IsSwapchainImageView())
+				if (resourceView.IsImageView() && resourceView.imageView->IsSwapchainImageView())
 				{
-					CommandBuffer::DependencyInfo dependencyInfo = { DependencyBit::NONE_BIT, { TransitionResource(renderGraph, resource, Resource::State::PRESENT) } };
+					CommandBuffer::DependencyInfo dependencyInfo = { DependencyBit::NONE_BIT, { TransitionResource(renderGraph, resourceView, Resource::State::PRESENT) } };
 					cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
 				}
 			}
@@ -110,15 +105,17 @@ void Pass::Execute(RenderGraph* renderGraph, CommandBufferRef cmdBuffer, uint32_
 		//Transition resource pairs
 		CommandBuffer::DependencyInfo dependencyInfo = { DependencyBit::NONE_BIT, {} };
 		std::vector<Barrier2Ref>& barriers = dependencyInfo.barriers;
-		for (auto& [src, dst, rcr] : passParameters->GetResourcesPairs())
+		for (auto& [src, dst, rcr] : passParameters->GetResourceViewsPairs())
 		{
-			barriers.push_back(TransitionResource(renderGraph, src));
-			barriers.push_back(TransitionResource(renderGraph, dst));
+			auto& srcBarriers = TransitionResource(renderGraph, src);
+			barriers.insert(barriers.end(), srcBarriers.begin(), srcBarriers.end());
+			auto& dstBarriers = TransitionResource(renderGraph, dst);
+			barriers.insert(barriers.end(), dstBarriers.begin(), dstBarriers.end());
 		}
 		cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
 
 		//Transfer resources
-		for (auto& [src, dst, rcr] : passParameters->GetResourcesPairs())
+		for (auto& [src, dst, rcr] : passParameters->GetResourceViewsPairs())
 		{
 			const bool& buffer_buffer = src.IsBufferView() && dst.IsBufferView();
 			const bool& buffer_image = src.IsBufferView() && dst.IsImageView();
@@ -166,28 +163,51 @@ void Pass::Execute(RenderGraph* renderGraph, CommandBufferRef cmdBuffer, uint32_
 	}
 }
 
-Barrier2Ref Pass::TransitionResource(RenderGraph* renderGraph, Resource& passResource, Resource::State overideNewState)
+std::vector<Barrier2Ref> Pass::TransitionResource(RenderGraph* renderGraph, const ResourceView& passResourceView, Resource::State overideNewState)
 {
-	const bool& srcComputeQueue = false;
-	const bool& dstComputeQueue = false;
-
-	Resource& resource = renderGraph->GetTrackedResource(passResource);
-	resource.newState = passResource.newState;
-	if (overideNewState != Resource::State::UNKNOWN)
-		resource.newState = overideNewState;
-
-	Resource::State& oldState = resource.oldState;
-	Resource::State& newState = resource.newState;
-	Shader::StageBit stage = passResource.stage;
-	passResource = resource;
-
 	Barrier::Type type;
-	if (resource.IsImageView())
+	if (passResourceView.IsImageView())
+	{
 		type = Barrier::Type::IMAGE;
-	else if (resource.IsBufferView())
+	}
+	else if (passResourceView.IsBufferView())
+	{
 		type = Barrier::Type::BUFFER;
+	}
 	else
-		return nullptr;
+	{
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "ResourceView is neither an ImageView or a BufferView.");
+	}
+
+	Resource& resource = renderGraph->GetTrackedResource(passResourceView.GetResource());
+
+	Resource::State newState = passResourceView.state;
+	const Shader::StageBit& stage = passResourceView.stage;
+	const DescriptorType& descriptorType = passResourceView.type;
+	if (overideNewState != Resource::State::UNKNOWN)
+		newState = overideNewState;
+
+	const Image::SubresourceRange& subresourceRange = type == Barrier::Type::IMAGE ? passResourceView.imageView->GetCreateInfo().subresourceRange : Image::SubresourceRange();
+
+	std::vector<Image::SubresourceRange> subresourceRanges;
+	if (type == Barrier::Type::IMAGE)
+	{
+		if (resource.AreSubresourcesInSameState(subresourceRange))
+		{
+			subresourceRanges.push_back(subresourceRange);
+		}
+		else
+		{
+			for (auto& subresource : resource.GetSubresourcesToTransition(newState, subresourceRange))
+			{
+				subresourceRanges.emplace_back(subresourceRange.aspect, subresource.first, 1, subresource.second, 1);
+			}
+		}
+	}
+	else
+	{
+		subresourceRanges.push_back(subresourceRange);
+	}
 
 	auto ShaderStageToPipelineStage = [](const Shader::StageBit& stage) -> PipelineStageBit
 	{
@@ -221,7 +241,7 @@ Barrier2Ref Pass::TransitionResource(RenderGraph* renderGraph, Resource& passRes
 		}
 	};
 
-	auto GetAccessesAndLayouts = [&](Resource::State state, Shader::StageBit stage, bool src, bool computeQueue) -> std::tuple<Barrier::AccessBit, Image::Layout, PipelineStageBit>
+	auto GetAccessesAndLayouts = [&](Resource::State state, Shader::StageBit stage, DescriptorType descriptorType, bool src) -> std::tuple<Barrier::AccessBit, Image::Layout, PipelineStageBit>
 	{
 		Barrier::AccessBit accesses = Barrier::AccessBit::NONE_BIT;
 		Image::Layout layout = Image::Layout::UNKNOWN;
@@ -267,9 +287,9 @@ Barrier2Ref Pass::TransitionResource(RenderGraph* renderGraph, Resource& passRes
 			if (src)
 				accesses = Barrier::AccessBit::SHADER_WRITE_BIT;
 			else
-				accesses = Barrier::AccessBit::SHADER_READ_BIT;
+				accesses = (descriptorType == DescriptorType::UNIFORM_BUFFER && GraphicsAPI::IsD3D12()) ? Barrier::AccessBit::UNIFORM_READ_BIT : Barrier::AccessBit::SHADER_READ_BIT;
 
-			if (computeQueue && GraphicsAPI::IsD3D12())
+			if (!arc::BitwiseCheck(stage, Shader::StageBit::FRAGMENT_BIT) && GraphicsAPI::IsD3D12())
 				layout = Image::Layout::D3D12_NON_PIXEL_SHADER_READ_ONLY_OPTIMAL;
 			else
 				layout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
@@ -286,7 +306,7 @@ Barrier2Ref Pass::TransitionResource(RenderGraph* renderGraph, Resource& passRes
 		}
 		case Resource::State::TRANSFER_SRC:
 		{
-			accesses = Barrier::AccessBit::TRANSFER_WRITE_BIT;
+			accesses = GraphicsAPI::IsD3D12() ? Barrier::AccessBit::NONE_BIT : Barrier::AccessBit::TRANSFER_WRITE_BIT;
 			layout = Image::Layout::TRANSFER_SRC_OPTIMAL;
 			pipelineStage = PipelineStageBit::TRANSFER_BIT;
 			break;
@@ -303,31 +323,41 @@ Barrier2Ref Pass::TransitionResource(RenderGraph* renderGraph, Resource& passRes
 		return { accesses, layout, pipelineStage };
 	};
 
-	auto src = GetAccessesAndLayouts(oldState, stage, true, srcComputeQueue);
-	auto dst = GetAccessesAndLayouts(newState, stage, false, dstComputeQueue);
+	std::vector<Barrier2Ref> barriers;
+	for (const auto& _subresourceRange : subresourceRanges)
+	{	
+		const Resource::State& oldState = type == Barrier::Type::IMAGE ? resource.GetSubresources(_subresourceRange) : resource.GetSubresources();
+		if (oldState == newState)
+			continue;
+		
+		auto src = GetAccessesAndLayouts(oldState, stage, descriptorType, true);
+		auto dst = GetAccessesAndLayouts(newState, stage, descriptorType, false);
 
-	oldState = newState;
+		Barrier2::CreateInfo barrierCI;
+		barrierCI.type = type;
+		barrierCI.srcStageMask = src._Get_rest()._Get_rest()._Myfirst._Val;
+		barrierCI.srcAccess = src._Myfirst._Val;
+		barrierCI.dstStageMask = dst._Get_rest()._Get_rest()._Myfirst._Val;
+		barrierCI.dstAccess = dst._Myfirst._Val;
+		barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+		barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+		if (type == Barrier::Type::BUFFER)
+		{
+			barrierCI.buffer = passResourceView.bufferView->GetCreateInfo().buffer;
+			barrierCI.offset = passResourceView.bufferView->GetCreateInfo().offset;
+			barrierCI.size = passResourceView.bufferView->GetCreateInfo().size;
+		}
+		if (type == Barrier::Type::IMAGE)
+		{
+			barrierCI.image = passResourceView.imageView->GetCreateInfo().image;
+			barrierCI.oldLayout = src._Get_rest()._Myfirst._Val;
+			barrierCI.newLayout = dst._Get_rest()._Myfirst._Val;
+			barrierCI.subresourceRange = _subresourceRange;
+		}
+		barriers.push_back(Barrier2::Create(&barrierCI));
 
-	Barrier2::CreateInfo barrierCI;
-	barrierCI.type = type;
-	barrierCI.srcStageMask = src._Get_rest()._Get_rest()._Myfirst._Val;
-	barrierCI.srcAccess = src._Myfirst._Val;
-	barrierCI.dstStageMask = dst._Get_rest()._Get_rest()._Myfirst._Val;
-	barrierCI.dstAccess = dst._Myfirst._Val;
-	barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-	barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-	if (type == Barrier::Type::BUFFER)
-	{
-		barrierCI.buffer = resource.bufferView->GetCreateInfo().buffer;
-		barrierCI.offset = resource.bufferView->GetCreateInfo().offset;
-		barrierCI.size = resource.bufferView->GetCreateInfo().size;
+		type == Barrier::Type::IMAGE ? resource.SetSubresources(newState, _subresourceRange) : resource.SetSubresources(newState);
 	}
-	if (type == Barrier::Type::IMAGE)
-	{
-		barrierCI.image = resource.imageView->GetCreateInfo().image;
-		barrierCI.oldLayout = src._Get_rest()._Myfirst._Val;
-		barrierCI.newLayout = dst._Get_rest()._Myfirst._Val;
-		barrierCI.subresourceRange = resource.imageView->GetCreateInfo().subresourceRange;
-	}
-	return Barrier2::Create(&barrierCI);
+
+	return barriers;
 }

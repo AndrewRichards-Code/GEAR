@@ -14,6 +14,10 @@ using namespace base;
 //RenderGraph//
 ///////////////
 
+RenderGraph::RenderGraph()
+{
+}
+
 RenderGraph::RenderGraph(const ContextRef& context, uint32_t commandBufferCount)
 {
 	m_Context = context;
@@ -38,69 +42,75 @@ RenderGraph::RenderGraph(const ContextRef& context, uint32_t commandBufferCount)
 			break;
 		}
 
-		auto& cmd = m_CommandPoolAndBuffers[type];
-		cmd.cmdPoolCI.debugName = "GEAR_CORE_CommandPool_RenderGraph_" + name;
-		cmd.cmdPoolCI.context = m_Context;
-		cmd.cmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
-		cmd.cmdPoolCI.queueType = type;
-		cmd.cmdPool = CommandPool::Create(&cmd.cmdPoolCI);
+		auto& cmdPoolandBuffer = m_CommandPoolAndBuffers[type];
+		cmdPoolandBuffer.CmdPoolCI.debugName = "GEAR_CORE_CommandPool_RenderGraph_" + name;
+		cmdPoolandBuffer.CmdPoolCI.context = m_Context;
+		cmdPoolandBuffer.CmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
+		cmdPoolandBuffer.CmdPoolCI.queueType = type;
+		cmdPoolandBuffer.CmdPool = CommandPool::Create(&cmdPoolandBuffer.CmdPoolCI);
 
-		cmd.cmdBufferCI.debugName = "GEAR_CORE_CommandBuffer_RenderGraph_" + name;
-		cmd.cmdBufferCI.commandPool = cmd.cmdPool;
-		cmd.cmdBufferCI.level = CommandBuffer::Level::PRIMARY;
-		cmd.cmdBufferCI.commandBufferCount = commandBufferCount;
-		cmd.cmdBuffer = CommandBuffer::Create(&cmd.cmdBufferCI);
+		cmdPoolandBuffer.CmdBufferCI.debugName = "GEAR_CORE_CommandBuffer_RenderGraph_" + name;
+		cmdPoolandBuffer.CmdBufferCI.commandPool = cmdPoolandBuffer.CmdPool;
+		cmdPoolandBuffer.CmdBufferCI.level = CommandBuffer::Level::PRIMARY;
+		cmdPoolandBuffer.CmdBufferCI.commandBufferCount = commandBufferCount;
+		cmdPoolandBuffer.CmdBuffer = CommandBuffer::Create(&cmdPoolandBuffer.CmdBufferCI);
 	}
 
+	m_FrameData.resize(commandBufferCount);
+	for (uint32_t i = 0; i < commandBufferCount; i++)
+	{
+		Reset(i);
+	}
+	m_FrameIndex = 0;
 }
 
 RenderGraph::~RenderGraph()
 {
-	Reset();
+	for(uint32_t i = 0; i < static_cast<uint32_t>(m_FrameData.size()); i++)
+		Reset(i);
+}
+
+void RenderGraph::Reset(uint32_t frameIndex)
+{
+	m_FrameIndex = frameIndex;
+	m_FrameData[m_FrameIndex].Clear();
 }
 
 Ref<Pass> RenderGraph::AddPass(const std::string& passName, const Ref<PassParameters>& passParameters, CommandPool::QueueType queueType, RenderGraphPassFunction renderFunction)
 {
 	//Check for any resources
-	if (passParameters->GetInputResources().empty() && passParameters->GetOutputResources().empty())
+	if (passParameters->GetInputResourceViews().empty() && passParameters->GetOutputResourceViews().empty())
 		return nullptr;
 
 	//Create and Setup Pass
 	Ref<Pass> pass = CreateRef<Pass>(passName, passParameters, queueType, renderFunction);
 	pass->GetPassParameters()->Setup();
-	
-	//Search and Resolve any multiple write dependencies
-	for (auto& previousPass : m_Passes)
-	{
-		if (previousPass->GetOutputResources() == pass->GetOutputResources())
-		{
-			pass->m_BackwardGraphicsDependentPasses.push_back(previousPass);
-			previousPass->m_ForwardGraphicsDependentPasses.push_back(pass);
-		}
-	}
+	FrameData& data = m_FrameData[m_FrameIndex];
 
-	//Add Pass Resources to the RenderGraph 'master' list
-	for (Resource& resource : pass->GetInputResources())
+	//Add Pass ResourceViews to the RenderGraph's 'master' Resource list
+	auto AddResourcesToRenderPass = [&](std::vector<ResourceView>& resourceViews) -> void
 	{
-		if (!arc::FindInVector(m_Resources, resource))
+		for (ResourceView& resourceView : resourceViews)
 		{
-			m_Resources.push_back(resource);
+			Resource& resource = resourceView.GetResource();
+			if (!arc::FindInVector(data.Resources, resource))
+			{
+				data.Resources.push_back(resource);
+			}
+			if (arc::FindInVector(GetPreviousFrameData().Resources, resource) && arc::FindInVector(data.Resources, resource))
+			{
+				auto& it0 = arc::FindPositionInVector(GetPreviousFrameData().Resources, resource);
+				auto& it1 = arc::FindPositionInVector(data.Resources, resource);
+				it1-> subresourceMap = it0->subresourceMap;
+			}
 		}
-		if (arc::FindInVector(m_PreviousFrameResources, resource))
-		{
-			auto& it = arc::FindPositionInVector(m_PreviousFrameResources, resource);
-			resource.oldState = it->newState;
-		}
-	}
-	for (Resource& resource : pass->GetOutputResources())
-	{
-		if (!arc::FindInVector(m_Resources, resource))
-			m_Resources.push_back(resource);
-	}
+	};
+	AddResourcesToRenderPass(pass->GetInputResourceViews());
+	AddResourcesToRenderPass(pass->GetOutputResourceViews());
 
 	//Add pass to the RenderGraph
-	m_Passes.push_back(pass);
-	pass->m_UnorderedListIndex = m_Passes.size() - 1;
+	data.Passes.push_back(pass);
+	pass->m_UnorderedListIndex = data.Passes.size() - 1;
 	return pass;
 }
 
@@ -109,25 +119,27 @@ void RenderGraph::Compile()
 	//Organizing GPU Work with Directed Acyclic Graphs
 	//https://levelup.gitconnected.com/organizing-gpu-work-with-directed-acyclic-graphs-f3fd5f2c2af3
 
+	FrameData& data = m_FrameData[m_FrameIndex];
+
 	//Build Adjacency Lists
 	{
-		m_AdjacencyLists.resize(m_Passes.size());
-		for (size_t passIndex = 0; passIndex < m_Passes.size(); passIndex++)
+		data.AdjacencyLists.resize(data.Passes.size());
+		for (size_t passIndex = 0; passIndex < data.Passes.size(); passIndex++)
 		{
-			Ref<Pass>& pass = m_Passes[passIndex];
-			std::vector<uint64_t>& adjacentPassIndices = m_AdjacencyLists[passIndex];
+			Ref<Pass>& pass = data.Passes[passIndex];
+			std::vector<uint64_t>& adjacentPassIndices = data.AdjacencyLists[passIndex];
 
-			for (size_t otherPassIndex = 0; otherPassIndex < m_Passes.size(); otherPassIndex++)
+			for (size_t otherPassIndex = 0; otherPassIndex < data.Passes.size(); otherPassIndex++)
 			{
 				if (passIndex == otherPassIndex)
 					continue; // Do not check dependencies on itself
 
-				Ref<Pass>& otherPass = m_Passes[otherPassIndex];
+				Ref<Pass>& otherPass = data.Passes[otherPassIndex];
 
-				for (auto& otherPassReadResource : otherPass->GetInputResources())
+				for (auto& otherPassReadResource : otherPass->GetInputResourceViews())
 				{
-					bool otherPassDependsOnCurrentPass = arc::FindInVector(pass->GetOutputResources(), otherPassReadResource);
-					otherPassDependsOnCurrentPass |= pass->GetOutputResources() == otherPass->GetOutputResources();
+					bool otherPassDependsOnCurrentPass = arc::FindInVector(pass->GetOutputResourceViews(), otherPassReadResource);
+					otherPassDependsOnCurrentPass |= pass->GetOutputResourceViews() == otherPass->GetOutputResourceViews();
 					if (otherPassDependsOnCurrentPass)
 					{
 						adjacentPassIndices.push_back(otherPassIndex);
@@ -145,8 +157,8 @@ void RenderGraph::Compile()
 			visited[passIndex] = true;
 			onStack[passIndex] = true;
 
-			size_t adjacencyListIndex = m_Passes[passIndex]->m_UnorderedListIndex;
-			for (size_t neighbour : m_AdjacencyLists[adjacencyListIndex])
+			size_t adjacencyListIndex = data.Passes[passIndex]->m_UnorderedListIndex;
+			for (size_t neighbour : data.AdjacencyLists[adjacencyListIndex])
 			{
 				if (!visited[neighbour])
 				{
@@ -155,13 +167,13 @@ void RenderGraph::Compile()
 			}
 
 			onStack[passIndex] = false;
-			m_TopologicallySortedPasses.push_back(m_Passes[passIndex]);
+			data.TopologicallySortedPasses.push_back(data.Passes[passIndex]);
 		};
 
-		std::vector<bool> visitedPasses(m_Passes.size(), false);
-		std::vector<bool> onStackPasses(m_Passes.size(), false);
+		std::vector<bool> visitedPasses(data.Passes.size(), false);
+		std::vector<bool> onStackPasses(data.Passes.size(), false);
 
-		for (size_t passIndex = 0; passIndex < m_Passes.size(); passIndex++)
+		for (size_t passIndex = 0; passIndex < data.Passes.size(); passIndex++)
 		{
 			if (!visitedPasses[passIndex])
 			{
@@ -169,20 +181,20 @@ void RenderGraph::Compile()
 			}
 		}
 
-		std::reverse(m_TopologicallySortedPasses.begin(), m_TopologicallySortedPasses.end());
+		std::reverse(data.TopologicallySortedPasses.begin(), data.TopologicallySortedPasses.end());
 	}
 
 	//Build Dependency Levels
 	{
-		std::vector<size_t> longestDistances(m_TopologicallySortedPasses.size(), 0);
+		std::vector<size_t> longestDistances(data.TopologicallySortedPasses.size(), 0);
 		size_t dependencyLevelCount = 1;
 
-		for (size_t passIndex = 0; passIndex < m_Passes.size(); passIndex++)
+		for (size_t passIndex = 0; passIndex < data.Passes.size(); passIndex++)
 		{
-			size_t originalIndex = m_TopologicallySortedPasses[passIndex]->m_UnorderedListIndex;
+			size_t originalIndex = data.TopologicallySortedPasses[passIndex]->m_UnorderedListIndex;
 			size_t adjacencyListIndex = originalIndex;
 
-			for (size_t adjacentPassIndex : m_AdjacencyLists[adjacencyListIndex])
+			for (size_t adjacentPassIndex : data.AdjacencyLists[adjacencyListIndex])
 			{
 				if (longestDistances[adjacentPassIndex] < longestDistances[originalIndex] + 1)
 				{
@@ -193,44 +205,31 @@ void RenderGraph::Compile()
 			}
 		}
 
-		m_DependencyLevels.resize(dependencyLevelCount);
-		for (size_t passIndex = 0; passIndex < m_Passes.size(); passIndex++)
+		data.DependencyLevels.resize(dependencyLevelCount);
+		for (size_t passIndex = 0; passIndex < data.Passes.size(); passIndex++)
 		{
-			Ref<Pass>& pass = m_Passes[passIndex];
+			Ref<Pass>& pass = data.Passes[passIndex];
 			uint64_t levelIndex = longestDistances[passIndex];
-			DependencyLevel& dependencyLevel = m_DependencyLevels[levelIndex];
-			dependencyLevel.m_Passes.push_back(pass);
-			dependencyLevel.m_LevelIndex = levelIndex;
+			DependencyLevel& dependencyLevel = data.DependencyLevels[levelIndex];
+			dependencyLevel.Passes.push_back(pass);
+			dependencyLevel.LevelIndex = levelIndex;
 			pass->m_DependencyLevelIndex = levelIndex;
 		}
 	}
 }
 
-void RenderGraph::Execute(uint32_t frameIndex)
+void RenderGraph::Execute()
 {
 	Compile();
 
 	CommandBufferRef& cmdBuffer = GetCommandBuffer(CommandPool::QueueType::GRAPHICS/*pass->m_QueueType*/);
-	cmdBuffer->Reset(frameIndex, false);
-	cmdBuffer->Begin(frameIndex, CommandBuffer::UsageBit::SIMULTANEOUS);
-	for (const auto& pass : m_TopologicallySortedPasses)
+	cmdBuffer->Reset(m_FrameIndex, false);
+	cmdBuffer->Begin(m_FrameIndex, CommandBuffer::UsageBit::SIMULTANEOUS);
+	for (const auto& pass : m_FrameData[m_FrameIndex].TopologicallySortedPasses)
 	{
-		pass->Execute(this, cmdBuffer, frameIndex);
+		pass->Execute(this, cmdBuffer, m_FrameIndex);
 	}
-	cmdBuffer->End(frameIndex);
-
-	//Store resource for the next frame to reference
-	m_PreviousFrameResources.clear();
-	m_PreviousFrameResources = m_Resources;
-}
-
-void RenderGraph::Reset()
-{
-	m_DependencyLevels.clear();
-	m_AdjacencyLists.clear();
-	m_TopologicallySortedPasses.clear();
-	m_Resources.clear();
-	m_Passes.clear();
+	cmdBuffer->End(m_FrameIndex);
 }
 
 ImageRef RenderGraph::CreateImage(const ImageDesc& desc, const std::string& name)
@@ -279,21 +278,36 @@ ImageViewRef RenderGraph::CreateImageView(const ImageRef& image, Image::Type typ
 
 Resource& RenderGraph::GetTrackedResource(const Resource& passResource)
 {
-	GEAR_ASSERT(!arc::FindInVector(m_Resources, passResource), "Pass's Resource not found in RenderGraph's Resource");
+	FrameData& data = m_FrameData[m_FrameIndex];
+	GEAR_ASSERT(!arc::FindInVector(data.Resources, passResource), "Pass's Resource not found in RenderGraph's Resource");
 
-	auto it = arc::FindPositionInVector(m_Resources, passResource);
+	auto it = arc::FindPositionInVector(data.Resources, passResource);
 	return *it;
 }
 
 const Resource& RenderGraph::GetTrackedResource(const Resource& passResource) const
 {
-	GEAR_ASSERT(!arc::FindInVector(m_Resources, passResource), "Pass's Resource not found in RenderGraph's Resource");
+	const FrameData& data = m_FrameData[m_FrameIndex];
+	GEAR_ASSERT(!arc::FindInVector(data.Resources, passResource), "Pass's Resource not found in RenderGraph's Resource");
 
-	auto it = arc::FindPositionInVectorConst(m_Resources, passResource);
+	auto it = arc::FindPositionInVectorConst(data.Resources, passResource);
 	return *it;
 }
 
 CommandBufferRef& RenderGraph::GetCommandBuffer(CommandPool::QueueType queueType)
 {
-	return m_CommandPoolAndBuffers[queueType].cmdBuffer;
+	return m_CommandPoolAndBuffers[queueType].CmdBuffer;
+}
+
+RenderGraph::FrameData& RenderGraph::GetPreviousFrameData()
+{
+	uint32_t previousFrameIndex = 0;
+
+	int32_t previousFrameIndexTemp = static_cast<int32_t>(m_FrameIndex - 1);
+	if (previousFrameIndexTemp < 0)
+		previousFrameIndex = static_cast<uint32_t>(m_FrameData.size() - 1);
+	else
+		previousFrameIndex = static_cast<uint32_t>(previousFrameIndexTemp);
+
+	return m_FrameData[previousFrameIndex];
 }

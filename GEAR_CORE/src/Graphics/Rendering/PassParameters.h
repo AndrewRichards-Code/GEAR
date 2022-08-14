@@ -26,8 +26,8 @@ namespace gear
 
 			virtual void Setup() = 0;
 
-			inline std::vector<Resource>& GetInputResources() { return m_InputResources; }
-			inline std::vector<Resource>& GetOutputResources() { return m_OutputResources; }
+			inline std::vector<ResourceView>& GetInputResourceViews() { return m_InputResourceViews; }
+			inline std::vector<ResourceView>& GetOutputResourceViews() { return m_OutputResourceViews; }
 
 			inline const Type& GetType() { return m_Type; }
 
@@ -35,8 +35,8 @@ namespace gear
 		protected:
 			Type m_Type;
 
-			std::vector<Resource> m_InputResources;
-			std::vector<Resource> m_OutputResources;
+			std::vector<ResourceView> m_InputResourceViews;
+			std::vector<ResourceView> m_OutputResourceViews;
 
 			//Friends
 			friend Pass;
@@ -54,12 +54,12 @@ namespace gear
 			void Setup() override;
 
 		public:
-			const std::pair<uint32_t, uint32_t> FindResourceSetBinding(const std::string& name) const;
-			void SetResource(const std::pair<uint32_t, uint32_t>& set_binding, const Resource& resource);
-			void SetResource(const std::string& name, const Resource& resource);
+			const std::pair<uint32_t, uint32_t> FindResourceViewSetBinding(const std::string& name) const;
+			void SetResourceView(const std::pair<uint32_t, uint32_t>& set_binding, ResourceView& resourceView);
+			void SetResourceView(const std::string& name, ResourceView& resourceView);
 
-			void AddAttachment(uint32_t index, const Resource& resource, miru::base::RenderPass::AttachmentLoadOp loadOp, miru::base::RenderPass::AttachmentStoreOp storeOp, const miru::base::Image::ClearValue& clearValue);  //DepthStencil attachments ignore the 'index' parameter.
-			void AddAttachmentWithResolve(uint32_t index, const Resource& resource, const Resource& resolveResource, miru::base::RenderPass::AttachmentLoadOp loadOp, miru::base::RenderPass::AttachmentStoreOp storeOp, const miru::base::Image::ClearValue& clearValue); //DepthStencil attachments ignore the 'index' parameter.
+			void AddAttachment(uint32_t index, const ResourceView& resource, miru::base::RenderPass::AttachmentLoadOp loadOp, miru::base::RenderPass::AttachmentStoreOp storeOp, const miru::base::Image::ClearValue& clearValue);  //DepthStencil attachments ignore the 'index' parameter.
+			void AddAttachmentWithResolve(uint32_t index, const ResourceView& resource, const ResourceView& resolveResourceView, miru::base::RenderPass::AttachmentLoadOp loadOp, miru::base::RenderPass::AttachmentStoreOp storeOp, const miru::base::Image::ClearValue& clearValue); //DepthStencil attachments ignore the 'index' parameter.
 			void SetRenderArea(miru::base::Rect2D renderArea, uint32_t layers = 1, uint32_t viewMask = 0);
 
 			template<typename T>
@@ -116,19 +116,19 @@ namespace gear
 			void Setup() override {};
 
 		public:
-			void AddResource(const Ref<Vertexbuffer>& vertexbuffer);
-			void AddResource(const Ref<Indexbuffer>& indexbuffer);
-			void AddResource(const Ref<BaseUniformbuffer>& uniformbuffer);
-			void AddResource(const Ref<BaseStoragebuffer>& storagebuffer);
-			void AddResource(const Ref<Texture>& texture);
-			void AddResourcePair(const Resource& srcResource, const Resource& dstResource, const ResourceCopyRegion copyRegion);
+			void AddResourceView(const Ref<Vertexbuffer>& vertexbuffer);
+			void AddResourceView(const Ref<Indexbuffer>& indexbuffer);
+			void AddResourceView(const Ref<BaseUniformbuffer>& uniformbuffer);
+			void AddResourceView(const Ref<BaseStoragebuffer>& storagebuffer);
+			void AddResourceView(const Ref<Texture>& texture);
+			void AddResourceViewPair(const ResourceView& srcResourceView, const ResourceView& dstResourceView, const ResourceCopyRegion& copyRegion);
 
-			inline const std::vector<std::tuple<Resource, Resource, ResourceCopyRegion>>& GetResourcesPairs() const { return m_ResourcePairs; }
-			inline std::vector<std::tuple<Resource, Resource, ResourceCopyRegion>>& GetResourcesPairs() { return m_ResourcePairs; }
+			inline const std::vector<std::tuple<ResourceView, ResourceView, ResourceCopyRegion>>& GetResourceViewsPairs() const { return m_ResourceViewPairs; }
+			inline std::vector<std::tuple<ResourceView, ResourceView, ResourceCopyRegion>>& GetResourceViewsPairs() { return m_ResourceViewPairs; }
 
 			//Members
 		private:
-			std::vector<std::tuple<Resource, Resource, ResourceCopyRegion>> m_ResourcePairs;
+			std::vector<std::tuple<ResourceView, ResourceView, ResourceCopyRegion>> m_ResourceViewPairs;
 		};
 	}
 }

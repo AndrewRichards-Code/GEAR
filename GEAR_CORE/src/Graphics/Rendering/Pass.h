@@ -18,7 +18,7 @@ namespace gear
 			void Execute(RenderGraph* renderGraph, miru::base::CommandBufferRef cmdBuffer, uint32_t frameIndex);
 
 		private:
-			miru::base::Barrier2Ref TransitionResource(RenderGraph* renderGraph, Resource& passResource, Resource::State overideNewState =  Resource::State::UNKNOWN);
+			std::vector<miru::base::Barrier2Ref> TransitionResource(RenderGraph* renderGraph, const ResourceView& passResourceView, Resource::State overideNewState =  Resource::State::UNKNOWN);
 
 		public:
 			inline const std::string& GetName() const { return m_PassName; }
@@ -26,8 +26,8 @@ namespace gear
 			inline Ref<PassParameters>& GetPassParameters() { return m_PassParameters; }
 			inline const Ref<PassParameters>& GetPassParameters() const { return m_PassParameters; }
 
-			inline std::vector<Resource>& GetInputResources() { return m_PassParameters->GetInputResources(); }
-			inline std::vector<Resource>& GetOutputResources() { return m_PassParameters->GetOutputResources(); }
+			inline std::vector<ResourceView>& GetInputResourceViews() { return m_PassParameters->GetInputResourceViews(); }
+			inline std::vector<ResourceView>& GetOutputResourceViews() { return m_PassParameters->GetOutputResourceViews(); }
 
 			//Members
 		private:
@@ -35,9 +35,6 @@ namespace gear
 			Ref<PassParameters> m_PassParameters;
 			miru::base::CommandPool::QueueType m_QueueType;
 			RenderGraphPassFunction m_RenderFunction;
-
-			std::vector<Ref<Pass>> m_BackwardGraphicsDependentPasses;
-			std::vector<Ref<Pass>> m_ForwardGraphicsDependentPasses;
 
 			size_t m_UnorderedListIndex = 0;
 			size_t m_DependencyLevelIndex = 0;
