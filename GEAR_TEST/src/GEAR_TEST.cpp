@@ -6,6 +6,7 @@ using namespace animation;
 using namespace audio;
 using namespace core;
 using namespace graphics;
+using namespace rendering;
 using namespace objects;
 using namespace scene;
 

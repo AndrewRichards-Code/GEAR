@@ -103,7 +103,6 @@ void Scene::OnUpdate(Ref<Renderer>& renderer, Timer& timer)
 		renderer->SubmitModel(model);
 	}
 
-	renderer->SubmitSkybox(nullptr);
 	auto& vSkyboxComponent = m_Registry.view<TransformComponent, SkyboxComponent>();
 	for (auto& entity : vSkyboxComponent)
 	{
