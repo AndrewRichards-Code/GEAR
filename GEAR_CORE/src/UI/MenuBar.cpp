@@ -5,6 +5,7 @@
 #include "UI/Panels/Panels.h"
 #include "UI/ComponentUI/ComponentUI.h"
 
+#include "Core/Application.h"
 #include "Core/FileDialog.h"
 #include "Core/JsonFileHelper.h"
 
@@ -336,7 +337,8 @@ void MenuBar::DrawItemGEARBOXOptions()
 
 	if (ImGui::BeginPopupModal("GEARBOX Options"))
 	{
-		const Window::CreateInfo& mainWindowCI = UIContext::GetUIContext()->GetWindow()->GetCreateInfo();
+		Ref<Window> mainWindow = UIContext::GetUIContext()->GetWindow();
+		const Window::CreateInfo& mainWindowCI = mainWindow->GetCreateInfo();
 
 		uint32_t monitorCount;
 		GLFWmonitor** monitors = glfwGetMonitors((int*)&monitorCount);
@@ -415,12 +417,12 @@ void MenuBar::DrawItemGEARBOXOptions()
 			ImGui::CloseCurrentPopup();
 			m_PopupWindowFunction = nullptr;
 		}
-		/*ImGui::SameLine();
+		ImGui::SameLine();
 		if (ImGui::Button("Restart Editor", ImVec2(90, 0)))
 		{
-			GEARBOX::GetGEARBOX()->GetAllowReRun() = true;
 			DrawItemExit();
-		}*/
+			Application::IsActive() = true;
+		}
 		ImGui::SameLine();
 		if (ImGui::Button("Exit Editor", ImVec2(90, 0)))
 		{

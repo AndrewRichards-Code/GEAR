@@ -8,10 +8,17 @@ namespace gear
 		class GEAR_API Application
 		{
 		public:
-			Application() = default;
-			virtual ~Application() = default;
+			Application();
+			virtual ~Application();
 
 			virtual void Run() = 0;
+
+			static Application* GetApplication() { return s_Application; }
+			static bool& IsActive() { return s_Active; }
+
+		private:
+			static Application* s_Application;
+			static bool s_Active;
 		};
 	}
 }

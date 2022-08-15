@@ -17,8 +17,6 @@ using namespace base;
 
 using namespace mars;
 
-GEARBOX* GEARBOX::s_App = nullptr;
-
 Ref<Application> CreateApplication(int argc, char** argv)
 {
 	return CreateRef<GEARBOX>();
@@ -26,18 +24,6 @@ Ref<Application> CreateApplication(int argc, char** argv)
 
 void GEARBOX::Run()
 {
-	s_App = this;
-
-	while (m_AllowReRun)
-		InternalRun();
-	
-	s_App = nullptr;
-}
-
-void GEARBOX::InternalRun()
-{
-	m_AllowReRun = false;
-
 	Window::CreateInfo mainWindowCI;
 	mainWindowCI.api = GraphicsAPI::API::VULKAN;
 	mainWindowCI.title = "GEARBOX";

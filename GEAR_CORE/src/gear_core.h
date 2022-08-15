@@ -15,10 +15,10 @@
 //Core
 #include "Core/Application.h"
 #include "Core/AssetFile.h"
-//#include "Core/EntryPoint.h"
 #include "Core/EnumStringMaps.h"
 #include "Core/FileDialog.h"
 #include "Core/FontLibrary.h"
+#include "Core/Hashing.h"
 #include "Core/JsonFileHelper.h"
 #include "Core/PlatformMacros.h"
 #include "Core/Sequencer.h"

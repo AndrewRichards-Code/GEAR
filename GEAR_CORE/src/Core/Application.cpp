@@ -4,7 +4,15 @@
 using namespace gear;
 using namespace core;
 
-Ref<Application> CreateApplication()
+Application* Application::s_Application = nullptr;
+bool Application::s_Active = true;
+
+Application::Application()
 {
-	return Ref<Application>();
+	s_Application = this;
+}
+
+Application::~Application()
+{
+	s_Application = nullptr;
 }

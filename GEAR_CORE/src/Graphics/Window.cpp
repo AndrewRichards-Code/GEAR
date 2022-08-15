@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
 #include "Graphics/Window.h"
+#include "Core/Application.h"
 
 #include "ARC/src/StringConversion.h"
 #include "STBI/stb_image.h"
@@ -237,6 +238,7 @@ bool Window::Init()
 	glfwSetWindowIcon(m_Window, 1, icon);
 
 	glfwSetWindowUserPointer(m_Window, this);
+	glfwSetWindowCloseCallback(m_Window, window_close);
 	glfwSetWindowSizeCallback(m_Window, window_resize);
 	glfwSetKeyCallback(m_Window, key_callback);
 	glfwSetMouseButtonCallback(m_Window, mouse_button_callback);
@@ -281,6 +283,11 @@ bool Window::Init()
 	return true;
 }
 
+void Window::window_close(GLFWwindow* window)
+{
+	gear::core::Application::IsActive() = false;
+}
+
 void Window::window_resize(GLFWwindow* window, int width, int height)
 {
 	//Handle minimised window state
@@ -293,7 +300,7 @@ void Window::window_resize(GLFWwindow* window, int width, int height)
 	//Handle resizes greater than 4K
 	if (width > 3840 || height > 2160)
 	{
-		MIRU_ASSERT(true, "Resize event's dimensions are greater then 4K.");
+		GEAR_ASSERT(true, "Resize event's dimensions are greater then 4K.");
 	}
 
 	Window* win = (Window*)glfwGetWindowUserPointer(window);
