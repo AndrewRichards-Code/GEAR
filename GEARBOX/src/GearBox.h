@@ -4,6 +4,10 @@
 
 class GEARBOX final : public gear::core::Application
 {
+public:
+	GEARBOX(const gear::core::ApplicationContext& context);
+	~GEARBOX() = default;
+
 protected:
 	void Run() override;
 };

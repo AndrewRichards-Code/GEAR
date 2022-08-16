@@ -1,10 +1,9 @@
 #include "gear_core_common.h"
-#include "UI/ConfigFile.h"
+#include "Core/ConfigFile.h"
 #include "Core/JsonFileHelper.h"
 
 using namespace gear;
 using namespace core;
-using namespace ui;
 
 bool ConfigFile::Load(std::string& filepath)
 {
@@ -24,8 +23,6 @@ void ConfigFile::Save()
 
 void ConfigFile::UpdateWindowCreateInfo(graphics::Window::CreateInfo& windowCI)
 {
-	windowCI.api					= GetOption<miru::base::GraphicsAPI::API>("api");
-	windowCI.graphicsDebugger		= GetOption<miru::debug::GraphicsDebugger::DebuggerType>("graphicsDebugger");
 	windowCI.width					= GetOption<uint32_t>("windowedWidth");
 	windowCI.height					= GetOption<uint32_t>("windowedHeight");
 	windowCI.fullscreen				= GetOption<bool>("fullscreen");

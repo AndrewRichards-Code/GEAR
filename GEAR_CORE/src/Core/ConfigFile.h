@@ -4,7 +4,7 @@
 
 namespace gear
 {
-	namespace ui
+	namespace core
 	{
 		class GEAR_API ConfigFile
 		{

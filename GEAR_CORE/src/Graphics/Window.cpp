@@ -18,10 +18,6 @@ Window::Window(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
-#ifdef _DEBUG
-	m_CI.title += ": CORE(x64) Debug";
-#endif
-
 	if (!Init())
 	{
 		glfwDestroyWindow(m_Window);
@@ -59,6 +55,7 @@ void Window::Update()
 void Window::Close()
 {
 	glfwSetWindowShouldClose(m_Window, GLFW_TRUE);
+	gear::core::Application::IsActive() = false;
 }
 
 bool Window::Closed() const
@@ -178,7 +175,7 @@ bool Window::Init()
 		return false;
 	}
 
-	if (m_CI.api == GraphicsAPI::API::VULKAN)
+	if (m_CI.context.GetCommandLineOptions().api == GraphicsAPI::API::VULKAN)
 	{
 		if (glfwVulkanSupported() == GLFW_FALSE)
 		{
@@ -217,7 +214,7 @@ bool Window::Init()
 		m_Mode = glfwGetVideoMode(m_Monitor);
 	}
 
-	m_Window = glfwCreateWindow((int)m_CI.width, (int)m_CI.height, m_CI.title.c_str(), m_CI.fullscreen ? m_Monitor : nullptr, nullptr);
+	m_Window = glfwCreateWindow((int)m_CI.width, (int)m_CI.height, m_CI.context.GetCreateInfo().applicationName.c_str(), m_CI.fullscreen ? m_Monitor : nullptr, nullptr);
 
 	if (!m_Window)
 	{
@@ -248,20 +245,7 @@ bool Window::Init()
 
 	glfwGetWindowSize(m_Window, (int*)&m_CurrentWidth, (int*)&m_CurrentHeight);
 
-	//Set up miru objects.
-	GraphicsAPI::SetAPI(m_CI.api, true);
-	GraphicsAPI::AllowSetName();
-	GraphicsAPI::LoadGraphicsDebugger(m_CI.graphicsDebugger);
-
-	m_ContextCI.applicationName = m_CI.title;
-#ifdef _DEBUG
-	m_ContextCI.debugValidationLayers = true;
-#else
-	m_ContextCI.debugValidationLayers = false;
-#endif
-	m_ContextCI.extensions = Context::ExtensionsBit::DYNAMIC_RENDERING | Context::ExtensionsBit::SYNCHRONISATION_2 | Context::ExtensionsBit::SHADER_VIEWPORT_INDEX_LAYER;
-	m_ContextCI.deviceDebugName = "GEAR_CORE_Context";
-	m_Context = Context::Create(&m_ContextCI);
+	m_Context = m_CI.context.GetContext();
 
 	m_SwapchainCI.debugName = "GEAR_CORE_Swapchain";
 	m_SwapchainCI.context = m_Context;
@@ -273,7 +257,7 @@ bool Window::Init()
 	m_SwapchainCI.bpcColourSpace = Swapchain::BPC_ColourSpace::B8G8R8A8_UNORM_SRGB_NONLINEAR;
 	m_Swapchain = Swapchain::Create(&m_SwapchainCI);
 
-	m_RenderSurfaceCI.debugName = m_CI.title;
+	m_RenderSurfaceCI.debugName = m_CI.context.GetCreateInfo().applicationName;
 	m_RenderSurfaceCI.pContext = m_Context;
 	m_RenderSurfaceCI.width = m_CI.width;
 	m_RenderSurfaceCI.height = m_CI.height;

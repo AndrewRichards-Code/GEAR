@@ -7,7 +7,8 @@ using namespace core;
 Application* Application::s_Application = nullptr;
 bool Application::s_Active = true;
 
-Application::Application()
+Application::Application(const ApplicationContext& context)
+	:m_Context(context)
 {
 	s_Application = this;
 }

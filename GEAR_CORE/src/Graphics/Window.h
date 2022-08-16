@@ -1,5 +1,6 @@
 #pragma once
 #include "gear_core_common.h"
+#include "Core/ApplicationContext.h"
 #include "Graphics/RenderSurface.h"
 
 #define MAX_KEYS 1024 
@@ -16,8 +17,7 @@ namespace gear
 		public:
 			struct CreateInfo
 			{
-				miru::base::GraphicsAPI::API				api;
-				std::string									title;
+				core::ApplicationContext					context;
 				uint32_t									width;
 				uint32_t									height;
 				bool										fullscreen;
@@ -26,7 +26,6 @@ namespace gear
 				bool										vSync;
 				miru::base::Image::SampleCountBit			samples;
 				std::string									iconFilepath;
-				miru::debug::GraphicsDebugger::DebuggerType graphicsDebugger;
 			};
 
 		private:
@@ -65,6 +64,7 @@ namespace gear
 			virtual ~Window();
 
 			const CreateInfo& GetCreateInfo() { return m_CI; }
+			const core::ApplicationContext& GetApplicationContext() { return m_CI.context; }
 
 			void Update();
 			void Close();
@@ -98,14 +98,14 @@ namespace gear
 			inline void* GetDevice() const { return m_Context->GetDevice(); }
 			inline const Ref<RenderSurface> GetRenderSurface() const { return m_RenderSurface; }
 
-			inline const miru::base::GraphicsAPI::API& GetGraphicsAPI() const { return m_CI.api; }
+			inline const miru::base::GraphicsAPI::API& GetGraphicsAPI() const { return m_CI.context.GetCommandLineOptions().api; }
 			inline bool IsD3D12() const { return miru::base::GraphicsAPI::IsD3D12(); }
 			inline bool IsVulkan() const { return miru::base::GraphicsAPI::IsVulkan(); }
 			inline uint32_t GetWidth() const { return m_CurrentWidth; }
 			inline uint32_t GetHeight() const { return m_CurrentHeight; }
 			inline float GetRatio() const { return ((float)m_CurrentWidth / (float)m_CurrentHeight); }
 			inline bool& Resized() const { return m_Swapchain->m_Resized; }
-			inline std::string GetTitle() const { return m_CI.title; }
+			inline std::string GetTitle() const { return m_CI.context.GetCreateInfo().applicationName; }
 			template<typename T>
 			inline std::string GetFPSString() const { return std::to_string(static_cast<T>(m_FPS)); }
 			inline std::string GetAntiAliasingValue() const { return m_RenderSurface->GetAntiAliasingValue(); }

@@ -198,7 +198,10 @@
     <ClCompile Include="src\UI\Panels\RendererPropertiesPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\UI\ConfigFile.cpp">
+    <ClCompile Include="src\Core\ConfigFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Core\ApplicationContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -446,7 +449,13 @@
     <ClInclude Include="src\UI\Panels\RendererPropertiesPanel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\UI\ConfigFile.h">
+    <ClInclude Include="src\Core\ConfigFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\ApplicationContext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\CommandLineOptions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

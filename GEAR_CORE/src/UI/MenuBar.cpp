@@ -1,11 +1,11 @@
 #include "gear_core_common.h"
 #include "UI/MenuBar.h"
-#include "UI/ConfigFile.h"
 #include "UI/UIContext.h"
 #include "UI/Panels/Panels.h"
 #include "UI/ComponentUI/ComponentUI.h"
 
 #include "Core/Application.h"
+#include "Core/ConfigFile.h"
 #include "Core/FileDialog.h"
 #include "Core/JsonFileHelper.h"
 

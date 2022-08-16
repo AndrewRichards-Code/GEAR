@@ -19,14 +19,35 @@ using namespace mars;
 
 Ref<Application> CreateApplication(int argc, char** argv)
 {
-	return CreateRef<GEARBOX>();
+	ApplicationContext::CreateInfo applicationCI;
+	applicationCI.applicationName = "GEARBOX";
+	applicationCI.extensions = ApplicationContext::DefaultExtensions();
+	applicationCI.commandLineOptions = CommandLineOptions::GetCommandLineOptions(argc, argv).SetWorkingDirectory();
+
+	std::string configFilepath = (std::filesystem::current_path() / std::filesystem::path("config.gbcf")).string();
+	ConfigFile configFile;
+	if (configFile.Load(configFilepath))
+	{
+		if (applicationCI.commandLineOptions.api == GraphicsAPI::API::UNKNOWN)
+			applicationCI.commandLineOptions.api = configFile.GetOption<miru::base::GraphicsAPI::API>("api");
+		if (applicationCI.commandLineOptions.graphicsDebugger == debug::GraphicsDebugger::DebuggerType::NONE)
+			applicationCI.commandLineOptions.graphicsDebugger = configFile.GetOption<miru::debug::GraphicsDebugger::DebuggerType>("graphicsDebugger");
+	}
+
+	//Default API
+	if (applicationCI.commandLineOptions.api == GraphicsAPI::API::UNKNOWN)
+		applicationCI.commandLineOptions.api = GraphicsAPI::API::VULKAN;
+
+	return CreateRef<GEARBOX>(ApplicationContext(&applicationCI));
 }
+
+GEARBOX::GEARBOX(const ApplicationContext& context)
+	:Application(context) {}
 
 void GEARBOX::Run()
 {
 	Window::CreateInfo mainWindowCI;
-	mainWindowCI.api = GraphicsAPI::API::VULKAN;
-	mainWindowCI.title = "GEARBOX";
+	mainWindowCI.context = m_Context;
 	mainWindowCI.width = 1920;
 	mainWindowCI.height = 1080;
 	mainWindowCI.fullscreen = false;
@@ -34,12 +55,11 @@ void GEARBOX::Run()
 	mainWindowCI.maximised = true;
 	mainWindowCI.vSync = true;
 	mainWindowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_4_BIT;
-	mainWindowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::NONE;
 
 	std::string configFilepath = (std::filesystem::current_path() / std::filesystem::path("config.gbcf")).string();
-	ConfigFile config;
-	if (config.Load(configFilepath))
-		config.UpdateWindowCreateInfo(mainWindowCI);
+	ConfigFile configFile;
+	if (configFile.Load(configFilepath))
+		configFile.UpdateWindowCreateInfo(mainWindowCI);
 
 	Ref<Window> mainWindow = CreateRef<Window>(&mainWindowCI);
 
@@ -66,7 +86,7 @@ void GEARBOX::Run()
 	Scope<UIContext> uiContext = CreateScope<UIContext>(&uiContextCI);
 	mainRenderer->SubmitUIContext(uiContext.get());
 
-	for (const Panel::Type& panelType : config.GetPanels())
+	for (const Panel::Type& panelType : configFile.GetPanels())
 	{
 		std::vector<Ref<Panel>>& editorPanels = uiContext->GetEditorPanels();
 
@@ -149,12 +169,12 @@ void GEARBOX::Run()
 	mainWindow->GetContext()->DeviceWaitIdle();
 	AllocatorManager::Uninitialise();
 
-	if (config.Load(configFilepath))
+	if (configFile.Load(configFilepath))
 	{
-		auto& configPanels = config.GetPanels();
+		auto& configPanels = configFile.GetPanels();
 		configPanels.clear();
 		for (const auto& panel : uiContext->GetEditorPanels())
 			configPanels.push_back(static_cast<uint32_t>(panel->GetPanelType()));
-		config.Save();
+		configFile.Save();
 	}
 }

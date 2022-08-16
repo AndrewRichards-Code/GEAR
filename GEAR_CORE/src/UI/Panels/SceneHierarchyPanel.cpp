@@ -173,7 +173,7 @@ void SceneHierarchyPanel::SetScene(const Ref<Scene>& scene)
 void SceneHierarchyPanel::UpdateWindowTitle()
 {
 	const Ref<Window>& window = UIContext::GetUIContext()->GetWindow();
-	std::string newTitle = window->GetCreateInfo().title + " - " + (m_CI.scene ? m_CI.scene->m_CI.debugName : "");
+	std::string newTitle = window->GetApplicationContext().GetCreateInfo().applicationName + " - " + (m_CI.scene ? m_CI.scene->m_CI.debugName : "");
 
 	glfwSetWindowTitle(window->GetGLFWwindow(), newTitle.c_str());
 }

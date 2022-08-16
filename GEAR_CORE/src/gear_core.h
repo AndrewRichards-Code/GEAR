@@ -14,7 +14,10 @@
 
 //Core
 #include "Core/Application.h"
+#include "Core/ApplicationContext.h"
 #include "Core/AssetFile.h"
+#include "Core/CommandLineOptions.h"
+#include "Core/ConfigFile.h"
 #include "Core/EnumStringMaps.h"
 #include "Core/FileDialog.h"
 #include "Core/FontLibrary.h"
@@ -66,7 +69,6 @@
 #include "Scene/Scene.h"
 
 //UI
-#include "UI/ConfigFile.h"
 #include "UI/MenuBar.h"
 #include "UI/UIContext.h"
 #include "UI/ComponentUI/ComponentUIs.h"

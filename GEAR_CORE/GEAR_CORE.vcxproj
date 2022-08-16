@@ -109,6 +109,7 @@
     <ClCompile Include="src\Animation\Animator.cpp" />
     <ClCompile Include="src\Build\Project.cpp" />
     <ClCompile Include="src\Core\Application.cpp" />
+    <ClCompile Include="src\Core\ApplicationContext.cpp" />
     <ClCompile Include="src\Core\AssetFile.cpp" />
     <ClCompile Include="src\Core\FileDialog.cpp" />
     <ClCompile Include="src\Core\JsonFileHelper.cpp" />
@@ -157,7 +158,7 @@
     <ClCompile Include="src\UI\ComponentUI\NameComponentUI.cpp" />
     <ClCompile Include="src\UI\ComponentUI\SkyboxComponentUI.cpp" />
     <ClCompile Include="src\UI\ComponentUI\TransformComponentUI.cpp" />
-    <ClCompile Include="src\UI\ConfigFile.cpp" />
+    <ClCompile Include="src\Core\ConfigFile.cpp" />
     <ClCompile Include="src\UI\MenuBar.cpp" />
     <ClCompile Include="src\UI\Panels\ContentBrowserPanel.cpp" />
     <ClCompile Include="src\UI\Panels\ContentEditorPanel.cpp" />
@@ -177,7 +178,9 @@
     <ClInclude Include="src\Animation\Animator.h" />
     <ClInclude Include="src\Build\Project.h" />
     <ClInclude Include="src\Core\Application.h" />
+    <ClInclude Include="src\Core\ApplicationContext.h" />
     <ClInclude Include="src\Core\AssetFile.h" />
+    <ClInclude Include="src\Core\CommandLineOptions.h" />
     <ClInclude Include="src\Core\FileDialog.h" />
     <ClInclude Include="src\Core\Hashing.h" />
     <ClInclude Include="src\Core\JsonFileHelper.h" />
@@ -236,7 +239,7 @@
     <ClInclude Include="src\UI\ComponentUI\NameComponentUI.h" />
     <ClInclude Include="src\UI\ComponentUI\SkyboxComponentUI.h" />
     <ClInclude Include="src\UI\ComponentUI\TransformComponentUI.h" />
-    <ClInclude Include="src\UI\ConfigFile.h" />
+    <ClInclude Include="src\Core\ConfigFile.h" />
     <ClInclude Include="src\UI\MenuBar.h" />
     <ClInclude Include="src\UI\Panels\BasePanel.h" />
     <ClInclude Include="src\UI\Panels\ContentBrowserPanel.h" />

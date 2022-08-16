@@ -87,7 +87,7 @@ miru::base::ContextRef UIContext::GetContext()
 
 void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 {
-	m_API = window->GetCreateInfo().api;
+	m_API = window->GetApplicationContext().GetCommandLineOptions().api;
 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
