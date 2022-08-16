@@ -17,8 +17,20 @@ using namespace mars;
 
 Ref<Application> CreateApplication(int argc, char** argv)
 {
-	return CreateRef<GEAR_TEST>();
+	ApplicationContext::CreateInfo applicationCI;
+	applicationCI.applicationName = "GEAR_TEST";
+	applicationCI.extensions = ApplicationContext::DefaultExtensions();
+	applicationCI.commandLineOptions = CommandLineOptions::GetCommandLineOptions(argc, argv).SetWorkingDirectory();
+
+	//Default API
+	if (applicationCI.commandLineOptions.api == GraphicsAPI::API::UNKNOWN)
+		applicationCI.commandLineOptions.api = GraphicsAPI::API::VULKAN;
+
+	return CreateRef<GEAR_TEST>(ApplicationContext(&applicationCI));
 }
+
+GEAR_TEST::GEAR_TEST(const ApplicationContext& context)
+	:Application(context) {}
 
 void GEAR_TEST::Run()
 {
@@ -46,9 +58,7 @@ void GEAR_TEST::Run()
 	Ref<Scene> activeScene = CreateRef<Scene>(&sceneCI);
 
 	Window::CreateInfo windowCI;
-	//windowCI.api = GraphicsAPI::API::D3D12;
-	windowCI.api = GraphicsAPI::API::VULKAN;
-	windowCI.title = "GEAR_TEST";
+	windowCI.context = m_Context;
 	windowCI.width = 1920;
 	windowCI.height = 1080;
 	windowCI.fullscreen = false;
@@ -56,7 +66,6 @@ void GEAR_TEST::Run()
 	windowCI.maximised = false;
 	windowCI.vSync = true;
 	windowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_2_BIT;
-	windowCI.graphicsDebugger = debug::GraphicsDebugger::DebuggerType::RENDER_DOC;
 	Ref<Window> window = CreateRef<Window>(&windowCI);
 
 	AllocatorManager::CreateInfo mbmCI;
