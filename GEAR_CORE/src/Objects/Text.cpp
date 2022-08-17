@@ -84,28 +84,24 @@ void Text::GenerateLine(size_t lineIndex, bool update)
 	const Ref<FontLibrary::Font>& font = line.font;
 	uint32_t background_height = font->fontHeightPx + 4;
 
-	Material::CreateInfo fontMaterialCI;
-	fontMaterialCI.debugName = "GEAR_CORE_FontRenderer: " + font->textureAtlas->GetCreateInfo().debugName;
-	fontMaterialCI.device = m_CI.device;
-	fontMaterialCI.pbrTextures = { { Material::TextureType::ALBEDO, font->textureAtlas } };
-
-	Mesh::CreateInfo textMeshCI;
-	textMeshCI.debugName = "GEAR_CORE_FontRenderer: " + line.text;
-	textMeshCI.device = m_CI.device;
-	textMeshCI.filepath = "";
-
-	ModelLoader::ModelData& modelData = line.model->m_CI.pMesh->GetModelData();
+	//Set up ModelData and MeshData for Mesh
+	ModelLoader::ModelData modelData;
 	modelData.meshes.push_back({});
-
 	ModelLoader::MeshData& meshData = modelData.meshes.back();
 	meshData.nodeName = line.text;
 	meshData.meshName = line.text;
 
+	//Set up Material
+	Material::CreateInfo fontMaterialCI;
+	fontMaterialCI.debugName = "GEAR_CORE_FontRenderer: " + font->textureAtlas->GetCreateInfo().debugName;
+	fontMaterialCI.device = m_CI.device;
+	fontMaterialCI.pbrTextures = { { Material::TextureType::ALBEDO, font->textureAtlas } };
+	fontMaterialCI.pbrConstants = UniformBufferStructures::DefaultPBRConstants();
 	if (!update)
 		meshData.pMaterial = CreateRef<Material>(&fontMaterialCI);
 	else
 		meshData.pMaterial = line.model->m_CI.pMesh->GetModelData().meshes.back().pMaterial; //Grab old one!
-
+	
 	//Make space for background quad
 	meshData.vertices.push_back({});
 	meshData.vertices.push_back({});
@@ -241,7 +237,12 @@ void Text::GenerateLine(size_t lineIndex, bool update)
 	meshData.indices.push_back(1 + (4 * charIndex));
 	meshData.indices.push_back(3 + (4 * charIndex));
 
-	if (!update)
+	//Build Mesh and Model
+	Mesh::CreateInfo textMeshCI;
+	textMeshCI.debugName = "GEAR_CORE_FontRenderer: " + line.text;
+	textMeshCI.device = m_CI.device;
+	textMeshCI.modelData = modelData;
+	if (!update || line.model == nullptr)
 	{
 		Model::CreateInfo textModelCI;
 		textModelCI.debugName = "GEAR_CORE_FontRenderer: " + line.text;

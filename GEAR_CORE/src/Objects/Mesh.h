@@ -17,11 +17,11 @@ namespace gear
 		public:
 			struct CreateInfo : public ObjectComponentInterface::CreateInfo
 			{
-				std::string				filepath;
+				std::string						filepath;	//Option 1
+				utils::ModelLoader::ModelData	modelData;	//Option 2
 			};
 
 		private:
-			utils::ModelLoader::ModelData	data;
 
 			std::vector<Ref<graphics::Vertexbuffer>> m_VBs;
 			std::vector<Ref<graphics::Indexbuffer>> m_IBs;
@@ -44,8 +44,8 @@ namespace gear
 			inline const std::vector<Ref<graphics::Indexbuffer>>& GetIndexBuffers() const { return m_IBs; }
 			inline const std::vector<Ref<objects::Material>>& GetMaterials() const { return m_Materials; }
 			inline std::vector<Ref<objects::Material>>& GetMaterials() { return m_Materials; }
-			inline const utils::ModelLoader::ModelData& GetModelData() const { return data; }
-			inline utils::ModelLoader::ModelData& GetModelData() { return data; }
+			inline const utils::ModelLoader::ModelData& GetModelData() const { return m_CI.modelData; }
+			inline utils::ModelLoader::ModelData& GetModelData() { return m_CI.modelData; }
 
 			inline void SetOverrideMaterial(size_t index, const Ref<objects::Material>& material) { m_Materials[index] = material; }
 			inline Ref<objects::Material>& GetMaterial(size_t index) { return m_Materials[index]; }
