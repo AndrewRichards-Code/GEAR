@@ -112,7 +112,7 @@ void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface
 
 	const Image::Format& swapchainFormat = m_CI.window->GetSwapchain()->m_SwapchainImages[0]->GetCreateInfo().format;
 
-	//Filepath, RenderPass Index, Subpass Index
+	//Filepath, Colour Attachment Formats, Depth Attachment Format
 	std::vector<std::tuple<std::string, std::vector<Image::Format>, Image::Format>> filepaths =
 	{
 		{ "res/pipelines/PBROpaque.grpf",				{ RenderSurface::HDRFormat },	RenderSurface::DepthFormat },
@@ -398,7 +398,6 @@ void Renderer::Draw()
 				}
 				texture->m_GeneratedMipMaps = true;
 			}
-#if 0
 			//Skybox: Diffuse Irradiance
 			{
 				Ref<ImageView> generatedDiffuseCubemap_2DArrayView = m_RenderGraph.CreateImageView(m_Skybox->GetGeneratedDiffuseCubemap()->GetImage(), Image::Type::TYPE_2D_ARRAY, { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 6 });
@@ -415,6 +414,7 @@ void Renderer::Draw()
 						cmdBuffer->Dispatch(frameIndex, width, height, depth);
 					});
 			}
+#if 0
 
 			//Skybox: Specular Irradiance
 			{
@@ -470,6 +470,7 @@ void Renderer::Draw()
 						});
 				}
 			}
+#endif
 
 			//Skybox: Specular BRDF LUT
 			{
@@ -485,7 +486,6 @@ void Renderer::Draw()
 						cmdBuffer->Dispatch(frameIndex, width, height, depth);
 					});
 			}
-#endif
 			m_Skybox->m_Generated = true;
 		}
 	}
@@ -875,6 +875,7 @@ void Renderer::Present()
 	m_FrameCount++;
 }
 
+#define RENDER_DOC 0
 void Renderer::Execute()
 {
 #if RENDER_DOC

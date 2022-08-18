@@ -9,7 +9,7 @@ using namespace scene;
 std::filesystem::path NativeScriptManager::s_BuildScriptPath = std::filesystem::current_path() / "..\\bin\\x64\\Debug\\";
 static bool debug = true;
 #else
-std::filesystem::path NativeScriptManager::s_BuildScriptPath = std::filesystem::current_path() + "..\\bin\\x64\\Release\\";
+std::filesystem::path NativeScriptManager::s_BuildScriptPath = std::filesystem::current_path() / "..\\bin\\x64\\Release\\";
 static bool debug = false;
 #endif
 
