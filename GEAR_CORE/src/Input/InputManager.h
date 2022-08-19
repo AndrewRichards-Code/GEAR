@@ -50,13 +50,13 @@ namespace gear
 			void PrintJoystickDetails()
 			{
 				std::string joystickName = (glfwGetJoystickName(GLFW_JOYSTICK_1));
-				GEAR_PRINTF(("INFO: GEAR::INPUT::InputManager: " + joystickName + ".\n").c_str());
+				GEAR_INFO(ErrorCode::CORE | ErrorCode::OK, joystickName.c_str());
 
 				for (int i = 0; i < m_AxesCount; i++)
-					GEAR_PRINTF("INFO: GEAR::INPUT::InputManager: Axis %d: %f1.3.\n", i, m_Axis[i]);
+					GEAR_INFO(ErrorCode::CORE | ErrorCode::OK, "Axis %d: %f1.3.\n", i, m_Axis[i]);
 
 				for (int i = 0; i < m_ButtonsCount; i++)
-					GEAR_PRINTF("INFO: GEAR::INPUT::InputManager: Button %d: %c.\n", i, m_Button[i]);
+					GEAR_INFO(ErrorCode::CORE | ErrorCode::OK, "Button %d: %c.\n", i, m_Button[i]);
 
 				system("CLS");
 			}

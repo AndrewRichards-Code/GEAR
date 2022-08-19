@@ -37,8 +37,8 @@ void NativeScriptManager::Build(const std::string& nativeScriptDir)
 	command += "-p:ApplicationNativeScriptsDir=" + arc::ToString(nativeScriptPath.native());
 
 
-	GEAR_PRINTF("GEAR_CORE: Build GEAR_NATIVE_SCRIPT.dll from GEAR_NATIVE_SCRIPT.vcxproj using MSBuild\n");
-	GEAR_PRINTF(("Executing: " + command + "\n").c_str());
+	GEAR_INFO(true, "GEAR_CORE: Build GEAR_NATIVE_SCRIPT.dll from GEAR_NATIVE_SCRIPT.vcxproj using MSBuild.\n");
+	GEAR_INFO(true, ("Executing: " + command + "\n").c_str());
 
 	STARTUPINFOA si = { sizeof(STARTUPINFOA) };
 	si.dwFlags = STARTF_USESHOWWINDOW;
@@ -55,8 +55,8 @@ void NativeScriptManager::Build(const std::string& nativeScriptDir)
 	CloseHandle(pi.hProcess);
 	CloseHandle(pi.hThread);
 
-	GEAR_PRINTF("'MSBuild.exe' has exited with code %d (0x%x).\n", dwExitCode, dwExitCode);
-	GEAR_PRINTF("GEAR_CORE: Build GEAR_NATIVE_SCRIPT.dll from GEAR_NATIVE_SCRIPT.vcxproj finished.\n\n");
+	GEAR_INFO(true, "'MSBuild.exe' has exited with code %d (0x%x).\n", dwExitCode, dwExitCode);
+	GEAR_INFO(true, "GEAR_CORE: Build GEAR_NATIVE_SCRIPT.dll from GEAR_NATIVE_SCRIPT.vcxproj finished.\n\n");
 
 	if (!(dwExitCode == 0))
 		system("pause");

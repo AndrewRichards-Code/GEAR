@@ -8,7 +8,7 @@ Application* Application::s_Application = nullptr;
 bool Application::s_Active = true;
 
 Application::Application(const ApplicationContext& context)
-	:m_Context(context)
+	:m_Context(context), m_VSDebugOutput(CreateScope<arc::VisualStudioDebugOutput>())
 {
 	s_Application = this;
 }

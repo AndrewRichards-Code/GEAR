@@ -346,11 +346,11 @@ void Window::joystick_callback(int joy, int event)
 {
 	if (event == GLFW_CONNECTED)
 	{
-		GEAR_PRINTF("INFO: GEAR::GRAPHICS::Window: The joystick was connected.");
+		GEAR_INFO(ErrorCode::CORE | ErrorCode::OK, "The joystick was connected.");
 	}
 	else if (event == GLFW_DISCONNECTED)
 	{
-		GEAR_PRINTF("INFO: GEAR::GRAPHICS::Window: The joystick was disconnected.");
+		GEAR_INFO(ErrorCode::CORE | ErrorCode::OK, "The joystick was disconnected.");
 	}
 }
 

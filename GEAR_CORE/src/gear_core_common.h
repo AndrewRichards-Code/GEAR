@@ -216,8 +216,7 @@ std::string GenereateDebugName(const std::string& name)
 	return "GEAR: " + _typename + ": " + name;
 }
 
-//GEAR printf and logging
-#define GEAR_PRINTF ARC_PRINTF
+//GEAR logging
 
 inline arc::Log GearLog("GEAR_CORE");
 #ifdef ARC_LOG_INSTANCE

@@ -1,8 +1,10 @@
 #pragma once
+#include "Core/PlatformMacros.h"
+
 
 extern Ref<gear::core::Application> CreateApplication(int argc, char** argv);
 
-int main(int argc, char** argv)
+int GEAR_main(int argc, char** argv)
 {
 	while (gear::core::Application::IsActive())
 	{		
@@ -13,4 +15,22 @@ int main(int argc, char** argv)
 		}
 		app->Run();
 	}
+
+	return 0;
 }
+
+#if defined(GEAR_PLATFORM_WINDOWS_X64)
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+	return GEAR_main(__argc, __argv);
+}
+
+#else
+
+int main(int argc, char** argv)
+{
+	return GEAR_main(argc, argv);
+}
+
+#endif
