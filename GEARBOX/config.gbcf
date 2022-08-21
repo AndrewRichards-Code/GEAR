@@ -1,7 +1,7 @@
 {
     "fileType": "GEARBOX_CONFIG_FILE",
     "options": {
-        "api": 1,
+        "api": 2,
         "fullscreen": false,
         "fullscreenMonitorIndex": 0,
         "graphicsDebugger": 0,
@@ -10,11 +10,12 @@
         "windowedWidth": 1920
     },
     "panels": [
-        4,
         5,
         6,
         7,
+        8,
         1,
-        8
+        4,
+        9
     ]
 }

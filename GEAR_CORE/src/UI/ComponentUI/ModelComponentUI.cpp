@@ -2,6 +2,8 @@
 #include "UI/ComponentUI/ModelComponentUI.h"
 #include "UI/ComponentUI/ComponentUI.h"
 #include "UI/UIContext.h"
+#include "UI/Panels/ViewportPanel.h"
+#include "UI/Panels/MaterialPanel.h"
 
 #include "Animation/Animation.h"
 #include "Graphics/Rendering/Renderer.h"

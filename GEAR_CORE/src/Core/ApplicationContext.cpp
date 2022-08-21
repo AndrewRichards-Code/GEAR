@@ -11,6 +11,27 @@ ApplicationContext::ApplicationContext(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
+	m_VSDebugOutput = CreateRef<arc::VisualStudioDebugOutput>();
+	
+	std::filesystem::path logFilepath;
+	if (!m_CI.commandLineOptions.logFilepath.empty())
+	{
+		if (m_CI.commandLineOptions.logFilepath.is_absolute())
+			logFilepath = m_CI.commandLineOptions.logFilepath;
+		else
+			logFilepath = m_CI.commandLineOptions.workingDirectory / m_CI.commandLineOptions.logFilepath;
+	}
+	else 
+	{
+		std::string logFilename = "GEAR_CORE_LOG_";
+		logFilename += arc::GetDateAndTime_Filename();
+		logFilename += ".txt";
+
+		logFilepath = m_CI.commandLineOptions.workingDirectory / "Logs" / logFilename;
+		std::filesystem::create_directory(logFilepath.parent_path());
+	}
+	m_VSDebugOutput->SetLogFile(logFilepath.string());
+
 	GraphicsAPI::SetAPI(m_CI.commandLineOptions.api, true);
 	GraphicsAPI::AllowSetName();
 	GraphicsAPI::LoadGraphicsDebugger(m_CI.commandLineOptions.graphicsDebugger);

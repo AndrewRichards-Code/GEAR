@@ -9,6 +9,8 @@
 #include "Core/AssetFile.h"
 #include "Core/FileDialog.h"
 
+#include "Objects/Material.h"
+
 using namespace gear;
 using namespace ui;
 using namespace panels;

@@ -38,6 +38,32 @@ bool gear::ui::componentui::DrawCheckbox(const std::string& label, bool& value, 
 	return ret;
 }
 
+void gear::ui::componentui::DrawToggleButton(const char* str_id, bool& value)
+{
+	ImVec4* colours = ImGui::GetStyle().Colors;
+	ImVec2 p = ImGui::GetCursorScreenPos();
+	ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+	float height = ImGui::GetFrameHeight();
+	float width = height * 1.55f;
+	float radius = height * 0.50f;
+
+	ImGui::InvisibleButton(str_id, ImVec2(width, height));
+	if (ImGui::IsItemClicked())
+		value = !value;
+	ImGuiContext& gg = *GImGui;
+	float ANIM_SPEED = 0.085f;
+	if (gg.LastActiveId == gg.CurrentWindow->GetID(str_id))// && g.LastActiveIdTimer < ANIM_SPEED)
+		float t_anim = ImSaturate(gg.LastActiveIdTimer / ANIM_SPEED);
+
+	draw_list->AddRectFilled(p, ImVec2(p.x + width, p.y + height), ImGui::GetColorU32(value ? colours[ImGuiCol_ButtonActive] : colours[ImGuiCol_Button]), height * 0.5f);
+	draw_list->AddCircleFilled(ImVec2(p.x + radius + (value ? 1 : 0) * (width - radius * 2.0f), p.y + radius), radius - 1.5f, ImGui::GetColorU32(colours[ImGuiCol_Tab]));
+
+	ImGui::SameLine();
+	ImGui::Text(str_id);
+}
+
+
 bool gear::ui::componentui::DrawUint32(const std::string& label, uint32_t& value, uint32_t minValue, uint32_t maxValue, bool powerOf2, float width, float speed)
 {
 	BeginColumnLabel(label, width);

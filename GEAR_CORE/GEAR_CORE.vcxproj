@@ -163,6 +163,7 @@
     <ClCompile Include="src\UI\Panels\ContentBrowserPanel.cpp" />
     <ClCompile Include="src\UI\Panels\ContentEditorPanel.cpp" />
     <ClCompile Include="src\UI\Panels\MaterialPanel.cpp" />
+    <ClCompile Include="src\UI\Panels\OutputPanel.cpp" />
     <ClCompile Include="src\UI\Panels\ProjectPanel.cpp" />
     <ClCompile Include="src\UI\Panels\PropertiesPanel.cpp" />
     <ClCompile Include="src\UI\Panels\RendererPropertiesPanel.cpp" />
@@ -245,6 +246,7 @@
     <ClInclude Include="src\UI\Panels\ContentBrowserPanel.h" />
     <ClInclude Include="src\UI\Panels\ContentEditorPanel.h" />
     <ClInclude Include="src\UI\Panels\MaterialPanel.h" />
+    <ClInclude Include="src\UI\Panels\OutputPanel.h" />
     <ClInclude Include="src\UI\Panels\Panels.h" />
     <ClInclude Include="src\UI\Panels\ProjectPanel.h" />
     <ClInclude Include="src\UI\Panels\PropertiesPanel.h" />

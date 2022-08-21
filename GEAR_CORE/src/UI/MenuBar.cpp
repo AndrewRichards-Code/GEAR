@@ -176,6 +176,10 @@ void MenuBar::DrawMenuWindows()
 		{
 			editorPanels.emplace_back(CreateRef<MaterialPanel>());
 		}
+		if (ImGui::MenuItem("Output"))
+		{
+			editorPanels.emplace_back(CreateRef<OutputPanel>());
+		}
 		if (ImGui::MenuItem("Project"))
 		{
 			editorPanels.emplace_back(CreateRef<ProjectPanel>());

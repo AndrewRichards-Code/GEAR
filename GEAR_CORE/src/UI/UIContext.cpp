@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "MenuBar.h"
+#include "UI/MenuBar.h"
 #include "UI/UIContext.h"
 #include "Graphics/Window.h"
 
@@ -203,7 +203,7 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 	}
 	else
 	{
-		GEAR_ASSERT(gear::ErrorCode::REVERSED | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
+		GEAR_ASSERT(gear::ErrorCode::UI | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
 	}
 
 	// Upload Fonts for Vulkan only
@@ -251,7 +251,7 @@ void UIContext::ShutDown()
 	}
 	else
 	{
-		GEAR_ASSERT(gear::ErrorCode::REVERSED | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
+		GEAR_ASSERT(gear::ErrorCode::UI | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
 	}
 	ImGui_ImplGlfw_Shutdown();
 
@@ -268,7 +268,7 @@ void UIContext::ShutDown()
 	}
 	else
 	{
-		GEAR_ASSERT(gear::ErrorCode::REVERSED | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
+		GEAR_ASSERT(gear::ErrorCode::UI | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
 	}
 
 	// Clean up Dear ImGui context
@@ -289,7 +289,7 @@ void UIContext::BeginFrame()
 	}
 	else
 	{
-		GEAR_ASSERT(gear::ErrorCode::REVERSED | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
+		GEAR_ASSERT(gear::ErrorCode::UI | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
 	}
 
 	// Start the Dear ImGui frame
@@ -385,7 +385,7 @@ void UIContext::RenderDrawData(const CommandBufferRef& cmdBuffer, uint32_t frame
 		}
 		else
 		{
-			GEAR_ASSERT(gear::ErrorCode::REVERSED | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
+			GEAR_ASSERT(gear::ErrorCode::UI | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
 		}
 	}
 

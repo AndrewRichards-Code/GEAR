@@ -1,6 +1,7 @@
 #include "gear_core_common.h"
 #include "UI/Panels/ViewportPanel.h"
-#include "UI/Panels/Panels.h"
+#include "UI/Panels/SceneHierarchyPanel.h"
+#include "UI/Panels/RendererPropertiesPanel.h"
 #include "UI/ComponentUI/ComponentUI.h"
 #include "UI/UIContext.h"
 

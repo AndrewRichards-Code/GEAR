@@ -76,6 +76,11 @@ namespace gear
 						selectedPanels.push_back(panel);
 						continue;
 					}
+					if (typeid(T) == typeid(panels::OutputPanel) && panel->GetPanelType() == panels::Panel::Type::OUTPUT)
+					{
+						selectedPanels.push_back(panel);
+						continue;
+					}
 					if (typeid(T) == typeid(panels::ProjectPanel) && panel->GetPanelType() == panels::Panel::Type::PROJECT)
 					{
 						selectedPanels.push_back(panel);

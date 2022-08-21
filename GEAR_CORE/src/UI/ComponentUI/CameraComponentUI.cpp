@@ -1,7 +1,7 @@
 #include "gear_core_common.h"
 #include "UI/ComponentUI/CameraComponentUI.h"
 #include "UI/ComponentUI/ComponentUI.h"
-#include "UI/Panels/Panels.h"
+#include "UI/Panels/ViewportPanel.h"
 #include "UI/UIContext.h"
 
 #include "Graphics/Rendering/Renderer.h"

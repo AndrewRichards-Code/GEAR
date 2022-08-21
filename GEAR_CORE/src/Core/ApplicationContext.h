@@ -1,6 +1,7 @@
 #pragma once
 #include "gear_core_common.h"
 #include "Core/CommandLineOptions.h"
+#include "ARC/src/VisualStudioDebugOutput.h"
 
 namespace gear
 {
@@ -24,6 +25,7 @@ namespace gear
 			~ApplicationContext();
 
 			inline miru::base::ContextRef GetContext() { return m_Context; }
+			inline Ref<arc::VisualStudioDebugOutput>& GetVisualStudioDebugOutput() { return m_VSDebugOutput; }
 
 			inline const CreateInfo& GetCreateInfo() const { return m_CI; }
 			inline const CreateInfo& GetCreateInfo() { return m_CI; }
@@ -43,6 +45,7 @@ namespace gear
 			CreateInfo m_CI;
 
 			miru::base::ContextRef m_Context;
+			Ref<arc::VisualStudioDebugOutput> m_VSDebugOutput = nullptr;
 		};
 	}
 }

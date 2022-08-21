@@ -175,7 +175,7 @@ bool Window::Init()
 		return false;
 	}
 
-	if (m_CI.context.GetCommandLineOptions().api == GraphicsAPI::API::VULKAN)
+	if (m_CI.applicationContext.GetCommandLineOptions().api == GraphicsAPI::API::VULKAN)
 	{
 		if (glfwVulkanSupported() == GLFW_FALSE)
 		{
@@ -214,7 +214,7 @@ bool Window::Init()
 		m_Mode = glfwGetVideoMode(m_Monitor);
 	}
 
-	m_Window = glfwCreateWindow((int)m_CI.width, (int)m_CI.height, m_CI.context.GetCreateInfo().applicationName.c_str(), m_CI.fullscreen ? m_Monitor : nullptr, nullptr);
+	m_Window = glfwCreateWindow((int)m_CI.width, (int)m_CI.height, m_CI.applicationContext.GetCreateInfo().applicationName.c_str(), m_CI.fullscreen ? m_Monitor : nullptr, nullptr);
 
 	if (!m_Window)
 	{
@@ -245,7 +245,7 @@ bool Window::Init()
 
 	glfwGetWindowSize(m_Window, (int*)&m_CurrentWidth, (int*)&m_CurrentHeight);
 
-	m_Context = m_CI.context.GetContext();
+	m_Context = m_CI.applicationContext.GetContext();
 
 	m_SwapchainCI.debugName = "GEAR_CORE_Swapchain";
 	m_SwapchainCI.context = m_Context;
@@ -257,7 +257,7 @@ bool Window::Init()
 	m_SwapchainCI.bpcColourSpace = Swapchain::BPC_ColourSpace::B8G8R8A8_UNORM_SRGB_NONLINEAR;
 	m_Swapchain = Swapchain::Create(&m_SwapchainCI);
 
-	m_RenderSurfaceCI.debugName = m_CI.context.GetCreateInfo().applicationName;
+	m_RenderSurfaceCI.debugName = m_CI.applicationContext.GetCreateInfo().applicationName;
 	m_RenderSurfaceCI.pContext = m_Context;
 	m_RenderSurfaceCI.width = m_CI.width;
 	m_RenderSurfaceCI.height = m_CI.height;

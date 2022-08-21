@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
 #include "UI/Panels/ContentBrowserPanel.h"
+#include "UI/Panels/ContentEditorPanel.h"
 #include "UI/ComponentUI/ComponentUI.h"
 #include "UI/UIContext.h"
 

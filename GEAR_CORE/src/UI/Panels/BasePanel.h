@@ -17,6 +17,7 @@ namespace gear
 					CONTENT_BROWSER,
 					CONTENT_EDITOR,
 					MATERIAL,
+					OUTPUT,
 					PROJECT,
 					PROPERTIES,
 					RENDERER_PROPERTIES,

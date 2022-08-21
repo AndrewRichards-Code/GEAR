@@ -2,6 +2,7 @@
 #include "ContentBrowserPanel.h"
 #include "ContentEditorPanel.h"
 #include "MaterialPanel.h"
+#include "OutputPanel.h"
 #include "ProjectPanel.h"
 #include "PropertiesPanel.h"
 #include "RendererPropertiesPanel.h"

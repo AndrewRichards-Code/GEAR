@@ -17,7 +17,7 @@ namespace gear
 		public:
 			struct CreateInfo
 			{
-				core::ApplicationContext					context;
+				core::ApplicationContext					applicationContext;
 				uint32_t									width;
 				uint32_t									height;
 				bool										fullscreen;
@@ -64,7 +64,7 @@ namespace gear
 			virtual ~Window();
 
 			const CreateInfo& GetCreateInfo() { return m_CI; }
-			const core::ApplicationContext& GetApplicationContext() { return m_CI.context; }
+			const core::ApplicationContext& GetApplicationContext() { return m_CI.applicationContext; }
 
 			void Update();
 			void Close();
@@ -98,14 +98,14 @@ namespace gear
 			inline void* GetDevice() const { return m_Context->GetDevice(); }
 			inline const Ref<RenderSurface> GetRenderSurface() const { return m_RenderSurface; }
 
-			inline const miru::base::GraphicsAPI::API& GetGraphicsAPI() const { return m_CI.context.GetCommandLineOptions().api; }
+			inline const miru::base::GraphicsAPI::API& GetGraphicsAPI() const { return m_CI.applicationContext.GetCommandLineOptions().api; }
 			inline bool IsD3D12() const { return miru::base::GraphicsAPI::IsD3D12(); }
 			inline bool IsVulkan() const { return miru::base::GraphicsAPI::IsVulkan(); }
 			inline uint32_t GetWidth() const { return m_CurrentWidth; }
 			inline uint32_t GetHeight() const { return m_CurrentHeight; }
 			inline float GetRatio() const { return ((float)m_CurrentWidth / (float)m_CurrentHeight); }
 			inline bool& Resized() const { return m_Swapchain->m_Resized; }
-			inline std::string GetTitle() const { return m_CI.context.GetCreateInfo().applicationName; }
+			inline std::string GetTitle() const { return m_CI.applicationContext.GetCreateInfo().applicationName; }
 			template<typename T>
 			inline std::string GetFPSString() const { return std::to_string(static_cast<T>(m_FPS)); }
 			inline std::string GetAntiAliasingValue() const { return m_RenderSurface->GetAntiAliasingValue(); }

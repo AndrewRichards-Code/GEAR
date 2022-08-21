@@ -10,6 +10,7 @@ namespace gear
 			miru::base::GraphicsAPI::API				api;
 			miru::debug::GraphicsDebugger::DebuggerType	graphicsDebugger;
 			bool										debugValidationLayers;
+			std::filesystem::path						logFilepath;
 			std::filesystem::path						workingDirectory;
 			std::filesystem::path						projectDirectory;
 			std::filesystem::path						sceneFilepath;
@@ -19,6 +20,7 @@ namespace gear
 				api = miru::base::GraphicsAPI::API::UNKNOWN;
 				graphicsDebugger = miru::debug::GraphicsDebugger::DebuggerType::NONE;
 				debugValidationLayers = false;
+				logFilepath = std::filesystem::path();
 				workingDirectory = std::filesystem::current_path();
 				projectDirectory = std::filesystem::path();
 				sceneFilepath = std::filesystem::path();
@@ -44,6 +46,8 @@ namespace gear
 						commandLineOptions.graphicsDebugger = miru::debug::GraphicsDebugger::DebuggerType::RENDER_DOC;
 					else if (FoundArg("-debug"))
 						commandLineOptions.debugValidationLayers = true;
+					else if (FoundArg("-log:"))
+						commandLineOptions.logFilepath = RemoveArgLead("-log:");
 					else if (FoundArg("-cwd:"))
 						commandLineOptions.workingDirectory = RemoveArgLead("-cwd:");
 					else if (FoundArg("-project:"))

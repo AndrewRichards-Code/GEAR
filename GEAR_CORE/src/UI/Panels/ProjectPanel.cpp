@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
 #include "UI/Panels/ProjectPanel.h"
+#include "UI/Panels/SceneHierarchyPanel.h"
 #include "UI/UIContext.h"
 #include "UI/ComponentUI/ComponentUI.h"
 #include "Build/Project.h"

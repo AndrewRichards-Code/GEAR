@@ -47,6 +47,7 @@ namespace gear
 			void DrawStaticText(const std::string& label, const std::string& name, float width = DefaultWidth);
 			bool DrawInputText(const std::string& label, std::string& name, float width = DefaultWidth);
 			bool DrawCheckbox(const std::string& label, bool& value, float width = DefaultWidth);
+			void DrawToggleButton(const char* str_id, bool& value);
 			template<typename T>
 			void DrawDropDownMenu(const std::string& label, T& selectedItem, float width = DefaultWidth)
 			{

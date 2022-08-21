@@ -47,7 +47,7 @@ GEARBOX::GEARBOX(const ApplicationContext& context)
 void GEARBOX::Run()
 {
 	Window::CreateInfo mainWindowCI;
-	mainWindowCI.context = m_Context;
+	mainWindowCI.applicationContext = m_ApplicationContext;
 	mainWindowCI.width = 1920;
 	mainWindowCI.height = 1080;
 	mainWindowCI.fullscreen = false;
@@ -110,6 +110,11 @@ void GEARBOX::Run()
 		case Panel::Type::MATERIAL:
 		{
 			editorPanels.emplace_back(CreateRef<MaterialPanel>());
+			break;
+		}
+		case Panel::Type::OUTPUT:
+		{
+			editorPanels.emplace_back(CreateRef<OutputPanel>());
 			break;
 		}
 		case Panel::Type::PROJECT:

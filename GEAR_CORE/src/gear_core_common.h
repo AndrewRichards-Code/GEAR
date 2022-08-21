@@ -121,26 +121,28 @@ namespace gear
 	enum class ErrorCode : uint32_t
 	{
 		OK = 0x00000000,
-		AUDIO = 0x00000001,
-		CORE = 0x00000002,
-		GRAPHICS = 0x00000003,
-		INPUT = 0x00000004,
-		OBJECTS = 0x00000005,
-		SCENE = 0x00000006,
-		UTILS = 0x00000007,
-		REVERSED = 0x00000008,
+		ANIMATION,
+		AUDIO,
+		BUILD,
+		CORE,
+		GRAPHICS,
+		INPUT,
+		OBJECTS,
+		SCENE,
+		UI,
+		UTILS,
 	
 		NO_DEVICE = 0x00010000,
-		NO_CONTEXT = 0x00020000,
-		INIT_FAILED = 0x00030000,
-		FUNC_FAILED = 0x00040000,
-		NOT_SUPPORTED = 0x00050000,
-		INVALID_VALUE = 0x00060000,
-		NO_FILE = 0x00070000,
-		LOAD_FAILED = 0x00080000,
-		INVALID_COMPONENT = 0x00090000,
-		INVALID_PATH = 0x000A0000,
-		INVALID_STATE = 0x000B0000,
+		NO_CONTEXT,
+		INIT_FAILED,
+		FUNC_FAILED,
+		NOT_SUPPORTED,
+		INVALID_VALUE,
+		NO_FILE,
+		LOAD_FAILED,
+		INVALID_COMPONENT,
+		INVALID_PATH,
+		INVALID_STATE,
 	};
 
 	static std::string ErrorCodeToString(int64_t error)
@@ -153,8 +155,12 @@ namespace gear
 		{
 		case ErrorCode::OK:
 			str += "OK"; break;
+		case ErrorCode::ANIMATION:
+			str += "ANIMATION"; break;
 		case ErrorCode::AUDIO:
 			str += "AUDIO"; break;
+		case ErrorCode::BUILD:
+			str += "BUILD"; break;
 		case ErrorCode::CORE:
 			str += "CORE"; break;
 		case ErrorCode::GRAPHICS:
@@ -165,10 +171,10 @@ namespace gear
 			str += "OBJECTS"; break;
 		case ErrorCode::SCENE:
 			str += "SCENE"; break;
+		case ErrorCode::UI:
+			str += "UI"; break;
 		case ErrorCode::UTILS:
 			str += "UTILS"; break;
-		case ErrorCode::REVERSED:
-			str += "REVERSED1"; break;
 		default:
 			break;
 		}

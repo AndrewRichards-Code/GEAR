@@ -1,7 +1,7 @@
 #pragma once
 #include "gear_core_common.h"
 #include "Core/ApplicationContext.h"
-#include "ARC/src/VisualStudioDebugOutput.h"
+
 
 namespace gear
 {
@@ -15,12 +15,13 @@ namespace gear
 
 			virtual void Run() = 0;
 
+			inline ApplicationContext& GetApplicationContext() { return m_ApplicationContext; }
+
 			static Application* GetApplication() { return s_Application; }
 			static bool& IsActive() { return s_Active; }
 
 		protected:
-			ApplicationContext m_Context;
-			Scope<arc::VisualStudioDebugOutput> m_VSDebugOutput = nullptr;
+			ApplicationContext m_ApplicationContext;
 
 		private:
 			static Application* s_Application;
