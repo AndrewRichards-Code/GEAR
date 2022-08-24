@@ -31,9 +31,9 @@ namespace gear
 			result.translation = mars::float3(matrix.d, matrix.h, matrix.l);
 
 			//Scale
-			float scale_x = mars::float3(matrix.a, matrix.e, matrix.i).Length();
-			float scale_y = mars::float3(matrix.b, matrix.f, matrix.j).Length();
-			float scale_z = mars::float3(matrix.c, matrix.g, matrix.k).Length();
+			float scale_x = mars::float3(matrix.a, matrix.e, matrix.i).Length<float>();
+			float scale_y = mars::float3(matrix.b, matrix.f, matrix.j).Length<float>();
+			float scale_z = mars::float3(matrix.c, matrix.g, matrix.k).Length<float>();
 			result.scale = mars::float3(scale_x, scale_y, scale_z);
 
 			//Orientation

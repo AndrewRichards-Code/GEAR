@@ -38,9 +38,6 @@ namespace gear
 		private:
 			void Update(const core::Sequence* sequences, size_t sequenceCount) override;
 
-			mars::float3 InterpolateTranslation(const mars::float3& start, const mars::float3& end, float t);
-			mars::Quaternion InterpolateRotation(const mars::Quaternion& start, const mars::Quaternion& end, float t);
-			mars::float3 InterpolateScale(const mars::float3& start, const mars::float3& end, float t);
 		};
 	}
 }
