@@ -54,15 +54,11 @@ void OutputPanel::Draw()
 		ImGui::Separator();
 
 		bool table = false;
+		bool subWindow = false;
 		if (parsed)
 		{
-			table = ImGui::BeginTable("##outputTable", 8,
-				ImGuiTableFlags_::ImGuiTableFlags_Resizable |
-				ImGuiTableFlags_::ImGuiTableFlags_Hideable |
-				ImGuiTableFlags_::ImGuiTableFlags_ContextMenuInBody |
-				ImGuiTableFlags_::ImGuiTableFlags_ScrollX |
-				ImGuiTableFlags_::ImGuiTableFlags_ScrollY
-			);
+			table = ImGui::BeginTable("##outputTable", 8, ImGuiTableFlags_::ImGuiTableFlags_Resizable | ImGuiTableFlags_::ImGuiTableFlags_Hideable
+				| ImGuiTableFlags_::ImGuiTableFlags_ContextMenuInBody | ImGuiTableFlags_::ImGuiTableFlags_ScrollX | ImGuiTableFlags_::ImGuiTableFlags_ScrollY);
 			if (table)
 			{
 				const int& columnCount = ImGui::TableGetColumnCount();
@@ -81,9 +77,8 @@ void OutputPanel::Draw()
 		}
 		else
 		{
-			ImGui::BeginChild("##output");
+			subWindow = ImGui::BeginChild("##output");
 		}
-
 
 		for (const Entry& entry : s_OutputEntries)
 		{
@@ -125,16 +120,16 @@ void OutputPanel::Draw()
 		if (autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
 			ImGui::SetScrollHereY(1.0f);
 		
-		if (table)
+		if (parsed)
 		{
-			ImGui::EndTable();
+			if (table)
+				ImGui::EndTable();
 		}
 		else
 		{
-			ImGui::EndChild();
+			if (subWindow)
+				ImGui::EndChild();
 		}
-
-
 
 		ImGui::End();
 	}
