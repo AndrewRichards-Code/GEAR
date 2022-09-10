@@ -54,7 +54,7 @@ void GEAR_TEST::Run()
 	Ref<Scene> activeScene = CreateRef<Scene>(&sceneCI);
 
 	Window::CreateInfo windowCI;
-	windowCI.context = m_Context;
+	windowCI.applicationContext = m_ApplicationContext;
 	windowCI.width = 1920;
 	windowCI.height = 1080;
 	windowCI.fullscreen = false;
