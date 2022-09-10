@@ -17,7 +17,7 @@ namespace gear
 		static GEAR_FLOAT3 Colour_Base_D65 = GEAR_FLOAT3(0.3127f, 0.3290f, 1.0000f);
 
 		static GEAR_FLOAT3 Colour_CIE_XYZ_PrimaryR = GEAR_FLOAT3(1.0f, 0.0f, 0.0f);
-		static GEAR_FLOAT3	Colour_CIE_XYZ_PrimaryG = GEAR_FLOAT3(0.0f, 1.0f, 1.0f);
+		static GEAR_FLOAT3 Colour_CIE_XYZ_PrimaryG = GEAR_FLOAT3(0.0f, 1.0f, 1.0f);
 		static GEAR_FLOAT3 Colour_CIE_XYZ_PrimaryB = GEAR_FLOAT3(0.0f, 0.0f, 0.0f);
 
 		static GEAR_FLOAT3 Colour_sRGB_PrimaryR = GEAR_FLOAT3(0.6400f, 0.3300f, 0.2126f);
@@ -29,7 +29,7 @@ namespace gear
 		static GEAR_FLOAT3 Colour_Rec709_PrimaryB = GEAR_FLOAT3(0.1500f, 0.0600f, 0.0722f);
 
 		static GEAR_FLOAT3 Colour_Rec2020_PrimaryR = GEAR_FLOAT3(0.7080f, 0.2920f, 0.2627f);
-		static GEAR_FLOAT3	Colour_Rec2020_PrimaryG = GEAR_FLOAT3(0.1700f, 0.7970f, 0.6780f);
+		static GEAR_FLOAT3 Colour_Rec2020_PrimaryG = GEAR_FLOAT3(0.1700f, 0.7970f, 0.6780f);
 		static GEAR_FLOAT3 Colour_Rec2020_PrimaryB = GEAR_FLOAT3(0.1310f, 0.0460f, 0.0593f);
 
 		GEAR_FLOAT3 Colour_Base_XYZ_To_xyY(GEAR_FLOAT3 CONST_REF value)
