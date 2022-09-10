@@ -32,6 +32,10 @@ ApplicationContext::ApplicationContext(CreateInfo* pCreateInfo)
 	}
 	m_VSDebugOutput->SetLogFile(logFilepath.string());
 
+	//Default API
+	if (m_CI.commandLineOptions.api == GraphicsAPI::API::UNKNOWN)
+		m_CI.commandLineOptions.api = GraphicsAPI::API::VULKAN;
+
 	GraphicsAPI::SetAPI(m_CI.commandLineOptions.api, true);
 	GraphicsAPI::AllowSetName();
 	GraphicsAPI::LoadGraphicsDebugger(m_CI.commandLineOptions.graphicsDebugger);

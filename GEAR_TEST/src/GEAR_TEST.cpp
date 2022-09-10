@@ -22,10 +22,6 @@ Ref<Application> CreateApplication(int argc, char** argv)
 	applicationCI.extensions = ApplicationContext::DefaultExtensions();
 	applicationCI.commandLineOptions = CommandLineOptions::GetCommandLineOptions(argc, argv).SetWorkingDirectory();
 
-	//Default API
-	if (applicationCI.commandLineOptions.api == GraphicsAPI::API::UNKNOWN)
-		applicationCI.commandLineOptions.api = GraphicsAPI::API::VULKAN;
-
 	return CreateRef<GEAR_TEST>(ApplicationContext(&applicationCI));
 }
 

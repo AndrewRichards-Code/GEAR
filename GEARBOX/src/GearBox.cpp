@@ -34,10 +34,6 @@ Ref<Application> CreateApplication(int argc, char** argv)
 			applicationCI.commandLineOptions.graphicsDebugger = configFile.GetOption<miru::debug::GraphicsDebugger::DebuggerType>("graphicsDebugger");
 	}
 
-	//Default API
-	if (applicationCI.commandLineOptions.api == GraphicsAPI::API::UNKNOWN)
-		applicationCI.commandLineOptions.api = GraphicsAPI::API::VULKAN;
-
 	return CreateRef<GEARBOX>(ApplicationContext(&applicationCI));
 }
 
