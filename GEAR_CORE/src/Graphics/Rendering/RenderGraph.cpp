@@ -150,15 +150,28 @@ void RenderGraph::Compile()
 
 			for (size_t otherPassIndex = 0; otherPassIndex < data.Passes.size(); otherPassIndex++)
 			{
-				if (passIndex == otherPassIndex)
+				if (passIndex >= otherPassIndex)
 					continue; // Do not check dependencies on itself
 
 				Ref<Pass>& otherPass = data.Passes[otherPassIndex];
 
-				for (auto& otherPassReadResource : otherPass->GetInputResourceViews())
+				for (auto& otherPassReadResourceView : otherPass->GetInputResourceViews())
 				{
-					bool otherPassDependsOnCurrentPass = arc::FindInVector(pass->GetOutputResourceViews(), otherPassReadResource);
-					otherPassDependsOnCurrentPass |= pass->GetOutputResourceViews() == otherPass->GetOutputResourceViews();
+					bool otherPassDependsOnCurrentPass = arc::FindInVector(pass->GetOutputResourceViews(), otherPassReadResourceView);
+					bool sameOutputs = pass->GetOutputResourceViews() == otherPass->GetOutputResourceViews();
+					if (sameOutputs)
+					{
+						if (otherPass->m_PassParameters->GetType() == PassParameters::Type::TASK
+							|| pass->m_PassParameters->GetType() == PassParameters::Type::TASK)
+						{
+							Ref<TaskPassParameters> tpp = ref_cast<TaskPassParameters>(otherPass->m_PassParameters);
+							for (auto& colourAttachment : tpp->m_RenderingInfo.colourAttachments)
+								colourAttachment.loadOp = RenderPass::AttachmentLoadOp::LOAD;
+							if (tpp->m_RenderingInfo.pDepthAttachment)
+								tpp->m_RenderingInfo.pDepthAttachment->loadOp = RenderPass::AttachmentLoadOp::LOAD;
+						}
+					}
+					otherPassDependsOnCurrentPass |= sameOutputs;
 					if (otherPassDependsOnCurrentPass)
 					{
 						adjacentPassIndices.push_back(otherPassIndex);

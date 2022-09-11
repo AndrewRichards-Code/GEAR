@@ -230,6 +230,8 @@ void Renderer::Draw()
 	std::set<Ref<Texture>> texturesToProcess;
 	std::vector<Ref<Texture>> texturesToGenerateMipmaps;
 
+	m_AllCameras.push_back(DebugRender::GetCamera());
+
 	//Get all unique textures
 	for (auto& model : allQueue)
 	{
@@ -280,6 +282,13 @@ void Renderer::Draw()
 			{
 				uploadPassParameters->AddResourceView(light->GetUB());
 				light->ResetUpdateGPUFlag();
+
+				const auto& probe = light->GetProbe();
+				if (probe && probe->GetUpdateGPUFlag())
+				{
+					uploadPassParameters->AddResourceView(probe->GetUB());
+					probe->ResetUpdateGPUFlag();
+				}
 			}
 		}
 		for (const auto& model : allQueue)
@@ -293,14 +302,19 @@ void Renderer::Draw()
 
 				uploadPassParameters->AddResourceView(model->GetUB());
 				model->ResetUpdateGPUFlag();
-
+			}
+			if (model)
+			{
 				for (const auto& material : model->GetMesh()->GetMaterials())
 				{
-					uploadPassParameters->AddResourceView(material->GetUB());
-					for (const auto& texture : material->GetTextures())
-						uploadPassParameters->AddResourceView(texture.second);
+					if (material && material->GetUpdateGPUFlag())
+					{
+						uploadPassParameters->AddResourceView(material->GetUB());
+						for (const auto& texture : material->GetTextures())
+							uploadPassParameters->AddResourceView(texture.second);
 
-					material->ResetUpdateGPUFlag();
+						material->ResetUpdateGPUFlag();
+					}
 				}
 			}
 		}
@@ -398,6 +412,7 @@ void Renderer::Draw()
 				}
 				texture->m_GeneratedMipMaps = true;
 			}
+			
 			//Skybox: Diffuse Irradiance
 			{
 				Ref<ImageView> generatedDiffuseCubemap_2DArrayView = m_RenderGraph.CreateImageView(m_Skybox->GetGeneratedDiffuseCubemap()->GetImage(), Image::Type::TYPE_2D_ARRAY, { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 6 });
@@ -414,7 +429,6 @@ void Renderer::Draw()
 						cmdBuffer->Dispatch(frameIndex, width, height, depth);
 					});
 			}
-#if 0
 
 			//Skybox: Specular Irradiance
 			{
@@ -470,7 +484,6 @@ void Renderer::Draw()
 						});
 				}
 			}
-#endif
 
 			//Skybox: Specular BRDF LUT
 			{
@@ -533,7 +546,7 @@ void Renderer::Draw()
 					tCI.debugName = "GEAR_CORE_Texture_Probe_DebugTexture: " + probe->m_CI.debugName;
 					tCI.device = m_Device;
 					tCI.dataType = Texture::DataType::DATA;
-					tCI.data = { nullptr, 0, 0, 0, 0 };
+					tCI.data = { nullptr, 0, 256, 256, 1 };
 					tCI.mipLevels = 1;
 					tCI.arrayLayers = 1;
 					tCI.type = Image::Type::TYPE_2D;
@@ -563,6 +576,31 @@ void Renderer::Draw()
 					});
 			}
 		}
+	}
+
+	//Main Render Skybox
+	if (m_MainRenderCamera && m_Skybox)
+	{
+		uint32_t width = m_RenderSurface->GetWidth();
+		uint32_t height = m_RenderSurface->GetHeight();
+
+		Ref<TaskPassParameters> skyboxPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["Cube"]);
+		skyboxPassParameters->SetResourceView("camera", ResourceView(m_MainRenderCamera->GetCameraUB()));
+		skyboxPassParameters->SetResourceView("model", ResourceView(m_Skybox->GetModel()->GetUB()));
+		skyboxPassParameters->SetResourceView("skybox", ResourceView(m_Skybox->GetGeneratedCubemap(), Resource::State::SHADER_READ_ONLY));
+		skyboxPassParameters->AddAttachmentWithResolve(0, ResourceView(m_RenderSurface->GetMSAAColourImageView(), Resource::State::COLOUR_ATTACHMENT),
+			ResourceView(m_RenderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
+		skyboxPassParameters->AddAttachment(0, ResourceView(m_RenderSurface->GetDepthImageView(), Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
+		skyboxPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
+
+		m_RenderGraph.AddPass("Main Render Skybox", skyboxPassParameters, CommandPool::QueueType::GRAPHICS,
+			[this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+			{
+				const Ref<Model>& model = m_Skybox->GetModel();
+				cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[0]->GetGPUBufferView() });
+				cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[0]->GetGPUBufferView());
+				cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[0]->GetCount());
+			});
 	}
 
 	//Main Render PBROpaque
@@ -604,31 +642,6 @@ void Renderer::Draw()
 					});
 			}
 		}
-	}
-
-	//Main Render Skybox
-	if (m_MainRenderCamera && m_Skybox)
-	{
-		uint32_t width = m_RenderSurface->GetWidth();
-		uint32_t height = m_RenderSurface->GetHeight();
-
-		Ref<TaskPassParameters> skyboxPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["Cube"]);
-		skyboxPassParameters->SetResourceView("camera", ResourceView(m_MainRenderCamera->GetCameraUB()));
-		skyboxPassParameters->SetResourceView("model", ResourceView(m_Skybox->GetModel()->GetUB()));
-		skyboxPassParameters->SetResourceView("skybox", ResourceView(m_Skybox->GetGeneratedCubemap(), Resource::State::SHADER_READ_ONLY));
-		skyboxPassParameters->AddAttachmentWithResolve(0, ResourceView(m_RenderSurface->GetMSAAColourImageView(), Resource::State::COLOUR_ATTACHMENT),
-			ResourceView(m_RenderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
-		skyboxPassParameters->AddAttachment(0, ResourceView(m_RenderSurface->GetDepthImageView(), Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
-		skyboxPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
-
-		m_RenderGraph.AddPass("Main Render Skybox", skyboxPassParameters, CommandPool::QueueType::GRAPHICS,
-			[this](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
-			{
-				const Ref<Model>& model = m_Skybox->GetModel();
-				cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[0]->GetGPUBufferView() });
-				cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[0]->GetGPUBufferView());
-				cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[0]->GetCount());
-			});
 	}
 
 #if 0
@@ -905,6 +918,7 @@ void Renderer::Execute()
 	if (frameStart)
 	{
 		rd->m_RenderDocApi->EndFrameCapture(0, 0);
+		rd->m_RenderDocApi->LaunchReplayUI(1, nullptr);
 	}
 #endif
 }

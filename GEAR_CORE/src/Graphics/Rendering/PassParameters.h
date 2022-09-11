@@ -92,6 +92,10 @@ namespace gear
 
 			miru::base::RenderingAttachmentInfo m_DepthAttachmentInfo;
 			miru::base::RenderingInfo m_RenderingInfo;
+
+			//Friends
+			friend Pass;
+			friend RenderGraph;
 		};
 
 		class GEAR_API TransferPassParameters final : public PassParameters
@@ -129,6 +133,10 @@ namespace gear
 			//Members
 		private:
 			std::vector<std::tuple<ResourceView, ResourceView, ResourceCopyRegion>> m_ResourceViewPairs;
+
+			//Friends
+			friend Pass;
+			friend RenderGraph;
 		};
 	}
 }
