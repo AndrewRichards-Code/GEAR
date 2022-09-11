@@ -22,6 +22,8 @@ Probe::Probe(CreateInfo* pCreateInfo)
 	CreateTexture(m_DepthTexture, m_DepthTextureCI, false);
 
 	CreateRenderPipeline();
+
+	Update(Transform());
 }
 
 Probe::~Probe()
@@ -32,10 +34,6 @@ void Probe::Update(const Transform& transform)
 {
 	if (CreateInfoHasChanged(&m_CI))
 	{
-		uint64_t newHash = m_CreateInfoHash;
-		*this = Probe(&m_CI);
-		m_CreateInfoHash = newHash; //Set the Hash value from the previous instance of the Mesh.
-
 		//Projection
 		{
 			if (m_CI.directionType == DirectionType::OMNI)
