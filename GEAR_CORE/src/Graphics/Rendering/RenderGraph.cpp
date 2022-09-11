@@ -114,6 +114,25 @@ Ref<Pass> RenderGraph::AddPass(const std::string& passName, const Ref<PassParame
 	return pass;
 }
 
+void RenderGraph::BeginEventScope(const std::string& scopeName)
+{
+	FrameData& data = m_FrameData[m_FrameIndex];
+	data.ScopeStack.push(scopeName);
+}
+
+void RenderGraph::EndEventScope()
+{
+	FrameData& data = m_FrameData[m_FrameIndex];
+	if (!data.ScopeStack.empty())
+	{
+		data.ScopeStack.pop();
+	}
+	else
+	{
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "RenderGraph::FrameData::ScopeStack is empty. Unable to pop element from the stack.")
+	}
+}
+
 void RenderGraph::Compile()
 {
 	//Organizing GPU Work with Directed Acyclic Graphs

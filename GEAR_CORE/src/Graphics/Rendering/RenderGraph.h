@@ -30,6 +30,7 @@ namespace gear
 			};
 			struct FrameData
 			{
+				std::stack<std::string> ScopeStack;
 				std::vector<Ref<Pass>> Passes;
 				std::vector<Resource> Resources;
 
@@ -51,6 +52,9 @@ namespace gear
 						dependencyLevel.Passes.clear();
 					DependencyLevels.clear();
 					Passes.clear();
+
+					while (!ScopeStack.empty())
+						ScopeStack.pop();
 				}
 			};
 			struct ImageDesc
@@ -92,6 +96,9 @@ namespace gear
 			void Reset(uint32_t frameIndex);
 
 			Ref<Pass> AddPass(const std::string& passName, const Ref<PassParameters>& passParameters, miru::base::CommandPool::QueueType queueType, RenderGraphPassFunction renderFunction);
+
+			void BeginEventScope(const std::string& scopeName);
+			void EndEventScope();
 
 		private:
 			void Compile();
