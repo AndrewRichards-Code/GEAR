@@ -7,7 +7,8 @@
 #include "Graphics/Rendering/RenderGraph.h"
 
 using namespace gear;
-using namespace graphics::rendering;
+using namespace graphics;
+using namespace rendering;
 using namespace scene;
 using namespace ui;
 using namespace panels;
@@ -87,7 +88,38 @@ void RendererPropertiesPanel::Draw()
 				}
 			}
 			ImGui::Separator();
+
+			DrawPostProcessingUI();
 		}
 	}
 	ImGui::End();
+}
+
+void RendererPropertiesPanel::DrawPostProcessingUI()
+{
+	if (!m_ViewportPanel)
+		return;
+
+	Ref<Renderer>& renderer = m_ViewportPanel->GetCreateInfo().renderer;
+	Renderer::PostProcessingInfo& postProcessingInfo = renderer->GetPostProcessingInfo();
+
+	if (DrawTreeNode("Post Processing", true))
+	{
+		//Bloom
+		if (DrawTreeNode("Bloom", true))
+		{
+			UniformBufferStructures::BloomInfo& bloomInfo = postProcessingInfo.bloomInfo;
+
+			DrawFloat("Threshold", bloomInfo.threshold, 0.0f);
+			DrawFloat("Upsample Scale", bloomInfo.upsampleScale, 1.0f);
+			EndDrawTreeNode();
+		}
+		if (DrawTreeNode("HDR Mapping", true))
+		{
+			ImGui::Text("HDR Mapping is controlled by the Camera in the Scene.");
+			EndDrawTreeNode();
+		}
+
+		EndDrawTreeNode();
+	}
 }

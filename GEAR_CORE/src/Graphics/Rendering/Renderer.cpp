@@ -94,6 +94,11 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 	texCI.arrayLayers = 6;
 	texCI.type = miru::base::Image::Type::TYPE_CUBE;
 	m_BlackCubeTexture = CreateRef<Texture>(&texCI);
+
+	//Set up PostProcessingInfo
+	//Bloom
+	m_PostProcessingInfo.bloomInfo.threshold = 3.0f;
+	m_PostProcessingInfo.bloomInfo.upsampleScale= 2.0f;
 }
 
 Renderer::~Renderer()
@@ -644,7 +649,6 @@ void Renderer::Draw()
 		}
 	}
 
-#if 0
 	//Post Processing Bloom Prefilter - Downsample - Upsample
 	if (m_MainRenderCamera)
 	{
@@ -657,7 +661,8 @@ void Renderer::Draw()
 		uint32_t minSize = std::min(colourImage->GetCreateInfo().width, colourImage->GetCreateInfo().height);
 		uint32_t levels = std::max(static_cast<uint32_t>(log2(static_cast<double>(minSize / 8))), uint32_t(1));
 
-		ImageRef prefilterOutputImage = m_RenderGraph.CreateImage({ Image::Type::TYPE_2D, Image::Format::R16G16B16A16_SFLOAT, width, height, 1, levels, 1, Image::SampleCountBit::SAMPLE_COUNT_1_BIT, RenderGraph::ImageDesc::UsageBit::SHADER_READ_WRITE }, "Bloom_Prefilter_Output");
+		ImageRef prefilterOutputImage = m_RenderGraph.CreateImage({ Image::Type::TYPE_2D, Image::Format::R16G16B16A16_SFLOAT, width, height, 1, levels, 1, Image::SampleCountBit::SAMPLE_COUNT_1_BIT, 
+			RenderGraph::ImageDesc::UsageBit::SHADER_READ_ONLY | RenderGraph::ImageDesc::UsageBit::SHADER_READ_WRITE }, "Bloom_Prefilter_Output");
 		ImageViewRef prefilterOutputImageView = m_RenderGraph.CreateImageView(prefilterOutputImage, Image::Type::TYPE_2D, { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 });
 
 		float zero[sizeof(UniformBufferStructures::BloomInfo)] = { 0 };
@@ -666,8 +671,8 @@ void Renderer::Draw()
 		ubCI.device = m_Device;
 		ubCI.data = zero;
 		Ref<Uniformbuffer<UniformBufferStructures::BloomInfo>> bloomInfoUB = CreateRef<Uniformbuffer<UniformBufferStructures::BloomInfo>>(&ubCI);
-		bloomInfoUB->threshold = 3.0f;
-		bloomInfoUB->upsampleScale = 2.0f;
+		bloomInfoUB->threshold = m_PostProcessingInfo.bloomInfo.threshold;
+		bloomInfoUB->upsampleScale = m_PostProcessingInfo.bloomInfo.upsampleScale;
 		bloomInfoUB->SubmitData();
 
 		Ref<TaskPassParameters> bloomPreFilterPassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["BloomPreFilter"]);
@@ -707,16 +712,18 @@ void Renderer::Draw()
 		samplerCI.borderColour = Sampler::BorderColour::FLOAT_TRANSPARENT_BLACK;
 		samplerCI.unnormalisedCoordinates = false;
 		SamplerRef sampler = Sampler::Create(&samplerCI);
-		std::vector<ImageViewRef> bloomImageViews;
 
+		std::vector<ImageViewRef> bloomImageViews;
 		for (uint32_t i = 0; i < levels; i++)
-		{
 			bloomImageViews.push_back(m_RenderGraph.CreateImageView(prefilterOutputImage, Image::Type::TYPE_2D, { Image::AspectBit::COLOUR_BIT, i, 1, 0, 1 }));
 
+		for (uint32_t i = 0; i < (levels - 1); i++)
+		{
 			Ref<TaskPassParameters> bloomDownsamplePassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["BloomDownsample"]);
 			bloomDownsamplePassParameters->SetResourceView("inputImageRO", ResourceView(bloomImageViews[std::min(i + 0, levels)], sampler));
 			bloomDownsamplePassParameters->SetResourceView("outputImage", ResourceView(bloomImageViews[std::min(i + 1, levels)], Resource::State::SHADER_READ_WRITE));
 
+			i++;
 			m_RenderGraph.AddPass("Post Processing Bloom Downsample: " + std::to_string(i), bloomDownsamplePassParameters, CommandPool::QueueType::COMPUTE,
 				[bloomDownsamplePassParameters, i, prefilterOutputImage, width, height](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 				{
@@ -729,11 +736,12 @@ void Renderer::Draw()
 					_height += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
 					cmdBuffer->Dispatch(frameIndex, _width, _height, _depth);
 				});
+			i--;
 		}
 
 		//Upsample
 		bloomImageViews[0] = colourImageView;
-		for (uint32_t i = levels - 1; i >= 1; i--)
+		for (uint32_t i = (levels - 1); i >= 1; i--)
 		{
 			Ref<TaskPassParameters> bloomUpsamplePassParameters = CreateRef<TaskPassParameters>(s_RenderPipelines["BloomUpsample"]);
 			bloomUpsamplePassParameters->SetResourceView("inputImageRO", ResourceView(bloomImageViews[i + 0], sampler));
@@ -752,7 +760,6 @@ void Renderer::Draw()
 				});
 		}
 	}
-#endif
 
 	//HDR Mapping
 	if (m_MainRenderCamera)

@@ -26,6 +26,10 @@ namespace gear
 				bool		shouldDrawExternalUI;
 				bool		shouldPresent;
 			};
+			struct PostProcessingInfo
+			{
+				UniformBufferStructures::BloomInfo bloomInfo;
+			};
 
 		private:
 			CreateInfo m_CI;
@@ -56,6 +60,7 @@ namespace gear
 			std::vector<Ref<objects::Model>> m_ModelQueue;
 			std::vector<Ref<objects::Model>> m_TextQueue;
 			ui::UIContext* m_UIContext = nullptr;
+			PostProcessingInfo m_PostProcessingInfo;
 
 			//Default Objects
 			Ref<Uniformbuffer<UniformBufferStructures::Lights>> m_EmptyLightsUB;
@@ -104,6 +109,7 @@ namespace gear
 			inline Ref<RenderSurface> GetRenderSurface() { return m_RenderSurface; }
 			inline Ref<objects::Camera> GetCamera() { return m_MainRenderCamera; }
 			inline const RenderGraph& GetRenderGraph() const { return m_RenderGraph; }
+			inline PostProcessingInfo& GetPostProcessingInfo() { return m_PostProcessingInfo; }
 
 			inline const uint32_t& GetFrameIndex() const { return m_FrameIndex; }
 			inline const uint32_t& GetFrameCount() const { return m_FrameCount; }

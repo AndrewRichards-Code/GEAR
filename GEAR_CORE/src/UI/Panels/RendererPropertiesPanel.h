@@ -19,7 +19,10 @@ namespace gear
 				~RendererPropertiesPanel();
 
 				void Draw() override;
+			private:
+				void DrawPostProcessingUI();
 
+			public:
 				inline void SetViewportPanel(const Ref<ViewportPanel>& viewportPanel) { m_ViewportPanel = viewportPanel; }
 
 				//Members
