@@ -18,15 +18,15 @@ namespace gear
 
 			struct CreateInfo
 			{
-				std::string											debugName;
-				std::vector<miru::base::Shader::CreateInfo>			shaderCreateInfo;
-				miru::base::Pipeline::InputAssemblyState			inputAssemblyState;
-				miru::base::Pipeline::ViewportState					viewportState;
-				miru::base::Pipeline::RasterisationState			rasterisationState;
-				miru::base::Pipeline::MultisampleState				multisampleState;
-				miru::base::Pipeline::DepthStencilState				depthStencilState;
-				miru::base::Pipeline::ColourBlendState				colourBlendState;
-				miru::base::Pipeline::DynamicRenderingCreateInfo	dynamicRendering;
+				std::string									debugName;
+				std::vector<miru::base::Shader::CreateInfo>	shaderCreateInfo;
+				miru::base::Pipeline::InputAssemblyState	inputAssemblyState;
+				miru::base::Pipeline::ViewportState			viewportState;
+				miru::base::Pipeline::RasterisationState	rasterisationState;
+				miru::base::Pipeline::MultisampleState		multisampleState;
+				miru::base::Pipeline::DepthStencilState		depthStencilState;
+				miru::base::Pipeline::ColourBlendState		colourBlendState;
+				miru::base::Pipeline::DynamicRendering		dynamicRendering;
 			};
 			struct LoadInfo
 			{

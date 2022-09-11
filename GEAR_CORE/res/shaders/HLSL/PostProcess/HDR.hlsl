@@ -40,8 +40,8 @@ PS_OUT ps_main(PS_IN IN)
 	return OUT;
 }
 
-MIRU_RW_IMAGE_2D(0, 0, float4, emissiveIn);
-MIRU_RW_IMAGE_2D(0, 0, float4, emissiveOut);
+MIRU_RW_IMAGE_2D(1, 0, float4, emissiveIn);
+MIRU_RW_IMAGE_2D(1, 1, float4, emissiveOut);
 
 float GaussianDistrubtion2D(int2 pos, float sigma)
 {
@@ -63,7 +63,7 @@ void cs_GaussianBlur(uint3 pos : MIRU_DISPATCH_THREAD_ID)
 	float sigma = 5.5;
 	int2 offset = int2(0, 0);
 	int2 pos_xy = pos.xy + offset;
-	float colour = emissiveIn.Load(int3(pos.xy, 0)) * GaussianDistrubtion2D(offset, sigma);
+	float4 colour = emissiveIn.Load(int3(pos.xy, 0)) * GaussianDistrubtion2D(offset, sigma);
 	
 	for (int i = 1; i < kernelSize; i++)
 	{

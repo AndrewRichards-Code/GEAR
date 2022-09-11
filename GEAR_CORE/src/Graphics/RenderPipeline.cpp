@@ -90,6 +90,10 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 		shaderCI.recompileArguments.dxcLocation = recompileArgs["dxcLocation"];
 		for (auto& dxcArguments : recompileArgs["dxcArguments"])
 			shaderCI.recompileArguments.dxcArguments.push_back(dxcArguments);
+		
+		//shaderCI.recompileArguments.dxcArguments.push_back("-Od");
+		//shaderCI.recompileArguments.dxcArguments.push_back("-Zi");
+		//shaderCI.recompileArguments.dxcArguments.push_back("-Fd");
 
 		rpCI.shaderCreateInfo.push_back(shaderCI);
 	}
