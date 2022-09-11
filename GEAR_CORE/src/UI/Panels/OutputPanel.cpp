@@ -146,70 +146,73 @@ void OutputPanel::DebugMessageCallback(const std::string& string)
 	{
 		results.push_back(item);
 	}
-	for (size_t i = 0; i < 3; i++)
+	if (results.size() >= 4)
 	{
-		if (results[i].find('[') != std::string::npos)
-			results[i].erase(results[i].find('['), 1);
-	}
-	if (results.size() > 4)
-	{
-		for (size_t i = 4; i < results.size(); i++)
-			results[3].append(results[i]);
-	}
-	if (results[3].find_last_of("\n") != std::string::npos)
-	{
-		results[3].erase(results[3].find_last_of("\n"));
-	}
+		for (size_t i = 0; i < 3; i++)
+		{
+			if (results[i].find('[') != std::string::npos)
+				results[i].erase(results[i].find('['), 1);
+		}
+		if (results.size() > 4)
+		{
+			for (size_t i = 4; i < results.size(); i++)
+				results[3].append(results[i]);
+		}
+		if (results[3].find_last_of("\n") != std::string::npos)
+		{
+			results[3].erase(results[3].find_last_of("\n"));
+		}
 
-	const std::string delim0 = " ";
-	const std::string delim1 = ".";
-	const size_t delimSize0 = delim0.size();
-	{
-		std::string string = results[0];
-		size_t pos0 = 0;
-		size_t pos1 = string.find(delim0, pos0);
-		entry.date = string.substr(pos0, pos1 - pos0);
+		const std::string delim0 = " ";
+		const std::string delim1 = ".";
+		const size_t delimSize0 = delim0.size();
+		{
+			std::string string = results[0];
+			size_t pos0 = 0;
+			size_t pos1 = string.find(delim0, pos0);
+			entry.date = string.substr(pos0, pos1 - pos0);
 
-		pos0 = pos1 + delimSize0;
-		pos1 = string.find(delim1, pos0);
-		entry.time = string.substr(pos0, pos1 - pos0);
-	}
-	const std::string delim = ": ";
-	const size_t delimSize = delim.size();
-	{
-		std::string string = results[1];
-		size_t pos0 = 0;
-		size_t pos1 = string.find(delim, pos0);
-		entry.loggerName = string.substr(pos0, pos1 - pos0);
-		
-		pos0 = pos1 + delimSize;
-		pos1 = string.find(delim, pos0);
-		entry.logLevel = string.substr(pos0, pos1 - pos0);
+			pos0 = pos1 + delimSize0;
+			pos1 = string.find(delim1, pos0);
+			entry.time = string.substr(pos0, pos1 - pos0);
+		}
+		const std::string delim = ": ";
+		const size_t delimSize = delim.size();
+		{
+			std::string string = results[1];
+			size_t pos0 = 0;
+			size_t pos1 = string.find(delim, pos0);
+			entry.loggerName = string.substr(pos0, pos1 - pos0);
 
-		pos0 = pos1 + delimSize;
-		pos1 = string.find(delim, pos0);
-		entry.fileAndLine = string.substr(pos0, pos1 - pos0);
+			pos0 = pos1 + delimSize;
+			pos1 = string.find(delim, pos0);
+			entry.logLevel = string.substr(pos0, pos1 - pos0);
 
-		pos0 = pos1 + delimSize;
-		pos1 = string.find(delim, pos0);
-		entry.functionSignature = string.substr(pos0, pos1 - pos0);
-	}
-	{
-		std::string string = results[2];
-		size_t pos0 = 0;
-		size_t pos1 = string.find(delim, pos0);
-		pos0 = pos1 + delimSize;
-		pos1 = string.find(delim, pos0);
-		entry.errorCode = string.substr(pos0, pos1 - pos0);
-	}
-	{
-		std::string string = results[3];
-		size_t pos0 = 0;
-		size_t pos1 = string.find(delim, pos0);
-		pos0 = pos1 + delimSize;
-		pos1 = string.find(delim, pos0);
-		entry.message = string.substr(pos0);
+			pos0 = pos1 + delimSize;
+			pos1 = string.find(delim, pos0);
+			entry.fileAndLine = string.substr(pos0, pos1 - pos0);
 
+			pos0 = pos1 + delimSize;
+			pos1 = string.find(delim, pos0);
+			entry.functionSignature = string.substr(pos0, pos1 - pos0);
+		}
+		{
+			std::string string = results[2];
+			size_t pos0 = 0;
+			size_t pos1 = string.find(delim, pos0);
+			pos0 = pos1 + delimSize;
+			pos1 = string.find(delim, pos0);
+			entry.errorCode = string.substr(pos0, pos1 - pos0);
+		}
+		{
+			std::string string = results[3];
+			size_t pos0 = 0;
+			size_t pos1 = string.find(delim, pos0);
+			pos0 = pos1 + delimSize;
+			pos1 = string.find(delim, pos0);
+			entry.message = string.substr(pos0);
+
+		}
 	}
 	entry.rawString = string;
 	
