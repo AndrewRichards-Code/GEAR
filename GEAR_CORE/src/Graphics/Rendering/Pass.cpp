@@ -33,7 +33,7 @@ void Pass::Execute(RenderGraph* renderGraph, CommandBufferRef cmdBuffer, uint32_
 		std::vector<ResourceView>& outputResourceViews = GetOutputResourceViews();
 		const RenderingInfo& renderingInfo = passParameters->GetRenderingInfo();
 
-		bool graphics = renderingInfo.colourAttachments.size();
+		bool graphics = renderingInfo.colourAttachments.size() > 0 || renderingInfo.pDepthAttachment != nullptr;
 		
 		if (cmdPoolType != CommandPool::QueueType::TRANSFER)
 		{
