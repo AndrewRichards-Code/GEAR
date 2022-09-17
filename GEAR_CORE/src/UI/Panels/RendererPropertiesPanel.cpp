@@ -59,30 +59,28 @@ void RendererPropertiesPanel::Draw()
 				const std::string& name = pass->GetName();
 				if (DrawTreeNode(name, false, (void*)id++))
 				{
-					DrawStaticText("", "Inputs", 0.0f);
+					DrawStaticText("", "Inputs:", 0.0f);
 					for (const auto& resourceView : pass->GetInputResourceViews())
 					{
 						const std::string& stage = resourceView.GetStage() != (miru::base::Shader::StageBit)0 ? std::string(stages[static_cast<size_t>(log2((double)resourceView.GetStage()))]) : "";
 						std::string name = resourceView.GetResource().GetName();
 						name = GetResourceTypeString(resourceView) + ": " + name.substr(name.find_last_of(' ') + 1) + ": ";
 						const std::string& state = std::string(resourceStates[static_cast<size_t>(resourceView.GetState())]);
-
-						DrawStaticText("", name, 10.0f);
-						DrawStaticText("", state, 30.0f);
-						DrawStaticText("", stage, 30.0f);
+						
+						const std::string& message = name + "[" + state + "] [" + stage + "]";
+						DrawStaticText("", message, 20.0f);
 					}
 
-					DrawStaticText("", "Outputs", 0.0f);
+					DrawStaticText("", "Outputs:", 0.0f);
 					for (const auto& resourceView : pass->GetOutputResourceViews())
 					{
 						const std::string& stage = resourceView.GetStage() != (miru::base::Shader::StageBit)0 ? std::string(stages[static_cast<size_t>(log2((double)resourceView.GetStage()))]) : "";
 						std::string name = resourceView.GetResource().GetName();
 						name = GetResourceTypeString(resourceView) + ": " + name.substr(name.find_last_of(' ') + 1) + ": ";
 						const std::string& state = std::string(resourceStates[static_cast<size_t>(resourceView.GetState())]);
-
-						DrawStaticText("", name, 10.0f);
-						DrawStaticText("", state, 30.0f);
-						DrawStaticText("", stage, 30.0f);
+					
+						const std::string& message = name + "[" + state + "] [" + stage + "]";
+						DrawStaticText("", message, 20.0f);
 					}
 					EndDrawTreeNode();
 				}
