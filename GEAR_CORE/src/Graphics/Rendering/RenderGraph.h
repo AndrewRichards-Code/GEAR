@@ -86,6 +86,14 @@ namespace gear
 			{
 				uint32_t size;
 			};
+			struct EventScope
+			{
+				explicit EventScope(RenderGraph* renderGraph, const std::string& scopeName)
+					:m_RenderGraph(renderGraph) { m_RenderGraph->BeginEventScope(scopeName); }
+				~EventScope() { m_RenderGraph->EndEventScope(); }
+			private:
+				RenderGraph* m_RenderGraph = nullptr;
+			};
 
 			//Methods
 		public:
@@ -94,18 +102,19 @@ namespace gear
 			~RenderGraph();
 
 			void Reset(uint32_t frameIndex);
-
 			Ref<Pass> AddPass(const std::string& passName, const Ref<PassParameters>& passParameters, miru::base::CommandPool::QueueType queueType, RenderGraphPassFunction renderFunction);
 
+		private:
 			void BeginEventScope(const std::string& scopeName);
 			void EndEventScope();
 
-		private:
 			void Compile();
 
 		public:
 			void Execute();
 
+			inline EventScope CreateEventScope(const std::string& scopeName) { return EventScope(this, scopeName); }
+			
 			miru::base::ImageRef CreateImage(const ImageDesc& desc, const std::string& name);
 			miru::base::ImageViewRef CreateImageView(const miru::base::ImageRef& image, miru::base::Image::Type type, const miru::base::Image::SubresourceRange& subresourceRange);
 
@@ -125,6 +134,14 @@ namespace gear
 			std::map<miru::base::CommandPool::QueueType, CommandPoolAndBuffers> m_CommandPoolAndBuffers;
 			std::vector<FrameData> m_FrameData;
 			uint32_t m_FrameIndex = 0;
+
+			//Friend
+		private:
+			struct EventScope;
 		};
 	}
 }
+
+#define GEAR_RENDER_GRARH_EVENT_SCOPE_LINE2(renderGraph, scopeName, line) gear::graphics::rendering::RenderGraph::EventScope renderGraphEventScope##line = renderGraph.CreateEventScope(scopeName)
+#define GEAR_RENDER_GRARH_EVENT_SCOPE_LINE(renderGraph, scopeName, line) GEAR_RENDER_GRARH_EVENT_SCOPE_LINE2(renderGraph, scopeName, line)
+#define GEAR_RENDER_GRARH_EVENT_SCOPE(renderGraph, scopeName) GEAR_RENDER_GRARH_EVENT_SCOPE_LINE(renderGraph, scopeName, __LINE__)

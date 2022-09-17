@@ -106,10 +106,13 @@ void RendererPropertiesPanel::DrawPostProcessingUI()
 		//Bloom
 		if (DrawTreeNode("Bloom", true))
 		{
-			UniformBufferStructures::BloomInfo& bloomInfo = postProcessingInfo.bloomInfo;
+			Ref<Uniformbuffer<UniformBufferStructures::BloomInfo>>& bloomInfoUB = postProcessingInfo.bloom.UB;
 
-			DrawFloat("Threshold", bloomInfo.threshold, 0.0f);
-			DrawFloat("Upsample Scale", bloomInfo.upsampleScale, 1.0f);
+			if (bloomInfoUB)
+			{
+				DrawFloat("Threshold", bloomInfoUB->threshold, 0.0f);
+				DrawFloat("Upsample Scale", bloomInfoUB->upsampleScale, 1.0f);
+			}
 			EndDrawTreeNode();
 		}
 		if (DrawTreeNode("HDR Mapping", true))

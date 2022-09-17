@@ -28,7 +28,16 @@ namespace gear
 			};
 			struct PostProcessingInfo
 			{
-				UniformBufferStructures::BloomInfo bloomInfo;
+				struct Bloom
+				{
+					Ref<Uniformbuffer<UniformBufferStructures::BloomInfo>> UB;
+					uint32_t width;
+					uint32_t height;
+					uint32_t levels;
+					miru::base::ImageRef prefilterOutputImage;
+					std::vector<miru::base::ImageViewRef> imageViews;
+					miru::base::SamplerRef sampler;
+				} bloom;
 			};
 
 		private:
@@ -105,10 +114,13 @@ namespace gear
 			inline miru::base::ContextRef GetContext() { return m_Context; }
 			inline void* GetDevice() { return m_Device; }
 			inline Ref<Window> GetWindow() { return m_CI.window; }
-			static inline std::map<std::string, Ref<graphics::RenderPipeline>> GetRenderPipelines() { return s_RenderPipelines; }
+			static inline std::map<std::string, Ref<graphics::RenderPipeline>>& GetRenderPipelines() { return s_RenderPipelines; }
 			inline Ref<RenderSurface> GetRenderSurface() { return m_RenderSurface; }
 			inline Ref<objects::Camera> GetCamera() { return m_MainRenderCamera; }
+			inline const std::vector<Ref<objects::Model>>& GetModelQueue() const { return m_ModelQueue; }
+			inline const std::vector<Ref<objects::Model>>& GetTextQueue() const { return m_TextQueue; }
 			inline const RenderGraph& GetRenderGraph() const { return m_RenderGraph; }
+			inline RenderGraph& GetRenderGraph() { return m_RenderGraph; }
 			inline PostProcessingInfo& GetPostProcessingInfo() { return m_PostProcessingInfo; }
 
 			inline const uint32_t& GetFrameIndex() const { return m_FrameIndex; }

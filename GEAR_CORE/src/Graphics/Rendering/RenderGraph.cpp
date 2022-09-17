@@ -86,6 +86,9 @@ Ref<Pass> RenderGraph::AddPass(const std::string& passName, const Ref<PassParame
 	Ref<Pass> pass = CreateRef<Pass>(passName, passParameters, queueType, renderFunction);
 	pass->GetPassParameters()->Setup();
 	FrameData& data = m_FrameData[m_FrameIndex];
+	
+	//Save current scoper into Pass
+	pass->m_ScopeStack = data.ScopeStack; 
 
 	//Add Pass ResourceViews to the RenderGraph's 'master' Resource list
 	auto AddResourcesToRenderPass = [&](std::vector<ResourceView>& resourceViews) -> void

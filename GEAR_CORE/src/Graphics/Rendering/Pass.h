@@ -35,6 +35,7 @@ namespace gear
 			Ref<PassParameters> m_PassParameters;
 			miru::base::CommandPool::QueueType m_QueueType;
 			RenderGraphPassFunction m_RenderFunction;
+			std::stack<std::string> m_ScopeStack;
 
 			size_t m_UnorderedListIndex = 0;
 			size_t m_DependencyLevelIndex = 0;
