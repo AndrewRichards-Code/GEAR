@@ -49,41 +49,86 @@ void RendererPropertiesPanel::Draw()
 					return "";
 			};
 
+			std::stack<std::string> scopeStack;
+			std::stack<bool> scopeStackOpen;
 			size_t id = 1;
 			ImGui::Text("Topologically Sorted Passes:");
 			for (const auto& pass : renderGraph.GetTopologicallySortedPasses(renderer->GetFrameIndex()))
 			{
-				constexpr auto resourceStates = magic_enum::enum_names<Resource::State>();
-				constexpr auto stages = magic_enum::enum_names<miru::base::Shader::StageBit>();
-
-				const std::string& name = pass->GetName();
-				if (DrawTreeNode(name, false, (void*)id++))
+				if (scopeStack != pass->GetScopeStack())
 				{
-					DrawStaticText("", "Inputs:", 0.0f);
-					for (const auto& resourceView : pass->GetInputResourceViews())
+					const size_t minCount = std::min(scopeStack.size(), pass->GetScopeStack().size());
+					size_t differingIndex = 0;
+					for (size_t i = 0; i < minCount; i++)
 					{
-						const std::string& stage = resourceView.GetStage() != (miru::base::Shader::StageBit)0 ? std::string(stages[static_cast<size_t>(log2((double)resourceView.GetStage()))]) : "";
-						std::string name = resourceView.GetResource().GetName();
-						name = GetResourceTypeString(resourceView) + ": " + name.substr(name.find_last_of(' ') + 1) + ": ";
-						const std::string& state = std::string(resourceStates[static_cast<size_t>(resourceView.GetState())]);
-						
-						const std::string& message = name + "[" + state + "] [" + stage + "]";
-						DrawStaticText("", message, 20.0f);
+						differingIndex = i + 1;
+						if (scopeStack._Get_container()[i] != pass->GetScopeStack()._Get_container()[i])
+						{
+							differingIndex = i;
+							break;
+						}
 					}
 
-					DrawStaticText("", "Outputs:", 0.0f);
-					for (const auto& resourceView : pass->GetOutputResourceViews())
+					while (scopeStack.size() != differingIndex)
 					{
-						const std::string& stage = resourceView.GetStage() != (miru::base::Shader::StageBit)0 ? std::string(stages[static_cast<size_t>(log2((double)resourceView.GetStage()))]) : "";
-						std::string name = resourceView.GetResource().GetName();
-						name = GetResourceTypeString(resourceView) + ": " + name.substr(name.find_last_of(' ') + 1) + ": ";
-						const std::string& state = std::string(resourceStates[static_cast<size_t>(resourceView.GetState())]);
-					
-						const std::string& message = name + "[" + state + "] [" + stage + "]";
-						DrawStaticText("", message, 20.0f);
+						scopeStack.pop();
+						if (scopeStackOpen.top())
+							EndDrawTreeNode();
+						scopeStackOpen.pop();
 					}
-					EndDrawTreeNode();
+					for (size_t i = differingIndex; i < pass->GetScopeStack().size(); i++)
+					{
+						const std::string& scopeName = pass->GetScopeStack()._Get_container()[i];
+						scopeStack.push(scopeName);
+						bool open = false;
+						if (scopeStackOpen.empty() || scopeStackOpen.top())
+							open = DrawTreeNode(scopeName, false, (void*)id++);
+						scopeStackOpen.push(open);
+					}
 				}
+
+				if (scopeStackOpen.top())
+				{
+					constexpr auto resourceStates = magic_enum::enum_names<Resource::State>();
+					constexpr auto stages = magic_enum::enum_names<miru::base::Shader::StageBit>();
+
+					const std::string& name = pass->GetName();
+					if (DrawTreeNode(name, false, (void*)id++))
+					{
+						DrawStaticText("", "Inputs:", 0.0f);
+						for (const auto& resourceView : pass->GetInputResourceViews())
+						{
+							const std::string& stage = resourceView.GetStage() != (miru::base::Shader::StageBit)0 ? std::string(stages[static_cast<size_t>(log2((double)resourceView.GetStage()))]) : "";
+							std::string name = resourceView.GetResource().GetName();
+							name = GetResourceTypeString(resourceView) + ": " + name.substr(name.find_last_of(' ') + 1) + ": ";
+							const std::string& state = std::string(resourceStates[static_cast<size_t>(resourceView.GetState())]);
+
+							const std::string& message = name + "[" + state + "] [" + stage + "]";
+							DrawStaticText("", message, 20.0f);
+						}
+
+						DrawStaticText("", "Outputs:", 0.0f);
+						for (const auto& resourceView : pass->GetOutputResourceViews())
+						{
+							const std::string& stage = resourceView.GetStage() != (miru::base::Shader::StageBit)0 ? std::string(stages[static_cast<size_t>(log2((double)resourceView.GetStage()))]) : "";
+							std::string name = resourceView.GetResource().GetName();
+							name = GetResourceTypeString(resourceView) + ": " + name.substr(name.find_last_of(' ') + 1) + ": ";
+							const std::string& state = std::string(resourceStates[static_cast<size_t>(resourceView.GetState())]);
+
+							const std::string& message = name + "[" + state + "] [" + stage + "]";
+							DrawStaticText("", message, 20.0f);
+						}
+						EndDrawTreeNode();
+					}
+				}
+			}
+
+			while (scopeStack.size())
+			{
+				scopeStack.pop();
+				if (scopeStackOpen.top())
+					EndDrawTreeNode();
+				scopeStackOpen.pop();
 			}
 			ImGui::Separator();
 

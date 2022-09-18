@@ -28,6 +28,8 @@ namespace gear
 
 			inline std::vector<ResourceView>& GetInputResourceViews() { return m_PassParameters->GetInputResourceViews(); }
 			inline std::vector<ResourceView>& GetOutputResourceViews() { return m_PassParameters->GetOutputResourceViews(); }
+			
+			inline const std::stack<std::string>& GetScopeStack() { return m_ScopeStack; }
 
 			//Members
 		private:
