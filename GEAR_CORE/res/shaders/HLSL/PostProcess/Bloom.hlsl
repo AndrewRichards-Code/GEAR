@@ -36,23 +36,23 @@ void prefilter(uint3 pos : SV_DispatchThreadID)//MIRU_DISPATCH_THREAD_ID)
 // . . I . J . .
 // . K . L . M .
 // . . . . . . .
-float4 ColateColourBoxSample13(float2 texCoords, float2 imageSize)
+float4 ColateColourBoxSample13(Texture2D image, SamplerState imageSampler, float2 texCoords, float2 imageSize)
 {
 	float2 scale = 1.0 / imageSize; //Scale pixel coordinates to texture coordinates.
 	
-	float4 A = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2(-1.0, -1.0) * scale, 0.0);
-	float4 B = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2( 0.0, -1.0) * scale, 0.0);
-	float4 C = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2( 1.0, -1.0) * scale, 0.0);
-	float4 D = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2(-0.5, -0.5) * scale, 0.0);
-	float4 E = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2( 0.5, -0.5) * scale, 0.0);
-	float4 F = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2(-1.0,  0.0) * scale, 0.0);
-	float4 G = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2( 0.0,  0.0) * scale, 0.0);
-	float4 H = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2( 1.0,  0.0) * scale, 0.0);
-	float4 I = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2(-0.5,  0.5) * scale, 0.0);
-	float4 J = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2( 0.5,  0.5) * scale, 0.0);
-	float4 K = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2(-1.0,  1.0) * scale, 0.0);
-	float4 L = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2( 0.0,  1.0) * scale, 0.0);
-	float4 M = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2( 1.0,  1.0) * scale, 0.0);
+	float4 A = image.SampleLevel(imageSampler, texCoords + float2(-1.0, -1.0) * scale, 0.0);
+	float4 B = image.SampleLevel(imageSampler, texCoords + float2( 0.0, -1.0) * scale, 0.0);
+	float4 C = image.SampleLevel(imageSampler, texCoords + float2( 1.0, -1.0) * scale, 0.0);
+	float4 D = image.SampleLevel(imageSampler, texCoords + float2(-0.5, -0.5) * scale, 0.0);
+	float4 E = image.SampleLevel(imageSampler, texCoords + float2( 0.5, -0.5) * scale, 0.0);
+	float4 F = image.SampleLevel(imageSampler, texCoords + float2(-1.0,  0.0) * scale, 0.0);
+	float4 G = image.SampleLevel(imageSampler, texCoords + float2( 0.0,  0.0) * scale, 0.0);
+	float4 H = image.SampleLevel(imageSampler, texCoords + float2( 1.0,  0.0) * scale, 0.0);
+	float4 I = image.SampleLevel(imageSampler, texCoords + float2(-0.5,  0.5) * scale, 0.0);
+	float4 J = image.SampleLevel(imageSampler, texCoords + float2( 0.5,  0.5) * scale, 0.0);
+	float4 K = image.SampleLevel(imageSampler, texCoords + float2(-1.0,  1.0) * scale, 0.0);
+	float4 L = image.SampleLevel(imageSampler, texCoords + float2( 0.0,  1.0) * scale, 0.0);
+	float4 M = image.SampleLevel(imageSampler, texCoords + float2( 1.0,  1.0) * scale, 0.0);
 	
 	float4 result = float4(0, 0, 0, 0);
 	result += ((D + E + I + J) / 4.0) * 0.5;
@@ -70,7 +70,7 @@ void downsample(uint3 pos : MIRU_DISPATCH_THREAD_ID)
 	float2 imageSize;
 	inputImageRO_ImageCIS.GetDimensions(imageSize.x, imageSize.y);
 	float2 texCoords = 2.0 * float2(pos.xy) / imageSize;
-	outputImage[pos.xy] = ColateColourBoxSample13(texCoords, imageSize);
+	outputImage[pos.xy] = ColateColourBoxSample13(inputImageRO_ImageCIS, inputImageRO_SamplerCIS, texCoords, imageSize);
 }
 
 // Tent filtering
@@ -82,19 +82,19 @@ void downsample(uint3 pos : MIRU_DISPATCH_THREAD_ID)
 // . . . . . . .
 // . G . H . I .
 // . . . . . . .
-float4 ColateColourTentSample9(float2 texCoords, float2 imageSize, float sampleScale)
+float4 ColateColourTentSample9(Texture2D image, SamplerState imageSampler, float2 texCoords, float2 imageSize, float sampleScale)
 {
 	float2 scale = sampleScale / imageSize; //Scale pixel coordinates to texture coordinates with a genereal sample scale to the tent radius.
 	
-	float4 A = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2(-1.0, -1.0) * scale, 0.0) * 1.0;
-	float4 B = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2( 0.0, -1.0) * scale, 0.0) * 2.0;
-	float4 C = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2( 1.0, -1.0) * scale, 0.0) * 1.0;
-	float4 D = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2(-1.0,  0.0) * scale, 0.0) * 2.0;
-	float4 E = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2( 0.0,  0.0) * scale, 0.0) * 4.0;
-	float4 F = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2( 1.0,  0.0) * scale, 0.0) * 2.0;
-	float4 G = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2(-1.0,  1.0) * scale, 0.0) * 1.0;
-	float4 H = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2( 0.0,  1.0) * scale, 0.0) * 2.0;
-	float4 I = inputImageRO_ImageCIS.SampleLevel(inputImageRO_SamplerCIS, texCoords + float2( 1.0,  1.0) * scale, 0.0) * 1.0;
+	float4 A = image.SampleLevel(imageSampler, texCoords + float2(-1.0, -1.0) * scale, 0.0) * 1.0;
+	float4 B = image.SampleLevel(imageSampler, texCoords + float2( 0.0, -1.0) * scale, 0.0) * 2.0;
+	float4 C = image.SampleLevel(imageSampler, texCoords + float2( 1.0, -1.0) * scale, 0.0) * 1.0;
+	float4 D = image.SampleLevel(imageSampler, texCoords + float2(-1.0,  0.0) * scale, 0.0) * 2.0;
+	float4 E = image.SampleLevel(imageSampler, texCoords + float2( 0.0,  0.0) * scale, 0.0) * 4.0;
+	float4 F = image.SampleLevel(imageSampler, texCoords + float2( 1.0,  0.0) * scale, 0.0) * 2.0;
+	float4 G = image.SampleLevel(imageSampler, texCoords + float2(-1.0,  1.0) * scale, 0.0) * 1.0;
+	float4 H = image.SampleLevel(imageSampler, texCoords + float2( 0.0,  1.0) * scale, 0.0) * 2.0;
+	float4 I = image.SampleLevel(imageSampler, texCoords + float2( 1.0,  1.0) * scale, 0.0) * 1.0;
 	
 	float4 result = A + B + C + D + E + F + G + H + I;
 	result /= 16.0;
@@ -108,5 +108,5 @@ void upsample(uint3 pos : MIRU_DISPATCH_THREAD_ID)
 	float2 imageSize;
 	inputImageRO_ImageCIS.GetDimensions(imageSize.x, imageSize.y);
 	float2 texCoords = 0.5 * float2(pos.xy) / imageSize;
-	outputImage[pos.xy] += ColateColourTentSample9(texCoords, imageSize, bloomInfo.upsampleScale);
+	outputImage[pos.xy] += ColateColourTentSample9(inputImageRO_ImageCIS, inputImageRO_SamplerCIS, texCoords, imageSize, bloomInfo.upsampleScale);
 }
