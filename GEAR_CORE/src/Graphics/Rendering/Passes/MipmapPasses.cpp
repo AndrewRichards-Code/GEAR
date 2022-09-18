@@ -39,7 +39,7 @@ void MipmapPasses::GenerateMipmaps(Renderer& renderer, Ref<Texture> texture)
 		}
 
 		i++;
-		renderGraph.AddPass("Generate Mipmaps  - " + name + " - Level: " + std::to_string(i), generateMipMapsPassParameters, CommandPool::QueueType::COMPUTE,
+		renderGraph.AddPass(name + " - Level: " + std::to_string(i), generateMipMapsPassParameters, CommandPool::QueueType::COMPUTE,
 			[i, layers, texture](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 			{
 				uint32_t width = std::max((texture->GetWidth() >> i) / 8, uint32_t(1));

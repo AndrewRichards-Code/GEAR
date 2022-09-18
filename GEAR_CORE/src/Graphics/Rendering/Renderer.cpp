@@ -226,8 +226,7 @@ void Renderer::AcquireNextImage()
 
 void Renderer::Draw()
 {
-	m_RenderGraph.Reset(m_FrameIndex);
-
+	//Process Models and Textures
 	std::vector<Ref<objects::Model>> allQueue;
 	allQueue.insert(allQueue.end(), m_ModelQueue.begin(), m_ModelQueue.end());
 	allQueue.insert(allQueue.end(), m_TextQueue.begin(), m_TextQueue.end());
@@ -268,91 +267,112 @@ void Renderer::Draw()
 	}
 	m_ReloadTextures = false;
 
-	//Upload Transfer
-	if (!m_AllCameras.empty() || m_Skybox || !m_Lights.empty() || !allQueue.empty())
-	{
-		passes::TransferPasses::Upload(*this, m_AllCameras, m_Skybox, m_Lights, allQueue);
-	}
+	//Build RenderGraph
+	m_RenderGraph.Reset(m_FrameIndex);
 
-	//Async Compute Task
+	//Frame
 	{
-		//Generate Mip Maps
-		for (const auto& texture : texturesToGenerateMipmaps)
+		GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "GEAR_CORE: Frame " + std::to_string(m_FrameCount));
+
+		//Upload Transfer
+		if (!m_AllCameras.empty() || m_Skybox || !m_Lights.empty() || !allQueue.empty())
 		{
-			passes::MipmapPasses::GenerateMipmaps(*this, texture);
+			passes::TransferPasses::Upload(*this, m_AllCameras, m_Skybox, m_Lights, allQueue);
 		}
 
-		if (m_Skybox && !m_Skybox->m_Generated)
+		//Async Compute Tasks
 		{
-			passes::SkyboxPasses::EquirectangularToCube(*this, m_Skybox);
-			passes::SkyboxPasses::GenerateMipmaps(*this, m_Skybox);
-			passes::SkyboxPasses::DiffuseIrradiance(*this, m_Skybox);
-			passes::SkyboxPasses::SpecularIrradiance(*this, m_Skybox);
-			passes::SkyboxPasses::SpecularBRDF_LUT(*this, m_Skybox);
+			GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "Async Compute Tasks");
+			{
+				GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "Generate Mipmaps");
+				for (const auto& texture : texturesToGenerateMipmaps)
+				{
+					passes::MipmapPasses::GenerateMipmaps(*this, texture);
+				}
+			}
 
-			m_Skybox->m_Generated = true;
+			if (m_Skybox && !m_Skybox->m_Generated)
+			{
+				GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "Skybox");
+				passes::SkyboxPasses::EquirectangularToCube(*this, m_Skybox);
+				passes::SkyboxPasses::GenerateMipmaps(*this, m_Skybox);
+				passes::SkyboxPasses::DiffuseIrradiance(*this, m_Skybox);
+				passes::SkyboxPasses::SpecularIrradiance(*this, m_Skybox);
+				passes::SkyboxPasses::SpecularBRDF_LUT(*this, m_Skybox);
+
+				m_Skybox->m_Generated = true;
+			}
+		}
+
+		//Shadows
+		{
+			GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "Shadows");
+			for (const auto& light : m_Lights)
+			{
+				GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, light->GetProbe()->m_CI.debugName);
+				passes::ShadowPasses::Main(*this, light);
+				passes::ShadowPasses::DebugShowDepth(*this, light);
+			}
+		}
+
+		//Main Render
+		{
+			GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "Main Render");
+			if (m_MainRenderCamera && m_Skybox)
+			{
+				passes::MainRenderPasses::Skybox(*this, m_Skybox);
+			}
+			if (m_MainRenderCamera && !m_ModelQueue.empty() && !m_Lights.empty() && m_Skybox)
+			{
+				GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "PBR Opaque");
+				passes::MainRenderPasses::PBROpaque(*this, m_Lights[0], m_Skybox);
+			}
+		}
+		//Post Processing
+		{
+			GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "Post Processing");
+			if (m_MainRenderCamera)
+			{
+				GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "Bloom");
+				passes::PostProcessingPasses::Bloom::Prefilter(*this);
+				passes::PostProcessingPasses::Bloom::Downsample(*this);
+				passes::PostProcessingPasses::Bloom::Upsample(*this);
+			}
+			if (m_MainRenderCamera)
+			{
+				passes::PostProcessingPasses::HDRMapping::Main(*this);
+			}
+		}
+
+		//On Screen Display
+		{
+			GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "On Screen Display");
+			if (m_TextCamera)
+			{
+				passes::OnScreenDisplayPasses::Text(*this);
+			}
+			if (m_MainRenderCamera)
+			{
+				passes::OnScreenDisplayPasses::CoordinateAxes(*this);
+			}
+		}
+
+		//Copy To Swapchain
+		if (m_CI.shouldCopyToSwapchian)
+		{
+			passes::SwapchinUIPasses::CopyToSwapchain(*this);
+		}
+		//External UI
+		if (m_CI.shouldDrawExternalUI)
+		{
+			passes::SwapchinUIPasses::ExternalUI(*this, m_UIContext);
 		}
 	}
 
-	//Shadow Pass
-	for (const auto& light : m_Lights)
-	{
-		passes::ShadowPasses::Main(*this, light);
-		passes::ShadowPasses::DebugShowDepth(*this, light);
-	}
-
-	//Main Render Skybox
-	if (m_MainRenderCamera && m_Skybox)
-	{
-		passes::MainRenderPasses::Skybox(*this, m_Skybox);
-	}
-
-	//Main Render PBROpaque
-	if (m_MainRenderCamera && !m_ModelQueue.empty() && !m_Lights.empty() && m_Skybox)
-	{
-		passes::MainRenderPasses::PBROpaque(*this, m_Lights[0], m_Skybox);
-	}
-
-	//Post Processing Bloom Prefilter - Downsample - Upsample
-	if (m_MainRenderCamera)
-	{
-		passes::PostProcessingPasses::Bloom::Prefilter(*this);
-		passes::PostProcessingPasses::Bloom::Downsample(*this);
-		passes::PostProcessingPasses::Bloom::Upsample(*this);
-	}
-
-	//HDR Mapping
-	if (m_MainRenderCamera)
-	{
-		passes::PostProcessingPasses::HDRMapping::Main(*this);
-	}
-
-	//OSD Text
-	if (m_TextCamera)
-	{
-		passes::OnScreenDisplayPasses::Text(*this);
-	}
-
-	//OSD Coordinate Axes
-	if (m_MainRenderCamera)
-	{
-		passes::OnScreenDisplayPasses::CoordinateAxes(*this);
-	}
-
-	//Copy To Swapchain
-	if (m_CI.shouldCopyToSwapchian)
-	{
-		passes::SwapchinUIPasses::CopyToSwapchain(*this);
-	}
-
-	//External UI
-	if (m_CI.shouldDrawExternalUI)
-	{
-		passes::SwapchinUIPasses::ExternalUI(*this, m_UIContext);
-	}
-
+	//Execute RenderGraph
 	m_RenderGraph.Execute();
 
+	//Clean Up
 	m_ModelQueue.clear();
 	m_TextQueue.clear();
 	m_Lights.clear();

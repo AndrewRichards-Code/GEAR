@@ -28,6 +28,7 @@ void ShadowPasses::Main(Renderer& renderer, Ref<Light> light)
 
 	for (const auto& model : renderer.GetModelQueue())
 	{
+		GEAR_RENDER_GRARH_EVENT_SCOPE(renderGraph, model->GetDebugName());
 		for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
 		{
 			Ref<TaskPassParameters> shadowPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["Shadow"]);
@@ -36,7 +37,7 @@ void ShadowPasses::Main(Renderer& renderer, Ref<Light> light)
 			shadowPassParameters->AddAttachment(0, ResourceView(probe->m_DepthTexture, Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
 			shadowPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height), probe->m_DepthTexture->GetCreateInfo().arrayLayers);
 
-			renderGraph.AddPass("Shadow Pass - " + model->GetDebugName() + ": " + std::to_string(i), shadowPassParameters, CommandPool::QueueType::GRAPHICS,
+			renderGraph.AddPass("Sub Mesh: " + std::to_string(i), shadowPassParameters, CommandPool::QueueType::GRAPHICS,
 				[model, i, omni](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 				{
 					cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[i]->GetGPUBufferView() });
@@ -83,7 +84,7 @@ void ShadowPasses::DebugShowDepth(Renderer& renderer, Ref<Light> light)
 		debugShowDepthParameters->AddAttachment(0, ResourceView(debugShowDepthTexture, Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 1.0f });
 		debugShowDepthParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
-		renderGraph.AddPass("Shadow - " + renderPipelineName, debugShowDepthParameters, CommandPool::QueueType::GRAPHICS,
+		renderGraph.AddPass(renderPipelineName, debugShowDepthParameters, CommandPool::QueueType::GRAPHICS,
 			[](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 			{
 				cmdBuffer->Draw(frameIndex, 6);

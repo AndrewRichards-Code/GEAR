@@ -142,6 +142,10 @@ void RenderGraph::Compile()
 	//https://levelup.gitconnected.com/organizing-gpu-work-with-directed-acyclic-graphs-f3fd5f2c2af3
 
 	FrameData& data = m_FrameData[m_FrameIndex];
+	if (!data.ScopeStack.empty())
+	{
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "RenderGraph Scope stack in not empty.");
+	}
 
 	//Build Adjacency Lists
 	{
@@ -256,14 +260,50 @@ void RenderGraph::Compile()
 void RenderGraph::Execute()
 {
 	Compile();
+	FrameData& data = m_FrameData[m_FrameIndex];
 
 	CommandBufferRef& cmdBuffer = GetCommandBuffer(CommandPool::QueueType::GRAPHICS/*pass->m_QueueType*/);
 	cmdBuffer->Reset(m_FrameIndex, false);
 	cmdBuffer->Begin(m_FrameIndex, CommandBuffer::UsageBit::SIMULTANEOUS);
+
 	for (const auto& pass : m_FrameData[m_FrameIndex].TopologicallySortedPasses)
 	{
+		if (data.ScopeStack != pass->m_ScopeStack)
+		{
+			const size_t minCount = std::min(data.ScopeStack.size(), pass->m_ScopeStack.size());
+			size_t differingIndex = 0;
+			for (size_t i = 0; i < minCount; i++)
+			{
+				differingIndex = i + 1;
+				if (data.ScopeStack._Get_container()[i] != pass->m_ScopeStack._Get_container()[i])
+				{
+					differingIndex = i;
+					break;
+				}
+			}
+
+			while (data.ScopeStack.size() != differingIndex)
+			{
+				data.ScopeStack.pop();
+				cmdBuffer->EndDebugLabel(m_FrameIndex);
+			}
+			for (size_t i = differingIndex; i < pass->m_ScopeStack.size(); i++)
+			{
+				const std::string& scopeName = pass->m_ScopeStack._Get_container()[i];
+				data.ScopeStack.push(scopeName);
+				cmdBuffer->BeginDebugLabel(m_FrameIndex, scopeName);
+			}
+		}
+
 		pass->Execute(this, cmdBuffer, m_FrameIndex);
 	}
+
+	while (data.ScopeStack.size())
+	{
+		data.ScopeStack.pop();
+		cmdBuffer->EndDebugLabel(m_FrameIndex);
+	}
+
 	cmdBuffer->End(m_FrameIndex);
 }
 

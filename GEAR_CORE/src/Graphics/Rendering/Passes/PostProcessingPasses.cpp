@@ -50,7 +50,7 @@ void PostProcessingPasses::Bloom::Prefilter(Renderer& renderer)
 	bloomPreFilterPassParameters->SetResourceView("outputImage", ResourceView(prefilterOutputImageView, Resource::State::SHADER_READ_WRITE));
 	bloomPreFilterPassParameters->SetResourceView("bloomInfo", ResourceView(bloomInfo.UB));
 
-	renderGraph.AddPass("Post Processing Bloom Prefilter", bloomPreFilterPassParameters, CommandPool::QueueType::COMPUTE,
+	renderGraph.AddPass("Prefilter", bloomPreFilterPassParameters, CommandPool::QueueType::COMPUTE,
 		[bloomInfo, width, height](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 		{
 			cmdBuffer->CopyBuffer(frameIndex, bloomInfo.UB->GetCPUBuffer(), bloomInfo.UB->GetGPUBuffer(), { { 0, 0, bloomInfo.UB->GetSize() } });
@@ -66,6 +66,8 @@ void PostProcessingPasses::Bloom::Prefilter(Renderer& renderer)
 void PostProcessingPasses::Bloom::Downsample(Renderer& renderer) 
 {
 	RenderGraph& renderGraph = renderer.GetRenderGraph();
+	GEAR_RENDER_GRARH_EVENT_SCOPE(renderGraph, "Downsample");
+
 	Renderer::PostProcessingInfo::Bloom& bloomInfo = renderer.GetPostProcessingInfo().bloom;
 	const uint32_t& width = bloomInfo.width;
 	const uint32_t& height = bloomInfo.height;
@@ -105,7 +107,7 @@ void PostProcessingPasses::Bloom::Downsample(Renderer& renderer)
 		bloomDownsamplePassParameters->SetResourceView("outputImage", ResourceView(bloomInfo.imageViews[std::min(i + 1, levels)], Resource::State::SHADER_READ_WRITE));
 
 		i++;
-		renderGraph.AddPass("Post Processing Bloom Downsample: " + std::to_string(i), bloomDownsamplePassParameters, CommandPool::QueueType::COMPUTE,
+		renderGraph.AddPass("Level: " + std::to_string(i), bloomDownsamplePassParameters, CommandPool::QueueType::COMPUTE,
 			[i, width, height](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 			{
 				uint32_t _width = std::max((width >> i) / 8, uint32_t(1));
@@ -122,6 +124,8 @@ void PostProcessingPasses::Bloom::Downsample(Renderer& renderer)
 void PostProcessingPasses::Bloom::Upsample(Renderer& renderer) 
 {
 	RenderGraph& renderGraph = renderer.GetRenderGraph();
+	GEAR_RENDER_GRARH_EVENT_SCOPE(renderGraph, "Upsample");
+
 	const Ref<RenderSurface>& renderSurface = renderer.GetRenderSurface();
 	const ImageViewRef& colourImageView = renderSurface->GetColourImageView();
 	Renderer::PostProcessingInfo::Bloom& bloomInfo = renderer.GetPostProcessingInfo().bloom;
@@ -138,7 +142,7 @@ void PostProcessingPasses::Bloom::Upsample(Renderer& renderer)
 		bloomUpsamplePassParameters->SetResourceView("outputImage", ResourceView(bloomInfo.imageViews[i - 1], Resource::State::SHADER_READ_WRITE));
 		bloomUpsamplePassParameters->SetResourceView("bloomInfo", ResourceView(bloomInfo.UB));
 
-		renderGraph.AddPass("Post Processing Bloom Upsample: " + std::to_string(i), bloomUpsamplePassParameters, CommandPool::QueueType::COMPUTE,
+		renderGraph.AddPass("Level: " + std::to_string(i), bloomUpsamplePassParameters, CommandPool::QueueType::COMPUTE,
 			[i, width, height](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 			{
 				uint32_t _width = std::max((width >> (i - 1)) / 8, uint32_t(1));

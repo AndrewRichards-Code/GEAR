@@ -29,7 +29,7 @@ void OnScreenDisplayPasses::Text(Renderer& renderer)
 		osdTextPassParameters->AddAttachment(0, ResourceView(renderSurface->GetColourSRGBImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::LOAD, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
 		osdTextPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
-		renderGraph.AddPass("OSD Text" + model->GetDebugName(), osdTextPassParameters, CommandPool::QueueType::GRAPHICS,
+		renderGraph.AddPass("Text" + model->GetDebugName(), osdTextPassParameters, CommandPool::QueueType::GRAPHICS,
 			[model](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 			{
 				cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[0]->GetGPUBufferView() });
@@ -51,7 +51,7 @@ void OnScreenDisplayPasses::CoordinateAxes(Renderer& renderer)
 	osdCoordinateAxesPassParameters->AddAttachment(0, ResourceView(renderSurface->GetColourSRGBImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::LOAD, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
 	osdCoordinateAxesPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
-	renderGraph.AddPass("OSD Coordinate Axes", osdCoordinateAxesPassParameters, CommandPool::QueueType::GRAPHICS,
+	renderGraph.AddPass("Coordinate Axes", osdCoordinateAxesPassParameters, CommandPool::QueueType::GRAPHICS,
 		[](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 		{
 			cmdBuffer->Draw(frameIndex, 6);

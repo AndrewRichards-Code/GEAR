@@ -32,7 +32,7 @@ void MainRenderPasses::Skybox(Renderer& renderer, Ref<objects::Skybox> skybox)
 	skyboxPassParameters->AddAttachment(0, ResourceView(renderSurface->GetDepthImageView(), Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
 	skyboxPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
-	renderGraph.AddPass("Main Render Skybox", skyboxPassParameters, CommandPool::QueueType::GRAPHICS,
+	renderGraph.AddPass("Skybox", skyboxPassParameters, CommandPool::QueueType::GRAPHICS,
 		[skybox](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 		{
 			const Ref<Model>& model = skybox->GetModel();
@@ -51,6 +51,7 @@ void MainRenderPasses::PBROpaque(Renderer& renderer, Ref<objects::Light> light, 
 
 	for (const auto& model : renderer.GetModelQueue())
 	{
+		GEAR_RENDER_GRARH_EVENT_SCOPE(renderGraph, model->GetDebugName());
 		for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
 		{
 			Ref<TaskPassParameters> mainRenderPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["PBROpaque"]);
@@ -73,7 +74,7 @@ void MainRenderPasses::PBROpaque(Renderer& renderer, Ref<objects::Light> light, 
 			mainRenderPassParameters->AddAttachment(0, ResourceView(renderSurface->GetDepthImageView(), Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
 			mainRenderPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
-			renderGraph.AddPass("Main Render PBROpaque - " + model->GetDebugName() + ": " + std::to_string(i), mainRenderPassParameters, CommandPool::QueueType::GRAPHICS,
+			renderGraph.AddPass("Sub Mesh: " + std::to_string(i), mainRenderPassParameters, CommandPool::QueueType::GRAPHICS,
 				[model, i](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 				{
 					cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[i]->GetGPUBufferView() });
