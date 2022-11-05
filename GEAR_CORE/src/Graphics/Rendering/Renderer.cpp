@@ -403,19 +403,8 @@ void Renderer::Present()
 	m_FrameCount++;
 }
 
-#define RENDER_DOC 0
 void Renderer::Execute()
 {
-#if RENDER_DOC
-	Ref<debug::RenderDoc> rd = ref_cast<debug::RenderDoc>(GraphicsAPI::GetGraphicsDebugger());
-	bool frameStart = false;
-	if (m_Skybox && !m_Skybox->m_Generated)
-	{
-		rd->m_RenderDocApi->StartFrameCapture(0, 0);
-		frameStart = true;
-	}
-#endif
-
 	//Acquire Next Image
 	{
 		AcquireNextImage();
@@ -428,14 +417,6 @@ void Renderer::Execute()
 	{
 		Present();
 	}
-
-#if RENDER_DOC
-	if (frameStart)
-	{
-		rd->m_RenderDocApi->EndFrameCapture(0, 0);
-		rd->m_RenderDocApi->LaunchReplayUI(1, nullptr);
-	}
-#endif
 }
 
 void Renderer::RecompileRenderPipelineShaders()

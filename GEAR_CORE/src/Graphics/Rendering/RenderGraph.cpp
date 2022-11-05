@@ -166,10 +166,11 @@ void RenderGraph::Compile()
 				{
 					bool otherPassDependsOnCurrentPass = arc::FindInVector(pass->GetOutputResourceViews(), otherPassReadResourceView);
 					bool sameOutputs = pass->GetOutputResourceViews() == otherPass->GetOutputResourceViews();
+					bool otherPassIsTask = otherPass->m_PassParameters->GetType() == PassParameters::Type::TASK;
+					bool passIsTask = pass->m_PassParameters->GetType() == PassParameters::Type::TASK;
 					if (sameOutputs)
 					{
-						if (otherPass->m_PassParameters->GetType() == PassParameters::Type::TASK
-							|| pass->m_PassParameters->GetType() == PassParameters::Type::TASK)
+						if (otherPassIsTask && passIsTask)
 						{
 							Ref<TaskPassParameters> tpp = ref_cast<TaskPassParameters>(otherPass->m_PassParameters);
 							for (auto& colourAttachment : tpp->m_RenderingInfo.colourAttachments)
