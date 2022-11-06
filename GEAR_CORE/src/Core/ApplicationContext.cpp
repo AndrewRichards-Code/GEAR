@@ -48,6 +48,7 @@ ApplicationContext::ApplicationContext(CreateInfo* pCreateInfo)
 	m_CI.applicationName += ": x64";
 	m_CI.applicationName += debugBuild ? "/Debug" : "";
 	m_CI.applicationName += GraphicsAPI::IsD3D12() ? " - D3D12" : " - Vulkan";
+	m_CI.applicationName += m_CI.commandLineOptions.debugValidationLayers ? " - GPU Validation" : "";
 
 	Context::CreateInfo contextCI;
 	contextCI.applicationName = m_CI.applicationName;
