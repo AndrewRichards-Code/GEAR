@@ -49,9 +49,10 @@ void PostProcessingPasses::Bloom::Prefilter(Renderer& renderer)
 	bloomPreFilterPassParameters->SetResourceView("inputImage", ResourceView(colourImageView, Resource::State::SHADER_READ_WRITE));
 	bloomPreFilterPassParameters->SetResourceView("outputImage", ResourceView(prefilterOutputImageView, Resource::State::SHADER_READ_WRITE));
 	bloomPreFilterPassParameters->SetResourceView("bloomInfo", ResourceView(bloomInfo.UB));
+	const std::array<uint32_t, 3>& groupCount = bloomPreFilterPassParameters->GetPipeline()->GetCreateInfo().shaders[0]->GetGroupCountXYZ();
 
 	renderGraph.AddPass("Prefilter", bloomPreFilterPassParameters, CommandPool::QueueType::COMPUTE,
-		[bloomInfo, width, height](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+		[bloomInfo, width, height, groupCount](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 		{
 			CommandBuffer::DependencyInfo dependencyInfo = { DependencyBit::NONE_BIT, {} };
 			Barrier2::CreateInfo bCI;
@@ -80,9 +81,9 @@ void PostProcessingPasses::Bloom::Prefilter(Renderer& renderer)
 			cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
 		
 			
-			uint32_t _width = std::max(width / 8, uint32_t(1));
-			uint32_t _height = std::max(height / 8, uint32_t(1));
-			uint32_t _depth = 1;
+			uint32_t _width = std::max(width / groupCount[0], uint32_t(1));
+			uint32_t _height = std::max(height / groupCount[1], uint32_t(1));
+			uint32_t _depth = 1 / groupCount[2];
 			_width += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
 			_height += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
 			cmdBuffer->Dispatch(frameIndex, _width, _height, _depth);
@@ -131,14 +132,15 @@ void PostProcessingPasses::Bloom::Downsample(Renderer& renderer)
 		Ref<TaskPassParameters> bloomDownsamplePassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["BloomDownsample"]);
 		bloomDownsamplePassParameters->SetResourceView("inputImageRO", ResourceView(bloomInfo.imageViews[std::min(i + 0, levels)], bloomInfo.sampler));
 		bloomDownsamplePassParameters->SetResourceView("outputImage", ResourceView(bloomInfo.imageViews[std::min(i + 1, levels)], Resource::State::SHADER_READ_WRITE));
+		const std::array<uint32_t, 3>& groupCount = bloomDownsamplePassParameters->GetPipeline()->GetCreateInfo().shaders[0]->GetGroupCountXYZ();
 
 		i++;
 		renderGraph.AddPass("Level: " + std::to_string(i), bloomDownsamplePassParameters, CommandPool::QueueType::COMPUTE,
-			[i, width, height](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+			[i, width, height, groupCount](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 			{
-				uint32_t _width = std::max((width >> i) / 8, uint32_t(1));
-				uint32_t _height = std::max((height >> i) / 8, uint32_t(1));
-				uint32_t _depth = 1;
+				uint32_t _width = std::max((width >> i) / groupCount[0], uint32_t(1));
+				uint32_t _height = std::max((height >> i) / groupCount[1], uint32_t(1));
+				uint32_t _depth = 1 / groupCount[2];
 				_width += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
 				_height += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
 				cmdBuffer->Dispatch(frameIndex, _width, _height, _depth);
@@ -167,13 +169,14 @@ void PostProcessingPasses::Bloom::Upsample(Renderer& renderer)
 		bloomUpsamplePassParameters->SetResourceView("inputImageRO", ResourceView(bloomInfo.imageViews[i + 0], bloomInfo.sampler));
 		bloomUpsamplePassParameters->SetResourceView("outputImage", ResourceView(bloomInfo.imageViews[i - 1], Resource::State::SHADER_READ_WRITE));
 		bloomUpsamplePassParameters->SetResourceView("bloomInfo", ResourceView(bloomInfo.UB));
+		const std::array<uint32_t, 3>& groupCount = bloomUpsamplePassParameters->GetPipeline()->GetCreateInfo().shaders[0]->GetGroupCountXYZ();
 
 		renderGraph.AddPass("Level: " + std::to_string(i), bloomUpsamplePassParameters, CommandPool::QueueType::COMPUTE,
-			[i, width, height](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+			[i, width, height, groupCount](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 			{
-				uint32_t _width = std::max((width >> (i - 1)) / 8, uint32_t(1));
-				uint32_t _height = std::max((height >> (i - 1)) / 8, uint32_t(1));
-				uint32_t _depth = 1;
+				uint32_t _width = std::max((width >> (i - 1)) / groupCount[0], uint32_t(1));
+				uint32_t _height = std::max((height >> (i - 1)) / groupCount[1], uint32_t(1));
+				uint32_t _depth = 1 / groupCount[2];
 				_width += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
 				_height += 1;		//Add 1 for 'overscanning' the image thus dealing with odd number dispatch groups.
 				cmdBuffer->Dispatch(frameIndex, _width, _height, _depth);

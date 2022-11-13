@@ -20,12 +20,14 @@ void SkyboxPasses::EquirectangularToCube(Renderer& renderer, Ref<Skybox> skybox)
 	Ref<TaskPassParameters> equirectangularToCubePassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["EquirectangularToCube"]);
 	equirectangularToCubePassParameters->SetResourceView("equirectangularImage", ResourceView(skybox->GetHDRTexture(), DescriptorType::COMBINED_IMAGE_SAMPLER));
 	equirectangularToCubePassParameters->SetResourceView("cubeImage", ResourceView(generatedCubemap_2DArrayView, Resource::State::SHADER_READ_WRITE));
+	const std::array<uint32_t, 3>& groupCount = equirectangularToCubePassParameters->GetPipeline()->GetCreateInfo().shaders[0]->GetGroupCountXYZ();
+
 	renderGraph.AddPass("Equirectangular To Cube", equirectangularToCubePassParameters, CommandPool::QueueType::COMPUTE,
-		[skybox](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+		[skybox, groupCount](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 		{
-			uint32_t width = std::max(skybox->GetGeneratedCubemap()->GetWidth() / 32, uint32_t(1));
-			uint32_t height = std::max(skybox->GetGeneratedCubemap()->GetHeight() / 32, uint32_t(1));
-			uint32_t depth = 6;
+			uint32_t width = std::max(skybox->GetGeneratedCubemap()->GetWidth() / groupCount[0], uint32_t(1));
+			uint32_t height = std::max(skybox->GetGeneratedCubemap()->GetHeight() / groupCount[1], uint32_t(1));
+			uint32_t depth = 6 / groupCount[2];
 			cmdBuffer->Dispatch(frameIndex, width, height, depth);
 		});
 }
@@ -45,13 +47,15 @@ void SkyboxPasses::GenerateMipmaps(Renderer& renderer, Ref<Skybox> skybox)
 		Ref<TaskPassParameters> generateMipMapsPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["MipmapArray"]);
 		generateMipMapsPassParameters->SetResourceView("inputImageArray", ResourceView(mipImageViews[std::min(i + 0, levels)], Resource::State::SHADER_READ_ONLY));
 		generateMipMapsPassParameters->SetResourceView("outputImageArray", ResourceView(mipImageViews[std::min(i + 1, levels)], Resource::State::SHADER_READ_WRITE));
+		const std::array<uint32_t, 3>& groupCount = generateMipMapsPassParameters->GetPipeline()->GetCreateInfo().shaders[0]->GetGroupCountXYZ();
+
 		i++;
 		renderGraph.AddPass("Level: " + std::to_string(i), generateMipMapsPassParameters, CommandPool::QueueType::COMPUTE,
-			[i, levels, layers, texture](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+			[i, levels, layers, texture, groupCount](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 			{
-				uint32_t width = std::max((texture->GetWidth() >> i) / 8, uint32_t(1));
-				uint32_t height = std::max((texture->GetHeight() >> i) / 8, uint32_t(1));
-				uint32_t depth = layers;
+				uint32_t width = std::max((texture->GetWidth() >> i) / groupCount[0], uint32_t(1));
+				uint32_t height = std::max((texture->GetHeight() >> i) / groupCount[1], uint32_t(1));
+				uint32_t depth = layers / groupCount[2];
 				cmdBuffer->Dispatch(frameIndex, width, height, depth);
 			});
 		i--;
@@ -66,12 +70,14 @@ void SkyboxPasses::DiffuseIrradiance(Renderer& renderer, Ref<Skybox> skybox)
 	Ref<TaskPassParameters> diffuseIrradiancePassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["DiffuseIrradiance"]);
 	diffuseIrradiancePassParameters->SetResourceView("environment", ResourceView(skybox->GetGeneratedCubemap(), DescriptorType::COMBINED_IMAGE_SAMPLER));
 	diffuseIrradiancePassParameters->SetResourceView("diffuseIrradiance", ResourceView(generatedDiffuseCubemap_2DArrayView, Resource::State::SHADER_READ_WRITE));
+	const std::array<uint32_t, 3>& groupCount = diffuseIrradiancePassParameters->GetPipeline()->GetCreateInfo().shaders[0]->GetGroupCountXYZ();
+
 	renderGraph.AddPass("Diffuse Irradiance", diffuseIrradiancePassParameters, CommandPool::QueueType::COMPUTE,
-		[skybox](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+		[skybox, groupCount](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 		{
-			uint32_t width = std::max(skybox->GetGeneratedDiffuseCubemap()->GetWidth() / 32, uint32_t(1));
-			uint32_t height = std::max(skybox->GetGeneratedDiffuseCubemap()->GetHeight() / 32, uint32_t(1));
-			uint32_t depth = 6;
+			uint32_t width = std::max(skybox->GetGeneratedDiffuseCubemap()->GetWidth() / groupCount[0], uint32_t(1));
+			uint32_t height = std::max(skybox->GetGeneratedDiffuseCubemap()->GetHeight() / groupCount[1], uint32_t(1));
+			uint32_t depth = 6 / groupCount[2];
 			cmdBuffer->Dispatch(frameIndex, width, height, depth);
 		});
 }
@@ -100,8 +106,10 @@ void SkyboxPasses::SpecularIrradiance(Renderer& renderer, Ref<Skybox> skybox)
 		specularIrradiancePassParameters->SetResourceView("environment", ResourceView(skybox->GetGeneratedCubemap(), DescriptorType::COMBINED_IMAGE_SAMPLER));
 		specularIrradiancePassParameters->SetResourceView("specularIrradiance", ResourceView(generatedSpecularCubemap_2DArrayViews[i], Resource::State::SHADER_READ_WRITE));
 		specularIrradiancePassParameters->SetResourceView("specularIrradianceInfo", ResourceView(specularIrradianceInfoUBs[i]));
+		const std::array<uint32_t, 3>& groupCount = specularIrradiancePassParameters->GetPipeline()->GetCreateInfo().shaders[0]->GetGroupCountXYZ();
+
 		renderGraph.AddPass("Level: " + std::to_string(i), specularIrradiancePassParameters, CommandPool::QueueType::COMPUTE,
-			[texture, i, specularIrradianceInfoUBs, skybox](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+			[texture, i, specularIrradianceInfoUBs, skybox, groupCount](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 			{
 				cmdBuffer->CopyBuffer(frameIndex, specularIrradianceInfoUBs[i]->GetCPUBuffer(), specularIrradianceInfoUBs[i]->GetGPUBuffer(), { {0, 0, specularIrradianceInfoUBs[i]->GetSize()} });
 				if (GraphicsAPI::IsD3D12())
@@ -118,9 +126,9 @@ void SkyboxPasses::SpecularIrradiance(Renderer& renderer, Ref<Skybox> skybox)
 					Ref<Barrier> b = Barrier::Create(&bCI);
 					cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, { b });
 				};
-				uint32_t width = std::max((texture->GetWidth() >> i) / 32, uint32_t(1));
-				uint32_t height = std::max((texture->GetHeight() >> i) / 32, uint32_t(1));
-				uint32_t depth = 6;
+				uint32_t width = std::max((texture->GetWidth() >> i) / groupCount[0], uint32_t(1));
+				uint32_t height = std::max((texture->GetHeight() >> i) / groupCount[1], uint32_t(1));
+				uint32_t depth = 6 / groupCount[2];
 				cmdBuffer->Dispatch(frameIndex, width, height, depth);
 			});
 	}
@@ -131,12 +139,14 @@ void SkyboxPasses::SpecularBRDF_LUT(Renderer& renderer, Ref<Skybox> skybox)
 	RenderGraph& renderGraph = renderer.GetRenderGraph();
 	Ref<TaskPassParameters> specularBRDF_LUT_PassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["SpecularBRDF_LUT"]);
 	specularBRDF_LUT_PassParameters->SetResourceView("brdf_lut", ResourceView(skybox->GetGeneratedSpecularBRDF_LUT(), DescriptorType::STORAGE_IMAGE));
+	const std::array<uint32_t, 3>& groupCount = specularBRDF_LUT_PassParameters->GetPipeline()->GetCreateInfo().shaders[0]->GetGroupCountXYZ();
+
 	renderGraph.AddPass("Specular BRDF LUT", specularBRDF_LUT_PassParameters, CommandPool::QueueType::COMPUTE,
-		[skybox](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+		[skybox, groupCount](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 		{
-			uint32_t width = std::max(skybox->GetGeneratedSpecularBRDF_LUT()->GetWidth() / 32, uint32_t(1));
-			uint32_t height = std::max(skybox->GetGeneratedSpecularBRDF_LUT()->GetHeight() / 32, uint32_t(1));
-			uint32_t depth = 1;
+			uint32_t width = std::max(skybox->GetGeneratedSpecularBRDF_LUT()->GetWidth() / groupCount[0], uint32_t(1));
+			uint32_t height = std::max(skybox->GetGeneratedSpecularBRDF_LUT()->GetHeight() / groupCount[1], uint32_t(1));
+			uint32_t depth = 1 / groupCount[2];
 			cmdBuffer->Dispatch(frameIndex, width, height, depth);
 		});
 }

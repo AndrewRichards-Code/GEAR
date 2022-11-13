@@ -37,14 +37,15 @@ void MipmapPasses::GenerateMipmaps(Renderer& renderer, Ref<Texture> texture)
 			generateMipMapsPassParameters->SetResourceView("inputImage", ResourceView(mipImageViews[std::min(i + 0, levels)], Resource::State::SHADER_READ_ONLY));
 			generateMipMapsPassParameters->SetResourceView("outputImage", ResourceView(mipImageViews[std::min(i + 1, levels)], Resource::State::SHADER_READ_WRITE));
 		}
+		const std::array<uint32_t, 3>& groupCount = generateMipMapsPassParameters->GetPipeline()->GetCreateInfo().shaders[0]->GetGroupCountXYZ();
 
 		i++;
 		renderGraph.AddPass(name + " - Level: " + std::to_string(i), generateMipMapsPassParameters, CommandPool::QueueType::COMPUTE,
-			[i, layers, texture](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+			[i, layers, texture, groupCount](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 			{
-				uint32_t width = std::max((texture->GetWidth() >> i) / 8, uint32_t(1));
-				uint32_t height = std::max((texture->GetHeight() >> i) / 8, uint32_t(1));
-				uint32_t depth = layers;
+				uint32_t width = std::max((texture->GetWidth() >> i) / groupCount[0], uint32_t(1));
+				uint32_t height = std::max((texture->GetHeight() >> i) / groupCount[1], uint32_t(1));
+				uint32_t depth = layers / groupCount[2];
 				cmdBuffer->Dispatch(frameIndex, width, height, depth);
 			});
 		i--;
