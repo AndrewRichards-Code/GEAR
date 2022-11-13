@@ -18,7 +18,6 @@
 #include "Core/AssetFile.h"
 #include "Core/CommandLineOptions.h"
 #include "Core/ConfigFile.h"
-#include "Core/EnumStringMaps.h"
 #include "Core/FileDialog.h"
 #include "Core/FontLibrary.h"
 #include "Core/Hashing.h"

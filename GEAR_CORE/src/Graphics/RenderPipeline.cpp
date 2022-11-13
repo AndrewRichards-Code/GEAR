@@ -2,7 +2,6 @@
 
 #include "Graphics/RenderPipeline.h"
 
-#include "Core/EnumStringMaps.h"
 #include "Core/JsonFileHelper.h"
 #include "Utils/ModelLoader.h"
 
@@ -71,7 +70,7 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 		shaderCI.device = pLoadInfo->device;
 		for (auto& stageAndEntryPoint : shader["stageAndEntryPoints"])
 		{
-			shaderCI.stageAndEntryPoints.push_back({ShaderStageBitStrings[stageAndEntryPoint["stage"]], stageAndEntryPoint["entryPoint"]});
+			shaderCI.stageAndEntryPoints.push_back({magic_enum::enum_cast<Shader::StageBit>(std::string(stageAndEntryPoint["stage"])).value(), stageAndEntryPoint["entryPoint"]});
 		}
 		shaderCI.binaryFilepath = projectDirectory + std::string(shader["binaryFilepath"]);
 		shaderCI.binaryCode = {};
@@ -108,8 +107,10 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 	}
 
 	//InputAssembly
+	
+
 	json& inputAssemblyState = pipeline_grpf["inputAssemblyState"];
-	rpCI.inputAssemblyState.topology = PrimitiveTopologyStrings[inputAssemblyState["topology"]];
+	rpCI.inputAssemblyState.topology = magic_enum::enum_cast<PrimitiveTopology>(std::string(inputAssemblyState["topology"])).value();
 	rpCI.inputAssemblyState.primitiveRestartEnable = inputAssemblyState["primitiveRestartEnable"];
 
 	//ViewportState
@@ -143,9 +144,9 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 	json& rasterisationState = pipeline_grpf["rasterisationState"];
 	rpCI.rasterisationState.depthClampEnable = rasterisationState["depthClampEnable"];
 	rpCI.rasterisationState.rasteriserDiscardEnable = rasterisationState["depthClampEnable"];
-	rpCI.rasterisationState.polygonMode = PolygonModeStrings[rasterisationState["polygonMode"]];
-	rpCI.rasterisationState.cullMode = CullModeBitStrings[rasterisationState["cullMode"]];
-	rpCI.rasterisationState.frontFace = FrontFaceStrings[rasterisationState["frontFace"]];
+	rpCI.rasterisationState.polygonMode = magic_enum::enum_cast<PolygonMode>(std::string(rasterisationState["polygonMode"])).value();
+	rpCI.rasterisationState.cullMode = magic_enum::enum_cast<CullModeBit>(std::string(rasterisationState["cullMode"])).value();
+	rpCI.rasterisationState.frontFace = magic_enum::enum_cast<FrontFace>(std::string(rasterisationState["frontFace"])).value();
 	rpCI.rasterisationState.depthBiasEnable = rasterisationState["depthBiasEnable"];
 	rpCI.rasterisationState.depthBiasConstantFactor = rasterisationState["depthBiasConstantFactor"];
 	rpCI.rasterisationState.depthBiasClamp = rasterisationState["depthBiasClamp"];
@@ -154,7 +155,8 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 
 	//MultisampleState
 	json& multisampleState = pipeline_grpf["multisampleState"];
-	rpCI.multisampleState.rasterisationSamples = std::string(multisampleState["rasterisationSamples"]).compare("FRAMEBUFFER_SAMPLE_COUNT") == 0 ? pLoadInfo->samples : SampleCountBitStrings[multisampleState["rasterisationSamples"]];
+	rpCI.multisampleState.rasterisationSamples = std::string(multisampleState["rasterisationSamples"]).compare("FRAMEBUFFER_SAMPLE_COUNT") == 0 
+		? pLoadInfo->samples : magic_enum::enum_cast<Image::SampleCountBit>(std::string(multisampleState["rasterisationSamples"])).value();
 	rpCI.multisampleState.sampleShadingEnable = multisampleState["sampleShadingEnable"];
 	rpCI.multisampleState.minSampleShading = multisampleState["minSampleShading"];
 	rpCI.multisampleState.sampleMask = multisampleState["sampleMask"];
@@ -165,24 +167,24 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 	json& depthStencilState = pipeline_grpf["depthStencilState"];
 	rpCI.depthStencilState.depthTestEnable = depthStencilState["depthTestEnable"];
 	rpCI.depthStencilState.depthWriteEnable = depthStencilState["depthWriteEnable"];
-	rpCI.depthStencilState.depthCompareOp = CompareOpStrings[depthStencilState["depthCompareOp"]];
+	rpCI.depthStencilState.depthCompareOp = magic_enum::enum_cast<CompareOp>(std::string(depthStencilState["depthCompareOp"])).value();
 	rpCI.depthStencilState.depthBoundsTestEnable = depthStencilState["depthBoundsTestEnable"];
 	rpCI.depthStencilState.stencilTestEnable = depthStencilState["stencilTestEnable"];
 	if (rpCI.depthStencilState.stencilTestEnable)
 	{
 		json& front = depthStencilState["front"];
-		rpCI.depthStencilState.front.failOp = StencilOpStrings[front["failOp"]];
-		rpCI.depthStencilState.front.passOp = StencilOpStrings[front["passOp"]];
-		rpCI.depthStencilState.front.depthFailOp = StencilOpStrings[front["depthFailOp"]];
-		rpCI.depthStencilState.front.compareOp = CompareOpStrings[front["compareOp"]];
+		rpCI.depthStencilState.front.failOp = magic_enum::enum_cast<StencilOp>(std::string(front["failOp"])).value();
+		rpCI.depthStencilState.front.passOp = magic_enum::enum_cast<StencilOp>(std::string(front["passOp"])).value();
+		rpCI.depthStencilState.front.depthFailOp = magic_enum::enum_cast<StencilOp>(std::string(front["depthFailOp"])).value();
+		rpCI.depthStencilState.front.compareOp = magic_enum::enum_cast<CompareOp>(std::string(front["compareOp"])).value();
 		rpCI.depthStencilState.front.compareMask = front["compareMask"];
 		rpCI.depthStencilState.front.writeMask = front["writeMask"];
 		rpCI.depthStencilState.front.reference = front["reference"];
 		json& back = depthStencilState["back"];
-		rpCI.depthStencilState.back.failOp = StencilOpStrings[back["failOp"]];
-		rpCI.depthStencilState.back.passOp = StencilOpStrings[back["passOp"]];
-		rpCI.depthStencilState.back.depthFailOp = StencilOpStrings[back["depthFailOp"]];
-		rpCI.depthStencilState.back.compareOp = CompareOpStrings[back["compareOp"]];
+		rpCI.depthStencilState.back.failOp = magic_enum::enum_cast<StencilOp>(std::string(back["failOp"])).value();
+		rpCI.depthStencilState.back.passOp = magic_enum::enum_cast<StencilOp>(std::string(back["passOp"])).value();
+		rpCI.depthStencilState.back.depthFailOp = magic_enum::enum_cast<StencilOp>(std::string(back["depthFailOp"])).value();
+		rpCI.depthStencilState.back.compareOp = magic_enum::enum_cast<CompareOp>(std::string(back["compareOp"])).value();
 		rpCI.depthStencilState.back.compareMask = back["compareMask"];
 		rpCI.depthStencilState.back.writeMask = back["writeMask"];
 		rpCI.depthStencilState.back.reference = back["reference"];
@@ -198,21 +200,21 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 	//ColourBlendState
 	json& colourBlendState = pipeline_grpf["colourBlendState"];
 	rpCI.colourBlendState.logicOpEnable = colourBlendState["logicOpEnable"];
-	rpCI.colourBlendState.logicOp = LogicOpStrings[colourBlendState["logicOp"]];
+	rpCI.colourBlendState.logicOp = magic_enum::enum_cast<LogicOp>(std::string(colourBlendState["logicOp"])).value();
 	for (auto& attachment : colourBlendState["attachments"])
 	{
 		ColourComponentBit ccb = ColourComponentBit(0);
 		for (auto& cc : attachment["colourWriteMask"])
-			ccb |= ColourComponentBitStrings[cc];
+			ccb |= magic_enum::enum_cast<ColourComponentBit>(std::string(cc)).value();
 
 		rpCI.colourBlendState.attachments.push_back({
 			attachment["blendEnable"],
-			BlendFactorStrings[attachment["srcColourBlendFactor"]],
-			BlendFactorStrings[attachment["dstColourBlendFactor"]],
-			BlendOpStrings[attachment["colourBlendOp"]],
-			BlendFactorStrings[attachment["srcAlphaBlendFactor"]],
-			BlendFactorStrings[attachment["dstAlphaBlendFactor"]],
-			BlendOpStrings[attachment["alphaBlendOp"]],
+			magic_enum::enum_cast<BlendFactor>(std::string(attachment["srcColourBlendFactor"])).value(),
+			magic_enum::enum_cast<BlendFactor>(std::string(attachment["dstColourBlendFactor"])).value(),
+			magic_enum::enum_cast<BlendOp>(std::string(attachment["colourBlendOp"])).value(),
+			magic_enum::enum_cast<BlendFactor>(std::string(attachment["srcAlphaBlendFactor"])).value(),
+			magic_enum::enum_cast<BlendFactor>(std::string(attachment["dstAlphaBlendFactor"])).value(),
+			magic_enum::enum_cast<BlendOp>(std::string(attachment["alphaBlendOp"])).value(),
 			ccb
 			});
 	}

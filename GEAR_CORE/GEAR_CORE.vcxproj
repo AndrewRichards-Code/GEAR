@@ -217,7 +217,6 @@
     <ClInclude Include="src\Audio\AudioInterfaces.h" />
     <ClInclude Include="src\Audio\AudioSource.h" />
     <ClInclude Include="src\Audio\AudioListener.h" />
-    <ClInclude Include="src\Core\EnumStringMaps.h" />
     <ClInclude Include="src\Core\Timer.h" />
     <ClInclude Include="src\Graphics\Indexbuffer.h" />
     <ClInclude Include="src\Graphics\AllocatorManager.h" />
