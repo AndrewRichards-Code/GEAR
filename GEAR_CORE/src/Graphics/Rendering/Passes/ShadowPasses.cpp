@@ -29,20 +29,23 @@ void ShadowPasses::Main(Renderer& renderer, Ref<Light> light)
 	for (const auto& model : renderer.GetModelQueue())
 	{
 		GEAR_RENDER_GRARH_EVENT_SCOPE(renderGraph, model->GetDebugName());
-		for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
+		const Ref<Mesh>& mesh = model->GetMesh();
+		for (size_t i = 0; i < mesh->GetVertexBuffers().size(); i++)
 		{
 			Ref<TaskPassParameters> shadowPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["Shadow"]);
+			shadowPassParameters->AddVertexBuffer(ResourceView(mesh->GetVertexBuffers()[i]));
+			shadowPassParameters->AddIndexBuffer(ResourceView(mesh->GetIndexBuffers()[i]));
 			shadowPassParameters->SetResourceView("probeInfo", ResourceView(probe->GetUB()));
 			shadowPassParameters->SetResourceView("model", ResourceView(model->GetUB()));
 			shadowPassParameters->AddAttachment(0, ResourceView(probe->m_DepthTexture, Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
 			shadowPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height), probe->m_DepthTexture->GetCreateInfo().arrayLayers);
 
 			renderGraph.AddPass("Sub Mesh: " + std::to_string(i), shadowPassParameters, CommandPool::QueueType::GRAPHICS,
-				[model, i, omni](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+				[mesh, i, omni](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 				{
-					cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[i]->GetGPUBufferView() });
-					cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetGPUBufferView());
-					cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetCount(), omni ? 6 : 1);
+					cmdBuffer->BindVertexBuffers(frameIndex, { mesh->GetVertexBuffers()[i]->GetGPUBufferView() });
+					cmdBuffer->BindIndexBuffer(frameIndex, mesh->GetIndexBuffers()[i]->GetGPUBufferView());
+					cmdBuffer->DrawIndexed(frameIndex, mesh->GetIndexBuffers()[i]->GetCount(), omni ? 6 : 1);
 				});
 		}
 	}

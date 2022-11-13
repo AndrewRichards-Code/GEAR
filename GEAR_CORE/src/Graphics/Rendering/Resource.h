@@ -6,6 +6,8 @@ namespace gear
 	namespace graphics
 	{
 		class Texture;
+		class Vertexbuffer;
+		class Indexbuffer;
 		class BaseUniformbuffer;
 		class BaseStoragebuffer;
 	}
@@ -22,12 +24,15 @@ namespace gear
 				BUFFER,
 				ACCELERATION_STRUCTURE
 			};
-			enum class State :uint32_t
+			enum class State : uint32_t
 			{
 				UNKNOWN,
 				PRESENT,
 				COLOUR_ATTACHMENT,
 				DEPTH_STENCIL_ATTACHMENT,
+				VERTEX_BUFFER,
+				INDEX_BUFFER,
+				UNIFORM_BUFFER,
 				SHADER_READ_ONLY,
 				SHADER_READ_WRITE,
 				TRANSFER_SRC,
@@ -94,6 +99,8 @@ namespace gear
 
 			ResourceView(const Ref<Texture>& texture, miru::base::DescriptorType type); //For Shader Resorces
 			ResourceView(const Ref<Texture>& texture, Resource::State state); //For Rendering Attachments
+			ResourceView(const Ref<Vertexbuffer>& vertexBuffer);
+			ResourceView(const Ref<Indexbuffer>& indexBuffer);
 			ResourceView(const Ref<BaseUniformbuffer>& uniformBuffer);
 			ResourceView(const Ref<BaseStoragebuffer>& storageBuffer);
 

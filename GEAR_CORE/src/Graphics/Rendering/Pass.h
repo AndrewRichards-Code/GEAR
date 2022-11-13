@@ -1,5 +1,6 @@
 #pragma once
 #include "Graphics/Rendering/PassParameters.h"
+#include "Core/UUID.h"
 
 namespace gear
 {
@@ -9,6 +10,15 @@ namespace gear
 
 		class GEAR_API Pass
 		{
+			//struct/enum
+		public:
+			struct TransitionDetails
+			{
+				miru::base::Barrier::AccessBit accesses;
+				miru::base::Image::Layout layout;
+				miru::base::PipelineStageBit pipelineStage;
+			};
+
 			//Methods
 		public:
 			Pass(const std::string& passName, const Ref<PassParameters>& passParameters, miru::base::CommandPool::QueueType queueType, RenderGraphPassFunction renderFunction);
@@ -18,6 +28,8 @@ namespace gear
 			void Execute(RenderGraph* renderGraph, miru::base::CommandBufferRef cmdBuffer, uint32_t frameIndex);
 
 		private:
+			miru::base::PipelineStageBit ShaderStageToPipelineStage(const miru::base::Shader::StageBit& stage);
+			TransitionDetails GetTransitionDetails(const Resource::State& state, const miru::base::Shader::StageBit& stage, bool src);
 			std::vector<miru::base::Barrier2Ref> TransitionResource(RenderGraph* renderGraph, const ResourceView& passResourceView, Resource::State overideNewState =  Resource::State::UNKNOWN);
 
 		public:
@@ -38,9 +50,12 @@ namespace gear
 			miru::base::CommandPool::QueueType m_QueueType;
 			RenderGraphPassFunction m_RenderFunction;
 			std::stack<std::string> m_ScopeStack;
+			
+			bool m_BeginRendering = false;
+			bool m_EndRendering = false;
 
 			size_t m_UnorderedListIndex = 0;
-			size_t m_DependencyLevelIndex = 0;
+			size_t m_DependencyLevelIndex = 0; 
 
 			//Friends
 			friend RenderGraph;

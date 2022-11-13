@@ -53,7 +53,33 @@ void PostProcessingPasses::Bloom::Prefilter(Renderer& renderer)
 	renderGraph.AddPass("Prefilter", bloomPreFilterPassParameters, CommandPool::QueueType::COMPUTE,
 		[bloomInfo, width, height](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 		{
+			CommandBuffer::DependencyInfo dependencyInfo = { DependencyBit::NONE_BIT, {} };
+			Barrier2::CreateInfo bCI;
+			bCI.type = Barrier::Type::BUFFER;
+			bCI.srcStageMask = PipelineStageBit::COMPUTE_SHADER_BIT;
+			bCI.srcAccess = Barrier::AccessBit::UNIFORM_READ_BIT;
+			bCI.dstStageMask = PipelineStageBit::TRANSFER_BIT;
+			bCI.dstAccess = Barrier::AccessBit::TRANSFER_READ_BIT;
+			bCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+			bCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+			bCI.buffer = bloomInfo.UB->GetGPUBuffer();
+			bCI.offset = 0;
+			bCI.size = bloomInfo.UB->GetSize();
+			dependencyInfo.barriers.clear();
+			dependencyInfo.barriers.emplace_back(Barrier2::Create(&bCI));
+
+			cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
 			cmdBuffer->CopyBuffer(frameIndex, bloomInfo.UB->GetCPUBuffer(), bloomInfo.UB->GetGPUBuffer(), { { 0, 0, bloomInfo.UB->GetSize() } });
+			
+			bCI.srcStageMask = PipelineStageBit::TRANSFER_BIT;
+			bCI.srcAccess = Barrier::AccessBit::TRANSFER_READ_BIT;
+			bCI.dstStageMask = PipelineStageBit::COMPUTE_SHADER_BIT;
+			bCI.dstAccess = Barrier::AccessBit::UNIFORM_READ_BIT;
+			dependencyInfo.barriers.clear();
+			dependencyInfo.barriers.emplace_back(Barrier2::Create(&bCI));
+			cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
+		
+			
 			uint32_t _width = std::max(width / 8, uint32_t(1));
 			uint32_t _height = std::max(height / 8, uint32_t(1));
 			uint32_t _depth = 1;

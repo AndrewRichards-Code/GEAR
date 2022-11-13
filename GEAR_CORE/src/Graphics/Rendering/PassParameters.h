@@ -58,6 +58,9 @@ namespace gear
 			void SetResourceView(const std::pair<uint32_t, uint32_t>& set_binding, ResourceView& resourceView);
 			void SetResourceView(const std::string& name, ResourceView& resourceView);
 
+			void AddVertexBuffer(ResourceView& resourceView);
+			void AddIndexBuffer(ResourceView& resourceView);
+
 			void AddAttachment(uint32_t index, const ResourceView& resource, miru::base::RenderPass::AttachmentLoadOp loadOp, miru::base::RenderPass::AttachmentStoreOp storeOp, const miru::base::Image::ClearValue& clearValue);  //DepthStencil attachments ignore the 'index' parameter.
 			void AddAttachmentWithResolve(uint32_t index, const ResourceView& resource, const ResourceView& resolveResourceView, miru::base::RenderPass::AttachmentLoadOp loadOp, miru::base::RenderPass::AttachmentStoreOp storeOp, const miru::base::Image::ClearValue& clearValue); //DepthStencil attachments ignore the 'index' parameter.
 			void SetRenderArea(miru::base::Rect2D renderArea, uint32_t layers = 1, uint32_t viewMask = 0);
@@ -82,6 +85,9 @@ namespace gear
 				return result;
 			}
 			inline const miru::base::RenderingInfo& GetRenderingInfo() const { return m_RenderingInfo; }
+
+			inline bool IsGraphics() { return (m_RenderingInfo.colourAttachments.size() > 0 || m_RenderingInfo.pDepthAttachment != nullptr); }
+			inline bool IsCompute() { return IsGraphics(); }
 
 			//Members
 		private:
@@ -111,6 +117,12 @@ namespace gear
 					miru::base::Image::Copy				imageCopy;
 				};
 			};
+			struct ResourcePairs
+			{
+				ResourceView		src;
+				ResourceView		dst;
+				ResourceCopyRegion	rcr;
+			};
 			//Methods
 		public:
 			TransferPassParameters();
@@ -127,12 +139,12 @@ namespace gear
 			void AddResourceView(const Ref<Texture>& texture);
 			void AddResourceViewPair(const ResourceView& srcResourceView, const ResourceView& dstResourceView, const ResourceCopyRegion& copyRegion);
 
-			inline const std::vector<std::tuple<ResourceView, ResourceView, ResourceCopyRegion>>& GetResourceViewsPairs() const { return m_ResourceViewPairs; }
-			inline std::vector<std::tuple<ResourceView, ResourceView, ResourceCopyRegion>>& GetResourceViewsPairs() { return m_ResourceViewPairs; }
+			inline const std::vector<ResourcePairs>& GetResourceViewsPairs() const { return m_ResourceViewPairs; }
+			inline std::vector<ResourcePairs>& GetResourceViewsPairs() { return m_ResourceViewPairs; }
 
 			//Members
 		private:
-			std::vector<std::tuple<ResourceView, ResourceView, ResourceCopyRegion>> m_ResourceViewPairs;
+			std::vector<ResourcePairs> m_ResourceViewPairs;
 
 			//Friends
 			friend Pass;

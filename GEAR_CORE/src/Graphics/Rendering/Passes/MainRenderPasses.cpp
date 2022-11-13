@@ -22,8 +22,11 @@ void MainRenderPasses::Skybox(Renderer& renderer, Ref<objects::Skybox> skybox)
 	const Ref<RenderSurface>& renderSurface = renderer.GetRenderSurface();
 	uint32_t width = renderSurface->GetWidth();
 	uint32_t height = renderSurface->GetHeight();
+	const Ref<Mesh>& mesh = skybox->GetModel()->GetMesh();
 
 	Ref<TaskPassParameters> skyboxPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["Cube"]);
+	skyboxPassParameters->AddVertexBuffer(ResourceView(mesh->GetVertexBuffers()[0]));
+	skyboxPassParameters->AddIndexBuffer(ResourceView(mesh->GetIndexBuffers()[0]));
 	skyboxPassParameters->SetResourceView("camera", ResourceView(renderer.GetCamera()->GetCameraUB()));
 	skyboxPassParameters->SetResourceView("model", ResourceView(skybox->GetModel()->GetUB()));
 	skyboxPassParameters->SetResourceView("skybox", ResourceView(skybox->GetGeneratedCubemap(), Resource::State::SHADER_READ_ONLY));
@@ -33,12 +36,11 @@ void MainRenderPasses::Skybox(Renderer& renderer, Ref<objects::Skybox> skybox)
 	skyboxPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
 	renderGraph.AddPass("Skybox", skyboxPassParameters, CommandPool::QueueType::GRAPHICS,
-		[skybox](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+		[mesh](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 		{
-			const Ref<Model>& model = skybox->GetModel();
-			cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[0]->GetGPUBufferView() });
-			cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[0]->GetGPUBufferView());
-			cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[0]->GetCount());
+			cmdBuffer->BindVertexBuffers(frameIndex, { mesh->GetVertexBuffers()[0]->GetGPUBufferView() });
+			cmdBuffer->BindIndexBuffer(frameIndex, mesh->GetIndexBuffers()[0]->GetGPUBufferView());
+			cmdBuffer->DrawIndexed(frameIndex, mesh->GetIndexBuffers()[0]->GetCount());
 		});
 }
 
@@ -52,10 +54,13 @@ void MainRenderPasses::PBROpaque(Renderer& renderer, Ref<objects::Light> light, 
 	for (const auto& model : renderer.GetModelQueue())
 	{
 		GEAR_RENDER_GRARH_EVENT_SCOPE(renderGraph, model->GetDebugName());
-		for (size_t i = 0; i < model->GetMesh()->GetVertexBuffers().size(); i++)
+		const Ref<Mesh>& mesh = model->GetMesh();
+		for (size_t i = 0; i < mesh->GetVertexBuffers().size(); i++)
 		{
 			Ref<TaskPassParameters> mainRenderPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["PBROpaque"]);
-			const Ref<objects::Material>& material = model->GetMesh()->GetMaterial(i);
+			const Ref<objects::Material>& material = mesh->GetMaterial(i);
+			mainRenderPassParameters->AddVertexBuffer(ResourceView(mesh->GetVertexBuffers()[i]));
+			mainRenderPassParameters->AddIndexBuffer(ResourceView(mesh->GetIndexBuffers()[i]));
 			mainRenderPassParameters->SetResourceView("camera", ResourceView(renderer.GetCamera()->GetCameraUB()));
 			mainRenderPassParameters->SetResourceView("lights", ResourceView(light->GetUB()));
 			mainRenderPassParameters->SetResourceView("diffuseIrradiance", ResourceView(skybox->GetGeneratedDiffuseCubemap(), DescriptorType::COMBINED_IMAGE_SAMPLER));
@@ -75,11 +80,11 @@ void MainRenderPasses::PBROpaque(Renderer& renderer, Ref<objects::Light> light, 
 			mainRenderPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
 			renderGraph.AddPass("Sub Mesh: " + std::to_string(i), mainRenderPassParameters, CommandPool::QueueType::GRAPHICS,
-				[model, i](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+				[mesh, i](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 				{
-					cmdBuffer->BindVertexBuffers(frameIndex, { model->GetMesh()->GetVertexBuffers()[i]->GetGPUBufferView() });
-					cmdBuffer->BindIndexBuffer(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetGPUBufferView());
-					cmdBuffer->DrawIndexed(frameIndex, model->GetMesh()->GetIndexBuffers()[i]->GetCount());
+					cmdBuffer->BindVertexBuffers(frameIndex, { mesh->GetVertexBuffers()[i]->GetGPUBufferView() });
+					cmdBuffer->BindIndexBuffer(frameIndex, mesh->GetIndexBuffers()[i]->GetGPUBufferView());
+					cmdBuffer->DrawIndexed(frameIndex, mesh->GetIndexBuffers()[i]->GetCount());
 				});
 		}
 	}

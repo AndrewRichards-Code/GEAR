@@ -224,6 +224,26 @@ void TaskPassParameters::SetResourceView(const std::string& name, ResourceView& 
 	SetResourceView(FindResourceViewSetBinding(name), resourceView);
 }
 
+void TaskPassParameters::AddVertexBuffer(ResourceView& resourceView)
+{
+	if (!resourceView.IsBufferView())
+		return;
+
+	resourceView.stage = Shader::StageBit::VERTEX_BIT;
+	resourceView.state = Resource::State::VERTEX_BUFFER;
+	m_InputResourceViews.push_back(resourceView);
+}
+
+void TaskPassParameters::AddIndexBuffer(ResourceView& resourceView)
+{
+	if (!resourceView.IsBufferView())
+		return;
+
+	resourceView.stage = Shader::StageBit::VERTEX_BIT;
+	resourceView.state = Resource::State::INDEX_BUFFER;
+	m_InputResourceViews.push_back(resourceView);
+}
+
 void TaskPassParameters::AddAttachment(uint32_t index, const ResourceView& resourceView, RenderPass::AttachmentLoadOp loadOp, RenderPass::AttachmentStoreOp storeOp, const Image::ClearValue& clearValue)
 {
 	if (resourceView.imageView)
@@ -306,16 +326,16 @@ void TaskPassParameters::AddAttachmentWithResolve(uint32_t index, const Resource
 	}
 }
 
-const PipelineRef& TaskPassParameters::GetPipeline() const
-{
-	return m_RenderPipeline->GetPipeline();
-}
-
 void TaskPassParameters::SetRenderArea(Rect2D renderArea, uint32_t layers, uint32_t viewMask)
 {
 	m_RenderingInfo.renderArea = renderArea;
 	m_RenderingInfo.layerCount = layers;
 	m_RenderingInfo.viewMask = viewMask;
+}
+
+const miru::base::PipelineRef& TaskPassParameters::GetPipeline() const
+{
+	return m_RenderPipeline->GetPipeline();
 }
 
 //////////////////////////

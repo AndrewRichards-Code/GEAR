@@ -87,7 +87,7 @@ Ref<Pass> RenderGraph::AddPass(const std::string& passName, const Ref<PassParame
 	pass->GetPassParameters()->Setup();
 	FrameData& data = m_FrameData[m_FrameIndex];
 	
-	//Save current scoper into Pass
+	//Save current scope into Pass
 	pass->m_ScopeStack = data.ScopeStack; 
 
 	//Add Pass ResourceViews to the RenderGraph's 'master' Resource list
@@ -166,11 +166,13 @@ void RenderGraph::Compile()
 				{
 					bool otherPassDependsOnCurrentPass = arc::FindInVector(pass->GetOutputResourceViews(), otherPassReadResourceView);
 					bool sameOutputs = pass->GetOutputResourceViews() == otherPass->GetOutputResourceViews();
-					bool otherPassIsTask = otherPass->m_PassParameters->GetType() == PassParameters::Type::TASK;
+
 					bool passIsTask = pass->m_PassParameters->GetType() == PassParameters::Type::TASK;
-					if (sameOutputs)
+					bool otherPassIsTask = otherPass->m_PassParameters->GetType() == PassParameters::Type::TASK;
+
+					if (otherPassIsTask && passIsTask)
 					{
-						if (otherPassIsTask && passIsTask)
+						if (sameOutputs)
 						{
 							Ref<TaskPassParameters> tpp = ref_cast<TaskPassParameters>(otherPass->m_PassParameters);
 							for (auto& colourAttachment : tpp->m_RenderingInfo.colourAttachments)
@@ -179,6 +181,7 @@ void RenderGraph::Compile()
 								tpp->m_RenderingInfo.pDepthAttachment->loadOp = RenderPass::AttachmentLoadOp::LOAD;
 						}
 					}
+
 					otherPassDependsOnCurrentPass |= sameOutputs;
 					if (otherPassDependsOnCurrentPass)
 					{
@@ -222,6 +225,90 @@ void RenderGraph::Compile()
 		}
 
 		std::reverse(data.TopologicallySortedPasses.begin(), data.TopologicallySortedPasses.end());
+	}
+
+	//Set Render Pass Begins and Ends
+	{
+		size_t passCount = data.TopologicallySortedPasses.size();
+
+		for (size_t passIndex = 0; passIndex < passCount; passIndex++)
+		{
+			size_t nextPassIndex = std::min(passIndex + 1, passCount - 1);
+			if (passIndex == nextPassIndex && passCount > 1)
+				break;
+
+			Ref<Pass>& pass = data.TopologicallySortedPasses[passIndex];
+			Ref<Pass>& nextPass = data.TopologicallySortedPasses[nextPassIndex];
+
+			bool sameOutputs = pass->GetOutputResourceViews() == nextPass->GetOutputResourceViews();
+
+			bool passIsTask = pass->m_PassParameters->GetType() == PassParameters::Type::TASK;
+			bool nextPassIsTask = nextPass->m_PassParameters->GetType() == PassParameters::Type::TASK;
+
+			bool passIsGraphics = passIsTask ? ref_cast<TaskPassParameters>(pass->m_PassParameters)->IsGraphics() : false;
+			bool nextPassIsGraphics = nextPassIsTask ? ref_cast<TaskPassParameters>(nextPass->m_PassParameters)->IsGraphics() : false;
+
+			//Deal with single pass graph
+			if (passCount == 1)
+			{
+				if (passIsGraphics)
+				{
+					pass->m_BeginRendering = true;
+					pass->m_EndRendering = true;
+				}
+				break;
+			}
+
+			//Terminals
+			if (passIndex == 0 && passIsGraphics)
+			{
+				pass->m_BeginRendering = true;
+			}
+			if (nextPassIndex == passCount - 1 && nextPassIsGraphics)
+			{
+				nextPass->m_EndRendering = true;
+			}
+
+			//To and From Compute or Transfer
+			if (!passIsGraphics && nextPassIsGraphics)
+			{
+				nextPass->m_BeginRendering = true;
+			}
+			if (passIsGraphics && !nextPassIsGraphics)
+			{
+				pass->m_EndRendering = true;
+			}
+
+			//Graphics with differnt outputs
+			if (passIsGraphics && nextPassIsGraphics && !sameOutputs)
+			{
+				pass->m_EndRendering = true;
+				nextPass->m_BeginRendering = true;
+			}
+
+			//Default is to preserve rendering between graphics with the same outputs.
+		}
+
+		//Check Input Resource Views
+		Ref<Pass> startPass = nullptr;
+		for (size_t passIndex = 0; passIndex < passCount; passIndex++)
+		{
+			Ref<Pass>& pass = data.TopologicallySortedPasses[passIndex];
+
+			if (pass->m_BeginRendering && !pass->m_EndRendering)
+				startPass = pass;
+
+			if (startPass && startPass != pass)
+			{
+				auto& passInputs = pass->GetInputResourceViews();
+				auto& startPassInputs = startPass->GetInputResourceViews();
+				startPassInputs.insert(startPassInputs.end(), passInputs.begin(), passInputs.end());
+				passInputs.clear();
+			}
+
+			if (pass->m_EndRendering && !pass->m_BeginRendering)
+				startPass = nullptr;
+		}
 	}
 
 	//Build Dependency Levels

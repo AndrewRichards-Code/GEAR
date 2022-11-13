@@ -236,6 +236,20 @@ ResourceView::ResourceView(const Ref<Texture>& texture, Resource::State state)
 		sampler = texture->GetSampler();
 } 
 
+ResourceView::ResourceView(const Ref<Vertexbuffer>& vertexBuffer)
+{
+	state = Resource::State::VERTEX_BUFFER;
+	type = NonDescriptorType;
+	bufferView = vertexBuffer->GetGPUBufferView();
+}
+
+ResourceView::ResourceView(const Ref<Indexbuffer>& indexBuffer)
+{
+	state = Resource::State::INDEX_BUFFER;
+	type = NonDescriptorType;
+	bufferView = indexBuffer->GetGPUBufferView();
+}
+
 ResourceView::ResourceView(const Ref<BaseUniformbuffer>& uniformBuffer)
 {
 	type = DescriptorType::UNIFORM_BUFFER;
@@ -273,7 +287,7 @@ ResourceView::ResourceView(const miru::base::SamplerRef& sampler)
 ResourceView::ResourceView(const miru::base::BufferViewRef& bufferView, Resource::State state)
 {
 	this->state = state;
-	type = state == Resource::State::SHADER_READ_ONLY ? DescriptorType::UNIFORM_BUFFER : state == Resource::State::SHADER_READ_WRITE ? DescriptorType::STORAGE_BUFFER : NonDescriptorType;
+	type = state == Resource::State::UNIFORM_BUFFER ? DescriptorType::UNIFORM_BUFFER : state == Resource::State::SHADER_READ_WRITE ? DescriptorType::STORAGE_BUFFER : NonDescriptorType;
 	this->bufferView = bufferView;
 }
 
