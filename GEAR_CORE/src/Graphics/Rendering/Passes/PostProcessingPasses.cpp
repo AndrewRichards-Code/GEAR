@@ -20,9 +20,9 @@ void PostProcessingPasses::Bloom::Prefilter(Renderer& renderer)
 	const ImageViewRef& colourImageView = renderSurface->GetColourImageView();
 	const ImageRef& colourImage = colourImageView->GetCreateInfo().image;
 
-	uint32_t width = colourImage->GetCreateInfo().width;
-	uint32_t height = colourImage->GetCreateInfo().height;
-	uint32_t minSize = std::min(colourImage->GetCreateInfo().width, colourImage->GetCreateInfo().height);
+	const uint32_t& width = colourImage->GetCreateInfo().width;
+	const uint32_t& height = colourImage->GetCreateInfo().height;
+	uint32_t minSize = std::min(width, height);
 	uint32_t levels = std::max(static_cast<uint32_t>(log2(static_cast<double>(minSize / 8))), uint32_t(1));
 	bloomInfo.width = width;
 	bloomInfo.height = height;
@@ -188,8 +188,8 @@ void PostProcessingPasses::HDRMapping::Main(Renderer& renderer)
 {
 	RenderGraph& renderGraph = renderer.GetRenderGraph();
 	const Ref<RenderSurface>& renderSurface = renderer.GetRenderSurface();
-	uint32_t width = renderSurface->GetWidth();
-	uint32_t height = renderSurface->GetHeight();
+	const uint32_t& width = renderSurface->GetWidth();
+	const uint32_t& height = renderSurface->GetHeight();
 
 	Ref<TaskPassParameters> hdrMappingPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["HDR"]);
 	hdrMappingPassParameters->SetResourceView("hdrInfo", ResourceView(renderer.GetCamera()->GetHDRInfoUB()));

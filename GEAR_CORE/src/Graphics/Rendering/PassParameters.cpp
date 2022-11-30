@@ -38,12 +38,14 @@ TaskPassParameters::TaskPassParameters(const Ref<RenderPipeline>& renderPipeline
 	std::map<DescriptorType, uint32_t> poolSizesMap;
 	uint32_t maxSets = 0;
 
-	for (uint32_t set = 0; set < static_cast<uint32_t>(rbds.size()); set++)
+	for (const auto& rbdSets : rbds)
 	{
+		uint32_t set = rbdSets.first;
 		maxSets++;
-		for (uint32_t binding = 0; binding < static_cast<uint32_t>(rbds[set].size()); binding++)
+		for (const auto& rbdBindings : rbdSets.second)
 		{
-			const Shader::ResourceBindingDescription& rbd = rbds[set][binding];
+			uint32_t binding = rbdBindings.first;
+			const Shader::ResourceBindingDescription& rbd = rbds.at(set).at(binding);
 			poolSizesMap[rbd.type] += rbd.descriptorCount;
 		}
 	}
@@ -85,11 +87,13 @@ void TaskPassParameters::Setup()
 const std::pair<uint32_t, uint32_t> TaskPassParameters::FindResourceViewSetBinding(const std::string& name) const
 {
 	const RenderPipeline::ResourceBindingDescriptions& rbds = m_RenderPipeline->GetRBDs();
-	for (uint32_t set = 0; set < static_cast<uint32_t>(rbds.size()); set++)
+	for (const auto& rbdSets : rbds)
 	{
-		for (uint32_t binding = 0; binding < static_cast<uint32_t>(rbds[set].size()); binding++)
+		uint32_t set = rbdSets.first;
+		for (const auto& rbdBindings : rbdSets.second)
 		{
-			const Shader::ResourceBindingDescription& rbd = rbds[set][binding];
+			uint32_t binding = rbdBindings.first;
+			const Shader::ResourceBindingDescription& rbd = rbds.at(set).at(binding);
 			bool found = false;
 			if (rbd.type == DescriptorType::COMBINED_IMAGE_SAMPLER)
 				found = (rbd.name.find(name) == 0);
@@ -108,7 +112,7 @@ void TaskPassParameters::SetResourceView(const std::pair<uint32_t, uint32_t>& se
 	const uint32_t& set = set_binding.first;
 	const uint32_t& binding = set_binding.second;
 
-	const Shader::ResourceBindingDescription& rbd = m_RenderPipeline->GetRBDs()[set][binding];
+	const Shader::ResourceBindingDescription& rbd = m_RenderPipeline->GetRBDs().at(set).at(binding);
 	if (rbd.type != resourceView.type)
 	{
 		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "The Resource DescriptorType does not match ResourceBindingDescription DescriptorType.");

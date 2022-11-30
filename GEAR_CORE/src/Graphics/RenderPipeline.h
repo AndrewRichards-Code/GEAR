@@ -36,7 +36,7 @@ namespace gear
 				std::vector<miru::base::Image::Format>	colourAttachmentFormats;
 				miru::base::Image::Format				depthAttachmentFormat;
 			};
-			typedef std::vector<std::vector<miru::base::Shader::ResourceBindingDescription>> ResourceBindingDescriptions;
+			typedef std::map<uint32_t, std::map<uint32_t, miru::base::Shader::ResourceBindingDescription>> ResourceBindingDescriptions;
 
 		private:
 			void* m_Device;

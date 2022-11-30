@@ -258,10 +258,10 @@ void RenderPipeline::FinalisePipline()
 			{
 				uint32_t set = rbds.first;
 				m_DescSetLayoutCIs.resize(std::max((size_t)set + 1, m_DescSetLayoutCIs.size()));
-				m_RBDs.resize(std::max((size_t)set + 1, m_RBDs.size()));
 
 				for (auto& rbd : rbds.second)
 				{
+					uint32_t binding = rbd.second.binding;
 					m_DescSetLayoutCIs[set].debugName = "GEAR_CORE_Pipeline_DescSetLayout_Set_" + std::to_string(set) + ": " + m_CI.debugName;;
 					m_DescSetLayoutCIs[set].device = m_Device;
 					m_DescSetLayoutCIs[set].descriptorSetLayoutBinding.push_back({
@@ -270,7 +270,7 @@ void RenderPipeline::FinalisePipline()
 						rbd.second.descriptorCount,
 						rbd.second.stage });
 
-					m_RBDs[set].push_back(rbd.second);
+					m_RBDs[set][binding] = rbd.second;
 				}
 			}
 		}
@@ -305,10 +305,10 @@ void RenderPipeline::FinalisePipline()
 		{
 			uint32_t set = rbds.first;
 			m_DescSetLayoutCIs.resize(std::max((size_t)set + 1, m_DescSetLayoutCIs.size()));
-			m_RBDs.resize(std::max((size_t)set + 1, m_RBDs.size()));
 
 			for (auto& rbd : rbds.second)
 			{
+				uint32_t binding = rbd.second.binding;
 				m_DescSetLayoutCIs[set].debugName = "GEAR_CORE_Pipeline_DescSetLayout_Set_" + std::to_string(set) + ": " + m_CI.debugName;
 				m_DescSetLayoutCIs[set].device = m_Device;
 				m_DescSetLayoutCIs[set].descriptorSetLayoutBinding.push_back({
@@ -317,7 +317,7 @@ void RenderPipeline::FinalisePipline()
 					rbd.second.descriptorCount,
 					rbd.second.stage });
 
-				m_RBDs[set].push_back(rbd.second);
+				m_RBDs[set][binding] = rbd.second;
 			}
 		}
 		for (auto& descSetLayoutCI : m_DescSetLayoutCIs)
