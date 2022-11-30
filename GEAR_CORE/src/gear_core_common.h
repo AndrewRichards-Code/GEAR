@@ -83,9 +83,6 @@
 //JSON
 #include "JSON/json.hpp"
 
-//magic_enum
-#include "magic_enum/include/magic_enum.hpp"
-
 //MARS
 #include "MARS/src/mars.h"
 
