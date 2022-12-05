@@ -53,7 +53,6 @@ float GaussianDistrubtion2D(int2 pos, float sigma)
 }
 
 MIRU_COMPUTE_LAYOUT(8, 8, 1)
-
 void cs_GaussianBlur(uint3 pos : MIRU_DISPATCH_THREAD_ID)
 {
 	uint2 emissiveDim;
@@ -63,29 +62,29 @@ void cs_GaussianBlur(uint3 pos : MIRU_DISPATCH_THREAD_ID)
 	float sigma = 5.5;
 	int2 offset = int2(0, 0);
 	int2 pos_xy = pos.xy + offset;
-	float4 colour = emissiveIn.Load(int3(pos.xy, 0)) * GaussianDistrubtion2D(offset, sigma);
+	float4 colour = emissiveIn.Load(pos.xy) * GaussianDistrubtion2D(offset, sigma);
 	
 	for (int i = 1; i < kernelSize; i++)
 	{
 		offset = int2(+i, 0);
 		pos_xy = pos.xy + offset;
 		if (pos_xy.x >= 0 && pos_xy.x < emissiveDim.x)
-			colour += emissiveIn.Load(int3(pos_xy, 0)) * GaussianDistrubtion2D(offset, sigma);
+			colour += emissiveIn.Load(pos_xy) * GaussianDistrubtion2D(offset, sigma);
 		
 		offset = int2(-i, 0);
 		pos_xy = pos.xy + offset;
 		if (pos_xy.x >= 0 && pos_xy.x < emissiveDim.x)
-			colour += emissiveIn.Load(int3(pos_xy, 0)) * GaussianDistrubtion2D(offset, sigma);
+			colour += emissiveIn.Load(pos_xy) * GaussianDistrubtion2D(offset, sigma);
 		
 		offset = int2(0, +i);
 		pos_xy = pos.xy + offset;
 		if (pos_xy.y >= 0 && pos_xy.y < emissiveDim.y)
-			colour += emissiveIn.Load(int3(pos_xy, 0)) * GaussianDistrubtion2D(offset, sigma);
+			colour += emissiveIn.Load(pos_xy) * GaussianDistrubtion2D(offset, sigma);
 		
 		offset = int2(0, -i);
 		pos_xy = pos.xy + offset;
 		if (pos_xy.y >= 0 && pos_xy.y < emissiveDim.y)
-			colour += emissiveIn.Load(int3(pos_xy, 0)) * GaussianDistrubtion2D(offset, sigma);
+			colour += emissiveIn.Load(pos_xy) * GaussianDistrubtion2D(offset, sigma);
 	}
 	emissiveOut[pos.xy] = colour;
 }
