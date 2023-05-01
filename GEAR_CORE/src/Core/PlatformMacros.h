@@ -37,9 +37,6 @@
 #elif defined(_GAMING_XBOX) 
 	//GDKX: Gaming.Xbox.XboxOne.x64
 	#define GEAR_PLATFORM_XBOX_ONE_GDKX
-#elif defined(XBOX) || defined(_XBOX_ONE) || defined(_DURANGO)
-	//XDK: XboxOne
-	#define GEAR_PLATFORM_XBOX_ONE_XDK
 #endif
 #pragma endregion
 
@@ -61,7 +58,7 @@
 #pragma endregion
 
 #pragma region GEAR_DEFINED_PLATFORM_MACROS
-#if defined(GEAR_PLATFORM_XBOX_ONE_XDK) || defined(GEAR_PLATFORM_XBOX_ONE_GDKX) || defined(GEAR_PLATFORM_XBOX_SCARLETT)
+#if defined(GEAR_PLATFORM_XBOX_ONE_GDKX) || defined(GEAR_PLATFORM_XBOX_SCARLETT)
 	#define GEAR_PLATFORM_XBOX_X64
 #endif
 
