@@ -23,6 +23,7 @@ void MainRenderPasses::Skybox(Renderer& renderer, Ref<objects::Skybox> skybox)
 	uint32_t width = renderSurface->GetWidth();
 	uint32_t height = renderSurface->GetHeight();
 	const Ref<Mesh>& mesh = skybox->GetModel()->GetMesh();
+	bool msaa = renderSurface->GetAntiAliasing() > Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 
 	Ref<TaskPassParameters> skyboxPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["Cube"]);
 	skyboxPassParameters->AddVertexBuffer(ResourceView(mesh->GetVertexBuffers()[0]));
@@ -30,8 +31,11 @@ void MainRenderPasses::Skybox(Renderer& renderer, Ref<objects::Skybox> skybox)
 	skyboxPassParameters->SetResourceView("camera", ResourceView(renderer.GetCamera()->GetCameraUB()));
 	skyboxPassParameters->SetResourceView("model", ResourceView(skybox->GetModel()->GetUB()));
 	skyboxPassParameters->SetResourceView("skybox", ResourceView(skybox->GetGeneratedCubemap(), Resource::State::SHADER_READ_ONLY));
-	skyboxPassParameters->AddAttachmentWithResolve(0, ResourceView(renderSurface->GetMSAAColourImageView(), Resource::State::COLOUR_ATTACHMENT),
-		ResourceView(renderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
+	if (msaa)
+		skyboxPassParameters->AddAttachmentWithResolve(0, ResourceView(renderSurface->GetMSAAColourImageView(), Resource::State::COLOUR_ATTACHMENT),
+			ResourceView(renderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
+	else
+		skyboxPassParameters->AddAttachment(0, ResourceView(renderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
 	skyboxPassParameters->AddAttachment(0, ResourceView(renderSurface->GetDepthImageView(), Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
 	skyboxPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
@@ -50,6 +54,7 @@ void MainRenderPasses::PBROpaque(Renderer& renderer, Ref<objects::Light> light, 
 	const Ref<RenderSurface>& renderSurface = renderer.GetRenderSurface();
 	uint32_t width = renderSurface->GetWidth();
 	uint32_t height = renderSurface->GetHeight();
+	bool msaa = renderSurface->GetAntiAliasing() > Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 
 	for (const auto& model : renderer.GetModelQueue())
 	{
@@ -74,8 +79,12 @@ void MainRenderPasses::PBROpaque(Renderer& renderer, Ref<objects::Light> light, 
 			mainRenderPassParameters->SetResourceView("roughness", ResourceView(material->GetTextures()[Material::TextureType::ROUGHNESS], DescriptorType::COMBINED_IMAGE_SAMPLER));
 			mainRenderPassParameters->SetResourceView("ambientOcclusion", ResourceView(material->GetTextures()[Material::TextureType::AMBIENT_OCCLUSION], DescriptorType::COMBINED_IMAGE_SAMPLER));
 			mainRenderPassParameters->SetResourceView("emissive", ResourceView(material->GetTextures()[Material::TextureType::EMISSIVE], DescriptorType::COMBINED_IMAGE_SAMPLER));
-			mainRenderPassParameters->AddAttachmentWithResolve(0, ResourceView(renderSurface->GetMSAAColourImageView(), Resource::State::COLOUR_ATTACHMENT),
-				ResourceView(renderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
+			if (msaa)
+				mainRenderPassParameters->AddAttachmentWithResolve(0, ResourceView(renderSurface->GetMSAAColourImageView(), Resource::State::COLOUR_ATTACHMENT),
+					ResourceView(renderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
+			else
+				mainRenderPassParameters->AddAttachment(0, ResourceView(renderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
+
 			mainRenderPassParameters->AddAttachment(0, ResourceView(renderSurface->GetDepthImageView(), Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
 			mainRenderPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
