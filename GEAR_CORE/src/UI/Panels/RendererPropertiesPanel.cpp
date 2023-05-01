@@ -5,6 +5,7 @@
 
 #include "Graphics/Rendering/Renderer.h"
 #include "Graphics/Rendering/RenderGraph.h"
+#include "Core/ParseStack.h"
 
 using namespace gear;
 using namespace graphics;
@@ -57,34 +58,20 @@ void RendererPropertiesPanel::Draw()
 			{
 				if (scopeStack != pass->GetScopeStack())
 				{
-					const size_t minCount = std::min(scopeStack.size(), pass->GetScopeStack().size());
-					size_t differingIndex = 0;
-					for (size_t i = 0; i < minCount; i++)
-					{
-						differingIndex = i + 1;
-						if (scopeStack._Get_container()[i] != pass->GetScopeStack()._Get_container()[i])
+					core::ResolveStacks<std::string>(scopeStack, pass->GetScopeStack(),
+						[&]()
 						{
-							differingIndex = i;
-							break;
-						}
-					}
-
-					while (scopeStack.size() != differingIndex)
-					{
-						scopeStack.pop();
-						if (scopeStackOpen.top())
-							EndDrawTreeNode();
-						scopeStackOpen.pop();
-					}
-					for (size_t i = differingIndex; i < pass->GetScopeStack().size(); i++)
-					{
-						const std::string& scopeName = pass->GetScopeStack()._Get_container()[i];
-						scopeStack.push(scopeName);
-						bool open = false;
-						if (scopeStackOpen.empty() || scopeStackOpen.top())
-							open = DrawTreeNode(scopeName, false, (void*)id++);
-						scopeStackOpen.push(open);
-					}
+							if (scopeStackOpen.top())
+								EndDrawTreeNode();
+							scopeStackOpen.pop();
+						},
+						[&](const std::string& scopeName)
+						{
+							bool open = false;
+							if (scopeStackOpen.empty() || scopeStackOpen.top())
+								open = DrawTreeNode(scopeName, false, (void*)id++);
+							scopeStackOpen.push(open);
+						});
 				}
 
 				if (scopeStackOpen.top())
@@ -123,13 +110,12 @@ void RendererPropertiesPanel::Draw()
 				}
 			}
 
-			while (scopeStack.size())
-			{
-				scopeStack.pop();
-				if (scopeStackOpen.top())
-					EndDrawTreeNode();
-				scopeStackOpen.pop();
-			}
+			core::ClearStack(scopeStack, [&]()
+				{
+					if (scopeStackOpen.top())
+						EndDrawTreeNode();
+					scopeStackOpen.pop();
+				});
 			ImGui::Separator();
 
 			DrawPostProcessingUI();

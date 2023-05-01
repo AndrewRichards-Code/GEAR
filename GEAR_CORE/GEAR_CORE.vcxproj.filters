@@ -509,5 +509,8 @@
     <ClInclude Include="src\Graphics\Rendering\Passes\SwapchinUIPasses.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Core\ParseStack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

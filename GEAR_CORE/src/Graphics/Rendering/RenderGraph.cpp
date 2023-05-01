@@ -2,6 +2,7 @@
 #include "Graphics/Rendering/RenderGraph.h"
 
 #include "Graphics/AllocatorManager.h"
+#include "Core/ParseStack.h"
 
 using namespace gear;
 using namespace graphics;
@@ -358,39 +359,15 @@ void RenderGraph::Execute()
 	{
 		if (data.ScopeStack != pass->m_ScopeStack)
 		{
-			const size_t minCount = std::min(data.ScopeStack.size(), pass->m_ScopeStack.size());
-			size_t differingIndex = 0;
-			for (size_t i = 0; i < minCount; i++)
-			{
-				differingIndex = i + 1;
-				if (data.ScopeStack._Get_container()[i] != pass->m_ScopeStack._Get_container()[i])
-				{
-					differingIndex = i;
-					break;
-				}
-			}
-
-			while (data.ScopeStack.size() != differingIndex)
-			{
-				data.ScopeStack.pop();
-				cmdBuffer->EndDebugLabel(m_FrameIndex);
-			}
-			for (size_t i = differingIndex; i < pass->m_ScopeStack.size(); i++)
-			{
-				const std::string& scopeName = pass->m_ScopeStack._Get_container()[i];
-				data.ScopeStack.push(scopeName);
-				cmdBuffer->BeginDebugLabel(m_FrameIndex, scopeName);
-			}
+			core::ResolveStacks<std::string>(data.ScopeStack, pass->m_ScopeStack,
+				[&]() { cmdBuffer->EndDebugLabel(m_FrameIndex); },
+				[&](const std::string& scopeName) { cmdBuffer->BeginDebugLabel(m_FrameIndex, scopeName); });
 		}
 
 		pass->Execute(this, cmdBuffer, m_FrameIndex);
 	}
 
-	while (data.ScopeStack.size())
-	{
-		data.ScopeStack.pop();
-		cmdBuffer->EndDebugLabel(m_FrameIndex);
-	}
+	core::ClearStack(data.ScopeStack, [&]() { cmdBuffer->EndDebugLabel(m_FrameIndex); });
 
 	cmdBuffer->End(m_FrameIndex);
 }
