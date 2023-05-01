@@ -72,6 +72,7 @@ namespace gear
 			inline uint32_t GetWidth() const { return m_CurrentWidth; }
 			inline uint32_t GetHeight() const { return m_CurrentHeight; }
 			inline float GetRatio() const { return ((float)m_CurrentWidth / (float)m_CurrentHeight); }
+			inline const miru::base::Image::SampleCountBit& GetAntiAliasing() const { return m_CI.samples; }
 			inline std::string GetAntiAliasingValue() const { return std::to_string(static_cast<uint32_t>(m_CI.samples)); }
 
 		private:

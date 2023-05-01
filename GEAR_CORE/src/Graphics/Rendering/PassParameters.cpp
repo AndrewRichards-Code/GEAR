@@ -328,6 +328,10 @@ void TaskPassParameters::AddAttachmentWithResolve(uint32_t index, const Resource
 		m_OutputResourceViews.push_back(resolveResourceView);
 		m_OutputResourceViews.back().stage = Shader::StageBit::FRAGMENT_BIT;
 	}
+	else
+	{
+		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "ResourceView::ImageViews multisample and/or resolve are invalid.");
+	}
 }
 
 void TaskPassParameters::SetRenderArea(Rect2D renderArea, uint32_t layers, uint32_t viewMask)
