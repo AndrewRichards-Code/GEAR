@@ -382,6 +382,11 @@ void UIContext::RenderDrawData(const CommandBufferRef& cmdBuffer, uint32_t frame
 			ID3D12GraphicsCommandList* cmdList = GetID3D12GraphicsCommandList(cmdBuffer, frameIndex);
 			cmdList->SetDescriptorHeaps(1, &(m_D3D12DescriptorHeapSRV));
 			ImGui_ImplDX12_RenderDrawData(drawData, cmdList);
+
+			//Reset previous Descriptor Heaps.
+			d3d12::CommandBuffer::RenderingResource& renderingResource = ref_cast<d3d12::CommandBuffer>(cmdBuffer)->m_RenderingResources[frameIndex];
+			ID3D12DescriptorHeap* heaps[2] = { renderingResource.CBV_SRV_UAV_DescriptorHeap,  renderingResource.SAMPLER_DescriptorHeap };
+			cmdList->SetDescriptorHeaps(2, heaps);
 		}
 		else
 		{

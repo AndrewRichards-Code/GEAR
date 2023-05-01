@@ -111,6 +111,20 @@ void SkyboxPasses::SpecularIrradiance(Renderer& renderer, Ref<Skybox> skybox)
 		renderGraph.AddPass("Level: " + std::to_string(i), specularIrradiancePassParameters, CommandPool::QueueType::COMPUTE,
 			[texture, i, specularIrradianceInfoUBs, skybox, groupCount](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 			{
+				if (GraphicsAPI::IsD3D12())
+				{
+					Barrier::CreateInfo bCI;
+					bCI.type = Barrier::Type::BUFFER;
+					bCI.srcAccess = Barrier::AccessBit::UNIFORM_READ_BIT;
+					bCI.dstAccess = Barrier::AccessBit::TRANSFER_READ_BIT;
+					bCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+					bCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
+					bCI.buffer = specularIrradianceInfoUBs[i]->GetGPUBuffer();
+					bCI.offset = 0;
+					bCI.size = specularIrradianceInfoUBs[i]->GetSize();
+					Ref<Barrier> b = Barrier::Create(&bCI);
+					cmdBuffer->PipelineBarrier(frameIndex, PipelineStageBit::COMPUTE_SHADER_BIT, PipelineStageBit::COMPUTE_SHADER_BIT, DependencyBit::NONE_BIT, { b });
+				};
 				cmdBuffer->CopyBuffer(frameIndex, specularIrradianceInfoUBs[i]->GetCPUBuffer(), specularIrradianceInfoUBs[i]->GetGPUBuffer(), { {0, 0, specularIrradianceInfoUBs[i]->GetSize()} });
 				if (GraphicsAPI::IsD3D12())
 				{

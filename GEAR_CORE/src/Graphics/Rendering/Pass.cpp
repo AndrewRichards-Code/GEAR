@@ -251,8 +251,8 @@ Pass::TransitionDetails Pass::GetTransitionDetails(const Resource::State& state,
 	case Resource::State::SHADER_READ_ONLY:
 	{
 		accesses = src ? Barrier::AccessBit::NONE_BIT : Barrier::AccessBit::UNIFORM_READ_BIT;
-		layout = (!arc::BitwiseCheck(stage, Shader::StageBit::FRAGMENT_BIT) && GraphicsAPI::IsD3D12())
-			? Image::Layout::D3D12_NON_PIXEL_SHADER_READ_ONLY_OPTIMAL : Image::Layout::SHADER_READ_ONLY_OPTIMAL;
+		layout = /*(!arc::BitwiseCheck(stage, Shader::StageBit::FRAGMENT_BIT) && GraphicsAPI::IsD3D12())
+			? Image::Layout::D3D12_NON_PIXEL_SHADER_READ_ONLY_OPTIMAL :*/ Image::Layout::SHADER_READ_ONLY_OPTIMAL;
 		pipelineStage = ShaderStageToPipelineStage(stage);
 		return { accesses, layout, pipelineStage };
 	}
