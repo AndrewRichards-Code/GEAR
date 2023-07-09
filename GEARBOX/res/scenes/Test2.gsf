@@ -198,8 +198,6 @@
             "8077919658766236766": {
                 "CameraComponent": {
                     "debugName": "Camera",
-                    "flipX": false,
-                    "flipY": false,
                     "hdrSettings": {
                         "gammaSpace": 1,
                         "generatedCubemapSize": 1024

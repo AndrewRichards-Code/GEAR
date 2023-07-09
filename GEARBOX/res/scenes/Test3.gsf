@@ -122,8 +122,6 @@
             "9120241668796281219": {
                 "CameraComponent": {
                     "debugName": "Camera",
-                    "flipX": false,
-                    "flipY": false,
                     "hdrSettings": {
                         "exposure": 1.0,
                         "gammaSpace": 1
