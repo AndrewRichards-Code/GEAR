@@ -23,7 +23,6 @@ void Camera::Update(const Transform& transform)
 	if (CreateInfoHasChanged(&m_CI))
 	{
 		DefineProjection();
-		SetHDRInfo();
 	}
 	if (TransformHasChanged(transform))
 	{
@@ -33,7 +32,6 @@ void Camera::Update(const Transform& transform)
 	if (m_UpdateGPU)
 	{
 		m_CameraUB->SubmitData();
-		m_HDRInfoUB->SubmitData();
 	}
 }
 
@@ -105,12 +103,12 @@ bool Camera::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo
 	newHash ^= core::GetHash(CI.projectionType);
 	if (m_CI.projectionType == ProjectionType::ORTHOGRAPHIC)
 	{
-		newHash ^= core::GetHash(CI.orthographicsParams.left);
-		newHash ^= core::GetHash(CI.orthographicsParams.right);
-		newHash ^= core::GetHash(CI.orthographicsParams.bottom);
-		newHash ^= core::GetHash(CI.orthographicsParams.top);
-		newHash ^= core::GetHash(CI.orthographicsParams.near);
-		newHash ^= core::GetHash(CI.orthographicsParams.far);
+		newHash ^= core::GetHash(CI.orthographicParams.left);
+		newHash ^= core::GetHash(CI.orthographicParams.right);
+		newHash ^= core::GetHash(CI.orthographicParams.bottom);
+		newHash ^= core::GetHash(CI.orthographicParams.top);
+		newHash ^= core::GetHash(CI.orthographicParams.near);
+		newHash ^= core::GetHash(CI.orthographicParams.far);
 	}
 	else if(m_CI.projectionType == ProjectionType::PERSPECTIVE)
 	{
@@ -123,8 +121,6 @@ bool Camera::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo
 	{
 		GEAR_ASSERT(ErrorCode::OBJECTS | ErrorCode::INVALID_VALUE, "Unknown projection type.");
 	}
-	newHash ^= core::GetHash(CI.hdrSettings.exposure);
-	newHash ^= core::GetHash(CI.hdrSettings.gammaSpace);
 	return CompareCreateInfoHash(newHash);
 }
 
@@ -132,7 +128,7 @@ void Camera::DefineProjection()
 {
 	if (m_CI.projectionType == ProjectionType::ORTHOGRAPHIC)
 	{
-		OrthographicParameters& op = m_CI.orthographicsParams;
+		OrthographicParameters& op = m_CI.orthographicParams;
 		m_CameraUB->proj= float4x4::Orthographic(op.left, op.right, op.bottom, op.top, op.near, op.far, true, false);
 	}
 	else if (m_CI.projectionType == ProjectionType::PERSPECTIVE)
@@ -166,12 +162,6 @@ void Camera::SetPosition(const Transform& transform)
 	m_CameraUB->position = float4(transform.translation, +1.0f);
 }
 
-void Camera::SetHDRInfo()
-{
-	m_HDRInfoUB->exposure = m_CI.hdrSettings.exposure;
-	m_HDRInfoUB->gammaSpace = static_cast<uint32_t>(m_CI.hdrSettings.gammaSpace);
-}
-
 void Camera::InitialiseUB()
 {
 	float zero[sizeof(CameraUB)] = { 0 };
@@ -180,11 +170,4 @@ void Camera::InitialiseUB()
 	ubCI.device = m_CI.device;
 	ubCI.data = zero;
 	m_CameraUB = CreateRef<Uniformbuffer<CameraUB>>(&ubCI);
-
-	float zero2[sizeof(HDRInfoUB)] = { 0 };
-	Uniformbuffer<HDRInfoUB>::CreateInfo ubCI2;
-	ubCI2.debugName = "GEAR_CORE_Camera_HDRInfo: " + m_CI.debugName;
-	ubCI2.device = m_CI.device;
-	ubCI2.data = zero2;
-	m_HDRInfoUB = CreateRef<Uniformbuffer<HDRInfoUB>>(&ubCI2);
 }

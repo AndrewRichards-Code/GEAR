@@ -111,18 +111,16 @@ void CameraComponent::Load(LoadSaveParameters& lsp)
 	cameraCI.debugName = component["debugName"];
 	cameraCI.device = lsp.window->GetDevice();
 	cameraCI.projectionType = component["projectionType"];
-	cameraCI.orthographicsParams.left = component["orthographicsParams"]["left"];
-	cameraCI.orthographicsParams.right = component["orthographicsParams"]["right"];
-	cameraCI.orthographicsParams.bottom = component["orthographicsParams"]["bottom"];
-	cameraCI.orthographicsParams.top = component["orthographicsParams"]["top"];
-	cameraCI.orthographicsParams.near = component["orthographicsParams"]["near"];
-	cameraCI.orthographicsParams.far = component["orthographicsParams"]["far"];
+	cameraCI.orthographicParams.left = component["orthographicParams"]["left"];
+	cameraCI.orthographicParams.right = component["orthographicParams"]["right"];
+	cameraCI.orthographicParams.bottom = component["orthographicParams"]["bottom"];
+	cameraCI.orthographicParams.top = component["orthographicParams"]["top"];
+	cameraCI.orthographicParams.near = component["orthographicParams"]["near"];
+	cameraCI.orthographicParams.far = component["orthographicParams"]["far"];
 	cameraCI.perspectiveParams.horizonalFOV = component["perspectiveParams"]["horizonalFOV"];
 	cameraCI.perspectiveParams.aspectRatio = component["perspectiveParams"]["aspectRatio"];
 	cameraCI.perspectiveParams.zNear = component["perspectiveParams"]["zNear"];
 	cameraCI.perspectiveParams.zFar = component["perspectiveParams"]["zFar"];
-	cameraCI.hdrSettings.exposure = component["hdrSettings"]["exposure"];
-	cameraCI.hdrSettings.gammaSpace = component["hdrSettings"]["gammaSpace"];
 
 	camera = CreateRef<Camera>(&cameraCI);
 }
@@ -133,18 +131,16 @@ void CameraComponent::Save(LoadSaveParameters& lsp)
 	Camera::CreateInfo& cameraCI = GetCreateInfo();
 	component["debugName"] = cameraCI.debugName;
 	component["projectionType"] = cameraCI.projectionType;
-	component["orthographicsParams"]["left"] = cameraCI.orthographicsParams.left;
-	component["orthographicsParams"]["right"] = cameraCI.orthographicsParams.right;
-	component["orthographicsParams"]["bottom"] = cameraCI.orthographicsParams.bottom;
-	component["orthographicsParams"]["top"] = cameraCI.orthographicsParams.top;
-	component["orthographicsParams"]["near"] = cameraCI.orthographicsParams.near;
-	component["orthographicsParams"]["far"] = cameraCI.orthographicsParams.far;
+	component["orthographicParams"]["left"] = cameraCI.orthographicParams.left;
+	component["orthographicParams"]["right"] = cameraCI.orthographicParams.right;
+	component["orthographicParams"]["bottom"] = cameraCI.orthographicParams.bottom;
+	component["orthographicParams"]["top"] = cameraCI.orthographicParams.top;
+	component["orthographicParams"]["near"] = cameraCI.orthographicParams.near;
+	component["orthographicParams"]["far"] = cameraCI.orthographicParams.far;
 	component["perspectiveParams"]["horizonalFOV"] = cameraCI.perspectiveParams.horizonalFOV;
 	component["perspectiveParams"]["aspectRatio"] = cameraCI.perspectiveParams.aspectRatio;
 	component["perspectiveParams"]["zNear"] = cameraCI.perspectiveParams.zNear;
 	component["perspectiveParams"]["zFar"] = cameraCI.perspectiveParams.zFar;
-	component["hdrSettings"]["exposure"] = cameraCI.hdrSettings.exposure;
-	component["hdrSettings"]["gammaSpace"] = cameraCI.hdrSettings.gammaSpace;
 }
 
 GEAR_SCENE_COMPONENTS_DEFAULTS_DEFINITION(LightComponent);

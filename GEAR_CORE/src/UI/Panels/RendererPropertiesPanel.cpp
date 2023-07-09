@@ -148,7 +148,12 @@ void RendererPropertiesPanel::DrawPostProcessingUI()
 		}
 		if (DrawTreeNode("HDR Mapping", true))
 		{
-			ImGui::Text("HDR Mapping is controlled by the Camera in the Scene.");
+			Ref<Uniformbuffer<UniformBufferStructures::HDRInfo>>& hdrSettingsUB = postProcessingInfo.hdrSettings.UB;
+			if (hdrSettingsUB)
+			{
+				DrawFloat("Exposure", hdrSettingsUB->exposure, 0.01f, 100.0f);
+				DrawDropDownMenu("Colour Space", (ColourSpace&)hdrSettingsUB->gammaSpace);
+			}
 			EndDrawTreeNode();
 		}
 

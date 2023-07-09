@@ -102,6 +102,30 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 	texCI.arrayLayers = 6;
 	texCI.type = miru::base::Image::Type::TYPE_CUBE;
 	m_BlackCubeTexture = CreateRef<Texture>(&texCI);
+
+	//Set up Post Processing Info
+	{
+		float zero[sizeof(UniformBufferStructures::BloomInfo)] = { 0 };
+		Uniformbuffer<UniformBufferStructures::BloomInfo>::CreateInfo ubCI;
+		ubCI.debugName = "GEAR_CORE_Buffer_BloomInfoUB";
+		ubCI.device = m_Device;
+		ubCI.data = zero;
+		m_PostProcessingInfo.bloom.UB = CreateRef<Uniformbuffer<UniformBufferStructures::BloomInfo>>(&ubCI);
+		m_PostProcessingInfo.bloom.UB->threshold = 3.0f;
+		m_PostProcessingInfo.bloom.UB->upsampleScale = 2.0f;
+		m_PostProcessingInfo.bloom.UB->SubmitData();
+	}
+	{
+		float zero[sizeof(UniformBufferStructures::HDRInfo)] = { 0 };
+		Uniformbuffer<UniformBufferStructures::HDRInfo>::CreateInfo ubCI;
+		ubCI.debugName = "GEAR_CORE_Buffer_HDRSettings";
+		ubCI.device = m_Device;
+		ubCI.data = zero;
+		m_PostProcessingInfo.hdrSettings.UB = CreateRef<Uniformbuffer<UniformBufferStructures::HDRInfo>>(&ubCI);
+		m_PostProcessingInfo.hdrSettings.UB->exposure = 1.0f;
+		m_PostProcessingInfo.hdrSettings.UB->gammaSpace = static_cast<uint32_t>(ColourSpace::SRGB);
+		m_PostProcessingInfo.hdrSettings.UB->SubmitData();
+	}
 }
 
 Renderer::~Renderer()

@@ -36,29 +36,21 @@ namespace gear
 				float	zNear;
 				float	zFar;
 			};
-			struct HDRSettings
-			{
-				float					exposure = 1.0f;
-				graphics::ColourSpace	gammaSpace = graphics::ColourSpace::SRGB;
-			};
+			
 
 			struct CreateInfo : public ObjectInterface::CreateInfo
 			{
 				ProjectionType	projectionType;
 				union
 				{
-					OrthographicParameters	orthographicsParams;
+					OrthographicParameters	orthographicParams;
 					PerspectiveParameters	perspectiveParams;
 				};
-				HDRSettings		hdrSettings;
 			};
 
 		private:
 			typedef graphics::UniformBufferStructures::Camera CameraUB;
 			Ref<graphics::Uniformbuffer<CameraUB>> m_CameraUB;
-
-			typedef graphics::UniformBufferStructures::HDRInfo HDRInfoUB;
-			Ref<graphics::Uniformbuffer<HDRInfoUB>> m_HDRInfoUB;
 
 		public:
 			CreateInfo m_CI;
@@ -72,7 +64,6 @@ namespace gear
 			~Camera();
 
 			const Ref<graphics::Uniformbuffer<CameraUB>>& GetCameraUB() const { return m_CameraUB; };
-			const Ref<graphics::Uniformbuffer<HDRInfoUB>>& GetHDRInfoUB() const { return m_HDRInfoUB; };
 
 			//Update the camera from the current state of Camera::CreateInfo m_CI.
 			void Update(const Transform& transform) override;
@@ -87,7 +78,6 @@ namespace gear
 			void DefineProjection();
 			void DefineView(const Transform& transform);
 			void SetPosition(const Transform& transform);
-			void SetHDRInfo();
 			void InitialiseUB();
 		};
 	}

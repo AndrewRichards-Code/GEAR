@@ -199,11 +199,7 @@
             "8077919658766236766": {
                 "CameraComponent": {
                     "debugName": "Camera",
-                    "hdrSettings": {
-                        "exposure": 1.0,
-                        "gammaSpace": 1
-                    },
-                    "orthographicsParams": {
+                    "orthographicParams": {
                         "bottom": 2.4207026958465576,
                         "far": 0.0,
                         "left": 3370280550400.0,

@@ -50,25 +50,25 @@ void Text::Update(const Transform& transform)
 {
 	if (CreateInfoHasChanged(&m_CI))
 	{
-		Camera::OrthographicParameters orthographicsParams;
-		orthographicsParams.left = -static_cast<float>(m_CI.viewportWidth);
-		orthographicsParams.right = 0.0f;
-		orthographicsParams.bottom = -static_cast<float>(m_CI.viewportHeight);
-		orthographicsParams.top = 0.0f;
-		orthographicsParams.near = 0.0f;
-		orthographicsParams.far = 1.0f;
+		Camera::OrthographicParameters orthographicParams;
+		orthographicParams.left = -static_cast<float>(m_CI.viewportWidth);
+		orthographicParams.right = 0.0f;
+		orthographicParams.bottom = -static_cast<float>(m_CI.viewportHeight);
+		orthographicParams.top = 0.0f;
+		orthographicParams.near = 0.0f;
+		orthographicParams.far = 1.0f;
 		
 		if (!m_Camera)
 		{
 			m_CameraCI.debugName = "GEAR_CORE_FontRenderer";
 			m_CameraCI.device = m_CI.device;
 			m_CameraCI.projectionType = Camera::ProjectionType::ORTHOGRAPHIC;
-			m_CameraCI.orthographicsParams = orthographicsParams;
+			m_CameraCI.orthographicParams = orthographicParams;
 			m_Camera = CreateRef<Camera>(&m_CameraCI);
 		}
 		else
 		{
-			m_Camera->m_CI.orthographicsParams = orthographicsParams;
+			m_Camera->m_CI.orthographicParams = orthographicParams;
 			m_Camera->Update(transform);
 		}
 	}

@@ -27,7 +27,6 @@ void TransferPasses::Upload(Renderer& renderer, std::vector<Ref<Camera>>& allCam
 		if (camera && camera->GetUpdateGPUFlag())
 		{
 			uploadPassParameters->AddResourceView(camera->GetCameraUB());
-			uploadPassParameters->AddResourceView(camera->GetHDRInfoUB());
 			camera->ResetUpdateGPUFlag();
 		}
 	}
@@ -77,6 +76,17 @@ void TransferPasses::Upload(Renderer& renderer, std::vector<Ref<Camera>>& allCam
 				}
 			}
 		}
+	}
+	Renderer::PostProcessingInfo& postProcessingInfo = renderer.GetPostProcessingInfo();
+	if (postProcessingInfo.bloom.UB)
+	{
+		postProcessingInfo.bloom.UB->SubmitData();
+		uploadPassParameters->AddResourceView(postProcessingInfo.bloom.UB);
+	}
+	if (postProcessingInfo.hdrSettings.UB)
+	{
+		postProcessingInfo.hdrSettings.UB->SubmitData();
+		uploadPassParameters->AddResourceView(postProcessingInfo.hdrSettings.UB);
 	}
 	renderGraph.AddPass("Upload Transfer", uploadPassParameters, CommandPool::QueueType::TRANSFER, nullptr);
 }

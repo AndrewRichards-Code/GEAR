@@ -32,19 +32,6 @@ void PostProcessingPasses::Bloom::Prefilter(Renderer& renderer)
 		RenderGraph::ImageDesc::UsageBit::SHADER_READ_ONLY | RenderGraph::ImageDesc::UsageBit::SHADER_READ_WRITE }, "Bloom_Prefilter_Output");
 	ImageViewRef prefilterOutputImageView = renderGraph.CreateImageView(bloomInfo.prefilterOutputImage, Image::Type::TYPE_2D, { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 });
 
-	if (!bloomInfo.UB)
-	{
-		float zero[sizeof(UniformBufferStructures::BloomInfo)] = { 0 };
-		Uniformbuffer<UniformBufferStructures::BloomInfo>::CreateInfo ubCI;
-		ubCI.debugName = "GEAR_CORE_Buffer_BloomInfoUB";
-		ubCI.device = renderer.GetDevice();
-		ubCI.data = zero;
-		bloomInfo.UB = CreateRef<Uniformbuffer<UniformBufferStructures::BloomInfo>>(&ubCI);
-		bloomInfo.UB->threshold = 3.0f;
-		bloomInfo.UB->upsampleScale = 2.0f;
-	}
-	bloomInfo.UB->SubmitData();
-
 	Ref<TaskPassParameters> bloomPreFilterPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["BloomPreFilter"]);
 	bloomPreFilterPassParameters->SetResourceView("inputImage", ResourceView(colourImageView, Resource::State::SHADER_READ_WRITE));
 	bloomPreFilterPassParameters->SetResourceView("outputImage", ResourceView(prefilterOutputImageView, Resource::State::SHADER_READ_WRITE));
@@ -52,35 +39,8 @@ void PostProcessingPasses::Bloom::Prefilter(Renderer& renderer)
 	const std::array<uint32_t, 3>& groupCount = bloomPreFilterPassParameters->GetPipeline()->GetCreateInfo().shaders[0]->GetGroupCountXYZ();
 
 	renderGraph.AddPass("Prefilter", bloomPreFilterPassParameters, CommandPool::QueueType::COMPUTE,
-		[bloomInfo, width, height, groupCount](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+		[width, height, groupCount](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 		{
-			CommandBuffer::DependencyInfo dependencyInfo = { DependencyBit::NONE_BIT, {} };
-			Barrier2::CreateInfo bCI;
-			bCI.type = Barrier::Type::BUFFER;
-			bCI.srcStageMask = PipelineStageBit::COMPUTE_SHADER_BIT;
-			bCI.srcAccess = Barrier::AccessBit::UNIFORM_READ_BIT;
-			bCI.dstStageMask = PipelineStageBit::TRANSFER_BIT;
-			bCI.dstAccess = Barrier::AccessBit::TRANSFER_READ_BIT;
-			bCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-			bCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-			bCI.buffer = bloomInfo.UB->GetGPUBuffer();
-			bCI.offset = 0;
-			bCI.size = bloomInfo.UB->GetSize();
-			dependencyInfo.barriers.clear();
-			dependencyInfo.barriers.emplace_back(Barrier2::Create(&bCI));
-
-			cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
-			cmdBuffer->CopyBuffer(frameIndex, bloomInfo.UB->GetCPUBuffer(), bloomInfo.UB->GetGPUBuffer(), { { 0, 0, bloomInfo.UB->GetSize() } });
-			
-			bCI.srcStageMask = PipelineStageBit::TRANSFER_BIT;
-			bCI.srcAccess = Barrier::AccessBit::TRANSFER_READ_BIT;
-			bCI.dstStageMask = PipelineStageBit::COMPUTE_SHADER_BIT;
-			bCI.dstAccess = Barrier::AccessBit::UNIFORM_READ_BIT;
-			dependencyInfo.barriers.clear();
-			dependencyInfo.barriers.emplace_back(Barrier2::Create(&bCI));
-			cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
-		
-			
 			uint32_t _width = std::max(width / groupCount[0], uint32_t(1));
 			uint32_t _height = std::max(height / groupCount[1], uint32_t(1));
 			uint32_t _depth = 1 / groupCount[2];
@@ -190,9 +150,23 @@ void PostProcessingPasses::HDRMapping::Main(Renderer& renderer)
 	const Ref<RenderSurface>& renderSurface = renderer.GetRenderSurface();
 	const uint32_t& width = renderSurface->GetWidth();
 	const uint32_t& height = renderSurface->GetHeight();
+	Renderer::PostProcessingInfo::HDRSettings& hdrSettings = renderer.GetPostProcessingInfo().hdrSettings;
+
+	if (!hdrSettings.UB)
+	{
+		float zero[sizeof(UniformBufferStructures::HDRInfo)] = { 0 };
+		Uniformbuffer<UniformBufferStructures::HDRInfo>::CreateInfo ubCI;
+		ubCI.debugName = "GEAR_CORE_Buffer_HDRSettings";
+		ubCI.device = renderer.GetDevice();
+		ubCI.data = zero;
+		hdrSettings.UB = CreateRef<Uniformbuffer<UniformBufferStructures::HDRInfo>>(&ubCI);
+		hdrSettings.UB->exposure = 1.0f;
+		hdrSettings.UB->gammaSpace = static_cast<uint32_t>(ColourSpace::SRGB);
+	}
+	hdrSettings.UB->SubmitData();
 
 	Ref<TaskPassParameters> hdrMappingPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["HDR"]);
-	hdrMappingPassParameters->SetResourceView("hdrInfo", ResourceView(renderer.GetCamera()->GetHDRInfoUB()));
+	hdrMappingPassParameters->SetResourceView("hdrInfo", ResourceView(hdrSettings.UB));
 	hdrMappingPassParameters->SetResourceView("hdrInput", ResourceView(renderSurface->GetColourImageView(), Resource::State::SHADER_READ_ONLY));
 	hdrMappingPassParameters->AddAttachment(0, ResourceView(renderSurface->GetColourSRGBImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
 	hdrMappingPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));

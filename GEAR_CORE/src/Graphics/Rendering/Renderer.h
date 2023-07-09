@@ -38,6 +38,10 @@ namespace gear
 					std::vector<miru::base::ImageViewRef> imageViews;
 					miru::base::SamplerRef sampler;
 				} bloom;
+				struct HDRSettings
+				{
+					Ref<Uniformbuffer<UniformBufferStructures::HDRInfo>> UB;
+				} hdrSettings;
 			};
 
 		private:
