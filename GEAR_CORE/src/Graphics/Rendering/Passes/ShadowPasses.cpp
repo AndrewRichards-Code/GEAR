@@ -37,7 +37,7 @@ void ShadowPasses::Main(Renderer& renderer, Ref<Light> light)
 			shadowPassParameters->AddIndexBuffer(ResourceView(mesh->GetIndexBuffers()[i]));
 			shadowPassParameters->SetResourceView("probeInfo", ResourceView(probe->GetUB()));
 			shadowPassParameters->SetResourceView("model", ResourceView(model->GetUB()));
-			shadowPassParameters->AddAttachment(0, ResourceView(probe->m_DepthTexture, Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
+			shadowPassParameters->AddAttachment(0, ResourceView(probe->m_DepthTexture, Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0 });
 			shadowPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height), probe->m_DepthTexture->GetCreateInfo().arrayLayers);
 
 			renderGraph.AddPass("Sub Mesh: " + std::to_string(i), shadowPassParameters, CommandPool::QueueType::GRAPHICS,
