@@ -53,8 +53,6 @@ void gear::ui::componentui::DrawCameraComponentUI(Entity entity)
 
 		CI.orthographicsParams = op;
 	}
-	DrawCheckbox("Flip X", CI.flipX);
-	DrawCheckbox("Flip Y", CI.flipY);
 	DrawFloat("Exposure", CI.hdrSettings.exposure, 0.01f, 100.0f);
 	DrawDropDownMenu("Colour Space", CI.hdrSettings.gammaSpace);
 
@@ -73,8 +71,6 @@ void gear::ui::componentui::AddCameraComponent(Entity entity, void* device)
 		cameraCI.device = device;
 		cameraCI.projectionType = Camera::ProjectionType::PERSPECTIVE;
 		cameraCI.perspectiveParams = { DegToRad(90.0), screenRatio, 0.001f, 3000.0f };
-		cameraCI.flipX = false;
-		cameraCI.flipY = false;
 		cameraCI.hdrSettings.exposure = 1.0f;
 		cameraCI.hdrSettings.gammaSpace = graphics::ColourSpace::SRGB;
 		entity.AddComponent<CameraComponent>(&cameraCI);

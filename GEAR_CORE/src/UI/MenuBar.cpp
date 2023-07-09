@@ -86,6 +86,8 @@ void MenuBar::ProcessShortcuts()
 		DrawItemOpenProject();
 	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_R }))
 		DrawItemRecompileRenderPipelineShaders();
+	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_R }))
+		DrawItemReloadRenderPipelines();
 }
 
 void MenuBar::DrawMenuFile()
@@ -141,6 +143,10 @@ void MenuBar::DrawMenuSettings()
 		if (ImGui::MenuItem("Recompile RenderPipeline Shaders", "Ctrl+R"))
 		{
 			DrawItemRecompileRenderPipelineShaders();
+		}
+		if (ImGui::MenuItem("Reload RenderPipelines ", "Ctrl+Shift+R"))
+		{
+			DrawItemReloadRenderPipelines();
 		}
 
 		ImGui::EndMenu();
@@ -442,5 +448,14 @@ void MenuBar::DrawItemRecompileRenderPipelineShaders()
 	if (viewportPanel)
 	{
 		viewportPanel->GetCreateInfo().renderer->RecompileRenderPipelineShaders();
+	}
+}
+
+void MenuBar::DrawItemReloadRenderPipelines()
+{
+	Ref<ViewportPanel> viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
+	if (viewportPanel)
+	{
+		viewportPanel->GetCreateInfo().renderer->ReloadRenderPipelines();
 	}
 }

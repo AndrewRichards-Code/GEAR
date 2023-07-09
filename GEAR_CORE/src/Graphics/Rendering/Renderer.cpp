@@ -58,6 +58,7 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 
 	SubmitRenderSurface(m_CI.window->GetRenderSurface());
 	InitialiseRenderPipelines(m_RenderSurface);
+	DebugRender::Initialise(m_Device);
 
 	//Set Default Objects
 	float zero0[sizeof(UniformBufferStructures::Lights)] = { 0 };
@@ -107,6 +108,7 @@ Renderer::~Renderer()
 {
 	m_Context->DeviceWaitIdle();
 
+	DebugRender::Uninitialise();
 	UninitialiseRenderPipelines();
 }
 
@@ -114,8 +116,6 @@ void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface
 {
 	if (!s_RenderPipelines.empty())
 		return;
-
-	DebugRender::Initialise(m_Device);
 
 	const Image::Format& swapchainFormat = m_CI.window->GetSwapchain()->m_SwapchainImages[0]->GetCreateInfo().format;
 
@@ -159,8 +159,6 @@ void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface
 
 void Renderer::UninitialiseRenderPipelines()
 {
-	DebugRender::Uninitialise();
-
 	for (auto& pipeline : s_RenderPipelines)
 		pipeline.second = nullptr;
 
@@ -424,6 +422,13 @@ void Renderer::RecompileRenderPipelineShaders()
 	m_Context->DeviceWaitIdle();
 	for (auto& renderPipeline : s_RenderPipelines)
 		renderPipeline.second->RecompileShaders();
+}
+
+void Renderer::ReloadRenderPipelines()
+{
+	m_Context->DeviceWaitIdle();
+	UninitialiseRenderPipelines();
+	InitialiseRenderPipelines(m_RenderSurface);
 }
 
 void Renderer::ReloadTextures()

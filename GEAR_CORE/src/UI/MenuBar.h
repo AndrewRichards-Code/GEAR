@@ -39,6 +39,7 @@ namespace gear
 			void DrawItemAbout();
 			void DrawItemGEARBOXOptions();
 			void DrawItemRecompileRenderPipelineShaders();
+			void DrawItemReloadRenderPipelines();
 
 			//Members
 		private:

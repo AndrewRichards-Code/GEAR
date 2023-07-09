@@ -50,8 +50,6 @@ namespace gear
 					OrthographicParameters	orthographicsParams;
 					PerspectiveParameters	perspectiveParams;
 				};
-				bool			flipX;
-				bool			flipY;
 				HDRSettings		hdrSettings;
 			};
 

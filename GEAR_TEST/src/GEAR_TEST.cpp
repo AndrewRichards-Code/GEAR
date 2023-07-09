@@ -266,8 +266,8 @@ void GEAR_TEST::Run()
 	modelCI.renderPipelineName = "PBROpaque";
 	Entity drone = activeScene->CreateEntity();
 	drone.AddComponent<ModelComponent>(CreateRef<Model>(&modelCI));
-	drone.GetComponent<TransformComponent>().transform.translation = float3(0.0, 0.5, -1.0);
-	drone.GetComponent<TransformComponent>().transform.orientation = Quaternion(sqrtf(2) / 2, -sqrtf(2) / 2, 0, 0);
+	drone.GetComponent<TransformComponent>().transform.translation = float3(0.0f, 0.75f, 1.5f);
+	drone.GetComponent<TransformComponent>().transform.orientation = Quaternion(sqrt(2) / 2, sqrt(2) / 2, 0, 0);
 	drone.GetComponent<TransformComponent>().transform.scale = float3(0.01f, 0.01f, 0.01f);
 
 	Light::CreateInfo lightCI;
@@ -286,8 +286,6 @@ void GEAR_TEST::Run()
 	cameraCI.device = window->GetDevice();
 	cameraCI.projectionType = Camera::ProjectionType::PERSPECTIVE;
 	cameraCI.perspectiveParams = { DegToRad(90.0), window->GetRatio(), 0.01f, 3000.0f };
-	cameraCI.flipX = false;
-	cameraCI.flipY = false;
 	Entity cameraEntity = activeScene->CreateEntity();
 	cameraEntity.AddComponent<CameraComponent>(CreateRef<Camera>(&cameraCI));
 	cameraEntity.GetComponent<TransformComponent>().transform.translation = float3(0, 1, 0);

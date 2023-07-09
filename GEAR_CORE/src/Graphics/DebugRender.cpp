@@ -19,8 +19,6 @@ Ref<objects::Camera>& DebugRender::GetCamera()
 		cameraCI.device = s_Device;
 		cameraCI.projectionType = Camera::ProjectionType::PERSPECTIVE;
 		cameraCI.perspectiveParams = { mars::DegToRad(120.0), 1.0f, 0.001f, 1.0f };
-		cameraCI.flipX = false;
-		cameraCI.flipY = false;
 		s_Camera = CreateRef<Camera>(&cameraCI);
 	}
 

@@ -36,7 +36,7 @@ void MainRenderPasses::Skybox(Renderer& renderer, Ref<objects::Skybox> skybox)
 			ResourceView(renderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
 	else
 		skyboxPassParameters->AddAttachment(0, ResourceView(renderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
-	skyboxPassParameters->AddAttachment(0, ResourceView(renderSurface->GetDepthImageView(), Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
+	skyboxPassParameters->AddAttachment(0, ResourceView(renderSurface->GetDepthImageView(), Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f,  0 });
 	skyboxPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
 	renderGraph.AddPass("Skybox", skyboxPassParameters, CommandPool::QueueType::GRAPHICS,
@@ -85,7 +85,7 @@ void MainRenderPasses::PBROpaque(Renderer& renderer, Ref<objects::Light> light, 
 			else
 				mainRenderPassParameters->AddAttachment(0, ResourceView(renderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
 
-			mainRenderPassParameters->AddAttachment(0, ResourceView(renderSurface->GetDepthImageView(), Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 1.0f, 0 });
+			mainRenderPassParameters->AddAttachment(0, ResourceView(renderSurface->GetDepthImageView(), Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0 });
 			mainRenderPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
 			renderGraph.AddPass("Sub Mesh: " + std::to_string(i), mainRenderPassParameters, CommandPool::QueueType::GRAPHICS,

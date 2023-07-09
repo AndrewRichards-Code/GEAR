@@ -109,6 +109,7 @@ namespace gear
 
 		public:
 			void RecompileRenderPipelineShaders();
+			void ReloadRenderPipelines();
 			void ReloadTextures();
 
 			inline miru::base::ContextRef GetContext() { return m_Context; }
@@ -117,6 +118,7 @@ namespace gear
 			static inline std::map<std::string, Ref<graphics::RenderPipeline>>& GetRenderPipelines() { return s_RenderPipelines; }
 			inline Ref<RenderSurface> GetRenderSurface() { return m_RenderSurface; }
 			inline Ref<objects::Camera> GetCamera() { return m_MainRenderCamera; }
+			inline Ref<objects::Camera> GetTextCamera() { return m_TextCamera; }
 			inline const std::vector<Ref<objects::Model>>& GetModelQueue() const { return m_ModelQueue; }
 			inline const std::vector<Ref<objects::Model>>& GetTextQueue() const { return m_TextQueue; }
 			inline const RenderGraph& GetRenderGraph() const { return m_RenderGraph; }

@@ -121,8 +121,6 @@ void CameraComponent::Load(LoadSaveParameters& lsp)
 	cameraCI.perspectiveParams.aspectRatio = component["perspectiveParams"]["aspectRatio"];
 	cameraCI.perspectiveParams.zNear = component["perspectiveParams"]["zNear"];
 	cameraCI.perspectiveParams.zFar = component["perspectiveParams"]["zFar"];
-	cameraCI.flipX = component["flipX"];
-	cameraCI.flipY = component["flipY"];
 	cameraCI.hdrSettings.exposure = component["hdrSettings"]["exposure"];
 	cameraCI.hdrSettings.gammaSpace = component["hdrSettings"]["gammaSpace"];
 
@@ -145,8 +143,6 @@ void CameraComponent::Save(LoadSaveParameters& lsp)
 	component["perspectiveParams"]["aspectRatio"] = cameraCI.perspectiveParams.aspectRatio;
 	component["perspectiveParams"]["zNear"] = cameraCI.perspectiveParams.zNear;
 	component["perspectiveParams"]["zFar"] = cameraCI.perspectiveParams.zFar;
-	component["flipX"] = cameraCI.flipX;
-	component["flipY"] = cameraCI.flipY;
 	component["hdrSettings"]["exposure"] = cameraCI.hdrSettings.exposure;
 	component["hdrSettings"]["gammaSpace"] = cameraCI.hdrSettings.gammaSpace;
 }

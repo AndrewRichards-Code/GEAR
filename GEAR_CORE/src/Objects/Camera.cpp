@@ -123,8 +123,6 @@ bool Camera::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo
 	{
 		GEAR_ASSERT(ErrorCode::OBJECTS | ErrorCode::INVALID_VALUE, "Unknown projection type.");
 	}
-	newHash ^= core::GetHash(CI.flipX);
-	newHash ^= core::GetHash(CI.flipY);
 	newHash ^= core::GetHash(CI.hdrSettings.exposure);
 	newHash ^= core::GetHash(CI.hdrSettings.gammaSpace);
 	return CompareCreateInfoHash(newHash);
@@ -135,21 +133,17 @@ void Camera::DefineProjection()
 	if (m_CI.projectionType == ProjectionType::ORTHOGRAPHIC)
 	{
 		OrthographicParameters& op = m_CI.orthographicsParams;
-		m_CameraUB->proj= float4x4::Orthographic(op.left, op.right, op.bottom, op.top, op.near, op.far);
+		m_CameraUB->proj= float4x4::Orthographic(op.left, op.right, op.bottom, op.top, op.near, op.far, true, false);
 	}
 	else if (m_CI.projectionType == ProjectionType::PERSPECTIVE)
 	{
 		PerspectiveParameters& pp = m_CI.perspectiveParams;
-		m_CameraUB->proj = float4x4::Perspective(pp.horizonalFOV, pp.aspectRatio, pp.zNear, pp.zFar);
+		m_CameraUB->proj = float4x4::Perspective(pp.horizonalFOV, pp.aspectRatio, pp.zNear, pp.zFar, true, false);
 	}
 	else
 	{
 		GEAR_ASSERT(ErrorCode::OBJECTS | ErrorCode::INVALID_VALUE, "Unknown projection type.");
 	}
-	if (m_CI.flipX)
-		m_CameraUB->proj.a *= -1;
-	if (m_CI.flipY)
-		m_CameraUB->proj.f *= -1;
 
 	if (miru::base::GraphicsAPI::IsVulkan())
 		m_CameraUB->proj.f *= -1;

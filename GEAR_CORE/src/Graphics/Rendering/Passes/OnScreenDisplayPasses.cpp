@@ -26,6 +26,7 @@ void OnScreenDisplayPasses::Text(Renderer& renderer)
 		Ref<TaskPassParameters> osdTextPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["Text"]);
 		osdTextPassParameters->AddVertexBuffer(ResourceView(model->GetMesh()->GetVertexBuffers()[0]));
 		osdTextPassParameters->AddIndexBuffer(ResourceView(model->GetMesh()->GetIndexBuffers()[0]));
+		osdTextPassParameters->SetResourceView("textCamera", ResourceView(renderer.GetTextCamera()->GetCameraUB()));
 		osdTextPassParameters->SetResourceView("model", ResourceView(model->GetUB()));
 		osdTextPassParameters->SetResourceView("fontAtlas", ResourceView(model->GetMesh()->GetMaterial(0)->GetTextures()[objects::Material::TextureType::ALBEDO], DescriptorType::COMBINED_IMAGE_SAMPLER));
 		osdTextPassParameters->AddAttachment(0, ResourceView(renderSurface->GetColourSRGBImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::LOAD, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });

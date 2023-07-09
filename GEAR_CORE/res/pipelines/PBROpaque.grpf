@@ -94,7 +94,7 @@
   "depthStencilState": {
     "depthTestEnable": true,
     "depthWriteEnable": true,
-    "depthCompareOp": "LESS",
+    "depthCompareOp": "GREATER",
     "depthBoundsTestEnable": false,
     "stencilTestEnable": false,
     "front": {
