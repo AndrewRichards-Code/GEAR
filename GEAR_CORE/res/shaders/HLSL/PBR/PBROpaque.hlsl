@@ -51,10 +51,10 @@ VS_OUT vs_main(VS_IN IN)
 {
 	VS_OUT OUT;
 	
-	OUT.position = mul(mul(mul(transpose(camera.proj), transpose(camera.view)), transpose(model.modl)), IN.positions);
+	OUT.position = mul(IN.positions, mul(model.modl, mul(camera.view, camera.proj)));
 	OUT.texCoord = float2(model.texCoordScale0.x * IN.texCoords.x, model.texCoordScale0.y * IN.texCoords.y);
-	OUT.tbn = transpose(float3x3(mul(transpose(model.modl), IN.tangents).xyz, mul(transpose(model.modl), IN.binormals).xyz, mul(transpose(model.modl), IN.normals).xyz));
-	OUT.worldSpace = mul(transpose(model.modl), IN.positions);	
+	OUT.tbn = float3x3(mul(IN.tangents, model.modl).xyz, mul(IN.binormals, model.modl).xyz, mul(IN.normals, model.modl).xyz);
+	OUT.worldSpace = mul(IN.positions, model.modl);
 	OUT.vertexToCamera = normalize(camera.position - OUT.worldSpace);
 	OUT.colour = IN.colours;
 	
@@ -66,7 +66,7 @@ float3 GetNormal(PS_IN IN)
 {
 	float3 N = normal_ImageCIS.Sample(normal_SamplerCIS, IN.texCoord).xyz;
 	N = normalize(2.0 * N - 1.0);
-	return normalize(mul(IN.tbn, N));
+	return normalize(mul(N, IN.tbn));
 }
 float3 GetAlbedo(PS_IN IN) 
 { 

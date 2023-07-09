@@ -24,7 +24,7 @@ MIRU_UNIFORM_BUFFER(1, 0, Model, model);
 VS_OUT vs_main(VS_IN IN, uint instanceID : SV_InstanceID)
 {
 	VS_OUT OUT;
-	OUT.v_Position = mul(mul(mul(transpose(probeInfo.proj), transpose(probeInfo.view[instanceID])), transpose(model.modl)), IN.positions);
+	OUT.v_Position = mul(IN.positions, mul(model.modl, mul(probeInfo.view[instanceID], probeInfo.proj)));
 	OUT.v_RenderTargetArrayIndex = instanceID;
 	return OUT;
 }

@@ -35,7 +35,7 @@ VS_OUT vs_main(VS_IN IN)
 {
 	VS_OUT OUT;
 	
-	OUT.v_Position = mul(mul(mul(transpose(textCamera.proj), transpose(textCamera.view)), transpose(model.modl)), IN.positions);
+	OUT.v_Position = mul(IN.positions, mul(model.modl, mul(textCamera.view, textCamera.proj)));
 	OUT.v_TexCoord = IN.texCoords;
 	OUT.v_Colour = IN.colours;
 	

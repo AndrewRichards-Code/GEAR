@@ -1,10 +1,9 @@
-#ifndef DEPTH_H
-#define DEPTH_H
+#pragma once
 
-//https://developer.nvidia.com/content/depth-precision-visualized
+// https://developer.nvidia.com/content/depth-precision-visualized
 float LineariseDepth(float storedDepthValue, float4x4 projectionMatrix)
 {
-	//Orthographic projections are linear by default.
+	// Orthographic projections are linear by default.
 	if (projectionMatrix[3][3] == 1.0)
 		return storedDepthValue;
 
@@ -14,7 +13,6 @@ float LineariseDepth(float storedDepthValue, float4x4 projectionMatrix)
 
 	return a / (storedDepthValue - b);
 }
-
 
 float2 GetNearFarValues(float4x4 projectionMatrix)
 {
@@ -26,5 +24,3 @@ float2 GetNearFarValues(float4x4 projectionMatrix)
 
 	return float2(near, far);
 }
-
-#endif

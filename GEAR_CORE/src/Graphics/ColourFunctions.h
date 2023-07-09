@@ -224,11 +224,11 @@ namespace gear
 
 		GEAR_FLOAT3 ToCIE_XYZ(GEAR_UINT type, GEAR_FLOAT3 value)
 		{
-			return mul(transpose(GetColourTransformMatrics(type).RGB_To_XYZ), Linearise(type, value));
+			return mul(Linearise(type, value), GetColourTransformMatrics(type).RGB_To_XYZ);
 		}
 		GEAR_FLOAT3 FromCIE_XYZ(GEAR_UINT type, GEAR_FLOAT3 value)
 		{
-			return GammaCorrection(type, mul(transpose(GetColourTransformMatrics(type).XYZ_To_RGB), value));
+			return GammaCorrection(type, mul(value, GetColourTransformMatrics(type).XYZ_To_RGB));
 		}
 #endif
 #ifdef __cplusplus

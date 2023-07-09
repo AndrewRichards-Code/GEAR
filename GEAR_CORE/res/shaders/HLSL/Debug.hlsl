@@ -82,34 +82,31 @@ VS_OUT vs_coordinate_axes(VS_IN IN)
 	float aspectRatio = abs(1.0 / (camera.proj[0][0] / camera.proj[1][1]));
 	float scale = 0.1;
 	float scaleNDCOffset = scale * 1.125;
+	bool reverseDepth = camera.proj[2][2] < 0.0;
 
 	float4x4 viewProj = mul(camera.view, camera.proj);
-	float4x4 viewProj_Inv = inverse(viewProj);
-	float3 view = normalize(mul(float4(0.0, 0.0, 1.0, 1.0), viewProj_Inv)).xyz;
+	float4x4 view_Inv = inverse(camera.view);
+	float3 view = normalize(mul(float4(0.0, 0.0, 1.0, 0.0), view_Inv).xyz);
 
-	float4x4 transform = float4x4(
-		float4(scale, 0, 0, view.x + camera.position.x),
-		float4(0, scale, 0, view.y + camera.position.y),
-		float4(0, 0, scale, view.z + camera.position.z),
-		float4(0, 0, 0, 1.0)
-	);
-	float4x4 cameraView = transpose(camera.view);
-	float4x4 cameraProj = transpose(camera.proj);
-	float4x4 ndcTransform = float4x4
-	(
-		float4(1.0, 0, 0, -(1.0 - saturate(scaleNDCOffset / aspectRatio))),
-		float4(0, 1.0, 0, -(1.0 - scaleNDCOffset)),
-		float4(0, 0, 1.0, 0),
-		float4(0, 0, 0, 1.0)
-	);
+	float4x4 transform = transpose(float4x4(
+		float4(scale, 0.0, 0.0, view.x + camera.position.x),
+		float4(0.0, scale, 0.0, view.y + camera.position.y),
+		float4(0.0, 0.0, scale, view.z + camera.position.z),
+		float4(0.0, 0.0, 0.0, 1.0)
+	));
+	float4x4 ndcTransform = transpose(float4x4(
+		float4(1.0, 0.0, 0.0, -(1.0 - saturate(scaleNDCOffset / aspectRatio))),
+		float4(0.0, 1.0, 0.0, -(1.0 - scaleNDCOffset)),
+		float4(0.0, 0.0, 1.0, 0.0),
+		float4(0.0, 0.0, 0.0, 1.0)
+	));
 
 	//Need for differing NDC spaces in D3D12 and Vulkan after the Camera projection matrix is applied.
 	#if MIRU_VULKAN
-	ndcTransform[1][3] *= -1;
+	ndcTransform[3][1] *= -1;
 	#endif
 
-
-	OUT.v_Position = mul(mul(ndcTransform, mul(cameraProj, mul(cameraView, transform))), OUT.v_Position);
+	OUT.v_Position = mul(OUT.v_Position, mul(transform, mul(camera.view, mul(camera.proj, ndcTransform))));
 	
 	return OUT;
 }

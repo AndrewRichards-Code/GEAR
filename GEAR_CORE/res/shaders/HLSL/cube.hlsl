@@ -32,7 +32,7 @@ VS_OUT vs_main(VS_IN IN)
 {
 	VS_OUT OUT;
 	
-	OUT.v_Position = mul(mul(mul(transpose(camera.proj), transpose(camera.view)), transpose(model.modl)), IN.positions);
+	OUT.v_Position = mul(IN.positions, mul(model.modl, mul(camera.view, camera.proj)));
 	OUT.v_TextCoord = IN.positions.xyz;
 	
 	return OUT;
