@@ -24,11 +24,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImGui", "External\imgui\ImGui.vcxproj", "{D911888B-A2D2-4B74-8F70-A98972F7C0FC}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MIRU_CORE", "External\MIRU\MIRU_CORE\MIRU_CORE.vcxproj", "{A85CAE6B-D45E-46B3-9FAF-CC609220443E}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3B139016-30E1-4F38-891E-194E65E24DA9} = {3B139016-30E1-4F38-891E-194E65E24DA9}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spirv-cross-core", "External\MIRU\External\SPIRV-Cross\spirv-cross-core\spirv-cross-core.vcxproj", "{3B139016-30E1-4F38-891E-194E65E24DA9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -72,14 +67,6 @@ Global
 		{A85CAE6B-D45E-46B3-9FAF-CC609220443E}.Release|Gaming.Desktop.x64.Build.0 = Release|Gaming.Desktop.x64
 		{A85CAE6B-D45E-46B3-9FAF-CC609220443E}.Release|x64.ActiveCfg = Release|x64
 		{A85CAE6B-D45E-46B3-9FAF-CC609220443E}.Release|x64.Build.0 = Release|x64
-		{3B139016-30E1-4F38-891E-194E65E24DA9}.Debug|Gaming.Desktop.x64.ActiveCfg = Debug|Gaming.Desktop.x64
-		{3B139016-30E1-4F38-891E-194E65E24DA9}.Debug|Gaming.Desktop.x64.Build.0 = Debug|Gaming.Desktop.x64
-		{3B139016-30E1-4F38-891E-194E65E24DA9}.Debug|x64.ActiveCfg = Debug|x64
-		{3B139016-30E1-4F38-891E-194E65E24DA9}.Debug|x64.Build.0 = Debug|x64
-		{3B139016-30E1-4F38-891E-194E65E24DA9}.Release|Gaming.Desktop.x64.ActiveCfg = Release|Gaming.Desktop.x64
-		{3B139016-30E1-4F38-891E-194E65E24DA9}.Release|Gaming.Desktop.x64.Build.0 = Release|Gaming.Desktop.x64
-		{3B139016-30E1-4F38-891E-194E65E24DA9}.Release|x64.ActiveCfg = Release|x64
-		{3B139016-30E1-4F38-891E-194E65E24DA9}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -87,7 +74,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{D911888B-A2D2-4B74-8F70-A98972F7C0FC} = {36ADDC2C-0586-4DED-8887-0A1A78BBF116}
 		{A85CAE6B-D45E-46B3-9FAF-CC609220443E} = {36ADDC2C-0586-4DED-8887-0A1A78BBF116}
-		{3B139016-30E1-4F38-891E-194E65E24DA9} = {36ADDC2C-0586-4DED-8887-0A1A78BBF116}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FE8D0575-BFE5-4802-9FFF-D23E665EC3C0}

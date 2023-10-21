@@ -48,6 +48,7 @@ void RenderSurface::CreateAttachments()
 		m_ColourSRGBImageCI.size = 0;
 		m_ColourSRGBImageCI.data = nullptr;
 		m_ColourSRGBImageCI.allocator = m_AttachmentAllocator;
+		m_ColourSRGBImageCI.externalImage = nullptr;
 		m_ColourSRGBImage = Image::Create(&m_ColourSRGBImageCI);
 
 		m_ColourSRGBImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - ColourSRGBImageView";
@@ -75,6 +76,7 @@ void RenderSurface::CreateAttachments()
 		m_DepthImageCI.size = 0;
 		m_DepthImageCI.data = nullptr;
 		m_DepthImageCI.allocator = m_AttachmentAllocator;
+		m_DepthImageCI.externalImage = nullptr;
 		m_DepthImage = Image::Create(&m_DepthImageCI);
 
 		m_DepthImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - DepthImageView";
@@ -103,6 +105,7 @@ void RenderSurface::CreateAttachments()
 		m_MSAAColourImageCI.size = 0;
 		m_MSAAColourImageCI.data = nullptr;
 		m_MSAAColourImageCI.allocator = m_AttachmentAllocator;
+		m_MSAAColourImageCI.externalImage = nullptr;
 		m_MSAAColourImage = Image::Create(&m_MSAAColourImageCI);
 
 		m_MSAAColourImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - MSAAColourImageView";
@@ -130,6 +133,7 @@ void RenderSurface::CreateAttachments()
 		m_ColourImageCI.size = 0;
 		m_ColourImageCI.data = nullptr;
 		m_ColourImageCI.allocator = m_AttachmentAllocator;
+		m_ColourImageCI.externalImage = nullptr;
 		m_ColourImage = Image::Create(&m_ColourImageCI);
 
 		m_ColourImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - ColourImageView";

@@ -210,7 +210,10 @@ PS_OUT ps_show_depth_cubemap(PS_IN IN)
 	float4x4 viewProj_Inv = inverse(viewProj);
 	float3 view = normalize(mul(IN.v_NDCPosition, viewProj_Inv)).xyz;
 	
-	float depth = LineariseDepth(cubemap_ImageCIS.Sample(cubemap_SamplerCIS, view).x, debugCamera.proj);
+	float depth = /*LineariseDepth(*/cubemap_ImageCIS.Sample(cubemap_SamplerCIS, view).x/*, debugCamera.proj)*/;
+	float minValue = 0.995;
+	//depth = ((1.0 - minValue) * depth) + minValue;
+	depth = (depth - minValue) / (1.0 - minValue);
 	float4 depthOutput = float4(depth, depth, depth, 1.0);
 	float4 faceColour = CubemapFaceColour(UVWToFaceIndex(view));
 	

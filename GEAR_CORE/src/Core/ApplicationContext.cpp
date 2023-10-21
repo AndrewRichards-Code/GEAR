@@ -55,6 +55,7 @@ ApplicationContext::ApplicationContext(CreateInfo* pCreateInfo)
 	contextCI.debugValidationLayers = m_CI.commandLineOptions.debugValidationLayers;
 	contextCI.extensions = m_CI.extensions;
 	contextCI.deviceDebugName = "GEAR_CORE_Context";
+	contextCI.pNext = nullptr;
 	m_Context = Context::Create(&contextCI);
 }
 

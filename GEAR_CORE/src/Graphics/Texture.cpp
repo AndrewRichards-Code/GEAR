@@ -73,6 +73,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_TextureCI.size = 0;
 	m_TextureCI.data = nullptr;
 	m_TextureCI.allocator = AllocatorManager::GetGPUAllocator();
+	m_TextureCI.externalImage = nullptr;
 	m_Image = Image::Create(&m_TextureCI);
 
 	//ImageView
@@ -101,14 +102,14 @@ void Texture::Reload()
 	std::vector<uint8_t> imageData;
 	LoadImageData(imageData);
 
-	m_ImageUploadBufferCI.allocator->SubmitData(m_ImageUploadBuffer->GetAllocation(), imageData.size(), imageData.data());
+	m_ImageUploadBufferCI.allocator->SubmitData(m_ImageUploadBuffer->GetAllocation(), 0, imageData.size(), imageData.data());
 
 	m_GeneratedMipMaps = false;
 }
 
 void Texture::SubmitImageData(std::vector<uint8_t>& imageData)
 {
-	m_ImageUploadBufferCI.allocator->SubmitData(m_ImageUploadBuffer->GetAllocation(), imageData.size(), imageData.data());
+	m_ImageUploadBufferCI.allocator->SubmitData(m_ImageUploadBuffer->GetAllocation(), 0, imageData.size(), imageData.data());
 }
 
 #include "d3d12/D3D12Buffer.h"
@@ -123,7 +124,7 @@ void Texture::AccessImageData(std::vector<uint8_t>& imageData)
 	else
 		imageData.resize((size_t)ref_cast<vulkan::Buffer>(m_ImageUploadBuffer)->m_VmaAI.size);
 
-	m_ImageUploadBufferCI.allocator->AccessData(m_ImageUploadBuffer->GetAllocation(), imageData.size(), imageData.data());
+	m_ImageUploadBufferCI.allocator->AccessData(m_ImageUploadBuffer->GetAllocation(), 0, imageData.size(), imageData.data());
 }
 
 void Texture::CreateSampler()

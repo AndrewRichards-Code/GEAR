@@ -84,7 +84,7 @@ namespace gear
 
 			void SubmitData() const
 			{
-				m_UniformBufferUploadCI.allocator->SubmitData(m_UniformBufferUpload->GetAllocation(), GetSize(), (void*)((uint8_t*)this + 0x8)); //Account of vptr of the base class.
+				m_UniformBufferUploadCI.allocator->SubmitData(m_UniformBufferUpload->GetAllocation(), 0, GetSize(), (void*)((uint8_t*)this + 0x8)); //Account of vptr of the base class.
 			}
 
 			inline const miru::base::BufferRef& GetCPUBuffer() const override { return m_UniformBufferUpload; };

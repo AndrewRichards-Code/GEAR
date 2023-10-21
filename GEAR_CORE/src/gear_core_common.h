@@ -19,6 +19,7 @@
 #include <vector>
 #include <array>
 #include <deque>
+#include <stack>
 #include <set>
 #include <map>
 #include <algorithm>
@@ -54,6 +55,8 @@
 
 //ARC
 #include "ARC/src/ExportAttributes.h"
+#include "ARC/src/Helpers.h"
+#include "ARC/External/magic_enum/include/magic_enum.hpp"
 
 //Assimp
 #include "ASSIMP/include/assimp/Importer.hpp"
@@ -87,7 +90,10 @@
 #include "MARS/src/mars.h"
 
 //MIRU
+#include "MIRU/MIRU_CORE/src/miru_core_common.h"
 #include "MIRU/MIRU_CORE/src/miru_core.h"
+
+MIRU_D3D12_AGILITY_SDK_SET_VERSION_AND_PATH
 
 //OpenAL
 #include "OPENAL/include/AL/al.h"

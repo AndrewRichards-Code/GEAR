@@ -180,10 +180,10 @@ PipelineStageBit Pass::ShaderStageToPipelineStage(const Shader::StageBit& stage)
 		return PipelineStageBit::FRAGMENT_SHADER_BIT;
 	case Shader::StageBit::COMPUTE_BIT:
 		return PipelineStageBit::COMPUTE_SHADER_BIT;
-	case Shader::StageBit::TASK_BIT:
-		return PipelineStageBit::TASK_SHADER_BIT_NV;
-	case Shader::StageBit::MESH_BIT:
-		return PipelineStageBit::MESH_SHADER_BIT_NV;
+	case Shader::StageBit::TASK_BIT_EXT:
+		return PipelineStageBit::TASK_SHADER_BIT_EXT;
+	case Shader::StageBit::MESH_BIT_EXT:
+		return PipelineStageBit::MESH_SHADER_BIT_EXT;
 	case Shader::StageBit::RAYGEN_BIT:
 	case Shader::StageBit::ANY_HIT_BIT:
 	case Shader::StageBit::CLOSEST_HIT_BIT:
@@ -250,7 +250,7 @@ Pass::TransitionDetails Pass::GetTransitionDetails(const Resource::State& state,
 	}
 	case Resource::State::SHADER_READ_ONLY:
 	{
-		accesses = src ? Barrier::AccessBit::NONE_BIT : Barrier::AccessBit::UNIFORM_READ_BIT;
+		accesses = src ? Barrier::AccessBit::NONE_BIT : Barrier::AccessBit::SHADER_READ_BIT;
 		layout = /*(!arc::BitwiseCheck(stage, Shader::StageBit::FRAGMENT_BIT) && GraphicsAPI::IsD3D12())
 			? Image::Layout::D3D12_NON_PIXEL_SHADER_READ_ONLY_OPTIMAL :*/ Image::Layout::SHADER_READ_ONLY_OPTIMAL;
 		pipelineStage = ShaderStageToPipelineStage(stage);

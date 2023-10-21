@@ -400,6 +400,7 @@ ImageRef RenderGraph::CreateImage(const ImageDesc& desc, const std::string& name
 	imageCI.size = 0;
 	imageCI.data = nullptr;
 	imageCI.allocator = AllocatorManager::GetGPUAllocator();
+	imageCI.externalImage = nullptr;
 
 	return Image::Create(&imageCI);
 }
