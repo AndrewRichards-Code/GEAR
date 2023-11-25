@@ -1,2 +1,0 @@
-GLFW 3.3.2
-Redistribution - No Modifications.
