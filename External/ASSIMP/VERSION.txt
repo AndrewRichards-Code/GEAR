@@ -1,2 +1,0 @@
-ASSIMP 5.2.1
-Redistribution - No Modifications.
