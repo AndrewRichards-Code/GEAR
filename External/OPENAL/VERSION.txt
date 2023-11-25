@@ -1,2 +1,0 @@
-OpenAL Soft 1.20.1
-Redistribution - No Modifications.
