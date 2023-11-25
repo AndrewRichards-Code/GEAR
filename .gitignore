@@ -293,3 +293,11 @@ __pycache__/
 /compileData.scor.incl
 /compileData.scor
 Logs
+
+/build/
+/External/ENTT/single_include/
+/External/FREETYPE/include/
+/External/FREETYPE/release dll/
+/External/FREETYPE/release static/
+/External/GLFW/include/
+/External/GLFW/lib-vc2022/
