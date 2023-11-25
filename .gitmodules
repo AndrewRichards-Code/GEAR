@@ -1,9 +1,12 @@
 [submodule "External/MARS"]
-	path = GEAR_CORE/dep/MARS
+	path = External/MARS
 	url = git@github.com:AndrewRichards-Code/MARS.git
 [submodule "External/MIRU"]
 	path = External/MIRU
 	url = git@github.com:AndrewRichards-Code/MIRU.git
 [submodule "External/imgui"]
 	path = External/imgui
-	url = git@github.com:AndrewRichards-Code/imgui.git
+	url = git@github.com:ocornut/imgui.git
+[submodule "External/ASSIMP"]
+	path = External/ASSIMP
+	url = git@github.com:assimp/assimp.git
