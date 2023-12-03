@@ -11,6 +11,8 @@
 
 #include "Objects/Material.h"
 
+#include <fstream>
+
 using namespace gear;
 using namespace ui;
 using namespace panels;

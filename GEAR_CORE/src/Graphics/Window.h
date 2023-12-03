@@ -8,6 +8,10 @@
 #define MAX_AXES 6
 #define MAX_JOY_BUTTONS 16
 
+struct GLFWmonitor;
+struct GLFWwindow;
+struct GLFWvidmode;
+
 namespace gear 
 {
 	namespace graphics

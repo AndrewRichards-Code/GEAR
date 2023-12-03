@@ -1,4 +1,5 @@
 #pragma once
+#include "gear_core_common.h"
 
 namespace gear
 {
@@ -18,48 +19,18 @@ namespace gear
 		public:
 			//Joystick Outputs
 			bool m_JoyStickPresent = false;
-			int m_AxesCount = 0, m_ButtonsCount = 0;
+			int m_AxesCount = 0;
+			int m_ButtonsCount = 0;
 			const float* m_Axis = nullptr;
 			const unsigned char* m_Button = nullptr;
 
 		public:
-			InputManager(Type type)
-				: m_Type(type)
-			{
-				if (m_Type == Type::KEYBOARD_AND_MOUSE)
-				{
+			InputManager(Type type);
+			~InputManager() = default;
 
-				}
-				else if (m_Type == Type::JOYSTICK_CONTROLLER)
-				{
-					Update();
-				}
-			}
+			void Update();
 
-			~InputManager() {}
-
-			void Update()
-			{
-				if (m_JoyStickPresent = glfwJoystickPresent(GLFW_JOYSTICK_1))
-				{
-					m_Axis = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &m_AxesCount);
-					m_Button = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &m_ButtonsCount);
-				}
-			}
-
-			void PrintJoystickDetails()
-			{
-				std::string joystickName = (glfwGetJoystickName(GLFW_JOYSTICK_1));
-				GEAR_INFO(ErrorCode::CORE | ErrorCode::OK, joystickName.c_str());
-
-				for (int i = 0; i < m_AxesCount; i++)
-					GEAR_INFO(ErrorCode::CORE | ErrorCode::OK, "Axis %d: %f1.3.\n", i, m_Axis[i]);
-
-				for (int i = 0; i < m_ButtonsCount; i++)
-					GEAR_INFO(ErrorCode::CORE | ErrorCode::OK, "Button %d: %c.\n", i, m_Button[i]);
-
-				system("CLS");
-			}
+			void PrintJoystickDetails();
 		};
 	}
 }

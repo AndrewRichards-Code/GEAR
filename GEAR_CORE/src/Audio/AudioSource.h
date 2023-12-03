@@ -2,6 +2,8 @@
 #include "gear_core_common.h"
 #include "Audio/AudioListener.h"
 
+#include <thread>
+
 namespace gear
 {
 	namespace audio

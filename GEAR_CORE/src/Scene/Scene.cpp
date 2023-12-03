@@ -3,7 +3,7 @@
 #include "Scene/Entity.h"
 #include "Scene/Components.h"
 #include "Scene/NativeScriptManager.h"
-#include "Scene/INativeScript.h"
+#include "Scene/NativeScript.h"
 
 #include "Core/Timer.h"
 #include "Core/JsonFileHelper.h"
@@ -53,11 +53,11 @@ void Scene::OnUpdate(Ref<Renderer>& renderer, Timer& timer)
 {
 	if (m_State == State::PLAY)
 	{
-		auto& vNativeScriptComponents = m_Registry.view<NativeScriptComponent>();
+		const auto& vNativeScriptComponents = m_Registry.view<NativeScriptComponent>();
 		for (auto& entity : vNativeScriptComponents)
 		{
 			NativeScriptComponent& nativeScriptComponent = vNativeScriptComponents.get<NativeScriptComponent>(entity);
-			INativeScript*& nativeScript = nativeScriptComponent.pNativeScript;
+			NativeScript*& nativeScript = nativeScriptComponent.pNativeScript;
 			if (!nativeScript && s_NativeScriptLibrary)
 			{
 				nativeScript = NativeScriptManager::LoadScript(s_NativeScriptLibrary, nativeScriptComponent.nativeScriptName);
@@ -75,7 +75,7 @@ void Scene::OnUpdate(Ref<Renderer>& renderer, Timer& timer)
 		}
 	}
 
-	auto& vCameraComponents = m_Registry.view<TransformComponent, CameraComponent>();
+	const auto& vCameraComponents = m_Registry.view<TransformComponent, CameraComponent>();
 	for (auto& entity : vCameraComponents)
 	{
 		Ref<Camera>& camera = vCameraComponents.get<CameraComponent>(entity);
@@ -85,7 +85,7 @@ void Scene::OnUpdate(Ref<Renderer>& renderer, Timer& timer)
 		renderer->SubmitCamera(camera, static_cast<uint32_t>(usage));
 	}
 
-	auto& vLightComponents = m_Registry.view<TransformComponent, LightComponent>();
+	const auto& vLightComponents = m_Registry.view<TransformComponent, LightComponent>();
 	for (auto& entity : vLightComponents)
 	{
 		Ref<Light>& light = vLightComponents.get<LightComponent>(entity);
@@ -94,7 +94,7 @@ void Scene::OnUpdate(Ref<Renderer>& renderer, Timer& timer)
 		renderer->SubmitLight(light);
 	}
 
-	auto& vModelComponents = m_Registry.view<TransformComponent, ModelComponent>();
+	const auto& vModelComponents = m_Registry.view<TransformComponent, ModelComponent>();
 	for (auto& entity : vModelComponents)
 	{
 		Ref<Model>& model = vModelComponents.get<ModelComponent>(entity);
@@ -103,7 +103,7 @@ void Scene::OnUpdate(Ref<Renderer>& renderer, Timer& timer)
 		renderer->SubmitModel(model);
 	}
 
-	auto& vSkyboxComponent = m_Registry.view<TransformComponent, SkyboxComponent>();
+	const auto& vSkyboxComponent = m_Registry.view<TransformComponent, SkyboxComponent>();
 	for (auto& entity : vSkyboxComponent)
 	{
 		Ref<Skybox>& skybox = vSkyboxComponent.get<SkyboxComponent>(entity);
@@ -112,7 +112,7 @@ void Scene::OnUpdate(Ref<Renderer>& renderer, Timer& timer)
 		renderer->SubmitSkybox(skybox);
 	}
 
-	auto& vTextComponent = m_Registry.view<TransformComponent, TextComponent>();
+	const auto& vTextComponent = m_Registry.view<TransformComponent, TextComponent>();
 	for (auto& entity : vTextComponent)
 	{
 		Ref<Text>& text = vTextComponent.get<TextComponent>(entity);
@@ -135,18 +135,18 @@ void Scene::LoadNativeScriptLibrary()
 {
 	if (!s_NativeScriptLibrary)
 	{
-		NativeScriptManager::Build(m_CI.nativeScriptDir);
+		NativeScriptManager::Build(m_CI.nativeScriptDir.string());
 		s_NativeScriptLibrary = NativeScriptManager::Load();
 	}
 }
 
 void Scene::UnloadNativeScriptLibrary()
 {
-	auto& vNativeScriptComponents = m_Registry.view<NativeScriptComponent>();
+	const auto& vNativeScriptComponents = m_Registry.view<NativeScriptComponent>();
 	for (auto& entity : vNativeScriptComponents)
 	{
 		NativeScriptComponent& nativeScriptComponent = vNativeScriptComponents.get<NativeScriptComponent>(entity);
-		INativeScript*& nativeScript = nativeScriptComponent.pNativeScript;
+		NativeScript*& nativeScript = nativeScriptComponent.pNativeScript;
 		if (nativeScript)
 		{
 			nativeScript->OnDestroy();

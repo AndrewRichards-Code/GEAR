@@ -2,6 +2,8 @@
 #include "gear_core_common.h"
 #include "Graphics/Texture.h"
 
+typedef struct FT_LibraryRec_* FT_Library;
+
 namespace gear
 {
 	namespace core

@@ -5,6 +5,11 @@
 #include "d3d12/D3D12Image.h"
 #include "vulkan/VKImage.h"
 
+#include "imgui/imgui.h"
+#include "imgui/imgui_internal.h"
+#include "imgui/misc/cpp/imgui_stdlib.h"
+#include "imgui/backends/imgui_impl_vulkan.h"
+
 using namespace gear;
 using namespace scene;
 
@@ -250,7 +255,7 @@ bool gear::ui::componentui::DrawColourPicker4(const std::string& label, float4& 
 void gear::ui::componentui::DrawInputVectorOfString(const std::string& label, std::vector<std::string>& vector, float width)
 {
 	BeginColumnLabel(label, width);
-	for (auto& it = vector.begin(); it != vector.end(); it++)
+	for (auto it = vector.begin(); it != vector.end(); it++)
 	{
 		std::string name = *it;
 		ImGui::InputText("##label", &name);

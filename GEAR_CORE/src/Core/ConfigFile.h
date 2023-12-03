@@ -1,6 +1,7 @@
 #pragma once
 #include "gear_core_common.h"
 #include "Graphics/Window.h"
+#include "ARC/External/json/json.hpp"
 
 namespace gear
 {

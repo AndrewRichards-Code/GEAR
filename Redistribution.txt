@@ -2,12 +2,12 @@ The licence declaration in LICENCE.txt does not cover the redistributed works in
 
 Dependencies/Redistributions:
 ASSIMP
+ENTT
 FREETYPE
+imgui
 GLFW
-JSON
 MARS
 MIRU
-OPENAL
 
 Licence details for dependencies and redistributions of any headers, sources and binaries are located alongside those files or in relevant directory.
 Please support the original creators.

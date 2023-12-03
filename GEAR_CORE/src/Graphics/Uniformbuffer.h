@@ -92,7 +92,7 @@ namespace gear
 			inline const miru::base::BufferViewRef& GetCPUBufferView() const override { return m_UniformBufferViewUpload; };
 			inline const miru::base::BufferViewRef& GetGPUBufferView() const override { return m_UniformBufferView; };
 
-			inline constexpr size_t GetSize() const { return sizeof(T); }
+			inline constexpr size_t GetSize() const { return arc::Align<size_t>(sizeof(T), 256); } // Alignment requirements for D3D12 and Vulkan.
 		};
 	}
 }

@@ -55,11 +55,11 @@ namespace gear
 
 		public:
 			const std::pair<uint32_t, uint32_t> FindResourceViewSetBinding(const std::string& name) const;
-			void SetResourceView(const std::pair<uint32_t, uint32_t>& set_binding, ResourceView& resourceView);
-			void SetResourceView(const std::string& name, ResourceView& resourceView);
+			void SetResourceView(const std::pair<uint32_t, uint32_t>& set_binding, ResourceView resourceView);
+			void SetResourceView(const std::string& name, ResourceView resourceView);
 
-			void AddVertexBuffer(ResourceView& resourceView);
-			void AddIndexBuffer(ResourceView& resourceView);
+			void AddVertexBuffer(ResourceView resourceView);
+			void AddIndexBuffer(ResourceView resourceView);
 
 			void AddAttachment(uint32_t index, const ResourceView& resource, miru::base::RenderPass::AttachmentLoadOp loadOp, miru::base::RenderPass::AttachmentStoreOp storeOp, const miru::base::Image::ClearValue& clearValue);  //DepthStencil attachments ignore the 'index' parameter.
 			void AddAttachmentWithResolve(uint32_t index, const ResourceView& resource, const ResourceView& resolveResourceView, miru::base::RenderPass::AttachmentLoadOp loadOp, miru::base::RenderPass::AttachmentStoreOp storeOp, const miru::base::Image::ClearValue& clearValue); //DepthStencil attachments ignore the 'index' parameter.

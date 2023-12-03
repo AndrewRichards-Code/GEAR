@@ -1,6 +1,6 @@
 #include "gear_core_common.h"
 #include "Objects/Skybox.h"
-#include "STBI/stb_image.h"
+#include "stb/stb_image.h"
 
 using namespace gear;
 using namespace graphics;

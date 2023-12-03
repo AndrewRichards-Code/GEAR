@@ -18,7 +18,7 @@ namespace gear
 	{
 		class Scene;
 		class Entity;
-		class INativeScript;
+		class NativeScript;
 
 		struct LoadSaveParameters
 		{
@@ -151,14 +151,14 @@ namespace gear
 
 		struct GEAR_API NativeScriptComponent
 		{
-			INativeScript* pNativeScript = nullptr;
+			NativeScript* pNativeScript = nullptr;
 			std::string nativeScriptName;
 			Entity* entity = nullptr;
 
 			NativeScriptComponent(const std::string& _nativeScriptName)
 				:nativeScriptName(_nativeScriptName) {}
 
-			operator INativeScript* () { return pNativeScript; }
+			operator NativeScript* () { return pNativeScript; }
 		};
 
 		template<typename T>

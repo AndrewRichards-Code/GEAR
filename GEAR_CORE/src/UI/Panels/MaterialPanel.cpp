@@ -3,6 +3,8 @@
 #include "UI/UIContext.h"
 #include "UI/ComponentUI/MaterialComponentUI.h"
 
+#include "imgui/imgui.h"
+
 using namespace gear;
 using namespace ui;
 using namespace panels;

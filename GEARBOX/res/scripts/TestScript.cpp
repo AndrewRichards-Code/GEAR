@@ -1,9 +1,9 @@
-#include "Scene/INativeScript.h"
+#include "Scene/NativeScript.h"
 
 using namespace gear;
 using namespace scene;
 
-class TestScript : public INativeScript
+class TestScript : public NativeScript
 {
 public:
 	TestScript() = default;

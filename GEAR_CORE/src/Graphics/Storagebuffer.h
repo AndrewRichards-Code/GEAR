@@ -1,5 +1,6 @@
 #pragma once
 #include "gear_core_common.h"
+#include "AllocatorManager.h"
 
 namespace gear
 {

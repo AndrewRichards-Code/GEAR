@@ -3,10 +3,13 @@
 #include "Core/Application.h"
 
 #include "ARC/src/StringConversion.h"
-#include "STBI/stb_image.h"
+#include "stb/stb_image.h"
 
-#include "MIRU/MIRU_CORE/src/d3d12/D3D12Context.h"
-#include "MIRU/MIRU_CORE/src/vulkan/VKContext.h"
+#include "GLFW/include/GLFW/glfw3.h"
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include "GLFW/include/GLFW/glfw3native.h"
+
+#include <thread>
 
 using namespace gear;
 using namespace graphics;
@@ -103,26 +106,7 @@ std::string Window::GetGraphicsAPIVersion() const
 
 std::string Window::GetDeviceName() const
 {
-	std::string result;
-	switch (GraphicsAPI::GetAPI())
-	{
-	case GraphicsAPI::API::UNKNOWN:
-	{
-		result += "UNKNOWN"; break;
-	}
-	case GraphicsAPI::API::D3D12:
-	{
-		result = arc::ToString(&ref_cast<d3d12::Context>(m_Context)->m_PhysicalDevices.m_PDIs[0].m_AdapterDesc.Description[0]);
-		break;
-	}
-	case GraphicsAPI::API::VULKAN:
-	{
-		result = &ref_cast<vulkan::Context>(m_Context)->m_PhysicalDevices.m_PDIs[0].m_Properties.deviceName[0];
-		break;
-	}
-	}
-
-	return result;
+	return m_Context->GetResultInfo().deviceName;
 }
 
 bool Window::IsKeyPressed(unsigned int keycode) const

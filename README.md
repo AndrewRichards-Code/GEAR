@@ -20,15 +20,12 @@ GEARBOX Editor - Work in Progress
 ## GEAR_CORE: 
 Contains the core functionality of the game engine. Build as a dynamic library; Dynamic Runtime Linking (MD).
 
-## GEAR_TEST: 
-Simple test application for development, test and demonstration. Build as executable; Dynamic Runtime Linking (MD).
-
 ## GEARBOX: 
 A simple level editor using ImGui. Build as executable; Dynamic Runtime Linking (MD).
 
-# Build Tools with Visual Studio:
+# CMake and  Visual Studio:
 ## Windows x64:
 - Microsoft Visual Studio 2022
 - Toolset: v143 
-- Windows SDK: 10.0.22000.0
+- Windows SDK: 10.0.22621.0
 - ISO C++ 20

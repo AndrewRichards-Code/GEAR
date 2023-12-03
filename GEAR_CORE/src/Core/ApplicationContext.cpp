@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
 #include "Core/ApplicationContext.h"
+#include "ARC/src/DateAndTime.h"
 
 using namespace gear;
 using namespace core;

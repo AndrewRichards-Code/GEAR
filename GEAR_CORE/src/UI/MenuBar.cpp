@@ -14,6 +14,10 @@
 
 #include "Build/Project.h"
 
+#include "GLFW/include/GLFW/glfw3.h"
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include "GLFW/include/GLFW/glfw3native.h"
+
 using namespace gear;
 using namespace build;
 using namespace core;

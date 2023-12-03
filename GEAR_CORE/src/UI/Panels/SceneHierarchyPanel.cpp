@@ -9,6 +9,8 @@
 #include "Graphics/Rendering/Renderer.h"
 #include "Graphics/Window.h"
 
+#include "GLFW/include/GLFW/glfw3.h"
+
 using namespace gear;
 using namespace core;
 using namespace graphics;

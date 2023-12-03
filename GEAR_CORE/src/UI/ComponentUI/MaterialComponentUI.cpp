@@ -213,7 +213,6 @@ void gear::ui::componentui::DrawRenderPipelineUI(RenderPipeline* renderPipeline)
 						DrawCheckbox("CSO", RA.cso);
 						DrawCheckbox("SPV", RA.spv);
 						DrawInputVectorOfString("DXC Arguments", RA.dxcArguments);
-						DrawInputText("DXC Location", RA.dxcLocation);
 
 						EndDrawTreeNode();
 					}

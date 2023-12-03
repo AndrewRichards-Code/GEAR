@@ -1,6 +1,11 @@
 #include "gear_core_common.h"
 #include "Input/InputInterfaces.h"
 
+#if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
+#include <combaseapi.h>
+#include <xinput.h>
+#endif
+
 using namespace gear;
 using namespace input;
 

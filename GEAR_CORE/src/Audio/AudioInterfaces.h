@@ -3,7 +3,11 @@
 #include "Utils/FileUtils.h"
 #include "Objects/Transform.h"
 
-#undef OPENAL
+struct IXAudio2;
+struct IXAudio2MasteringVoice;
+struct IXAudio2SourceVoice;
+
+//TODO: Use JUCE! https://juce.com/
 
 namespace gear
 {
@@ -15,7 +19,6 @@ namespace gear
 			enum class API
 			{
 				UNKNOWN,
-				OPENAL,
 				XAUDIO2
 			};
 			enum class EndPointDevice : uint32_t
@@ -45,15 +48,6 @@ namespace gear
 			const CreateInfo& GetCreateInfo() { return m_CI; }
 
 			static inline const API& GetAPI() { return s_API; }
-
-			//OpenAL
-		public:
-			ALCdevice* m_ALCdevice;
-			ALCcontext* m_ALCcontext;
-
-		private:
-			void OpenAL_CreateDeviceAndContext();
-			void OpenAL_DestroyDeviceAndContext();
 
 			//XAudio2
 		#if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
@@ -108,47 +102,31 @@ namespace gear
 		public:
 			static constexpr float MuteVolume = -3.402823466e+38f;
 
-			//OpenAL
-		private:
-			ALuint m_BufferID[2];
-			ALuint m_SourceID;
-
-		private:
-			void OpenAL_CreateBufferAndSource();
-			void OpenAL_DestroyBufferAndSource();
-
-			void OpenAL_SubmitBuffer();
-			void OpenAL_Play();
-			void OpenAL_Stop();
-			void OpenAL_Pause();
-			void OpenAL_Stream();
-
-			void OpenAL_SetPitch(float value);
-			void OpenAL_SetVolume(float value);
-
 			//XAudio2
 		#if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
 		private:
 			IXAudio2SourceVoice* m_IXAudio2SourceVoice;
 
+			/*
 			X3DAUDIO_HANDLE m_X3DAudioHandle;
 			X3DAUDIO_LISTENER m_X3DAudioListener;
 			X3DAUDIO_EMITTER m_X3DAudioEmitter;
 			X3DAUDIO_DSP_SETTINGS m_X3DAudioDSPSettings;
 			XAUDIO2_VOICE_DETAILS m_XAudio2VoiceDetails;
+			*/
 
 		private:
-			void XAudio2_CreateIXAudio2SourceVoiceAndX3DAUDIO();
-			void XAudio2_DestroyIXAudio2SourceVoiceAndX3DAUDIO();
+			void CreateIXAudio2SourceVoiceAndX3DAUDIO();
+			void DestroyIXAudio2SourceVoiceAndX3DAUDIO();
 
-			void XAudio2_SubmitBuffer();
-			void XAudio2_Play();
-			void XAudio2_Stop();
-			void XAudio2_Pause();
-			void XAudio2_Stream();
+			void SubmitBuffer();
+			void Play();
+			void Stop();
+			void Pause();
+			void Stream_Internal();
 
-			void XAudio2_SetPitch(float value);
-			void XAudio2_SetVolume(float value);
+			void SetPitch_Internal(float value);
+			void SetVolume_Internal(float value);
 		#endif
 		};
 	}

@@ -5,6 +5,10 @@
 #include "Objects/Material.h"
 #include "Objects/Transform.h"
 
+#include "ASSIMP/include/assimp/Importer.hpp"
+#include "ASSIMP/include/assimp/scene.h"
+#include "ASSIMP/include/assimp/postprocess.h"
+
 using namespace gear;
 using namespace utils;
 using namespace graphics;
@@ -14,6 +18,11 @@ using namespace objects;
 using namespace mars;
 
 void* ModelLoader::m_Device = nullptr;
+
+static void Convert_aiMatrix4x4ToFloat4x4(const aiMatrix4x4& in, mars::float4x4& out)
+{
+	memcpy_s((void* const)out.GetData(), out.GetSize(), &in.a1, sizeof(aiMatrix4x4));
+}
 
 ModelLoader::ModelData ModelLoader::LoadModelData(const std::string& filepath)
 {

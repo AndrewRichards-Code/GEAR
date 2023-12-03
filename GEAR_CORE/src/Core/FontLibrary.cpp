@@ -1,10 +1,17 @@
 #include "gear_core_common.h"
-#include "STBI/stb_image.h"
-#include "STBI/stb_image_write.h"
+
+#include "stb/stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb/stb_image_write.h"
 
 #include "Core/FontLibrary.h"
 #include "Graphics/AllocatorManager.h"
 #include "Graphics/Texture.h"
+
+#include "FREETYPE/include/ft2build.h"
+#include FT_FREETYPE_H
+
+#include <fstream>
 
 using namespace gear;
 using namespace graphics;

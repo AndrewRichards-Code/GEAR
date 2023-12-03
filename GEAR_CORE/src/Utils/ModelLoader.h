@@ -3,6 +3,10 @@
 #include "Animation/Animation.h"
 #include "Objects/Material.h"
 
+struct aiScene;
+struct aiNode;
+struct aiMaterial;
+
 namespace gear 
 {
 	namespace animation
@@ -69,10 +73,6 @@ namespace gear
 			static std::vector<animation::Animation> ProcessAnimations(const aiScene* scene);
 
 			static void FillOutMaterialCreateInfo(aiMaterial* aiMaterial, objects::Material::CreateInfo& materialCreateInfo);
-			inline static void Convert_aiMatrix4x4ToFloat4x4(const aiMatrix4x4& in, mars::float4x4& out)
-			{
-				memcpy_s((void* const)out.GetData(), out.GetSize(), &in.a1, sizeof(aiMatrix4x4));
-			}
 
 		private:
 			static void* m_Device;

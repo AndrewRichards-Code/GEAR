@@ -7,28 +7,6 @@
 #pragma warning(disable : 4505)  //Disables 'Unreferenced local function' warnign C4505
 #endif
 
-//C Standard Libraries
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <thread>
-#include <chrono>
-
-//STL
-#include <vector>
-#include <array>
-#include <deque>
-#include <stack>
-#include <set>
-#include <map>
-#include <algorithm>
-#include <functional>
-#include <future>
-
-//Smart Poiners
-#include <memory>
-
 //Platfrom Macros
 #include "Core/PlatformMacros.h"
 
@@ -56,60 +34,15 @@
 //ARC
 #include "ARC/src/ExportAttributes.h"
 #include "ARC/src/Helpers.h"
-#include "ARC/External/magic_enum/include/magic_enum.hpp"
-
-//Assimp
-#include "ASSIMP/include/assimp/Importer.hpp"
-#include "ASSIMP/include/assimp/scene.h"
-#include "ASSIMP/include/assimp/postprocess.h"
-
-//ENTT
-#include "ENTT/entt.hpp"
-
-//FreeType
-#include "FREETYPE/include/ft2build.h"
-#include FT_FREETYPE_H
-
-//GLFW
-#include "GLFW/include/GLFW/glfw3.h"
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include "GLFW/include/GLFW/glfw3native.h"
-
-//ImGui
-#include "imgui/imgui.h"
-#include "imgui/imgui_internal.h"
-#include "imgui/misc/cpp/imgui_stdlib.h"
-#include "imgui/backends/imgui_impl_glfw.h"
-#include "imgui/backends/imgui_impl_vulkan.h"
-#include "imgui/backends/imgui_impl_dx12.h"
-
-//JSON
-#include "JSON/json.hpp"
+#include "ARC/External/magic_enum/magic_enum.hpp"
 
 //MARS
 #include "MARS/src/mars.h"
 
 //MIRU
-#include "MIRU/MIRU_CORE/src/miru_core_common.h"
 #include "MIRU/MIRU_CORE/src/miru_core.h"
 
-MIRU_D3D12_AGILITY_SDK_SET_VERSION_AND_PATH
 
-//OpenAL
-#include "OPENAL/include/AL/al.h"
-#include "OPENAL/include/AL/alc.h"
-
-//XAudio2
-#if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
-#define XAUDIO2_HELPER_FUNCTIONS
-#include <xaudio2.h>
-#include <x3daudio.h>
-#endif
-
-//XInput
-#if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
-#include <xinput.h>
-#endif
 
 //GEAR API
 #ifdef GEAR_BUILD_DLL

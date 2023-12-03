@@ -96,16 +96,16 @@ Ref<Pass> RenderGraph::AddPass(const std::string& passName, const Ref<PassParame
 	{
 		for (ResourceView& resourceView : resourceViews)
 		{
-			Resource& resource = resourceView.GetResource();
+			const Resource& resource = resourceView.GetResource();
 			if (!arc::FindInVector(data.Resources, resource))
 			{
 				data.Resources.push_back(resource);
 			}
 			if (arc::FindInVector(GetPreviousFrameData().Resources, resource) && arc::FindInVector(data.Resources, resource))
 			{
-				auto& it0 = arc::FindPositionInVector(GetPreviousFrameData().Resources, resource);
-				auto& it1 = arc::FindPositionInVector(data.Resources, resource);
-				it1-> subresourceMap = it0->subresourceMap;
+				auto it0 = arc::FindPositionInVector(GetPreviousFrameData().Resources, resource);
+				auto it1 = arc::FindPositionInVector(data.Resources, resource);
+				it1->subresourceMap = it0->subresourceMap;
 			}
 		}
 	};

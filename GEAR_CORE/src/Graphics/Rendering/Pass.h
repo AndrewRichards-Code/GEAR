@@ -1,6 +1,7 @@
 #pragma once
 #include "Graphics/Rendering/PassParameters.h"
 #include "Core/UUID.h"
+#include <stack>
 
 namespace gear
 {

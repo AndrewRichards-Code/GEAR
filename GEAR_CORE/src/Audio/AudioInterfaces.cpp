@@ -1,6 +1,12 @@
 #include "gear_core_common.h"
 #include "Audio/AudioInterfaces.h"
 
+#if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
+#define XAUDIO2_HELPER_FUNCTIONS
+#include <xaudio2.h>
+#include <x3daudio.h>
+#endif
+
 using namespace gear;
 using namespace audio;
 
@@ -17,7 +23,7 @@ AudioListenerInterface::AudioListenerInterface(CreateInfo* pCreateInfo)
 	if(s_API == API::UNKNOWN)
 	{
 		#if !defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
-		s_API = API::OPENAL;
+		s_API = API::OPEN_AL;
 		#else
 		s_API = m_CI.audioAPI;
 		#endif
@@ -29,11 +35,6 @@ AudioListenerInterface::AudioListenerInterface(CreateInfo* pCreateInfo)
 	case AudioListenerInterface::API::UNKNOWN:
 	{
 		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
-		break;
-	}
-	case AudioListenerInterface::API::OPENAL:
-	{
-		OpenAL_CreateDeviceAndContext();
 		break;
 	}
 	case AudioListenerInterface::API::XAUDIO2:
@@ -53,11 +54,6 @@ AudioListenerInterface::~AudioListenerInterface()
 		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
 		break;
 	}
-	case AudioListenerInterface::API::OPENAL:
-	{
-		OpenAL_DestroyDeviceAndContext();
-		break;
-	}
 	case AudioListenerInterface::API::XAUDIO2:
 	{
 		XAudio2_DestroyXAudio2AndMasteringVoice();
@@ -66,49 +62,6 @@ AudioListenerInterface::~AudioListenerInterface()
 	}
 }
 
-//----------OPENAL----------
-void AudioListenerInterface::OpenAL_CreateDeviceAndContext()
-{
-	m_CI.endPointDevice = EndPointDevice::DEFAULT;
-	m_ALCdevice = alcOpenDevice(nullptr);
-	if (!m_ALCdevice)
-	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NO_DEVICE, "Failed to Open OpenAL Device.");
-	}
-	m_ALCcontext = alcCreateContext(m_ALCdevice, nullptr);
-	if (!m_ALCcontext)
-	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NO_CONTEXT, "Failed to Create OpenAL Context.");
-	}
-	alcMakeContextCurrent(m_ALCcontext);
-}
-
-void AudioListenerInterface::OpenAL_DestroyDeviceAndContext()
-{
-	if (m_ALCcontext)
-	{
-		alcMakeContextCurrent(m_ALCcontext);
-		alcDestroyContext(m_ALCcontext);
-	}
-	else
-	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NO_CONTEXT, "Failed to Destroy OpenAL Context.");
-	}
-
-	bool openalFail = false;
-	if (m_ALCdevice)
-	{
-		if (!alcCloseDevice(m_ALCdevice))
-			openalFail = true;
-	}
-	else
-		openalFail = true;
-
-	if (openalFail)
-	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NO_DEVICE, "Failed to Close OpenAL Device.");
-	}
-}
 //----------XAUDIO2----------
 #if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
 #include <mmdeviceapi.h>
@@ -272,14 +225,9 @@ AudioSourceInterface::AudioSourceInterface(CreateInfo* pCreateInfo)
 		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
 		break;
 	}
-	case AudioListenerInterface::API::OPENAL:
-	{
-		OpenAL_CreateBufferAndSource();
-		break;
-	}
 	case AudioListenerInterface::API::XAUDIO2:
 	{
-		XAudio2_CreateIXAudio2SourceVoiceAndX3DAUDIO();
+		CreateIXAudio2SourceVoiceAndX3DAUDIO();
 		break;
 	}
 	}
@@ -295,14 +243,9 @@ AudioSourceInterface::~AudioSourceInterface()
 		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
 		break;
 	}
-	case AudioListenerInterface::API::OPENAL:
-	{
-		OpenAL_DestroyBufferAndSource();
-		break;
-	}
 	case AudioListenerInterface::API::XAUDIO2:
 	{
-		XAudio2_DestroyIXAudio2SourceVoiceAndX3DAUDIO();
+		DestroyIXAudio2SourceVoiceAndX3DAUDIO();
 		break;
 	}
 	}
@@ -318,14 +261,9 @@ void AudioSourceInterface::Stream()
 		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
 		break;
 	}
-	case AudioListenerInterface::API::OPENAL:
-	{
-		OpenAL_Stream();
-		break;
-	}
 	case AudioListenerInterface::API::XAUDIO2:
 	{
-		XAudio2_Stream();
+		Stream_Internal();
 		break;
 	}
 	}
@@ -347,14 +285,9 @@ void AudioSourceInterface::SetPitch(float value)
 		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
 		break;
 	}
-	case AudioListenerInterface::API::OPENAL:
-	{
-		OpenAL_SetPitch(value);
-		break;
-	}
 	case AudioListenerInterface::API::XAUDIO2:
 	{
-		XAudio2_SetPitch(value);
+		SetPitch_Internal(value);
 		break;
 	}
 	}
@@ -379,120 +312,17 @@ void AudioSourceInterface::SetVolume(float value)
 		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
 		break;
 	}
-	case AudioListenerInterface::API::OPENAL:
-	{
-		OpenAL_SetVolume(linear);
-		break;
-	}
 	case AudioListenerInterface::API::XAUDIO2:
 	{
-		XAudio2_SetVolume(linear);
+		SetVolume_Internal(linear);
 		break;
 	}
 	}
-}
-
-//----------OPENAL----------
-void AudioSourceInterface::OpenAL_CreateBufferAndSource()
-{
-	alGenBuffers(2, &m_BufferID[0]);
-	alGenSources(1, &m_SourceID);
-
-	OpenAL_SubmitBuffer();
-	OpenAL_SubmitBuffer();
-
-	alSourceQueueBuffers(m_SourceID, 2, &m_BufferID[0]);
-}
-
-void AudioSourceInterface::OpenAL_DestroyBufferAndSource()
-{
-	alDeleteBuffers(2, &m_BufferID[0]);
-	alDeleteSources(1, &m_SourceID);
-}
-
-void AudioSourceInterface::OpenAL_SubmitBuffer()
-{
-	utils::get_next_wav_block(m_WavData);
-
-	ALenum format = 0;
-	if (m_WavData->channels == 1)
-		format = m_WavData->bitsPerSample == 8 ? AL_FORMAT_MONO8 : AL_FORMAT_MONO16;
-	else
-		format = m_WavData->bitsPerSample == 8 ? AL_FORMAT_STEREO8 : AL_FORMAT_STEREO16;
-
-	switch (m_WavData->nextBuffer)
-	{
-	case 1:
-		alBufferData(m_BufferID[1], format, m_WavData->buffer2.data(), static_cast<ALsizei>(m_WavData->buffer2.size()), m_WavData->sampleRate); break;
-	case 2:
-		alBufferData(m_BufferID[0], format, m_WavData->buffer1.data(), static_cast<ALsizei>(m_WavData->buffer1.size()), m_WavData->sampleRate); break;
-	}
-}
-
-void AudioSourceInterface::OpenAL_Play()
-{
-	int playing;
-	alGetSourcei(m_SourceID, AL_SOURCE_STATE, &playing);
-
-	if (playing != AL_PLAYING)
-		alSourcePlay(m_SourceID);
-}
-
-void AudioSourceInterface::OpenAL_Stop()
-{
-	alSourceStop(m_SourceID);
-}
-
-void AudioSourceInterface::OpenAL_Pause()
-{
-	alSourcePause(m_SourceID);
-}
-
-void AudioSourceInterface::OpenAL_Stream()
-{
-	if (!m_Ended)
-	{
-		OpenAL_Play();
-	}
-
-	int processed;
-	alGetSourcei(m_SourceID, AL_BUFFERS_PROCESSED, &processed);
-
-	while (processed--)
-	{
-		switch (m_WavData->nextBuffer)
-		{
-		case 1:
-			alSourceUnqueueBuffers(m_SourceID, 1, &m_BufferID[0]);
-			OpenAL_SubmitBuffer();
-			alSourceQueueBuffers(m_SourceID, 1, &m_BufferID[0]);
-			break;
-		case 2:
-			alSourceUnqueueBuffers(m_SourceID, 1, &m_BufferID[1]);
-			OpenAL_SubmitBuffer();
-			alSourceQueueBuffers(m_SourceID, 1, &m_BufferID[1]);
-			break;
-		case 0:
-			m_Ended = true;
-			alSourceUnqueueBuffers(m_SourceID, 2, &m_BufferID[0]);
-			OpenAL_Stop();
-		}
-	}
-}
-
-void AudioSourceInterface::OpenAL_SetPitch(float value)
-{
-	alSourcef(m_SourceID, AL_PITCH, powf(2.0f, (value / 12.0f)));
-}
-
-void AudioSourceInterface::OpenAL_SetVolume(float value)
-{
-	alSourcef(m_SourceID, AL_GAIN, value);
 }
 
 //----------XAUDIO2----------
 #if defined(GEAR_PLATFORM_WINDOWS_OR_XBOX)
-void AudioSourceInterface::XAudio2_CreateIXAudio2SourceVoiceAndX3DAUDIO()
+void AudioSourceInterface::CreateIXAudio2SourceVoiceAndX3DAUDIO()
 {
 	WAVEFORMATEX wfx;
 	wfx.wFormatTag = static_cast<WORD>(m_WavData->formatTag);
@@ -509,9 +339,10 @@ void AudioSourceInterface::XAudio2_CreateIXAudio2SourceVoiceAndX3DAUDIO()
 		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to Create IXAudio2SourceVoice.");
 	}
 
-	XAudio2_SubmitBuffer();
-	XAudio2_SubmitBuffer();
+	SubmitBuffer();
+	SubmitBuffer();
 
+	/*
 	IXAudio2MasteringVoice*& xAudio2MasteringVoice = m_CI.pAudioListener->m_IXAudio2MasteringVoice;
 	DWORD channelMask;
 	xAudio2MasteringVoice->GetChannelMask(&channelMask);
@@ -560,14 +391,15 @@ void AudioSourceInterface::XAudio2_CreateIXAudio2SourceVoiceAndX3DAUDIO()
 	m_X3DAudioDSPSettings.EmitterToListenerDistance;	
 	m_X3DAudioDSPSettings.EmitterVelocityComponent;		
 	m_X3DAudioDSPSettings.ListenerVelocityComponent;
+	*/
 }
 
-void AudioSourceInterface::XAudio2_DestroyIXAudio2SourceVoiceAndX3DAUDIO()
+void AudioSourceInterface::DestroyIXAudio2SourceVoiceAndX3DAUDIO()
 {
 	m_IXAudio2SourceVoice->DestroyVoice();
 }
 
-void AudioSourceInterface::XAudio2_SubmitBuffer()
+void AudioSourceInterface::SubmitBuffer()
 {
 	utils::get_next_wav_block(m_WavData);
 
@@ -590,7 +422,7 @@ void AudioSourceInterface::XAudio2_SubmitBuffer()
 	case 0:
 	{
 		m_Ended = true;
-		XAudio2_Stop();
+		Stop();
 		return;
 	}
 	}
@@ -606,14 +438,14 @@ void AudioSourceInterface::XAudio2_SubmitBuffer()
 		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to Submit XAUDIO2_BUFFER to IXAudio2SourceVoice.");
 	}
 }
-void AudioSourceInterface::XAudio2_Play()
+void AudioSourceInterface::Play()
 {
 	if (FAILED(m_IXAudio2SourceVoice->Start()))
 	{
 		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to Start IXAudio2SourceVoice.");
 	}
 }
-void AudioSourceInterface::XAudio2_Stop()
+void AudioSourceInterface::Stop()
 {
 	if (FAILED(m_IXAudio2SourceVoice->Stop()))
 	{
@@ -623,21 +455,21 @@ void AudioSourceInterface::XAudio2_Stop()
 	{
 		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to Flush buffers for IXAudio2SourceVoice.");
 	}
-	XAudio2_SubmitBuffer();
-	XAudio2_SubmitBuffer();
+	SubmitBuffer();
+	SubmitBuffer();
 }
-void AudioSourceInterface::XAudio2_Pause()
+void AudioSourceInterface::Pause()
 {
 	if (FAILED(m_IXAudio2SourceVoice->Stop()))
 	{
 		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to Stop IXAudio2SourceVoice.");
 	}
 }
-void AudioSourceInterface::XAudio2_Stream()
+void AudioSourceInterface::Stream_Internal()
 {
 	if (!m_Ended)
 	{
-		XAudio2_Play();
+		Play();
 	}
 
 	XAUDIO2_VOICE_STATE state;
@@ -645,10 +477,10 @@ void AudioSourceInterface::XAudio2_Stream()
 
 	if (state.BuffersQueued < 2)
 	{
-		XAudio2_SubmitBuffer();
+		SubmitBuffer();
 	}
 }
-void AudioSourceInterface::XAudio2_SetPitch(float value)
+void AudioSourceInterface::SetPitch_Internal(float value)
 {
 	float freqRatio;
 	m_IXAudio2SourceVoice->GetFrequencyRatio(&freqRatio);
@@ -660,7 +492,7 @@ void AudioSourceInterface::XAudio2_SetPitch(float value)
 		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to SetFrequencyRatio IXAudio2SourceVoice.");
 	}
 }
-void AudioSourceInterface::XAudio2_SetVolume(float value)
+void AudioSourceInterface::SetVolume_Internal(float value)
 {
 	if (FAILED(m_IXAudio2SourceVoice->SetVolume(value)))
 	{
@@ -668,13 +500,13 @@ void AudioSourceInterface::XAudio2_SetVolume(float value)
 	}
 }
 #else
-void AudioSourceInterface::XAudio2_CreateIXAudio2SourceVoiceAndX3DAUDIO() {}
-void AudioSourceInterface::XAudio2_DestroyIXAudio2SourceVoiceAndX3DAUDIO() {}
-void AudioSourceInterface::XAudio2_SubmitBuffer() {}
-void AudioSourceInterface::XAudio2_Play() {}
-void AudioSourceInterface::XAudio2_Stop() {}
-void AudioSourceInterface::XAudio2_Pause() {}
-void AudioSourceInterface::XAudio2_Stream() {}
-void AudioSourceInterface::XAudio2_SetPitch(float value) {}
-void AudioSourceInterface::XAudio2_SetVolume(float value) {}
+void AudioSourceInterface::CreateIXAudio2SourceVoiceAndX3DAUDIO() {}
+void AudioSourceInterface::DestroyIXAudio2SourceVoiceAndX3DAUDIO() {}
+void AudioSourceInterface::SubmitBuffer() {}
+void AudioSourceInterface::Play() {}
+void AudioSourceInterface::Stop() {}
+void AudioSourceInterface::Pause() {}
+void AudioSourceInterface::Stream_Internal() {}
+void AudioSourceInterface::SetPitch_Internal(float value) {}
+void AudioSourceInterface::SetVolume_Internal(float value) {}
 #endif

@@ -12,6 +12,11 @@
 #include "MIRU/MIRU_CORE/src/d3d12/D3D12CommandPoolBuffer.h"
 #include "MIRU/MIRU_CORE/src/d3d12/D3D12Swapchain.h"
 
+#include "imgui/imgui.h"
+#include "imgui/backends/imgui_impl_glfw.h"
+#include "imgui/backends/imgui_impl_vulkan.h"
+#include "imgui/backends/imgui_impl_dx12.h"
+
 using namespace gear;
 using namespace ui;
 using namespace panels;
@@ -41,7 +46,7 @@ void UIContext::Update(gear::core::Timer timer)
 	}
 
 	//Remove old images
-	for (auto& it = m_TextureIDs.begin(); it != m_TextureIDs.end();)
+	for (auto it = m_TextureIDs.begin(); it != m_TextureIDs.end();)
 	{
 		if (it->first.use_count() == 1)
 			it = m_TextureIDs.erase(it);
@@ -101,7 +106,8 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 	//io.ConfigViewportsNoAutoMerge = true;
 	//io.ConfigViewportsNoTaskBarIcon = true;
 
-	io.FontDefault = io.Fonts->AddFontFromFileTTF("res/fonts/electrolize/Electrolize-Regular.ttf", 15.0f);
+	std::string fontFilepath = PROJECT_DIR + std::string("/../GEARBOX/res/fonts/electrolize/Electrolize-Regular.ttf");
+	io.FontDefault = io.Fonts->AddFontFromFileTTF(fontFilepath.c_str(), 15.0f);
 
 	// Setup Dear ImGui style
 	SetDarkTheme();
@@ -136,35 +142,37 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
 			{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
 		};
-		m_VulkanDescriptorPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		m_VulkanDescriptorPoolCI.pNext = nullptr;
-		m_VulkanDescriptorPoolCI.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-		m_VulkanDescriptorPoolCI.maxSets = 1000 * IM_ARRAYSIZE(poolSizes);
-		m_VulkanDescriptorPoolCI.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes);
-		m_VulkanDescriptorPoolCI.pPoolSizes = poolSizes;
-		VkResult res = vkCreateDescriptorPool(vkContext->m_Device, &m_VulkanDescriptorPoolCI, nullptr, &m_VulkanDescriptorPool);
+		VkDescriptorPoolCreateInfo descriptorPoolCI;
+		descriptorPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		descriptorPoolCI.pNext = nullptr;
+		descriptorPoolCI.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+		descriptorPoolCI.maxSets = 1000 * IM_ARRAYSIZE(poolSizes);
+		descriptorPoolCI.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes);
+		descriptorPoolCI.pPoolSizes = poolSizes;
+		VkResult res = vkCreateDescriptorPool(vkContext->m_Device, &descriptorPoolCI, nullptr, &m_VulkanDescriptorPool);
 		GEAR_ASSERT(res, "GEARBOX: Failed to Create VkDescriptorPool for ImGui.");
 
 		//Create Default Sampler
-		m_VulkanSamplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		m_VulkanSamplerCI.pNext = nullptr;
-		m_VulkanSamplerCI.flags = 0;
-		m_VulkanSamplerCI.magFilter = VK_FILTER_LINEAR;
-		m_VulkanSamplerCI.minFilter = VK_FILTER_LINEAR;
-		m_VulkanSamplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-		m_VulkanSamplerCI.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		m_VulkanSamplerCI.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		m_VulkanSamplerCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		m_VulkanSamplerCI.mipLodBias = 0.0f;
-		m_VulkanSamplerCI.anisotropyEnable = false;
-		m_VulkanSamplerCI.maxAnisotropy = 1.0f;
-		m_VulkanSamplerCI.compareEnable = false;
-		m_VulkanSamplerCI.compareOp = VK_COMPARE_OP_NEVER;
-		m_VulkanSamplerCI.minLod = 0;
-		m_VulkanSamplerCI.maxLod = 0;
-		m_VulkanSamplerCI.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
-		m_VulkanSamplerCI.unnormalizedCoordinates = false;
-		res = vkCreateSampler(vkContext->m_Device, &m_VulkanSamplerCI, nullptr, &m_VulkanSampler);
+		VkSamplerCreateInfo samplerCI;
+		samplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		samplerCI.pNext = nullptr;
+		samplerCI.flags = 0;
+		samplerCI.magFilter = VK_FILTER_LINEAR;
+		samplerCI.minFilter = VK_FILTER_LINEAR;
+		samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+		samplerCI.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerCI.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		samplerCI.mipLodBias = 0.0f;
+		samplerCI.anisotropyEnable = false;
+		samplerCI.maxAnisotropy = 1.0f;
+		samplerCI.compareEnable = false;
+		samplerCI.compareOp = VK_COMPARE_OP_NEVER;
+		samplerCI.minLod = 0;
+		samplerCI.maxLod = 0;
+		samplerCI.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+		samplerCI.unnormalizedCoordinates = false;
+		res = vkCreateSampler(vkContext->m_Device, &samplerCI, nullptr, &m_VulkanSampler);
 		GEAR_ASSERT(res, "GEARBOX: Failed to Create VkDescriptorPool for ImGui.");
 
 		ImGui_ImplVulkan_InitInfo imGuiVulkanInitInfo = {};

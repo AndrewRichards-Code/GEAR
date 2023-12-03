@@ -1,15 +1,21 @@
 #include "gear_core_common.h"
 #include "Scene/NativeScriptManager.h"
 
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#include <shlobj_core.h>
+
+#include "ARC/src/WindowsErrorHandling.h"
+
 using namespace arc;
 using namespace gear;
 using namespace scene;
 
 #ifdef _DEBUG
-std::filesystem::path NativeScriptManager::s_BuildScriptPath = std::filesystem::current_path() / "..\\bin\\x64\\Debug\\";
+std::filesystem::path NativeScriptManager::s_BuildScriptPath = std::filesystem::current_path() / "..\\bin\\Debug\\";
 static bool debug = true;
 #else
-std::filesystem::path NativeScriptManager::s_BuildScriptPath = std::filesystem::current_path() / "..\\bin\\x64\\Release\\";
+std::filesystem::path NativeScriptManager::s_BuildScriptPath = std::filesystem::current_path() / "..\\bin\\Release\\";
 static bool debug = false;
 #endif
 
@@ -18,7 +24,7 @@ void NativeScriptManager::Build(const std::string& nativeScriptDir)
 	std::filesystem::path msBuildPath = GetMSBuildPath();
 	std::filesystem::path vcxprojPath = std::filesystem::current_path() / "..\\GEAR_NATIVE_SCRIPT\\";
 	std::filesystem::path solutionPath = std::filesystem::current_path() / "..\\";
-	std::filesystem::path nativeScriptPath = std::filesystem::current_path() / nativeScriptDir;
+	std::filesystem::path nativeScriptPath = nativeScriptDir;
 
 	if (!CheckPath(s_BuildScriptPath) && !CheckPath(msBuildPath) && !CheckPath(vcxprojPath) && !CheckPath(solutionPath) && !CheckPath(nativeScriptPath))
 		return;
@@ -26,40 +32,46 @@ void NativeScriptManager::Build(const std::string& nativeScriptDir)
 	if (GetLibraryLastWriteTime() > GetSourceLastWriteTime(nativeScriptPath))
 		return;
 
+	//CMake Configure and Generate GEAR_NATIVE_SCRIPT/CMakeLists.txt
+	{
+		std::string command;
+		command += "cmake.exe "; //Assume CMake is on the System Path.
+		command += arc::ToString(solutionPath.native()) + " ";
+		command += "-D APPLICATION_NATIVE_SCRIPTS_DIR=" + arc::ToString(nativeScriptPath.native());
+		GEAR_INFO(true, "GEAR_CORE: Configure and Generate GEAR_NATIVE_SCRIPT.vcxproj from GEAR_NATIVE_SCRIPT/CMakeLists.txt using CMake.\n");
+		GEAR_INFO(true, ("Executing: " + command + "\n").c_str());
+
+		DWORD dwExitCode = CallProcessCommandLine(command);
+
+		GEAR_INFO(true, "'cmake.exe' has exited with code %d (0x%x).\n", dwExitCode, dwExitCode);
+		GEAR_INFO(true, "GEAR_CORE: Configure and Generate GEAR_NATIVE_SCRIPT.vcxproj from GEAR_NATIVE_SCRIPT/CMakeLists.txt finished.\n\n");
+
+		if (!(dwExitCode == 0))
+			system("pause");
+	}
+
 	//Build and Link Dynamic Library
-	std::string command;
-	command += arc::ToString(msBuildPath.native()) + "MSBuild.exe ";
-	command += arc::ToString(vcxprojPath.native()) + "GEAR_NATIVE_SCRIPT.vcxproj ";
-	command += "-t:build ";
-	command += "-p:Platform=x64 ";
-	command += debug ? "-p:Configuration=Debug " : "-p:Configuration=Release ";
-	command += "-p:SolutionDir=" + arc::ToString(solutionPath.native()) + " ";
-	command += "-p:ApplicationNativeScriptsDir=" + arc::ToString(nativeScriptPath.native());
+	{
+		std::string command;
+		command += arc::ToString(msBuildPath.native()) + "MSBuild.exe ";
+		command += arc::ToString(vcxprojPath.native()) + "GEAR_NATIVE_SCRIPT.vcxproj ";
+		command += "-t:build ";
+		command += "-p:Platform=x64 ";
+		command += debug ? "-p:Configuration=Debug " : "-p:Configuration=Release ";
+		command += "-p:SolutionDir=" + arc::ToString(solutionPath.native()) + " ";
+		command += "-p:BuildProjectReferences=false "; //Ignore Project's dependencies. GEAR_CORE is already loaded.
 
+		GEAR_INFO(true, "GEAR_CORE: Build GEAR_NATIVE_SCRIPT.dll from GEAR_NATIVE_SCRIPT.vcxproj using MSBuild.\n");
+		GEAR_INFO(true, ("Executing: " + command + "\n").c_str());
 
-	GEAR_INFO(true, "GEAR_CORE: Build GEAR_NATIVE_SCRIPT.dll from GEAR_NATIVE_SCRIPT.vcxproj using MSBuild.\n");
-	GEAR_INFO(true, ("Executing: " + command + "\n").c_str());
+		DWORD dwExitCode = CallProcessCommandLine(command);
 
-	STARTUPINFOA si = { sizeof(STARTUPINFOA) };
-	si.dwFlags = STARTF_USESHOWWINDOW;
-	si.wShowWindow = SW_HIDE; // Prevents cmd window from flashing. Requires STARTF_USESHOWWINDOW in dwFlags.
+		GEAR_INFO(true, "'MSBuild.exe' has exited with code %d (0x%x).\n", dwExitCode, dwExitCode);
+		GEAR_INFO(true, "GEAR_CORE: Build GEAR_NATIVE_SCRIPT.dll from GEAR_NATIVE_SCRIPT.vcxproj finished.\n\n");
 
-	PROCESS_INFORMATION pi = { 0 };
-	BOOL process = CreateProcessA(NULL, (LPSTR)command.c_str(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
-	CheckWin32BOOL(process);
-
-	WaitForSingleObject(pi.hProcess, INFINITE);
-	DWORD dwExitCode = 0;
-	GetExitCodeProcess(pi.hProcess, &dwExitCode);
-
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);
-
-	GEAR_INFO(true, "'MSBuild.exe' has exited with code %d (0x%x).\n", dwExitCode, dwExitCode);
-	GEAR_INFO(true, "GEAR_CORE: Build GEAR_NATIVE_SCRIPT.dll from GEAR_NATIVE_SCRIPT.vcxproj finished.\n\n");
-
-	if (!(dwExitCode == 0))
-		system("pause");
+		if (!(dwExitCode == 0))
+			system("pause");
+	}
 
 	system("cls");
 }
@@ -81,21 +93,21 @@ void NativeScriptManager::Unload(DynamicLibrary::LibraryHandle& libraryHandle)
 	libraryHandle = 0;
 }
 
-INativeScript* NativeScriptManager::LoadScript(DynamicLibrary::LibraryHandle& libraryHandle, const std::string& nativeScriptName)
+NativeScript* NativeScriptManager::LoadScript(DynamicLibrary::LibraryHandle& libraryHandle, const std::string& nativeScriptName)
 {
-	typedef INativeScript* (*PFN_LoadScript)();
+	typedef NativeScript* (*PFN_LoadScript)();
 	
-	INativeScript* nativeScript = nullptr;
+	NativeScript* nativeScript = nullptr;
 	PFN_LoadScript LoadScript = (PFN_LoadScript)DynamicLibrary::LoadFunction(libraryHandle, "LoadScript_" + nativeScriptName);
 	if(LoadScript)
-		nativeScript = (INativeScript*)LoadScript();
+		nativeScript = (NativeScript*)LoadScript();
 	
 	return nativeScript;
 }
 
-void NativeScriptManager::UnloadScript(DynamicLibrary::LibraryHandle& libraryHandle, const std::string& nativeScriptName, INativeScript*& nativeScript)
+void NativeScriptManager::UnloadScript(DynamicLibrary::LibraryHandle& libraryHandle, const std::string& nativeScriptName, NativeScript*& nativeScript)
 {
-	typedef void (*PFN_UnloadScript)(INativeScript*);
+	typedef void (*PFN_UnloadScript)(NativeScript*);
 
 	PFN_UnloadScript UnloadScript = (PFN_UnloadScript)DynamicLibrary::LoadFunction(libraryHandle, "UnloadScript_" + nativeScriptName);
 	if (UnloadScript)
@@ -105,13 +117,33 @@ void NativeScriptManager::UnloadScript(DynamicLibrary::LibraryHandle& libraryHan
 	}
 }
 
+uint32_t NativeScriptManager::CallProcessCommandLine(const std::string& commandLine)
+{
+	STARTUPINFOA si = { sizeof(STARTUPINFOA) };
+	si.dwFlags = STARTF_USESHOWWINDOW;
+	si.wShowWindow = SW_HIDE; // Prevents cmd window from flashing. Requires STARTF_USESHOWWINDOW in dwFlags.
+
+	PROCESS_INFORMATION pi = { 0 };
+	DWORD process = CreateProcessA(NULL, (LPSTR)commandLine.c_str(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+	CheckWin32BOOL(process);
+
+	WaitForSingleObject(pi.hProcess, INFINITE);
+	DWORD dwExitCode = 0;
+	GetExitCodeProcess(pi.hProcess, &dwExitCode);
+
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
+	
+	return dwExitCode;
+}
+
 std::filesystem::path NativeScriptManager::GetMSBuildPath()
 {
 	//C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Msbuild\\Current\\Bin\\MSBuild.exe
 	
-	std::filesystem::path vswherePath;
-	std::filesystem::path vsInstallaionPath;
-	std::filesystem::path msBuildPath;
+	std::filesystem::path vswherePath = "";
+	std::filesystem::path vsInstallaionPath = "";
+
 	LPWSTR programFilesPath;
 	SHGetKnownFolderPath(FOLDERID_ProgramFilesX86, KF_FLAG_DEFAULT, 0, &programFilesPath);
 	vswherePath = arc::ToString(programFilesPath);
@@ -159,7 +191,7 @@ std::filesystem::path NativeScriptManager::GetMSBuildPath()
 
 	std::erase_if(buffer, [](char c) { return (c == '\n' || c == '\r'); });
 	vsInstallaionPath = buffer;
-	msBuildPath = vsInstallaionPath.native() + L"\\Msbuild\\Current\\Bin\\";
+	std::filesystem::path msBuildPath = vsInstallaionPath.native() + L"\\Msbuild\\Current\\Bin\\";
 
 	return msBuildPath;
 }
@@ -199,7 +231,7 @@ std::filesystem::file_time_type NativeScriptManager::GetSourceLastWriteTime(cons
 	return time;
 }
 
-void NativeScriptManager::CheckWin32BOOL(BOOL success)
+void NativeScriptManager::CheckWin32BOOL(bool success)
 {
 	if (!success)
 	{

@@ -115,9 +115,9 @@ void ViewportPanel::UpdateCameraTransform()
 	Ref<SceneHierarchyPanel> sceneHierarchyPanel = UIContext::GetUIContext()->GetEditorPanelsByType<SceneHierarchyPanel>()[0];
 	if (!sceneHierarchyPanel)
 		return;
-	Transform& transform = Transform();
+	Transform transform = Transform();
 	bool found = false;
-	auto& vCameraComponents = sceneHierarchyPanel->GetScene()->GetRegistry().view<scene::TransformComponent, scene::CameraComponent>();
+	const auto& vCameraComponents = sceneHierarchyPanel->GetScene()->GetRegistry().view<scene::TransformComponent, scene::CameraComponent>();
 	for (auto& entity : vCameraComponents)
 	{
 		Ref<Camera>& _camera = vCameraComponents.get<scene::CameraComponent>(entity);

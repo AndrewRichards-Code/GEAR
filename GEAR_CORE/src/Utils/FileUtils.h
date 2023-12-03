@@ -1,5 +1,7 @@
 #pragma once
 #include "gear_core_common.h"
+#include <deque>
+#include <fstream>
 
 namespace gear 
 {

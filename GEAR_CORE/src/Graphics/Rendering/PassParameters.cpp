@@ -107,7 +107,7 @@ const std::pair<uint32_t, uint32_t> TaskPassParameters::FindResourceViewSetBindi
 	return { 0, 0 };
 }
 
-void TaskPassParameters::SetResourceView(const std::pair<uint32_t, uint32_t>& set_binding, ResourceView& resourceView)
+void TaskPassParameters::SetResourceView(const std::pair<uint32_t, uint32_t>& set_binding, ResourceView resourceView)
 {
 	const uint32_t& set = set_binding.first;
 	const uint32_t& binding = set_binding.second;
@@ -223,12 +223,12 @@ void TaskPassParameters::SetResourceView(const std::pair<uint32_t, uint32_t>& se
 	}
 }
 
-void TaskPassParameters::SetResourceView(const std::string& name, ResourceView& resourceView)
+void TaskPassParameters::SetResourceView(const std::string& name, ResourceView resourceView)
 {
 	SetResourceView(FindResourceViewSetBinding(name), resourceView);
 }
 
-void TaskPassParameters::AddVertexBuffer(ResourceView& resourceView)
+void TaskPassParameters::AddVertexBuffer(ResourceView resourceView)
 {
 	if (!resourceView.IsBufferView())
 		return;
@@ -238,7 +238,7 @@ void TaskPassParameters::AddVertexBuffer(ResourceView& resourceView)
 	m_InputResourceViews.push_back(resourceView);
 }
 
-void TaskPassParameters::AddIndexBuffer(ResourceView& resourceView)
+void TaskPassParameters::AddIndexBuffer(ResourceView resourceView)
 {
 	if (!resourceView.IsBufferView())
 		return;

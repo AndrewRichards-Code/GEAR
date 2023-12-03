@@ -1,7 +1,9 @@
 #include "gear_core_common.h"
 #include "Graphics/Texture.h"
 #include "Graphics/AllocatorManager.h"
-#include "STBI/stb_image.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb/stb_image.h"
 
 using namespace gear;
 using namespace graphics;
@@ -112,17 +114,10 @@ void Texture::SubmitImageData(std::vector<uint8_t>& imageData)
 	m_ImageUploadBufferCI.allocator->SubmitData(m_ImageUploadBuffer->GetAllocation(), 0, imageData.size(), imageData.data());
 }
 
-#include "d3d12/D3D12Buffer.h"
-#include "vulkan/VKBuffer.h"
-
 void Texture::AccessImageData(std::vector<uint8_t>& imageData)
 {
 	imageData.clear();
-
-	if (GraphicsAPI::IsD3D12())
-		imageData.resize((size_t)ref_cast<d3d12::Buffer>(m_ImageUploadBuffer)->m_D3D12MAllocation->GetSize());
-	else
-		imageData.resize((size_t)ref_cast<vulkan::Buffer>(m_ImageUploadBuffer)->m_VmaAI.size);
+	imageData.resize(m_ImageUploadBuffer->GetAllocation().width);
 
 	m_ImageUploadBufferCI.allocator->AccessData(m_ImageUploadBuffer->GetAllocation(), 0, imageData.size(), imageData.data());
 }

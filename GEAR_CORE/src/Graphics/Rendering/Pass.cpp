@@ -47,12 +47,12 @@ void Pass::Execute(RenderGraph* renderGraph, CommandBufferRef cmdBuffer, uint32_
 			barriers.clear();
 			for (ResourceView& resourceView : inputResourceViews)
 			{
-				auto& inputBarriers = TransitionResource(renderGraph, resourceView);
+				const auto& inputBarriers = TransitionResource(renderGraph, resourceView);
 				barriers.insert(barriers.end(), inputBarriers.begin(), inputBarriers.end());
 			}
 			for (ResourceView& resourceView : outputResourceViews)
 			{
-				auto& outputBarriers = TransitionResource(renderGraph, resourceView);
+				const auto& outputBarriers = TransitionResource(renderGraph, resourceView);
 				barriers.insert(barriers.end(), outputBarriers.begin(), outputBarriers.end());
 			}
 			if (!barriers.empty())
@@ -108,9 +108,9 @@ void Pass::Execute(RenderGraph* renderGraph, CommandBufferRef cmdBuffer, uint32_
 		std::vector<Barrier2Ref>& barriers = dependencyInfo.barriers;
 		for (auto& [src, dst, rcr] : passParameters->GetResourceViewsPairs())
 		{
-			auto& srcBarriers = TransitionResource(renderGraph, src);
+			const auto& srcBarriers = TransitionResource(renderGraph, src);
 			barriers.insert(barriers.end(), srcBarriers.begin(), srcBarriers.end());
-			auto& dstBarriers = TransitionResource(renderGraph, dst);
+			const auto& dstBarriers = TransitionResource(renderGraph, dst);
 			barriers.insert(barriers.end(), dstBarriers.begin(), dstBarriers.end());
 		}
 		cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
@@ -213,7 +213,7 @@ Pass::TransitionDetails Pass::GetTransitionDetails(const Resource::State& state,
 	{
 		accesses = src ? Barrier::AccessBit::COLOUR_ATTACHMENT_WRITE_BIT : Barrier::AccessBit::NONE_BIT;
 		layout = Image::Layout::PRESENT_SRC;
-		pipelineStage = PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT;
+		pipelineStage = GraphicsAPI::IsD3D12() ? PipelineStageBit::NONE_BIT : PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT;
 		return { accesses, layout, pipelineStage };
 	}
 	case Resource::State::COLOUR_ATTACHMENT:
@@ -265,7 +265,7 @@ Pass::TransitionDetails Pass::GetTransitionDetails(const Resource::State& state,
 	}
 	case Resource::State::TRANSFER_SRC:
 	{
-		accesses = GraphicsAPI::IsD3D12() ? Barrier::AccessBit::NONE_BIT : Barrier::AccessBit::TRANSFER_WRITE_BIT;
+		accesses = Barrier::AccessBit::TRANSFER_WRITE_BIT;
 		layout = Image::Layout::TRANSFER_SRC_OPTIMAL;
 		pipelineStage = PipelineStageBit::TRANSFER_BIT;
 		return { accesses, layout, pipelineStage };

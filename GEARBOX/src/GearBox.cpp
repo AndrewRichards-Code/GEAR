@@ -1,6 +1,13 @@
 #include "gearbox_common.h"
 #include "gearbox.h"
 
+//TODO: Find better place to put this!
+extern "C"\
+{\
+__declspec(dllexport) extern const unsigned int D3D12SDKVersion = 610; \
+__declspec(dllexport) extern const char* D3D12SDKPath = ".\\D3D12\\"; \
+}
+
 using namespace gear;
 using namespace animation;
 using namespace audio;
@@ -67,7 +74,7 @@ void GEARBOX::Run()
 
 	Scene::CreateInfo sceneCI;
 	sceneCI.debugName = "DefaultScene";
-	sceneCI.nativeScriptDir = "res/scripts/";
+	sceneCI.nativeScriptDir = std::filesystem::current_path() / "../../GEARBOX/res/scripts/";
 	Ref<Scene> activeScene = CreateRef<Scene>(&sceneCI);
 	
 	Renderer::CreateInfo mainRendererCI;

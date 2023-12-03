@@ -1,6 +1,8 @@
 #pragma once
 #include "UI/Panels/BasePanel.h"
 
+typedef void* ImTextureID;
+
 namespace gear
 {
 	namespace graphics

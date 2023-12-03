@@ -20,11 +20,11 @@ namespace gear
 {
 	namespace scene
 	{
-		class GEAR_SCRIPT_API INativeScript
+		class GEAR_SCRIPT_API NativeScript
 		{
 		public:
-			INativeScript() = default;
-			virtual ~INativeScript() = default;
+			NativeScript() = default;
+			virtual ~NativeScript() = default;
 
 			virtual void OnCreate() {}
 			virtual void OnDestroy() {}
@@ -44,5 +44,19 @@ namespace gear
 	}
 }
 
-#define GEAR_LOAD_SCRIPT(T) extern "C" GEAR_SCRIPT_API INativeScript* LoadScript_##T() { return (INativeScript*)(new T()); }
-#define GEAR_UNLOAD_SCRIPT(T) extern "C" GEAR_SCRIPT_API void UnloadScript_##T(INativeScript* nativeScript) { if(nativeScript) { delete (T*)nativeScript; nativeScript = nullptr; } }
+#define GEAR_LOAD_SCRIPT(T) \
+	extern "C" GEAR_SCRIPT_API \
+	NativeScript* LoadScript_##T() \
+	{ \
+		return (NativeScript*)(new T()); \
+	}
+
+#define GEAR_UNLOAD_SCRIPT(T) \
+	extern "C" GEAR_SCRIPT_API \
+	void UnloadScript_##T(NativeScript* nativeScript) \
+	{ \
+		if(nativeScript) \
+		{ \
+			delete (T*)nativeScript; nativeScript = nullptr; \
+		} \
+	}

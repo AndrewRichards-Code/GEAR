@@ -1,5 +1,6 @@
 #pragma once
 #include "UI/Panels/BasePanel.h"
+#include <deque>
 
 namespace gear
 {

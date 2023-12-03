@@ -1,5 +1,8 @@
 #pragma once
 #include "gear_core_common.h"
+#include "Scene/Entity.h"
+
+#include "imgui/imgui.h"
 
 namespace gear
 {

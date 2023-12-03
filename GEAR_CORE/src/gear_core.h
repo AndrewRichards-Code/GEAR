@@ -63,7 +63,7 @@
 //Scene
 #include "Scene/Components.h"
 #include "Scene/Entity.h"
-#include "Scene/INativeScript.h"
+#include "Scene/NativeScript.h"
 #include "Scene/NativeScriptManager.h"
 #include "Scene/Scene.h"
 

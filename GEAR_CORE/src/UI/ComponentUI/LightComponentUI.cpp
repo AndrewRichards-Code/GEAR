@@ -108,7 +108,7 @@ void gear::ui::componentui::DrawProbeComponentUI(Ref<Probe> probe)
 				ImGui::Image(id, ImVec2(width, height));
 
 				Ref<Camera>& debugCamera = graphics::DebugRender::GetCamera();
-				static Transform& transform = Transform();
+				static Transform transform = Transform();
 				static float m_Roll = 0;
 				static float m_Pitch = 0;
 				static float m_Yaw = 0;

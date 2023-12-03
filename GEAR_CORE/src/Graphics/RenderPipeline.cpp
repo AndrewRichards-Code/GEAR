@@ -52,7 +52,7 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 {
 	using namespace nlohmann;
 
-	std::string projectDirectory = PROJECT_DIR;
+	std::string projectDirectory = PROJECT_DIR + std::string("/");
 	std::string finalFilePath = projectDirectory + pLoadInfo->filepath;
 	std::string relativePathFromCwdToProjDir = std::filesystem::path(projectDirectory).lexically_relative(std::filesystem::current_path()).string();
 	
@@ -86,7 +86,6 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 			shaderCI.recompileArguments.macros.push_back(macro);
 		shaderCI.recompileArguments.cso = recompileArgs["cso"];
 		shaderCI.recompileArguments.spv = recompileArgs["spv"];
-		shaderCI.recompileArguments.dxcLocation = recompileArgs["dxcLocation"];
 		for (auto& dxcArguments : recompileArgs["dxcArguments"])
 			shaderCI.recompileArguments.dxcArguments.push_back(dxcArguments);
 		

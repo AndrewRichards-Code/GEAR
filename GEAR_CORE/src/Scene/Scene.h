@@ -2,6 +2,9 @@
 #include "gear_core_common.h"
 #include "Core/UUID.h"
 #include "Core/FontLibrary.h"
+#define ENTT_CORE_ENUM_HPP
+#include "ENTT/single_include/entt/entt.hpp"
+#include "ARC/External/json/json.hpp"
 
 namespace gear
 {
@@ -25,7 +28,7 @@ namespace gear
 	namespace scene
 	{
 		class Entity;
-		class INativeScript;
+		class NativeScript;
 
 		struct UUIDComponent;
 		struct NameComponent;
@@ -43,7 +46,7 @@ namespace gear
 			struct CreateInfo
 			{
 				std::string debugName;
-				std::string nativeScriptDir;
+				std::filesystem::path nativeScriptDir;
 			};
 			enum class State : uint32_t
 			{

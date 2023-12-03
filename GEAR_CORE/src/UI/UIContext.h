@@ -3,6 +3,14 @@
 #include "UI/Panels/BasePanel.h"
 #include "UI/Panels/Panels.h"
 
+typedef struct VkCommandBuffer_T* VkCommandBuffer;
+typedef struct VkDescriptorPool_T* VkDescriptorPool;
+typedef struct VkSampler_T* VkSampler;
+
+struct ID3D12GraphicsCommandList;
+struct ID3D12DescriptorHeap;
+typedef uint32_t UINT;
+
 namespace gear
 {
 	namespace core
@@ -162,9 +170,8 @@ namespace gear
 
 		public:
 			VkDescriptorPool m_VulkanDescriptorPool;
-			VkDescriptorPoolCreateInfo m_VulkanDescriptorPoolCI;
 			VkSampler m_VulkanSampler;
-			VkSamplerCreateInfo m_VulkanSamplerCI;
+			
 
 			ID3D12DescriptorHeap* m_D3D12DescriptorHeapSRV;
 			std::map<ImTextureID, UINT> m_D3D12GPUHandleHeapOffsets;
