@@ -1,0 +1,39 @@
+{
+  "fileType": "MSC_RAF",
+  "recompileArguments": [
+    {
+      "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/PostProcess/Bloom.hlsl",
+      "outputDirectory": "$BUILD_DIR/shaderbin",
+      "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "$SOURCE_DIR/GEAR_CORE/src/Graphics" ],
+      "entryPoint": "downsample",
+      "shaderModel": "cs_6_4",
+      "macros": [],
+      "cso": true,
+      "spv": true,
+      "dxcArguments": []
+    },
+    {
+       "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/PostProcess/Bloom.hlsl",
+       "outputDirectory": "$BUILD_DIR/shaderbin",
+       "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "$SOURCE_DIR/GEAR_CORE/src/Graphics" ],
+       "entryPoint": "prefilter",
+       "shaderModel": "cs_6_4",
+       "macros": [],
+       "cso": true,
+       "spv": true,
+       "dxcLocation": "",
+       "dxcArguments": []
+    },
+    {
+      "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/PostProcess/Bloom.hlsl",
+      "outputDirectory": "$BUILD_DIR/shaderbin",
+      "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "$SOURCE_DIR/GEAR_CORE/src/Graphics" ],
+      "entryPoint": "upsample",
+      "shaderModel": "cs_6_4",
+      "macros": [],
+      "cso": true,
+      "spv": true,
+      "dxcArguments": []
+    }
+  ]
+}

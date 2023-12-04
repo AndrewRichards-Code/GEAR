@@ -10,18 +10,10 @@
           "entryPoint": "main"
         }
       ],
-      "binaryFilepath": "res/shaders/bin/SpecularBRDF_LUT_cs_6_4_main.spv",
+      "binaryFilepath": "$BUILD_DIR/shaderbin/SpecularBRDF_LUT_cs_6_4_main.spv",
       "recompileArguments": {
-        "hlslFilepath": "res/shaders/HLSL/PBR/SpecularBRDF_LUT.hlsl",
-        "outputDirectory": "res/shaders/bin",
-        "includeDirectories": [ "../External/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
-        "entryPoint": "main",
-        "shaderModel": "cs_6_4",
-        "macros": [],
-        "cso": true,
-        "spv": true,
-        "dxcLocation": "",
-        "dxcArguments": []
+        "rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/PBR/SpecularBRDF_LUT.json",
+        "index": 0
       }
     }
   ]

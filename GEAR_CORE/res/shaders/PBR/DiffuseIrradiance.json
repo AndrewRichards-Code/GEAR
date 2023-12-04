@@ -1,0 +1,16 @@
+{
+  "fileType": "MSC_RAF",
+  "recompileArguments": [
+    {
+      "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/PBR/DiffuseIrradiance.hlsl",
+      "outputDirectory": "$BUILD_DIR/shaderbin",
+      "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
+      "entryPoint": "main",
+      "shaderModel": "cs_6_4",
+      "macros": [],
+      "cso": true,
+      "spv": true,
+      "dxcArguments": []
+    }
+  ]
+}

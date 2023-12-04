@@ -1,0 +1,27 @@
+{
+  "fileType": "MSC_RAF",
+  "recompileArguments": [
+    {
+      "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/PostProcess/HDR.hlsl",
+      "outputDirectory": "$BUILD_DIR/shaderbin",
+      "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "$SOURCE_DIR/GEAR_CORE/src/Graphics" ],
+      "entryPoint": "vs_main",
+      "shaderModel": "vs_6_4",
+      "macros": [],
+      "cso": true,
+      "spv": true,
+      "dxcArguments": []
+    },
+    {
+      "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/PostProcess/HDR.hlsl",
+      "outputDirectory": "$BUILD_DIR/shaderbin",
+      "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "$SOURCE_DIR/GEAR_CORE/src/Graphics" ],
+      "entryPoint": "ps_main",
+      "shaderModel": "ps_6_4",
+      "macros": [],
+      "cso": true,
+      "spv": true,
+      "dxcArguments": []
+    }
+  ]
+}

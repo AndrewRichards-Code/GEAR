@@ -74,7 +74,7 @@ void GEARBOX::Run()
 
 	Scene::CreateInfo sceneCI;
 	sceneCI.debugName = "DefaultScene";
-	sceneCI.nativeScriptDir = std::filesystem::current_path() / "../../GEARBOX/res/scripts/";
+	sceneCI.nativeScriptDir = std::filesystem::current_path() / "res/scripts/";
 	Ref<Scene> activeScene = CreateRef<Scene>(&sceneCI);
 	
 	Renderer::CreateInfo mainRendererCI;

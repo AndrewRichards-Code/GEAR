@@ -12,42 +12,46 @@ using namespace gear;
 using namespace scene;
 
 #ifdef _DEBUG
-std::filesystem::path NativeScriptManager::s_BuildScriptPath = std::filesystem::current_path() / "..\\bin\\Debug\\";
+std::filesystem::path NativeScriptManager::s_BuildScriptPath = std::filesystem::path(BUILD_DIR) / "bin/Debug/";
 static bool debug = true;
 #else
-std::filesystem::path NativeScriptManager::s_BuildScriptPath = std::filesystem::current_path() / "..\\bin\\Release\\";
+std::filesystem::path NativeScriptManager::s_BuildScriptPath = std::filesystem::path(BUILD_DIR) / "bin/Release/";
 static bool debug = false;
 #endif
 
 void NativeScriptManager::Build(const std::string& nativeScriptDir)
 {
 	std::filesystem::path msBuildPath = GetMSBuildPath();
-	std::filesystem::path vcxprojPath = std::filesystem::current_path() / "..\\GEAR_NATIVE_SCRIPT\\";
-	std::filesystem::path solutionPath = std::filesystem::current_path() / "..\\";
+	std::filesystem::path vcxprojPath = std::filesystem::path(BUILD_DIR) / "GEAR_NATIVE_SCRIPT/";
+	std::filesystem::path solutionPath = std::filesystem::path(BUILD_DIR);
+	std::filesystem::path sourcePath = std::filesystem::path(SOURCE_DIR);
 	std::filesystem::path nativeScriptPath = nativeScriptDir;
 
 	if (!CheckPath(s_BuildScriptPath) && !CheckPath(msBuildPath) && !CheckPath(vcxprojPath) && !CheckPath(solutionPath) && !CheckPath(nativeScriptPath))
 		return;
 
-	if (GetLibraryLastWriteTime() > GetSourceLastWriteTime(nativeScriptPath))
-		return;
+	//if (GetLibraryLastWriteTime() > GetSourceLastWriteTime(nativeScriptPath))
+	//	return;
 
 	//CMake Configure and Generate GEAR_NATIVE_SCRIPT/CMakeLists.txt
 	{
 		std::string command;
 		command += "cmake.exe "; //Assume CMake is on the System Path.
-		command += arc::ToString(solutionPath.native()) + " ";
+		command += "-S " + arc::ToString(sourcePath.native()) + " ";
+		command += "-B " + arc::ToString(solutionPath.native()) + " ";
 		command += "-D APPLICATION_NATIVE_SCRIPTS_DIR=" + arc::ToString(nativeScriptPath.native());
-		GEAR_INFO(true, "GEAR_CORE: Configure and Generate GEAR_NATIVE_SCRIPT.vcxproj from GEAR_NATIVE_SCRIPT/CMakeLists.txt using CMake.\n");
-		GEAR_INFO(true, ("Executing: " + command + "\n").c_str());
+		GEAR_INFO(true, "GEAR_CORE: Configure and Generate GEAR_NATIVE_SCRIPT.vcxproj from GEAR_NATIVE_SCRIPT/CMakeLists.txt using CMake.");
+		GEAR_INFO(true, ("Executing: " + command).c_str());
 
 		DWORD dwExitCode = CallProcessCommandLine(command);
 
-		GEAR_INFO(true, "'cmake.exe' has exited with code %d (0x%x).\n", dwExitCode, dwExitCode);
-		GEAR_INFO(true, "GEAR_CORE: Configure and Generate GEAR_NATIVE_SCRIPT.vcxproj from GEAR_NATIVE_SCRIPT/CMakeLists.txt finished.\n\n");
+		GEAR_INFO(true, "'cmake.exe' has exited with code %d (0x%x).", dwExitCode, dwExitCode);
+		GEAR_INFO(true, "GEAR_CORE: Configure and Generate GEAR_NATIVE_SCRIPT.vcxproj from GEAR_NATIVE_SCRIPT/CMakeLists.txt finished.");
 
-		if (!(dwExitCode == 0))
-			system("pause");
+		if (dwExitCode != 0)
+		{
+			GEAR_WARN(true, "GEAR_CORE: Failed to Configure and Generate GEAR_NATIVE_SCRIPT.vcxproj.");
+		}
 	}
 
 	//Build and Link Dynamic Library
@@ -56,21 +60,25 @@ void NativeScriptManager::Build(const std::string& nativeScriptDir)
 		command += arc::ToString(msBuildPath.native()) + "MSBuild.exe ";
 		command += arc::ToString(vcxprojPath.native()) + "GEAR_NATIVE_SCRIPT.vcxproj ";
 		command += "-t:build ";
-		command += "-p:Platform=x64 ";
+		//command += "-p:Platform=x64 ";
 		command += debug ? "-p:Configuration=Debug " : "-p:Configuration=Release ";
 		command += "-p:SolutionDir=" + arc::ToString(solutionPath.native()) + " ";
 		command += "-p:BuildProjectReferences=false "; //Ignore Project's dependencies. GEAR_CORE is already loaded.
 
-		GEAR_INFO(true, "GEAR_CORE: Build GEAR_NATIVE_SCRIPT.dll from GEAR_NATIVE_SCRIPT.vcxproj using MSBuild.\n");
-		GEAR_INFO(true, ("Executing: " + command + "\n").c_str());
+		GEAR_INFO(true, "GEAR_CORE: Build GEAR_NATIVE_SCRIPT.dll from GEAR_NATIVE_SCRIPT.vcxproj using MSBuild.");
+		GEAR_INFO(true, ("Executing: " + command).c_str());
 
 		DWORD dwExitCode = CallProcessCommandLine(command);
 
-		GEAR_INFO(true, "'MSBuild.exe' has exited with code %d (0x%x).\n", dwExitCode, dwExitCode);
-		GEAR_INFO(true, "GEAR_CORE: Build GEAR_NATIVE_SCRIPT.dll from GEAR_NATIVE_SCRIPT.vcxproj finished.\n\n");
+		std::filesystem::remove_all(sourcePath / "buildx64"); //CMake is being dumb and adding this redundant folder.
 
-		if (!(dwExitCode == 0))
-			system("pause");
+		GEAR_INFO(true, "'MSBuild.exe' has exited with code %d (0x%x).", dwExitCode, dwExitCode);
+		GEAR_INFO(true, "GEAR_CORE: Build GEAR_NATIVE_SCRIPT.dll from GEAR_NATIVE_SCRIPT.vcxproj finished.");
+
+		if (dwExitCode != 0)
+		{
+			GEAR_WARN(true, "GEAR_CORE: Failed to Build GEAR_NATIVE_SCRIPT.dll.");
+		}
 	}
 
 	system("cls");

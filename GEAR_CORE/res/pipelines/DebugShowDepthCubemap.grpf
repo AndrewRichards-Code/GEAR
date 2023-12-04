@@ -10,18 +10,10 @@
 					"entryPoint": "vs_show_depth_cubemap"
 				}
 			],
-			"binaryFilepath": "res/shaders/bin/Debug_vs_6_4_vs_show_depth_cubemap.spv",
+			"binaryFilepath": "$BUILD_DIR/shaderbin/Debug_vs_6_4_vs_show_depth_cubemap.spv",
 			"recompileArguments": {
-				"hlslFilepath": "res/shaders/HLSL/Debug.hlsl",
-				"outputDirectory": "res/shaders/bin",
-				"includeDirectories": [ "../External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
-				"entryPoint": "vs_show_depth_cubemap",
-				"shaderModel": "vs_6_4",
-				"macros": [],
-				"cso": true,
-				"spv": true,
-				"dxcLocation": "",
-				"dxcArguments": []
+				"rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.json",
+				"index": 6
 			}
 		},
 		{
@@ -32,18 +24,10 @@
 					"entryPoint": "ps_show_depth_cubemap"
 				}
 			],
-			"binaryFilepath": "res/shaders/bin/Debug_ps_6_4_ps_show_depth_cubemap.spv",
+			"binaryFilepath": "$BUILD_DIR/shaderbin/Debug_ps_6_4_ps_show_depth_cubemap.spv",
 			"recompileArguments": {
-				"hlslFilepath": "res/shaders/HLSL/Debug.hlsl",
-				"outputDirectory": "res/shaders/bin",
-				"includeDirectories": [ "../External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
-				"entryPoint": "ps_show_depth_cubemap",
-				"shaderModel": "ps_6_4",
-				"macros": [],
-				"cso": true,
-				"spv": true,
-				"dxcLocation": "",
-				"dxcArguments": []
+				"rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.json",
+				"index": 7
 			}
 		}
 	],

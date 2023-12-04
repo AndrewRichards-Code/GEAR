@@ -10,18 +10,10 @@
 					"entryPoint": "mipmap"
 				}
 			],
-			"binaryFilepath": "res/shaders/bin/Mipmap_cs_6_4_mipmap.spv",
+			"binaryFilepath": "$BUILD_DIR/shaderbin/Mipmap_cs_6_4_mipmap.spv",
 			"recompileArguments": {
-				"hlslFilepath": "res/shaders/HLSL/Mipmap.hlsl",
-				"outputDirectory": "res/shaders/bin",
-				"includeDirectories": [ "../External/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
-				"entryPoint": "mipmap",
-				"shaderModel": "cs_6_4",
-				"macros": [],
-				"cso": true,
-				"spv": true,
-				"dxcLocation": "",
-				"dxcArguments": []
+				"rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Mipmap.json",
+				"index": 0
 			}
 		}
 	]

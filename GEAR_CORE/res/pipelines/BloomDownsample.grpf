@@ -10,18 +10,10 @@
 					"entryPoint": "downsample"
 				}
 			],
-			"binaryFilepath": "res/shaders/bin/Bloom_cs_6_4_downsample.spv",
+			"binaryFilepath": "$BUILD_DIR/shaderbin/Bloom_cs_6_4_downsample.spv",
 			"recompileArguments": {
-				"hlslFilepath": "res/shaders/HLSL/PostProcess/Bloom.hlsl",
-				"outputDirectory": "res/shaders/bin",
-				"includeDirectories": [ "../External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
-				"entryPoint": "downsample",
-				"shaderModel": "cs_6_4",
-				"macros": [],
-				"cso": true,
-				"spv": true,
-				"dxcLocation": "",
-				"dxcArguments": []
+				"rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/PostProcess/Bloom.json",
+				"index": 0
 			}
 		}
 	]

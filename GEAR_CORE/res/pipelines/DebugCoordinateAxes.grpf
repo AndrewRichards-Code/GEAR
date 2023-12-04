@@ -10,18 +10,10 @@
           "entryPoint": "vs_coordinate_axes"
         }
       ],
-      "binaryFilepath": "res/shaders/bin/Debug_vs_6_4_vs_coordinate_axes.spv",
+      "binaryFilepath": "$BUILD_DIR/shaderbin/Debug_vs_6_4_vs_coordinate_axes.spv",
       "recompileArguments": {
-        "hlslFilepath": "res/shaders/HLSL/Debug.hlsl",
-        "outputDirectory": "res/shaders/bin",
-        "includeDirectories": [ "../External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
-        "entryPoint": "vs_coordinate_axes",
-        "shaderModel": "vs_6_4",
-        "macros": [],
-        "cso": true,
-        "spv": true,
-        "dxcLocation": "",
-        "dxcArguments": []
+        "rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.json",
+        "index": 0
       }
     },
     {
@@ -32,18 +24,10 @@
           "entryPoint": "ps_coordinate_axes"
         }
       ],
-      "binaryFilepath": "res/shaders/bin/Debug_ps_6_4_ps_coordinate_axes.spv",
+      "binaryFilepath": "$BUILD_DIR/shaderbin/Debug_ps_6_4_ps_coordinate_axes.spv",
       "recompileArguments": {
-        "hlslFilepath": "res/shaders/HLSL/Debug.hlsl",
-        "outputDirectory": "res/shaders/bin",
-        "includeDirectories": [ "../External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
-        "entryPoint": "ps_coordinate_axes",
-        "shaderModel": "ps_6_4",
-        "macros": [],
-        "cso": true,
-        "spv": true,
-        "dxcLocation": "",
-        "dxcArguments": []
+        "rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.json",
+        "index": 1
       }
     }
   ],

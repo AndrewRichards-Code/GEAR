@@ -1,0 +1,27 @@
+{
+  "fileType": "MSC_RAF",
+  "recompileArguments": [
+    {
+      "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Mipmap.hlsl",
+      "outputDirectory": "$BUILD_DIR/shaderbin",
+      "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
+      "entryPoint": "mipmap",
+      "shaderModel": "cs_6_4",
+      "macros": [],
+      "cso": true,
+      "spv": true,
+      "dxcArguments": []
+    },
+    {
+      "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Mipmap.hlsl",
+      "outputDirectory": "$BUILD_DIR/shaderbin",
+      "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
+      "entryPoint": "mipmap_array",
+      "shaderModel": "cs_6_4",
+      "macros": [],
+      "cso": true,
+      "spv": true,
+      "dxcArguments": []
+    }
+  ]
+}

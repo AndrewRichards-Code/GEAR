@@ -380,10 +380,129 @@ target_include_directories(GEAR_CORE PRIVATE
 
 #Defines
 target_compile_definitions(GEAR_CORE PRIVATE GEAR_BUILD_DLL)
-target_compile_definitions(GEAR_CORE PRIVATE "PROJECT_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\"")
 
 #Links
 target_link_libraries(GEAR_CORE PRIVATE 
 	MIRU_CORE
 	ARC
 )
+
+#Shaders
+set(GEAR_CORE_RENDER_PIPELINE_FILES
+	"res/pipelines/BloomDownsample.grpf"
+	"res/pipelines/BloomPrefilter.grpf"
+	"res/pipelines/BloomUpsample.grpf"
+	"res/pipelines/Cube.grpf"
+	"res/pipelines/DebugCoordinateAxes.grpf"
+	"res/pipelines/DebugCopy.grpf"
+	"res/pipelines/DebugShowDepth.grpf"
+	"res/pipelines/DebugShowDepthCubemap.grpf"
+	"res/pipelines/DiffuseIrradiance.grpf"
+	"res/pipelines/EquirectangularToCube.grpf"
+	"res/pipelines/HDR.grpf"
+	"res/pipelines/Mipmap.grpf"
+	"res/pipelines/MipmapArray.grpf"
+	"res/pipelines/PBROpaque.grpf"
+	"res/pipelines/Shadow.grpf"
+	"res/pipelines/SpecularBRDF_LUT.grpf"
+	"res/pipelines/SpecularIrradiance.grpf"
+	"res/pipelines/Text.grpf"
+)
+
+set(GEAR_CORE_SHADER_PBR_FILES
+	"res/shaders/PBR/DiffuseIrradiance.hlsl"
+	"res/shaders/PBR/PBRFunctions.h"
+	"res/shaders/PBR/PBROpaque.hlsl"
+	"res/shaders/PBR/SpecularBRDF_LUT.hlsl"
+	"res/shaders/PBR/SpecularIrradiance.hlsl"
+)
+set(GEAR_CORE_SHADER_PostProcess_FILES
+	"res/shaders/PostProcess/Bloom.hlsl"
+	"res/shaders/PostProcess/HDR.hlsl"
+)
+set(GEAR_CORE_SHADER_FILES
+	"res/shaders/Cube.hlsl"
+	"res/shaders/CubeFunctions.h"
+	"res/shaders/Debug.hlsl"
+	"res/shaders/Depth.h"
+	"res/shaders/EquirectangularToCube.hlsl"
+	"res/shaders/Mipmap.hlsl"
+	"res/shaders/RayTracing.hlsl"
+	"res/shaders/Shadow.hlsl"
+	"res/shaders/Text.hlsl"
+
+	"res/shaders/shadertoolsconfig.json"
+)
+
+set(GEAR_CORE_SHADER_PBR_JSON_FILES
+	"res/shaders/PBR/DiffuseIrradiance.json"
+	"res/shaders/PBR/PBROpaque.json"
+	"res/shaders/PBR/SpecularBRDF_LUT.json"
+	"res/shaders/PBR/SpecularIrradiance.json"
+)
+
+set(GEAR_CORE_SHADER_PostProcess_JSON_FILES
+	"res/shaders/PostProcess/Bloom.json"
+	"res/shaders/PostProcess/HDR.json"
+)
+
+set(GEAR_CORE_SHADER_JSON_FILES
+	"res/shaders/Cube.json"
+	"res/shaders/Debug.json"
+	"res/shaders/EquirectangularToCube.json"
+	"res/shaders/Mipmap.json"
+	"res/shaders/Shadow.json"
+	"res/shaders/Text.json"
+)
+
+target_sources(GEAR_CORE PRIVATE ${GEAR_CORE_RENDER_PIPELINE_FILES})
+source_group("res\\pipelines" FILES ${GEAR_CORE_RENDER_PIPELINE_FILES})
+
+target_sources(GEAR_CORE PRIVATE 
+	${GEAR_CORE_SHADER_PBR_FILES} 
+	${GEAR_CORE_SHADER_PostProcess_FILES} 
+	${GEAR_CORE_SHADER_FILES} 
+	${GEAR_CORE_SHADER_PBR_JSON_FILES} 
+	${GEAR_CORE_SHADER_PostProcess_JSON_FILES} 
+	${GEAR_CORE_SHADER_JSON_FILES}
+)
+source_group("res\\shaders\\PBR" FILES 
+	${GEAR_CORE_SHADER_PBR_FILES} 
+	${GEAR_CORE_SHADER_PBR_JSON_FILES}
+)
+source_group("res\\shaders\\PostProcess" FILES 
+	${GEAR_CORE_SHADER_PostProcess_FILES} 
+	${GEAR_CORE_SHADER_PostProcess_JSON_FILES}
+)
+source_group("res\\shaders" FILES 
+	${GEAR_CORE_SHADER_FILES} 
+	${GEAR_CORE_SHADER_JSON_FILES}
+)
+
+set_property(SOURCE 
+	${GEAR_CORE_SHADER_PBR_FILES} 
+	${GEAR_CORE_SHADER_PostProcess_FILES} 
+	${GEAR_CORE_SHADER_FILES} 
+	PROPERTY VS_SETTINGS "ExcludedFromBuild=true"
+)
+
+target_compile_definitions(GEAR_CORE PRIVATE "BUILD_DIR=\"${CMAKE_BINARY_DIR}\"")
+target_compile_definitions(GEAR_CORE PRIVATE "SOURCE_DIR=\"${CMAKE_SOURCE_DIR}\"")
+
+set(HLSL_JSON_FILES 
+	${GEAR_CORE_SHADER_PBR_JSON_FILES} 
+	${GEAR_CORE_SHADER_PostProcess_JSON_FILES} 
+	${GEAR_CORE_SHADER_JSON_FILES}
+)
+
+add_dependencies(GEAR_CORE MIRU_SHADER_COMPILER)
+add_custom_command(TARGET GEAR_CORE POST_BUILD
+	COMMAND MIRU_SHADER_COMPILER -raf:${HLSL_JSON_FILES} 
+		-rafd:$BUILD_DIR=\"${CMAKE_BINARY_DIR}\"
+		-rafd:$SOURCE_DIR=\"${CMAKE_SOURCE_DIR}\"
+	WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+#foreach(HLSL_JSON_FILE ${HLSL_JSON_FILES})
+#	CopyToBuildDirPostBuild(GEAR_CORE "${CMAKE_CURRENT_SOURCE_DIR}/${HLSL_JSON_FILE}" "shaderbin")
+#endforeach()

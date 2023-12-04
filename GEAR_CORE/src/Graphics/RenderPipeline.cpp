@@ -5,6 +5,8 @@
 #include "Core/JsonFileHelper.h"
 #include "Utils/ModelLoader.h"
 
+#include <regex>
+
 using namespace gear;
 using namespace core;
 using namespace graphics;
@@ -52,12 +54,10 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 {
 	using namespace nlohmann;
 
-	std::string projectDirectory = PROJECT_DIR + std::string("/");
-	std::string finalFilePath = projectDirectory + pLoadInfo->filepath;
-	std::string relativePathFromCwdToProjDir = std::filesystem::path(projectDirectory).lexically_relative(std::filesystem::current_path()).string();
+	std::filesystem::path finalFilePath = std::filesystem::path(SOURCE_DIR) / "GEAR_CORE" / std::filesystem::path(pLoadInfo->filepath);
 	
 	json pipeline_grpf;
-	core::LoadJsonFile(finalFilePath, ".grpf", "GEAR_RENDER_PIPELINE_FILE", pipeline_grpf);
+	core::LoadJsonFile(finalFilePath.string(), ".grpf", "GEAR_RENDER_PIPELINE_FILE", pipeline_grpf);
 	
 	RenderPipeline::CreateInfo rpCI = {};
 	rpCI.debugName = pipeline_grpf["debugName"];
@@ -72,26 +72,24 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 		{
 			shaderCI.stageAndEntryPoints.push_back({magic_enum::enum_cast<Shader::StageBit>(std::string(stageAndEntryPoint["stage"])).value(), stageAndEntryPoint["entryPoint"]});
 		}
-		shaderCI.binaryFilepath = projectDirectory + std::string(shader["binaryFilepath"]);
+		shaderCI.binaryFilepath = std::regex_replace(std::string(shader["binaryFilepath"]), std::regex("\\$BUILD_DIR"), BUILD_DIR);
 		shaderCI.binaryCode = {};
 
 		json& recompileArgs = shader["recompileArguments"];
-		shaderCI.recompileArguments.hlslFilepath = relativePathFromCwdToProjDir + std::string(recompileArgs["hlslFilepath"]);
-		shaderCI.recompileArguments.outputDirectory = relativePathFromCwdToProjDir + std::string(recompileArgs["outputDirectory"]);
-		for (auto& includeDir : recompileArgs["includeDirectories"])
-			shaderCI.recompileArguments.includeDirectories.push_back(relativePathFromCwdToProjDir + std::string(includeDir));
-		shaderCI.recompileArguments.entryPoint = recompileArgs["entryPoint"];
-		shaderCI.recompileArguments.shaderModel = recompileArgs["shaderModel"];
-		for (auto& macro : recompileArgs["macros"])
-			shaderCI.recompileArguments.macros.push_back(macro);
-		shaderCI.recompileArguments.cso = recompileArgs["cso"];
-		shaderCI.recompileArguments.spv = recompileArgs["spv"];
-		for (auto& dxcArguments : recompileArgs["dxcArguments"])
-			shaderCI.recompileArguments.dxcArguments.push_back(dxcArguments);
-		
-		//shaderCI.recompileArguments.dxcArguments.push_back("-Od");
-		//shaderCI.recompileArguments.dxcArguments.push_back("-Zi");
-		//shaderCI.recompileArguments.dxcArguments.push_back("-Fd");
+		const std::string& rafFilepath = recompileArgs["rafFilepath"];
+		const size_t& index = recompileArgs["index"];
+
+		const std::string& filepath = std::regex_replace(rafFilepath, std::regex("\\$SOURCE_DIR"), SOURCE_DIR);
+		std::unordered_map<std::string, std::string> rafEnvironmentVariables =
+		{
+			{"$BUILD_DIR", BUILD_DIR},
+			{"$SOURCE_DIR", SOURCE_DIR},
+		};
+		const std::vector<base::Shader::CompileArguments> compileArguments
+			= base::Shader::LoadCompileArgumentsFromFile(
+				filepath, rafEnvironmentVariables);
+
+		shaderCI.recompileArguments = compileArguments[index];
 
 		rpCI.shaderCreateInfo.push_back(shaderCI);
 	}
@@ -106,8 +104,6 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 	}
 
 	//InputAssembly
-	
-
 	json& inputAssemblyState = pipeline_grpf["inputAssemblyState"];
 	rpCI.inputAssemblyState.topology = magic_enum::enum_cast<PrimitiveTopology>(std::string(inputAssemblyState["topology"])).value();
 	rpCI.inputAssemblyState.primitiveRestartEnable = inputAssemblyState["primitiveRestartEnable"];

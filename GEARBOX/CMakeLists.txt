@@ -29,3 +29,5 @@ target_include_directories(GEARBOX PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}/../External/"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../External/MIRU/External/"
 )
+
+set_target_properties(GEARBOX PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")

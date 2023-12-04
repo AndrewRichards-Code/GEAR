@@ -1,0 +1,94 @@
+{
+  "fileType": "MSC_RAF",
+  "recompileArguments": [
+    {
+      "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.hlsl",
+      "outputDirectory": "$BUILD_DIR/shaderbin",
+      "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "$SOURCE_DIR/GEAR_CORE/src/Graphics" ],
+      "entryPoint": "vs_coordinate_axes",
+      "shaderModel": "vs_6_4",
+      "macros": [],
+      "cso": true,
+      "spv": true,
+      "dxcArguments": []
+    },
+    {
+      "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.hlsl",
+      "outputDirectory": "$BUILD_DIR/shaderbin",
+      "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "$SOURCE_DIR/GEAR_CORE/src/Graphics" ],
+      "entryPoint": "ps_coordinate_axes",
+      "shaderModel": "ps_6_4",
+      "macros": [],
+      "cso": true,
+      "spv": true,
+      "dxcArguments": []
+    },
+    {
+      "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.hlsl",
+      "outputDirectory": "$BUILD_DIR/shaderbin",
+      "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "$SOURCE_DIR/GEAR_CORE/src/Graphics" ],
+      "entryPoint": "vs_copy",
+      "shaderModel": "vs_6_4",
+      "macros": [],
+      "cso": true,
+      "spv": true,
+      "dxcArguments": []
+    },
+    {
+      "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.hlsl",
+      "outputDirectory": "$BUILD_DIR/shaderbin",
+      "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "$SOURCE_DIR/GEAR_CORE/src/Graphics" ],
+      "entryPoint": "ps_copy",
+      "shaderModel": "ps_6_4",
+      "macros": [],
+      "cso": true,
+      "spv": true,
+      "dxcArguments": []
+    },
+    {
+      "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.hlsl",
+      "outputDirectory": "$BUILD_DIR/shaderbin",
+      "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "$SOURCE_DIR/GEAR_CORE/src/Graphics" ],
+      "entryPoint": "vs_show_depth_image2D",
+      "shaderModel": "vs_6_4",
+      "macros": [],
+      "cso": true,
+      "spv": true,
+      "dxcArguments": []
+    },
+    {
+      "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.hlsl",
+      "outputDirectory": "$BUILD_DIR/shaderbin",
+      "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "$SOURCE_DIR/GEAR_CORE/src/Graphics" ],
+      "entryPoint": "ps_show_depth_image2D",
+      "shaderModel": "ps_6_4",
+      "macros": [],
+      "cso": true,
+      "spv": true,
+      "dxcArguments": []
+    }
+    ,
+    {
+      "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.hlsl",
+      "outputDirectory": "$BUILD_DIR/shaderbin",
+      "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "$SOURCE_DIR/GEAR_CORE/src/Graphics" ],
+      "entryPoint": "vs_show_depth_cubemap",
+      "shaderModel": "vs_6_4",
+      "macros": [],
+      "cso": true,
+      "spv": true,
+      "dxcArguments": []
+    },
+    {
+      "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.hlsl",
+      "outputDirectory": "$BUILD_DIR/shaderbin",
+      "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "$SOURCE_DIR/GEAR_CORE/src/Graphics" ],
+      "entryPoint": "ps_show_depth_cubemap",
+      "shaderModel": "ps_6_4",
+      "macros": [],
+      "cso": true,
+      "spv": true,
+      "dxcArguments": []
+    }
+  ]
+}

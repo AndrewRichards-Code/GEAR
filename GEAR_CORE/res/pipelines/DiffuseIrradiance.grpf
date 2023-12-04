@@ -10,18 +10,10 @@
           "entryPoint": "main"
         }
       ],
-      "binaryFilepath": "res/shaders/bin/DiffuseIrradiance_cs_6_4_main.spv",
+      "binaryFilepath": "$BUILD_DIR/shaderbin/DiffuseIrradiance_cs_6_4_main.spv",
       "recompileArguments": {
-        "hlslFilepath": "res/shaders/HLSL/PBR/DiffuseIrradiance.hlsl",
-        "outputDirectory": "res/shaders/bin",
-        "includeDirectories": [ "../External/MIRU/MIRU_SHADER_COMPILER/shaders/includes" ],
-        "entryPoint": "main",
-        "shaderModel": "cs_6_4",
-        "macros": [],
-        "cso": true,
-        "spv": true,
-        "dxcLocation": "",
-        "dxcArguments": []
+        "rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/PBR/DiffuseIrradiance.json",
+        "index": 0
       }
     }
   ]

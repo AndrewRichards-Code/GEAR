@@ -10,18 +10,10 @@
           "entryPoint": "main"
         }
       ],
-      "binaryFilepath": "res/shaders/bin/SpecularIrradiance_cs_6_4_main.spv",
+      "binaryFilepath": "$BUILD_DIR/shaderbin/SpecularIrradiance_cs_6_4_main.spv",
       "recompileArguments": {
-        "hlslFilepath": "res/shaders/HLSL/PBR/SpecularIrradiance.hlsl",
-        "outputDirectory": "res/shaders/bin",
-        "includeDirectories": [ "../External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "src/Graphics" ],
-        "entryPoint": "main",
-        "shaderModel": "cs_6_4",
-        "macros": [],
-        "cso": true,
-        "spv": true,
-        "dxcLocation": "",
-        "dxcArguments": []
+        "rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/PBR/SpecularIrradiance.json",
+        "index": 0
       }
     }
   ]

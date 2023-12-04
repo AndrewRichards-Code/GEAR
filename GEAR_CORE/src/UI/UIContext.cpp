@@ -106,8 +106,8 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 	//io.ConfigViewportsNoAutoMerge = true;
 	//io.ConfigViewportsNoTaskBarIcon = true;
 
-	std::string fontFilepath = PROJECT_DIR + std::string("/../GEARBOX/res/fonts/electrolize/Electrolize-Regular.ttf");
-	io.FontDefault = io.Fonts->AddFontFromFileTTF(fontFilepath.c_str(), 15.0f);
+	std::filesystem::path fontFilepath = std::filesystem::current_path() / std::filesystem::path("res/fonts/electrolize/Electrolize-Regular.ttf");
+	io.FontDefault = io.Fonts->AddFontFromFileTTF(fontFilepath.string().c_str(), 15.0f);
 
 	// Setup Dear ImGui style
 	SetDarkTheme();
