@@ -30,8 +30,8 @@ void NativeScriptManager::Build(const std::string& nativeScriptDir)
 	if (!CheckPath(s_BuildScriptPath) && !CheckPath(msBuildPath) && !CheckPath(vcxprojPath) && !CheckPath(solutionPath) && !CheckPath(nativeScriptPath))
 		return;
 
-	//if (GetLibraryLastWriteTime() > GetSourceLastWriteTime(nativeScriptPath))
-	//	return;
+	if (GetLibraryLastWriteTime() > GetSourceLastWriteTime(nativeScriptPath))
+		return;
 
 	//CMake Configure and Generate GEAR_NATIVE_SCRIPT/CMakeLists.txt
 	{
