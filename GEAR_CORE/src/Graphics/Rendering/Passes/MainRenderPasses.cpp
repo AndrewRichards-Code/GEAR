@@ -16,6 +16,29 @@ using namespace objects;
 using namespace miru;
 using namespace base;
 
+void MainRenderPasses::Clear(Renderer& renderer)
+{
+	RenderGraph& renderGraph = renderer.GetRenderGraph();
+	const Ref<RenderSurface>& renderSurface = renderer.GetRenderSurface();
+	uint32_t width = renderSurface->GetWidth();
+	uint32_t height = renderSurface->GetHeight();
+	bool msaa = renderSurface->GetAntiAliasing() > Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+
+	Ref<TaskPassParameters> skyboxPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["Cube"]);
+	if (msaa)
+		skyboxPassParameters->AddAttachmentWithResolve(0, ResourceView(renderSurface->GetMSAAColourImageView(), Resource::State::COLOUR_ATTACHMENT),
+			ResourceView(renderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
+	else
+		skyboxPassParameters->AddAttachment(0, ResourceView(renderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });
+	skyboxPassParameters->AddAttachment(0, ResourceView(renderSurface->GetDepthImageView(), Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f,  0 });
+	skyboxPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
+
+	renderGraph.AddPass("Clear Colour and Depth", skyboxPassParameters, CommandPool::QueueType::GRAPHICS,
+		[](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+		{
+		});
+}
+
 void MainRenderPasses::Skybox(Renderer& renderer, Ref<objects::Skybox> skybox)
 {
 	RenderGraph& renderGraph = renderer.GetRenderGraph();
@@ -39,7 +62,7 @@ void MainRenderPasses::Skybox(Renderer& renderer, Ref<objects::Skybox> skybox)
 	skyboxPassParameters->AddAttachment(0, ResourceView(renderSurface->GetDepthImageView(), Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f,  0 });
 	skyboxPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 
-	renderGraph.AddPass("Skybox", skyboxPassParameters, CommandPool::QueueType::GRAPHICS,
+	renderGraph.AddPass("Skybox: " + skybox->m_CI.debugName, skyboxPassParameters, CommandPool::QueueType::GRAPHICS,
 		[mesh](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 		{
 			cmdBuffer->BindVertexBuffers(frameIndex, { mesh->GetVertexBuffers()[0]->GetGPUBufferView() });

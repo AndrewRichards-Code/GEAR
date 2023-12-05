@@ -339,15 +339,26 @@ void Renderer::Draw()
 
 		//Main Render
 		{
+			bool clear = true;
+			
 			GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "Main Render");
 			if (m_MainRenderCamera && m_Skybox)
 			{
+				GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "Skybox");
 				passes::MainRenderPasses::Skybox(*this, m_Skybox);
+				clear = false;
 			}
 			if (m_MainRenderCamera && !m_ModelQueue.empty() && !m_Lights.empty() && m_Skybox)
 			{
 				GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "PBR Opaque");
 				passes::MainRenderPasses::PBROpaque(*this, m_Lights[0], m_Skybox);
+				clear = false;
+			}
+
+			if (m_MainRenderCamera && clear)
+			{
+				GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "Clear");
+				passes::MainRenderPasses::Clear(*this);
 			}
 		}
 		//Post Processing
@@ -401,6 +412,7 @@ void Renderer::Draw()
 	m_AllCameras.clear();
 	m_MainRenderCamera = nullptr;
 	m_TextCamera = nullptr;
+	m_Skybox = nullptr;
 }
 
 void Renderer::Present()
