@@ -61,8 +61,8 @@ namespace gear
 			void AddVertexBuffer(ResourceView resourceView);
 			void AddIndexBuffer(ResourceView resourceView);
 
-			void AddAttachment(uint32_t index, const ResourceView& resource, miru::base::RenderPass::AttachmentLoadOp loadOp, miru::base::RenderPass::AttachmentStoreOp storeOp, const miru::base::Image::ClearValue& clearValue);  //DepthStencil attachments ignore the 'index' parameter.
-			void AddAttachmentWithResolve(uint32_t index, const ResourceView& resource, const ResourceView& resolveResourceView, miru::base::RenderPass::AttachmentLoadOp loadOp, miru::base::RenderPass::AttachmentStoreOp storeOp, const miru::base::Image::ClearValue& clearValue); //DepthStencil attachments ignore the 'index' parameter.
+			void AddAttachment(uint32_t index, ResourceView resource, miru::base::RenderPass::AttachmentLoadOp loadOp, miru::base::RenderPass::AttachmentStoreOp storeOp, const miru::base::Image::ClearValue& clearValue);  //DepthStencil attachments ignore the 'index' parameter.
+			void AddAttachmentWithResolve(uint32_t index, ResourceView resource, ResourceView resolveResourceView, miru::base::RenderPass::AttachmentLoadOp loadOp, miru::base::RenderPass::AttachmentStoreOp storeOp, const miru::base::Image::ClearValue& clearValue); //DepthStencil attachments ignore the 'index' parameter.
 			void SetRenderArea(miru::base::Rect2D renderArea, uint32_t layers = 1, uint32_t viewMask = 0);
 
 			template<typename T>
@@ -87,7 +87,7 @@ namespace gear
 			inline const miru::base::RenderingInfo& GetRenderingInfo() const { return m_RenderingInfo; }
 
 			inline bool IsGraphics() { return (m_RenderingInfo.colourAttachments.size() > 0 || m_RenderingInfo.pDepthAttachment != nullptr); }
-			inline bool IsCompute() { return IsGraphics(); }
+			inline bool IsCompute() { return !IsGraphics(); }
 
 			//Members
 		private:

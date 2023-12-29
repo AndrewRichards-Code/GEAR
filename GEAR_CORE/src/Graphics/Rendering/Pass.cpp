@@ -164,39 +164,9 @@ void Pass::Execute(RenderGraph* renderGraph, CommandBufferRef cmdBuffer, uint32_
 	}
 }
 
-PipelineStageBit Pass::ShaderStageToPipelineStage(const Shader::StageBit& stage)
-{
-	switch (stage)
-	{
-	case Shader::StageBit::VERTEX_BIT:
-		return PipelineStageBit::VERTEX_SHADER_BIT;
-	case Shader::StageBit::TESSELLATION_CONTROL_BIT:
-		return PipelineStageBit::TESSELLATION_CONTROL_SHADER_BIT;
-	case Shader::StageBit::TESSELLATION_EVALUATION_BIT:
-		return PipelineStageBit::TESSELLATION_EVALUATION_SHADER_BIT;
-	case Shader::StageBit::GEOMETRY_BIT:
-		return PipelineStageBit::GEOMETRY_SHADER_BIT;
-	case Shader::StageBit::FRAGMENT_BIT:
-		return PipelineStageBit::FRAGMENT_SHADER_BIT;
-	case Shader::StageBit::COMPUTE_BIT:
-		return PipelineStageBit::COMPUTE_SHADER_BIT;
-	case Shader::StageBit::TASK_BIT_EXT:
-		return PipelineStageBit::TASK_SHADER_BIT_EXT;
-	case Shader::StageBit::MESH_BIT_EXT:
-		return PipelineStageBit::MESH_SHADER_BIT_EXT;
-	case Shader::StageBit::RAYGEN_BIT:
-	case Shader::StageBit::ANY_HIT_BIT:
-	case Shader::StageBit::CLOSEST_HIT_BIT:
-	case Shader::StageBit::MISS_BIT:
-	case Shader::StageBit::INTERSECTION_BIT:
-	case Shader::StageBit::CALLABLE_BIT:
-		return PipelineStageBit::RAY_TRACING_SHADER_BIT;
-	default:
-		return PipelineStageBit(0);
-	}
-};
 
-Pass::TransitionDetails Pass::GetTransitionDetails(const Resource::State& state, const Shader::StageBit& stage, bool src)
+
+Pass::TransitionDetails Pass::GetTransitionDetails(const Resource::State& state, const PipelineStageBit& stage, bool src)
 {
 	Barrier::AccessBit accesses = Barrier::AccessBit::NONE_BIT;
 	Image::Layout layout = Image::Layout::UNKNOWN;
@@ -214,70 +184,70 @@ Pass::TransitionDetails Pass::GetTransitionDetails(const Resource::State& state,
 		accesses = src ? Barrier::AccessBit::COLOUR_ATTACHMENT_WRITE_BIT : Barrier::AccessBit::NONE_BIT;
 		layout = Image::Layout::PRESENT_SRC;
 		pipelineStage = GraphicsAPI::IsD3D12() ? PipelineStageBit::NONE_BIT : PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT;
-		return { accesses, layout, pipelineStage };
+		break;
 	}
 	case Resource::State::COLOUR_ATTACHMENT:
 	{
 		accesses = src ? Barrier::AccessBit::COLOUR_ATTACHMENT_WRITE_BIT : Barrier::AccessBit::COLOUR_ATTACHMENT_READ_BIT;
 		layout = Image::Layout::COLOUR_ATTACHMENT_OPTIMAL;
 		pipelineStage = PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT;
-		return { accesses, layout, pipelineStage };
+		break;
 	}
 	case Resource::State::DEPTH_STENCIL_ATTACHMENT:
 	{
-		accesses = src ? Barrier::AccessBit::DEPTH_STENCIL_ATTACHMENT_WRITE_BIT : Barrier::AccessBit::DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+		accesses = (src || GraphicsAPI::IsD3D12()) ? Barrier::AccessBit::DEPTH_STENCIL_ATTACHMENT_WRITE_BIT : Barrier::AccessBit::DEPTH_STENCIL_ATTACHMENT_READ_BIT;
 		layout = Image::Layout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		pipelineStage = PipelineStageBit::EARLY_FRAGMENT_TESTS_BIT | PipelineStageBit::LATE_FRAGMENT_TESTS_BIT;
-		return { accesses, layout, pipelineStage };
+		break;
 	}
 	case Resource::State::VERTEX_BUFFER:
 	{
 		accesses = src ? Barrier::AccessBit::NONE_BIT : Barrier::AccessBit::VERTEX_ATTRIBUTE_READ_BIT;
-		pipelineStage = src ? ShaderStageToPipelineStage(stage) : PipelineStageBit::VERTEX_INPUT_BIT;
-		return { accesses, layout, pipelineStage };
+		pipelineStage = src ? stage : PipelineStageBit::VERTEX_SHADER_BIT;
+		break;
 	}
 	case Resource::State::INDEX_BUFFER:
 	{
 		accesses = src ? Barrier::AccessBit::NONE_BIT : Barrier::AccessBit::INDEX_READ_BIT;
-		pipelineStage = src ? ShaderStageToPipelineStage(stage) : PipelineStageBit::VERTEX_INPUT_BIT;
-		return { accesses, layout, pipelineStage };
+		pipelineStage = src ? stage : PipelineStageBit::VERTEX_INPUT_BIT;
+		break;
 	}
 	case Resource::State::UNIFORM_BUFFER:
 	{
 		accesses = src ? Barrier::AccessBit::NONE_BIT : Barrier::AccessBit::UNIFORM_READ_BIT;
-		pipelineStage = ShaderStageToPipelineStage(stage);
-		return { accesses, layout, pipelineStage };
+		pipelineStage = GraphicsAPI::IsD3D12() && src ? PipelineStageBit::ALL_COMMANDS_BIT : stage;
+		break;
 	}
 	case Resource::State::SHADER_READ_ONLY:
 	{
-		accesses = src ? Barrier::AccessBit::NONE_BIT : Barrier::AccessBit::SHADER_READ_BIT;
-		layout = /*(!arc::BitwiseCheck(stage, Shader::StageBit::FRAGMENT_BIT) && GraphicsAPI::IsD3D12())
-			? Image::Layout::D3D12_NON_PIXEL_SHADER_READ_ONLY_OPTIMAL :*/ Image::Layout::SHADER_READ_ONLY_OPTIMAL;
-		pipelineStage = ShaderStageToPipelineStage(stage);
-		return { accesses, layout, pipelineStage };
+		accesses = GraphicsAPI::IsD3D12() ? Barrier::AccessBit::SHADER_READ_BIT : (src ? Barrier::AccessBit::NONE_BIT : Barrier::AccessBit::SHADER_READ_BIT);
+		layout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
+		pipelineStage = GraphicsAPI::IsD3D12() && src ? PipelineStageBit::ALL_COMMANDS_BIT : stage;
+		break;
 	}
 	case Resource::State::SHADER_READ_WRITE:
 	{
-		accesses = Barrier::AccessBit::SHADER_WRITE_BIT | Barrier::AccessBit::SHADER_READ_BIT;
+		accesses = GraphicsAPI::IsD3D12() ? Barrier::AccessBit::SHADER_WRITE_BIT : (Barrier::AccessBit::SHADER_WRITE_BIT | Barrier::AccessBit::SHADER_READ_BIT);
 		layout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL;
-		pipelineStage = ShaderStageToPipelineStage(stage);
-		return { accesses, layout, pipelineStage };
+		pipelineStage = GraphicsAPI::IsD3D12() && src ? PipelineStageBit::ALL_COMMANDS_BIT : stage;
+		break;
 	}
 	case Resource::State::TRANSFER_SRC:
 	{
 		accesses = Barrier::AccessBit::TRANSFER_WRITE_BIT;
 		layout = Image::Layout::TRANSFER_SRC_OPTIMAL;
 		pipelineStage = PipelineStageBit::TRANSFER_BIT;
-		return { accesses, layout, pipelineStage };
+		break;
 	}
 	case Resource::State::TRANSFER_DST:
 	{
 		accesses = Barrier::AccessBit::TRANSFER_READ_BIT;
 		layout = Image::Layout::TRANSFER_DST_OPTIMAL;
 		pipelineStage = PipelineStageBit::TRANSFER_BIT;
-		return { accesses, layout, pipelineStage };
+		break;
 	}
 	}
+	return { accesses, layout, pipelineStage };
 }
 
 std::vector<Barrier2Ref> Pass::TransitionResource(RenderGraph* renderGraph, const ResourceView& passResourceView, Resource::State overideNewState)
@@ -299,8 +269,8 @@ std::vector<Barrier2Ref> Pass::TransitionResource(RenderGraph* renderGraph, cons
 	Resource& resource = renderGraph->GetTrackedResource(passResourceView.GetResource());
 
 	Resource::State newState = passResourceView.state;
-	const Shader::StageBit& stage = passResourceView.stage;
-	const DescriptorType& descriptorType = passResourceView.type;
+	const PipelineStageBit& stage = passResourceView.pipelineStage;
+	const DescriptorType& descriptorType = passResourceView.descriptorType;
 	if (overideNewState != Resource::State::UNKNOWN)
 		newState = overideNewState;
 
@@ -358,6 +328,24 @@ std::vector<Barrier2Ref> Pass::TransitionResource(RenderGraph* renderGraph, cons
 			barrierCI.subresourceRange = _subresourceRange;
 		}
 		barriers.push_back(Barrier2::Create(&barrierCI));
+
+		constexpr auto resourceStates = magic_enum::enum_names<Resource::State>();
+
+#if 0
+		std::string logMessage = "\n";
+		logMessage += "Resource: " + std::string((type == Barrier::Type::IMAGE) ? passResourceView.imageView->GetCreateInfo().debugName : passResourceView.bufferView->GetCreateInfo().debugName) + "\n";
+		logMessage += "Type: " + std::string((type == Barrier::Type::IMAGE) ? "IMAGE" : "BUFFER") + "\n";
+		logMessage += "\t" + std::string(resourceStates[static_cast<size_t>(oldState)]) + "\n";
+		logMessage += "\tsrc.pipelineStage: " + std::to_string((uint64_t)src.pipelineStage) + "\n";
+		logMessage += "\tsrc.accesses: " + std::to_string((uint64_t)src.accesses) + "\n";
+		logMessage += (type == Barrier::Type::IMAGE) ? "\tsrc.layout: " + std::to_string((uint64_t)src.layout) + "\n" : "";
+		logMessage += "\t" + std::string(resourceStates[static_cast<size_t>(newState)]) + "\n";
+		logMessage += "\tdst.pipelineStage: " + std::to_string((uint64_t)dst.pipelineStage) + "\n";
+		logMessage += "\tdst.accesses: " + std::to_string((uint64_t)dst.accesses) + "\n";
+		logMessage += (type == Barrier::Type::IMAGE) ? "\tdst.layout: " + std::to_string((uint64_t)dst.layout) + "\n" : "";
+
+		GEAR_INFO(ErrorCode::GRAPHICS, logMessage.c_str());
+#endif
 
 		type == Barrier::Type::IMAGE ? resource.SetSubresources(newState, _subresourceRange) : resource.SetSubresources(newState);
 	}

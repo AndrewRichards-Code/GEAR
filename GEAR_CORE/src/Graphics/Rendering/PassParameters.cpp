@@ -113,14 +113,14 @@ void TaskPassParameters::SetResourceView(const std::pair<uint32_t, uint32_t>& se
 	const uint32_t& binding = set_binding.second;
 
 	const Shader::ResourceBindingDescription& rbd = m_RenderPipeline->GetRBDs().at(set).at(binding);
-	if (rbd.type != resourceView.type)
+	if (rbd.type != resourceView.descriptorType)
 	{
 		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "The Resource DescriptorType does not match ResourceBindingDescription DescriptorType.");
 	}
 	
-	resourceView.stage = rbd.stage;
+	resourceView.pipelineStage = ResourceView::ShaderStageToPipelineStage(rbd.stage);
 
-	switch (resourceView.type)
+	switch (resourceView.descriptorType)
 	{
 	case DescriptorType::SAMPLER:
 	{
@@ -233,8 +233,7 @@ void TaskPassParameters::AddVertexBuffer(ResourceView resourceView)
 	if (!resourceView.IsBufferView())
 		return;
 
-	resourceView.stage = Shader::StageBit::VERTEX_BIT;
-	resourceView.state = Resource::State::VERTEX_BUFFER;
+	resourceView.pipelineStage = PipelineStageBit::VERTEX_SHADER_BIT;
 	m_InputResourceViews.push_back(resourceView);
 }
 
@@ -243,12 +242,11 @@ void TaskPassParameters::AddIndexBuffer(ResourceView resourceView)
 	if (!resourceView.IsBufferView())
 		return;
 
-	resourceView.stage = Shader::StageBit::VERTEX_BIT;
-	resourceView.state = Resource::State::INDEX_BUFFER;
+	resourceView.pipelineStage = PipelineStageBit::VERTEX_SHADER_BIT;
 	m_InputResourceViews.push_back(resourceView);
 }
 
-void TaskPassParameters::AddAttachment(uint32_t index, const ResourceView& resourceView, RenderPass::AttachmentLoadOp loadOp, RenderPass::AttachmentStoreOp storeOp, const Image::ClearValue& clearValue)
+void TaskPassParameters::AddAttachment(uint32_t index, ResourceView resourceView, RenderPass::AttachmentLoadOp loadOp, RenderPass::AttachmentStoreOp storeOp, const Image::ClearValue& clearValue)
 {
 	if (resourceView.imageView)
 	{
@@ -283,12 +281,14 @@ void TaskPassParameters::AddAttachment(uint32_t index, const ResourceView& resou
 			GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Resource::State is not COLOUR_ATTACHMENT or DEPTH_STENCIL_ATTACHMENT.");
 		}
 
+		resourceView.pipelineStage = PipelineStageBit::PIXEL_SHADER_BIT;
+
 		m_OutputResourceViews.push_back(resourceView);
-		m_OutputResourceViews.back().stage = Shader::StageBit::FRAGMENT_BIT;
+		m_OutputResourceViews.back().pipelineStage = PipelineStageBit::PIXEL_SHADER_BIT;
 	}
 }
 
-void TaskPassParameters::AddAttachmentWithResolve(uint32_t index, const ResourceView& resourceView, const ResourceView& resolveResourceView, RenderPass::AttachmentLoadOp loadOp, RenderPass::AttachmentStoreOp storeOp, const Image::ClearValue& clearValue)
+void TaskPassParameters::AddAttachmentWithResolve(uint32_t index, ResourceView resourceView, ResourceView resolveResourceView, RenderPass::AttachmentLoadOp loadOp, RenderPass::AttachmentStoreOp storeOp, const Image::ClearValue& clearValue)
 {
 	if (resourceView.imageView && resolveResourceView.imageView)
 	{
@@ -323,10 +323,13 @@ void TaskPassParameters::AddAttachmentWithResolve(uint32_t index, const Resource
 			GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Resource::State is not COLOUR_ATTACHMENT or DEPTH_STENCIL_ATTACHMENT.");
 		}
 
+		resourceView.pipelineStage = PipelineStageBit::PIXEL_SHADER_BIT;
+		resolveResourceView.pipelineStage = PipelineStageBit::PIXEL_SHADER_BIT;
+
 		m_OutputResourceViews.push_back(resourceView); 
-		m_OutputResourceViews.back().stage = Shader::StageBit::FRAGMENT_BIT;
+		m_OutputResourceViews.back().pipelineStage = PipelineStageBit::PIXEL_SHADER_BIT;
 		m_OutputResourceViews.push_back(resolveResourceView);
-		m_OutputResourceViews.back().stage = Shader::StageBit::FRAGMENT_BIT;
+		m_OutputResourceViews.back().pipelineStage = PipelineStageBit::PIXEL_SHADER_BIT;
 	}
 	else
 	{

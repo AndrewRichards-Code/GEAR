@@ -69,7 +69,7 @@ namespace gear
 
 		private:
 			template<typename T>
-			void Init(const T& internalResource);
+			void Initialise(const T& internalResource);
 
 			//Members
 		private:
@@ -90,14 +90,14 @@ namespace gear
 			friend class RenderGraph;
 		};
 
-		class ResourceView 
+		class ResourceView
 		{
 			//Methods
 		public:
 			ResourceView();
 			~ResourceView();
 
-			ResourceView(const Ref<Texture>& texture, miru::base::DescriptorType type); //For Shader Resorces
+			ResourceView(const Ref<Texture>& texture, miru::base::DescriptorType descType); //For Shader Resorces
 			ResourceView(const Ref<Texture>& texture, Resource::State state); //For Rendering Attachments
 			ResourceView(const Ref<Vertexbuffer>& vertexBuffer);
 			ResourceView(const Ref<Indexbuffer>& indexBuffer);
@@ -124,21 +124,23 @@ namespace gear
 			inline const Resource::State& GetState() const { return state; }
 			inline const Resource::State& GetState() { return state; }
 
-			inline const miru::base::Shader::StageBit& GetStage() const { return stage; }
-			inline const miru::base::Shader::StageBit& GetStage() { return stage; }
+			inline const miru::base::PipelineStageBit& GetPipelineStageBit() const { return pipelineStage; }
+			inline const miru::base::PipelineStageBit& GetPipelineStageBit() { return pipelineStage; }
+
+			static miru::base::PipelineStageBit ShaderStageToPipelineStage(const miru::base::Shader::StageBit& stage);
 			
 			//Members
 		private:
-			static constexpr miru::base::DescriptorType	NonDescriptorType = miru::base::DescriptorType(-1);
+			static constexpr miru::base::DescriptorType	NonDescriptorType = miru::base::DescriptorType(~0);
 			
-			miru::base::DescriptorType					type = NonDescriptorType;
-			miru::base::Shader::StageBit				stage = miru::base::Shader::StageBit(0);
-			Resource::State								state = Resource::State::UNKNOWN;
+			miru::base::DescriptorType				descriptorType = NonDescriptorType;
+			miru::base::PipelineStageBit			pipelineStage = miru::base::PipelineStageBit::NONE_BIT; //Not set in constructors.
+			Resource::State							state = Resource::State::UNKNOWN;
 
-			miru::base::ImageViewRef					imageView;
-			miru::base::SamplerRef						sampler;
-			miru::base::BufferViewRef					bufferView;
-			miru::base::AccelerationStructureRef		accelerationStructure;
+			miru::base::ImageViewRef				imageView;
+			miru::base::SamplerRef					sampler;
+			miru::base::BufferViewRef				bufferView;
+			miru::base::AccelerationStructureRef	accelerationStructure;
 
 			//Friends
 			friend class TaskPassParameters;

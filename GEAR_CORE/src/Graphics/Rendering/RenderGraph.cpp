@@ -97,13 +97,15 @@ Ref<Pass> RenderGraph::AddPass(const std::string& passName, const Ref<PassParame
 		for (ResourceView& resourceView : resourceViews)
 		{
 			const Resource& resource = resourceView.GetResource();
+			std::vector<Resource>& previousFrameResources = GetPreviousFrameData().Resources;
+
 			if (!arc::FindInVector(data.Resources, resource))
 			{
 				data.Resources.push_back(resource);
 			}
-			if (arc::FindInVector(GetPreviousFrameData().Resources, resource) && arc::FindInVector(data.Resources, resource))
+			if (arc::FindInVector(previousFrameResources, resource)) //Resource is now guaranteed to be in data.Resources
 			{
-				auto it0 = arc::FindPositionInVector(GetPreviousFrameData().Resources, resource);
+				auto it0 = arc::FindPositionInVector(previousFrameResources, resource);
 				auto it1 = arc::FindPositionInVector(data.Resources, resource);
 				it1->subresourceMap = it0->subresourceMap;
 			}
@@ -372,29 +374,29 @@ void RenderGraph::Execute()
 	cmdBuffer->End(m_FrameIndex);
 }
 
-ImageRef RenderGraph::CreateImage(const ImageDesc& desc, const std::string& name)
+ImageRef RenderGraph::CreateImage(const ImageCreateInfo& imageCreateInfo, const std::string& name)
 {
 	Image::UsageBit usage = Image::UsageBit(0);
-	if (arc::BitwiseCheck(desc.usage, ImageDesc::UsageBit::COLOUR_ATTACHMENT))
+	if (arc::BitwiseCheck(imageCreateInfo.usage, ImageCreateInfo::UsageBit::COLOUR_ATTACHMENT))
 		usage |= Image::UsageBit::COLOUR_ATTACHMENT_BIT;
-	if (arc::BitwiseCheck(desc.usage, ImageDesc::UsageBit::DEPTH_STENCIL_ATTACHMENT))
+	if (arc::BitwiseCheck(imageCreateInfo.usage, ImageCreateInfo::UsageBit::DEPTH_STENCIL_ATTACHMENT))
 		usage |= Image::UsageBit::DEPTH_STENCIL_ATTACHMENT_BIT;
-	if (arc::BitwiseCheck(desc.usage, ImageDesc::UsageBit::SHADER_READ_ONLY))
+	if (arc::BitwiseCheck(imageCreateInfo.usage, ImageCreateInfo::UsageBit::SHADER_READ_ONLY))
 		usage |= Image::UsageBit::SAMPLED_BIT;
-	if (arc::BitwiseCheck(desc.usage, ImageDesc::UsageBit::SHADER_READ_WRITE))
+	if (arc::BitwiseCheck(imageCreateInfo.usage, ImageCreateInfo::UsageBit::SHADER_READ_WRITE))
 		usage |= Image::UsageBit::STORAGE_BIT;
 
 	Image::CreateInfo imageCI;
 	imageCI.debugName = "GEAR_CORE_Image_RenderGraph_" + name;
 	imageCI.device = m_Context->GetDevice();
-	imageCI.type = desc.type;
-	imageCI.format = desc.format;
-	imageCI.width = desc.width;
-	imageCI.height = desc.height;
-	imageCI.depth = desc.depth;
-	imageCI.mipLevels = desc.mipLevels;
-	imageCI.arrayLayers = desc.arrayLayers;
-	imageCI.sampleCount = desc.sampleCount;
+	imageCI.type = imageCreateInfo.type;
+	imageCI.format = imageCreateInfo.format;
+	imageCI.width = imageCreateInfo.width;
+	imageCI.height = imageCreateInfo.height;
+	imageCI.depth = imageCreateInfo.depth;
+	imageCI.mipLevels = imageCreateInfo.mipLevels;
+	imageCI.arrayLayers = imageCreateInfo.arrayLayers;
+	imageCI.sampleCount = imageCreateInfo.sampleCount;
 	imageCI.usage = usage;
 	imageCI.layout = Image::Layout::UNKNOWN;
 	imageCI.size = 0;

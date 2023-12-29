@@ -57,7 +57,7 @@ namespace gear
 						ScopeStack.pop();
 				}
 			};
-			struct ImageDesc
+			struct ImageCreateInfo
 			{
 				enum class UsageBit : uint32_t
 				{
@@ -82,7 +82,7 @@ namespace gear
 				miru::base::Image::SampleCountBit	sampleCount;
 				UsageBit							usage;
 			};
-			struct BufferDesc
+			struct BufferCreateInfo
 			{
 				uint32_t size;
 			};
@@ -115,7 +115,7 @@ namespace gear
 
 			inline EventScope CreateEventScope(const std::string& scopeName) { return EventScope(this, scopeName); }
 			
-			miru::base::ImageRef CreateImage(const ImageDesc& desc, const std::string& name);
+			miru::base::ImageRef CreateImage(const ImageCreateInfo& imageCreateInfo, const std::string& name);
 			miru::base::ImageViewRef CreateImageView(const miru::base::ImageRef& image, miru::base::Image::Type type, const miru::base::Image::SubresourceRange& subresourceRange);
 
 			inline const std::vector<Ref<Pass>>& GetPasses(uint32_t frameIndex) const { return m_FrameData[frameIndex].Passes; }

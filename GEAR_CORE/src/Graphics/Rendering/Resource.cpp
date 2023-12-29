@@ -29,29 +29,29 @@ Resource::~Resource()
 Resource::Resource(const ImageRef& image)
 {
 	this->image = image;
-	Init(image);
+	Initialise(image);
 }
 
 Resource::Resource(const SamplerRef& sampler)
 {
 	this->sampler = sampler;
-	Init(sampler);
+	Initialise(sampler);
 }
 
 Resource::Resource(const BufferRef& buffer)
 {
 	this->buffer = buffer;
-	Init(buffer);
+	Initialise(buffer);
 }
 
 Resource::Resource(const AccelerationStructureRef& accelerationStructure)
 {
 	this->accelerationStructure = accelerationStructure;
-	Init(accelerationStructure);
+	Initialise(accelerationStructure);
 }
 
 template<typename T>
-void Resource::Init(const T& internalResource)
+void Resource::Initialise(const T& internalResource)
 {
 	if (typeid(T) == typeid(miru::base::ImageRef))
 	{
@@ -191,10 +191,10 @@ ResourceView::~ResourceView()
 {
 }
 
-ResourceView::ResourceView(const Ref<Texture>& texture, miru::base::DescriptorType type)
+ResourceView::ResourceView(const Ref<Texture>& texture, miru::base::DescriptorType descType)
 {
-	this->type = type;
-	switch (type)
+	descriptorType = descType;
+	switch (descriptorType)
 	{
 	case DescriptorType::SAMPLER:
 		state = Resource::State::SHADER_READ_ONLY;
@@ -224,8 +224,8 @@ ResourceView::ResourceView(const Ref<Texture>& texture, miru::base::DescriptorTy
 
 ResourceView::ResourceView(const Ref<Texture>& texture, Resource::State state)
 {
+	descriptorType = state == Resource::State::SHADER_READ_ONLY ? DescriptorType::COMBINED_IMAGE_SAMPLER : state == Resource::State::SHADER_READ_WRITE ? DescriptorType::STORAGE_IMAGE : NonDescriptorType;
 	this->state = state;
-	type = state == Resource::State::SHADER_READ_ONLY ? DescriptorType::COMBINED_IMAGE_SAMPLER : state == Resource::State::SHADER_READ_WRITE ? DescriptorType::STORAGE_IMAGE : NonDescriptorType;
 	imageView = texture->GetImageView();
 
 	if (state == Resource::State::SHADER_READ_ONLY)
@@ -234,75 +234,75 @@ ResourceView::ResourceView(const Ref<Texture>& texture, Resource::State state)
 
 ResourceView::ResourceView(const Ref<Vertexbuffer>& vertexBuffer)
 {
+	descriptorType = NonDescriptorType;
 	state = Resource::State::VERTEX_BUFFER;
-	type = NonDescriptorType;
 	bufferView = vertexBuffer->GetGPUBufferView();
 }
 
 ResourceView::ResourceView(const Ref<Indexbuffer>& indexBuffer)
 {
+	descriptorType = NonDescriptorType;
 	state = Resource::State::INDEX_BUFFER;
-	type = NonDescriptorType;
 	bufferView = indexBuffer->GetGPUBufferView();
 }
 
 ResourceView::ResourceView(const Ref<BaseUniformbuffer>& uniformBuffer)
 {
-	type = DescriptorType::UNIFORM_BUFFER;
+	descriptorType = DescriptorType::UNIFORM_BUFFER;
 	bufferView = uniformBuffer->GetGPUBufferView();
 }
 
 ResourceView::ResourceView(const Ref<BaseStoragebuffer>& storageBuffer)
 {
-	type = DescriptorType::STORAGE_BUFFER;
+	descriptorType = DescriptorType::STORAGE_BUFFER;
 	bufferView = storageBuffer->GetGPUBufferView();
 }
 
 ResourceView::ResourceView(const miru::base::ImageViewRef& imageView, const miru::base::SamplerRef& sampler)
 {
 	state = Resource::State::SHADER_READ_ONLY;
-	type = DescriptorType::COMBINED_IMAGE_SAMPLER;
+	descriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER;
 	this->imageView = imageView;
 	this->sampler = sampler;
 }
 
 ResourceView::ResourceView(const miru::base::ImageViewRef& imageView, Resource::State state)
 {
+	descriptorType = state == Resource::State::SHADER_READ_ONLY ? DescriptorType::SAMPLED_IMAGE : state == Resource::State::SHADER_READ_WRITE ? DescriptorType::STORAGE_IMAGE : NonDescriptorType;
 	this->state = state;
-	type = state == Resource::State::SHADER_READ_ONLY ? DescriptorType::SAMPLED_IMAGE : state == Resource::State::SHADER_READ_WRITE ? DescriptorType::STORAGE_IMAGE : NonDescriptorType;
 	this->imageView = imageView;
 }
 
 ResourceView::ResourceView(const miru::base::SamplerRef& sampler)
 {
+	descriptorType = DescriptorType::SAMPLER;
 	state = Resource::State::SHADER_READ_ONLY;
-	type = DescriptorType::SAMPLER;
 	this->sampler = sampler;
 }
 
 ResourceView::ResourceView(const miru::base::BufferViewRef& bufferView, Resource::State state)
 {
+	descriptorType = state == Resource::State::UNIFORM_BUFFER ? DescriptorType::UNIFORM_BUFFER : state == Resource::State::SHADER_READ_WRITE ? DescriptorType::STORAGE_BUFFER : NonDescriptorType;
 	this->state = state;
-	type = state == Resource::State::UNIFORM_BUFFER ? DescriptorType::UNIFORM_BUFFER : state == Resource::State::SHADER_READ_WRITE ? DescriptorType::STORAGE_BUFFER : NonDescriptorType;
 	this->bufferView = bufferView;
 }
 
 ResourceView::ResourceView(const miru::base::AccelerationStructureRef& accelerationStructure)
 {
+	descriptorType = DescriptorType::ACCELERATION_STRUCTURE;
 	this->state = Resource::State::SHADER_READ_ONLY;
-	type = DescriptorType::ACCELERATION_STRUCTURE;
 	this->accelerationStructure = accelerationStructure;
 }
 
 Resource ResourceView::GetResource() const
 {
-	if (imageView)
+	if (IsImageView())
 		return Resource(imageView->GetCreateInfo().image);
-	else if (sampler)
+	else if (IsSampler())
 		return Resource(sampler);
-	else if (bufferView)
+	else if (IsBufferView())
 		return Resource(bufferView->GetCreateInfo().buffer);
-	else if (accelerationStructure)
+	else if (IsAccelerationStructure())
 		return Resource(accelerationStructure);
 	else
 	{
@@ -313,13 +313,13 @@ Resource ResourceView::GetResource() const
 
 Resource ResourceView::GetResource()
 {
-	if (imageView)
+	if (IsImageView())
 		return Resource(imageView->GetCreateInfo().image);
-	else if (sampler)
+	else if (IsSampler())
 		return Resource(sampler);
-	else if (bufferView)
+	else if (IsBufferView())
 		return Resource(bufferView->GetCreateInfo().buffer);
-	else if (accelerationStructure)
+	else if (IsAccelerationStructure())
 		return Resource(accelerationStructure);
 	else
 	{
@@ -338,7 +338,9 @@ bool ResourceView::operator== (const ResourceView& other) const
 			return imageView->GetCreateInfo().image == other.imageView->GetCreateInfo().image;
 	}
 	else if (IsSampler() && other.IsSampler())
+	{
 		return sampler == other.sampler;
+	}
 	else if (IsBufferView() && other.IsBufferView())
 	{
 		if (bufferView == other.bufferView)
@@ -347,12 +349,49 @@ bool ResourceView::operator== (const ResourceView& other) const
 			return bufferView->GetCreateInfo().buffer == other.bufferView->GetCreateInfo().buffer;
 	}
 	else if (IsAccelerationStructure() && other.IsAccelerationStructure())
+	{
 		return accelerationStructure == other.accelerationStructure;
+	}
 	else
+	{
 		return false;
+	}
 }
 
 bool ResourceView::operator!= (const ResourceView& other) const
 {
 	return !(*this == other);
 }
+
+
+PipelineStageBit ResourceView::ShaderStageToPipelineStage(const Shader::StageBit& stage)
+{
+	switch (stage)
+	{
+	case Shader::StageBit::VERTEX_BIT:
+		return PipelineStageBit::VERTEX_SHADER_BIT;
+	case Shader::StageBit::TESSELLATION_CONTROL_BIT:
+		return PipelineStageBit::TESSELLATION_CONTROL_SHADER_BIT;
+	case Shader::StageBit::TESSELLATION_EVALUATION_BIT:
+		return PipelineStageBit::TESSELLATION_EVALUATION_SHADER_BIT;
+	case Shader::StageBit::GEOMETRY_BIT:
+		return PipelineStageBit::GEOMETRY_SHADER_BIT;
+	case Shader::StageBit::FRAGMENT_BIT:
+		return PipelineStageBit::FRAGMENT_SHADER_BIT;
+	case Shader::StageBit::COMPUTE_BIT:
+		return PipelineStageBit::COMPUTE_SHADER_BIT;
+	case Shader::StageBit::TASK_BIT_EXT:
+		return PipelineStageBit::TASK_SHADER_BIT_EXT;
+	case Shader::StageBit::MESH_BIT_EXT:
+		return PipelineStageBit::MESH_SHADER_BIT_EXT;
+	case Shader::StageBit::RAYGEN_BIT:
+	case Shader::StageBit::ANY_HIT_BIT:
+	case Shader::StageBit::CLOSEST_HIT_BIT:
+	case Shader::StageBit::MISS_BIT:
+	case Shader::StageBit::INTERSECTION_BIT:
+	case Shader::StageBit::CALLABLE_BIT:
+		return PipelineStageBit::RAY_TRACING_SHADER_BIT;
+	default:
+		return PipelineStageBit(0);
+	}
+};

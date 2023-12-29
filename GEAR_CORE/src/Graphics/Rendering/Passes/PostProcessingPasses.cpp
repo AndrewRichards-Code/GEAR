@@ -29,7 +29,7 @@ void PostProcessingPasses::Bloom::Prefilter(Renderer& renderer)
 	bloomInfo.levels = levels;
 
 	bloomInfo.prefilterOutputImage = renderGraph.CreateImage({ Image::Type::TYPE_2D, Image::Format::R16G16B16A16_SFLOAT, width, height, 1, levels, 1, Image::SampleCountBit::SAMPLE_COUNT_1_BIT,
-		RenderGraph::ImageDesc::UsageBit::SHADER_READ_ONLY | RenderGraph::ImageDesc::UsageBit::SHADER_READ_WRITE }, "Bloom_Prefilter_Output");
+		RenderGraph::ImageCreateInfo::UsageBit::SHADER_READ_ONLY | RenderGraph::ImageCreateInfo::UsageBit::SHADER_READ_WRITE }, "Bloom_Prefilter_Output");
 	ImageViewRef prefilterOutputImageView = renderGraph.CreateImageView(bloomInfo.prefilterOutputImage, Image::Type::TYPE_2D, { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 });
 
 	Ref<TaskPassParameters> bloomPreFilterPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["BloomPreFilter"]);
