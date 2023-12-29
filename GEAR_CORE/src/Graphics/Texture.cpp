@@ -44,7 +44,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_ImageUploadBufferCI.debugName = "GEAR_CORE_TextureUploadBuffer: " + m_CI.debugName;
 	m_ImageUploadBufferCI.device = m_CI.device;
 	m_ImageUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC_BIT | Buffer::UsageBit::TRANSFER_DST_BIT;
-	m_ImageUploadBufferCI.imageDimension = { m_Width, m_Height, 4 };
+	m_ImageUploadBufferCI.imageDimension = { m_Width, m_Height, std::max(m_Depth, m_CI.arrayLayers), Image::GetFormatSize(m_CI.format) };
 	m_ImageUploadBufferCI.size = imageData.size();
 	m_ImageUploadBufferCI.data = imageData.data();
 	m_ImageUploadBufferCI.allocator = AllocatorManager::GetCPUAllocator();
@@ -55,7 +55,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_ImageUploadBufferViewCI.type = BufferView::Type::UNIFORM_TEXEL;
 	m_ImageUploadBufferViewCI.buffer = m_ImageUploadBuffer;
 	m_ImageUploadBufferViewCI.offset = 0;
-	m_ImageUploadBufferViewCI.size = imageData.size();
+	m_ImageUploadBufferViewCI.size = m_ImageUploadBuffer->GetCreateInfo().size;
 	m_ImageUploadBufferViewCI.stride = 0;
 	m_ImageUploadBufferView = BufferView::Create(&m_ImageUploadBufferViewCI);
 
@@ -117,7 +117,7 @@ void Texture::SubmitImageData(std::vector<uint8_t>& imageData)
 void Texture::AccessImageData(std::vector<uint8_t>& imageData)
 {
 	imageData.clear();
-	imageData.resize(m_ImageUploadBuffer->GetAllocation().width);
+	imageData.resize(m_ImageUploadBuffer->GetCreateInfo().size);
 
 	m_ImageUploadBufferCI.allocator->AccessData(m_ImageUploadBuffer->GetAllocation(), 0, imageData.size(), imageData.data());
 }
@@ -244,6 +244,6 @@ void Texture::LoadImageData(std::vector<uint8_t>& imageData)
 
 	if (m_Width == 0 && m_Height == 0 && m_Depth == 0)
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Invalid extent for Texture creation.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Invalid extent for Texture creation.");
 	}
 }

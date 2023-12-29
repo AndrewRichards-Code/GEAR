@@ -19,7 +19,7 @@ InputInterface::InputInterface(CreateInfo* pCreateInfo)
 
 	if (FAILED(CoInitializeEx(nullptr, COINIT_MULTITHREADED)))
 	{
-		GEAR_ASSERT(ErrorCode::INPUT | ErrorCode::INIT_FAILED, "Failed to CoInitialise XInput.");
+		GEAR_FATAL(ErrorCode::INPUT | ErrorCode::INIT_FAILED, "Failed to CoInitialise XInput.");
 	}
 
 	XINPUT_STATE state;
