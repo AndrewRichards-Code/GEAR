@@ -16,6 +16,10 @@ struct VS_OUT
 {
 	MIRU_LOCATION(0, float4, v_Position, SV_POSITION);
 	MIRU_LOCATION(1, float3, v_TextCoord, TEXCOORD1);
+	MIRU_LOCATION(2, float4, v_Normal, NORMAL2);
+	MIRU_LOCATION(3, float4, v_Tangent, TANGENT3);
+	MIRU_LOCATION(4, float4, v_Binormal, BINORMAL4);
+	MIRU_LOCATION(5, float4, v_Colour, COLOR5);
 };
 typedef VS_OUT PS_IN;
 
@@ -34,6 +38,10 @@ VS_OUT vs_main(VS_IN IN)
 	
 	OUT.v_Position = mul(IN.positions, mul(model.modl, mul(camera.view, camera.proj)));
 	OUT.v_TextCoord = IN.positions.xyz;
+	OUT.v_Normal = IN.normals;
+	OUT.v_Tangent = IN.tangents;
+	OUT.v_Binormal = IN.binormals;
+	OUT.v_Colour = IN.colours + float4(IN.texCoords, 0, 1);
 	
 	return OUT;
 }
