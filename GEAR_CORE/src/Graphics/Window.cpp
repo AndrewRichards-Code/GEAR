@@ -155,7 +155,7 @@ bool Window::Init()
 {
 	if (!glfwInit())
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INIT_FAILED, "Failed to initialise GLFW.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INIT_FAILED, "Failed to initialise GLFW.");
 		return false;
 	}
 
@@ -163,7 +163,7 @@ bool Window::Init()
 	{
 		if (glfwVulkanSupported() == GLFW_FALSE)
 		{
-			GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::NOT_SUPPORTED, "GLFW does not support Vulkan.");
+			GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::NOT_SUPPORTED, "GLFW does not support Vulkan.");
 			return false;
 		}
 
@@ -171,7 +171,7 @@ bool Window::Init()
 		glfwPresentationSupport = glfwGetPhysicalDevicePresentationSupport(ref_cast<vulkan::Context>(m_Context)->m_Instance, ref_cast<vulkan::Context>(m_Context)->m_PhysicalDevices.m_PhysicalDevices[0], 0);
 		if (!glfwPresentationSupport)
 		{
-			GEAR_ASSERT(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_NOT_SUPPORTED, "ERROR: GEAR::GRAPHICS::Window: The Vulkan queue family doesn't support presentation to GLFW.");
+			GEAR_FATAL(GEAR_ERROR_CODE::GEAR_GRAPHICS | GEAR_ERROR_CODE::GEAR_NOT_SUPPORTED, "ERROR: GEAR::GRAPHICS::Window: The Vulkan queue family doesn't support presentation to GLFW.");
 			return false;
 		}*/
 	}
@@ -204,7 +204,7 @@ bool Window::Init()
 	{
 		glfwDestroyWindow(m_Window);
 		glfwTerminate();
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::FUNC_FAILED, "Failed to create GLFW window.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::FUNC_FAILED, "Failed to create GLFW window.");
 		return false;
 	}
 
@@ -268,7 +268,7 @@ void Window::window_resize(GLFWwindow* window, int width, int height)
 	//Handle resizes greater than 4K
 	if (width > 3840 || height > 2160)
 	{
-		GEAR_ASSERT(true, "Resize event's dimensions are greater then 4K.");
+		GEAR_FATAL(true, "Resize event's dimensions are greater then 4K.");
 	}
 
 	Window* win = (Window*)glfwGetWindowUserPointer(window);

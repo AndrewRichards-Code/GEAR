@@ -150,7 +150,7 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 		descriptorPoolCI.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes);
 		descriptorPoolCI.pPoolSizes = poolSizes;
 		VkResult res = vkCreateDescriptorPool(vkContext->m_Device, &descriptorPoolCI, nullptr, &m_VulkanDescriptorPool);
-		GEAR_ASSERT(res, "GEARBOX: Failed to Create VkDescriptorPool for ImGui.");
+		GEAR_FATAL(res, "GEARBOX: Failed to Create VkDescriptorPool for ImGui.");
 
 		//Create Default Sampler
 		VkSamplerCreateInfo samplerCI;
@@ -173,7 +173,7 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 		samplerCI.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
 		samplerCI.unnormalizedCoordinates = false;
 		res = vkCreateSampler(vkContext->m_Device, &samplerCI, nullptr, &m_VulkanSampler);
-		GEAR_ASSERT(res, "GEARBOX: Failed to Create VkDescriptorPool for ImGui.");
+		GEAR_FATAL(res, "GEARBOX: Failed to Create VkDescriptorPool for ImGui.");
 
 		ImGui_ImplVulkan_InitInfo imGuiVulkanInitInfo = {};
 		imGuiVulkanInitInfo.Instance = vkContext->m_Instance;
@@ -199,7 +199,7 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 		desc.NumDescriptors = 1000;
 		desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 		HRESULT res = d3d12Context->m_Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_D3D12DescriptorHeapSRV));
-		GEAR_ASSERT(res, "GEARBOX: Failed to Create ID3D12DescriptorHeap for ImGui.");
+		GEAR_FATAL(res, "GEARBOX: Failed to Create ID3D12DescriptorHeap for ImGui.");
 
 		ImGui_ImplDX12_Init(
 			d3d12Context->m_Device, 
@@ -211,7 +211,7 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 	}
 	else
 	{
-		GEAR_ASSERT(gear::ErrorCode::UI | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
+		GEAR_FATAL(gear::ErrorCode::UI | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
 	}
 
 	// Upload Fonts for Vulkan only
@@ -259,7 +259,7 @@ void UIContext::ShutDown()
 	}
 	else
 	{
-		GEAR_ASSERT(gear::ErrorCode::UI | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
+		GEAR_FATAL(gear::ErrorCode::UI | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
 	}
 	ImGui_ImplGlfw_Shutdown();
 
@@ -276,7 +276,7 @@ void UIContext::ShutDown()
 	}
 	else
 	{
-		GEAR_ASSERT(gear::ErrorCode::UI | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
+		GEAR_FATAL(gear::ErrorCode::UI | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
 	}
 
 	// Clean up Dear ImGui context
@@ -297,7 +297,7 @@ void UIContext::BeginFrame()
 	}
 	else
 	{
-		GEAR_ASSERT(gear::ErrorCode::UI | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
+		GEAR_FATAL(gear::ErrorCode::UI | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
 	}
 
 	// Start the Dear ImGui frame
@@ -398,7 +398,7 @@ void UIContext::RenderDrawData(const CommandBufferRef& cmdBuffer, uint32_t frame
 		}
 		else
 		{
-			GEAR_ASSERT(gear::ErrorCode::UI | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
+			GEAR_FATAL(gear::ErrorCode::UI | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
 		}
 	}
 

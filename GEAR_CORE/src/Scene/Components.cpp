@@ -37,7 +37,7 @@ static void LoadReference(const json& references, core::UUID uuid, T& saveData, 
 	valid |= (reference["type"]["hash_code"] == typeid(T).hash_code());
 	if (!valid)
 	{
-		GEAR_ASSERT(ErrorCode::SCENE | ErrorCode::INVALID_VALUE, "UUID, typeid::name() or typeid::hash_code() was incorrect.");
+		GEAR_FATAL(ErrorCode::SCENE | ErrorCode::INVALID_VALUE, "UUID, typeid::name() or typeid::hash_code() was incorrect.");
 	}
 	const json& data = reference["data"];
 	saveDataFunction(data, saveData);

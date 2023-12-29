@@ -81,11 +81,7 @@ void Resource::Init(const T& internalResource)
 	}
 	else
 	{
-		auto _break = []()
-		{
-			GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Unknown internal resource type.");
-		};
-		_break();
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Unknown internal resource type.");
 	}
 
 }
@@ -132,7 +128,7 @@ Resource::State Resource::GetSubresources(const miru::base::Image::SubresourceRa
 	bool same = AreSubresourcesInSameState(subresourceRange);
 	if (!same)
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "Not all subresources the range have the same State.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "Not all subresources the range have the same State.");
 		return State::UNKNOWN;
 	}
 	else
@@ -163,7 +159,7 @@ bool Resource::AreSubresourcesInSameState(const miru::base::Image::SubresourceRa
 
 	if (stateCheck.empty())
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "Invalid Image::SubresourceRange.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "Invalid Image::SubresourceRange.");
 	}
 
 	return std::equal(stateCheck.begin() + 1, stateCheck.end(), stateCheck.begin());
@@ -222,7 +218,7 @@ ResourceView::ResourceView(const Ref<Texture>& texture, miru::base::DescriptorTy
 		imageView = texture->GetImageView();
 		break;
 	default:
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "DescriptorType is invalid for a Texture Resource");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "DescriptorType is invalid for a Texture Resource");
 	}
 }
 
@@ -310,7 +306,7 @@ Resource ResourceView::GetResource() const
 		return Resource(accelerationStructure);
 	else
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "ResourceView is invalid.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "ResourceView is invalid.");
 		return Resource();
 	}
 }
@@ -327,7 +323,7 @@ Resource ResourceView::GetResource()
 		return Resource(accelerationStructure);
 	else
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "ResourceView is invalid.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "ResourceView is invalid.");
 		return Resource();
 	}
 }

@@ -38,7 +38,7 @@ namespace gear
 			{
 				if (HasComponent<T>())
 				{
-					GEAR_ASSERT(ErrorCode::SCENE | ErrorCode::INVALID_COMPONENT, "Entity(0x%x) already has a %s.", m_Entity, typeid(T).name());
+					GEAR_FATAL(ErrorCode::SCENE | ErrorCode::INVALID_COMPONENT, "Entity(0x%x) already has a %s.", m_Entity, typeid(T).name());
 				}
 				T& component = m_CI.pScene->m_Registry.emplace<T>(m_Entity, std::forward<Args>(args)...);
 
@@ -56,7 +56,7 @@ namespace gear
 			{
 				if (!HasComponent<T>())
 				{
-					GEAR_ASSERT(ErrorCode::SCENE | ErrorCode::INVALID_COMPONENT, "Entity(0x%x) does not have a %s.", m_Entity, typeid(T).name());
+					GEAR_FATAL(ErrorCode::SCENE | ErrorCode::INVALID_COMPONENT, "Entity(0x%x) does not have a %s.", m_Entity, typeid(T).name());
 				}
 				return m_CI.pScene->m_Registry.get<T>(m_Entity);
 			}
@@ -66,7 +66,7 @@ namespace gear
 			{
 				if (!HasComponent<T>())
 				{
-					GEAR_ASSERT(ErrorCode::SCENE | ErrorCode::INVALID_COMPONENT, "Entity(0x%x) does not have a %s.", m_Entity, typeid(T).name());
+					GEAR_FATAL(ErrorCode::SCENE | ErrorCode::INVALID_COMPONENT, "Entity(0x%x) does not have a %s.", m_Entity, typeid(T).name());
 				}
 				m_CI.pScene->m_Registry.remove<T>(m_Entity);
 			}

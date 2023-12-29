@@ -243,7 +243,7 @@ void NativeScriptManager::CheckWin32BOOL(bool success)
 {
 	if (!success)
 	{
-		GEAR_ASSERT(ErrorCode::SCENE | ErrorCode::FUNC_FAILED, "Call to Win32 API failed with error: %s", arc::GetLastErrorToString(GetLastError()));
+		GEAR_FATAL(ErrorCode::SCENE | ErrorCode::FUNC_FAILED, "Call to Win32 API failed with error: %s", arc::GetLastErrorToString(GetLastError()));
 	}
 }
 

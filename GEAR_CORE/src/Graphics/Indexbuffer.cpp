@@ -14,11 +14,11 @@ Indexbuffer::Indexbuffer(CreateInfo* pCreateInfo)
 
 	if (m_CI.stride != 2 && m_CI.stride != 4)
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Stride is not 2 or 4.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Stride is not 2 or 4.");
 	}
 	if (m_CI.size % m_CI.stride)
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Size is not a multiple of the stride.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Size is not a multiple of the stride.");
 	}	
 	m_Count = static_cast<uint32_t>(m_CI.size / m_CI.stride);
 

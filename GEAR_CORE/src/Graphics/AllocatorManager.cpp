@@ -53,7 +53,7 @@ AllocatorRef AllocatorManager::GetAllocator(AllocatorType type)
 {
 	if (!s_Initialised)
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INIT_FAILED, "AllocatorManager has not been initialised.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INIT_FAILED, "AllocatorManager has not been initialised.");
 	}
 	
 	switch (type)
@@ -65,7 +65,7 @@ AllocatorRef AllocatorManager::GetAllocator(AllocatorType type)
 	case AllocatorManager::AllocatorType::UNKNOWN:
 	default:
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "AllocatorManager: Unknown AllocatorType.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "AllocatorManager: Unknown AllocatorType.");
 		return nullptr;
 	}
 	}
@@ -99,7 +99,7 @@ void AllocatorManager::PrintMemoryBlockStatus()
 	}
 	else
 	{
-		GEAR_ASSERT(Level::FATAL, ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "AllocatorManager: Unknown GraphicsAPI.");
+		GEAR_FATAL(Level::FATAL, ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "AllocatorManager: Unknown GraphicsAPI.");
 	}*/
 
 	/*for(auto& memoryBlock : MemoryBlock::GetMemoryBlocks())

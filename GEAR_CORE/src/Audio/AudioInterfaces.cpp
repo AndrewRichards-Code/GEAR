@@ -34,7 +34,7 @@ AudioListenerInterface::AudioListenerInterface(CreateInfo* pCreateInfo)
 	default:
 	case AudioListenerInterface::API::UNKNOWN:
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
 		break;
 	}
 	case AudioListenerInterface::API::XAUDIO2:
@@ -51,7 +51,7 @@ AudioListenerInterface::~AudioListenerInterface()
 	default:
 	case AudioListenerInterface::API::UNKNOWN:
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
 		break;
 	}
 	case AudioListenerInterface::API::XAUDIO2:
@@ -71,13 +71,13 @@ void AudioListenerInterface::XAudio2_CreateXAudio2AndMasteringVoice()
 {
 	if (FAILED(CoInitializeEx(nullptr, COINIT_MULTITHREADED)))
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to CoInitialise XAudio2.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to CoInitialise XAudio2.");
 	}
 
 	UINT32 flags = 0;
 	if (FAILED(XAudio2Create(&m_IXAudio2, flags, XAUDIO2_DEFAULT_PROCESSOR)))
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Create XAudio2.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Create XAudio2.");
 	}
 
 	#if (_WIN32_WINNT >= _WIN32_WINNT_WIN8) && defined(_DEBUG)
@@ -94,7 +94,7 @@ void AudioListenerInterface::XAudio2_CreateXAudio2AndMasteringVoice()
 	IMMDeviceEnumerator* deviceEnumerator;
 	if (FAILED(CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_INPROC_SERVER, __uuidof(IMMDeviceEnumerator), (void**)&deviceEnumerator)))
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Create Audio Device Enumerator.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Create Audio Device Enumerator.");
 	}
 
 	auto GetDefaultAudioEndpointDeviceID = [&]()
@@ -102,13 +102,13 @@ void AudioListenerInterface::XAudio2_CreateXAudio2AndMasteringVoice()
 		IMMDevice* device;
 		if (FAILED(deviceEnumerator->GetDefaultAudioEndpoint(eRender, eConsole, &device)))
 		{
-			GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get Default Audio Endpoint.");
+			GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get Default Audio Endpoint.");
 		}
 
 		LPWSTR wDeviceID_c_str;
 		if (FAILED(device->GetId(&wDeviceID_c_str)))
 		{
-			GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get DeviceID for Default Audio Endpoint.");
+			GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get DeviceID for Default Audio Endpoint.");
 		}
 		deviceID = wDeviceID_c_str;
 
@@ -120,38 +120,38 @@ void AudioListenerInterface::XAudio2_CreateXAudio2AndMasteringVoice()
 		IMMDeviceCollection* deviceCollections;
 		if (FAILED(deviceEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &deviceCollections)))
 		{
-			GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Enumerate all Audio Endpoints.");
+			GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Enumerate all Audio Endpoints.");
 		}
 		UINT deviceCollectionCount;
 		if (FAILED(deviceCollections->GetCount(&deviceCollectionCount)))
 		{
-			GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get Count for all Audio Endpoints.");
+			GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get Count for all Audio Endpoints.");
 		}
 		for (UINT i = 0; i < deviceCollectionCount; i++)
 		{
 			IMMDevice* device;
 			if (FAILED(deviceCollections->Item(i, &device)))
 			{
-				GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get Device for Audio Endpoint: %u.", i);
+				GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get Device for Audio Endpoint: %u.", i);
 			}
 
 			LPWSTR wDeviceID_c_str;
 			if (FAILED(device->GetId(&wDeviceID_c_str)))
 			{
-				GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get DeviceID for Audio Endpoint: %u.", i);
+				GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get DeviceID for Audio Endpoint: %u.", i);
 			}
 
 			IPropertyStore* propertyStore;
 			if (FAILED(device->OpenPropertyStore(STGM_READ, &propertyStore)))
 			{
-				GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Open Property Store for Audio Endpoint: %u.", i);
+				GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Open Property Store for Audio Endpoint: %u.", i);
 			}
 
 			PROPVARIANT friendlyName;
 			PropVariantInit(&friendlyName);
 			if (FAILED(propertyStore->GetValue(PKEY_Device_FriendlyName, &friendlyName)))
 			{
-				GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get Value from Property Store for Audio Endpoint: %u.", i);
+				GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Get Value from Property Store for Audio Endpoint: %u.", i);
 			}
 
 			if (friendlyName.pwszVal)
@@ -189,7 +189,7 @@ void AudioListenerInterface::XAudio2_CreateXAudio2AndMasteringVoice()
 
 	if (FAILED(m_IXAudio2->CreateMasteringVoice(&m_IXAudio2MasteringVoice, XAUDIO2_DEFAULT_CHANNELS, XAUDIO2_DEFAULT_SAMPLERATE, 0, (deviceID.empty() ? nullptr : deviceID.c_str()), nullptr, AudioCategory_GameEffects)))
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Create XAudio2MasteringVoice.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Create XAudio2MasteringVoice.");
 	}
 }
 
@@ -198,7 +198,7 @@ void AudioListenerInterface::XAudio2_DestroyXAudio2AndMasteringVoice()
 	m_IXAudio2MasteringVoice->DestroyVoice();
 	if (!m_IXAudio2->Release())
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Release XAudio2.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::INIT_FAILED, "Failed to Release XAudio2.");
 	}
 	CoUninitialize();
 }
@@ -222,7 +222,7 @@ AudioSourceInterface::AudioSourceInterface(CreateInfo* pCreateInfo)
 	default:
 	case AudioListenerInterface::API::UNKNOWN:
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
 		break;
 	}
 	case AudioListenerInterface::API::XAUDIO2:
@@ -240,7 +240,7 @@ AudioSourceInterface::~AudioSourceInterface()
 	default:
 	case AudioListenerInterface::API::UNKNOWN:
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
 		break;
 	}
 	case AudioListenerInterface::API::XAUDIO2:
@@ -258,7 +258,7 @@ void AudioSourceInterface::Stream()
 	default:
 	case AudioListenerInterface::API::UNKNOWN:
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
 		break;
 	}
 	case AudioListenerInterface::API::XAUDIO2:
@@ -282,7 +282,7 @@ void AudioSourceInterface::SetPitch(float value)
 	default:
 	case AudioListenerInterface::API::UNKNOWN:
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
 		break;
 	}
 	case AudioListenerInterface::API::XAUDIO2:
@@ -309,7 +309,7 @@ void AudioSourceInterface::SetVolume(float value)
 	default:
 	case AudioListenerInterface::API::UNKNOWN:
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::NOT_SUPPORTED, "Unknown AudioAPI.");
 		break;
 	}
 	case AudioListenerInterface::API::XAUDIO2:
@@ -336,7 +336,7 @@ void AudioSourceInterface::CreateIXAudio2SourceVoiceAndX3DAUDIO()
 	IXAudio2*& xAudio2 = m_CI.pAudioListener->m_IXAudio2;
 	if (FAILED(xAudio2->CreateSourceVoice(&m_IXAudio2SourceVoice, &wfx)))
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to Create IXAudio2SourceVoice.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to Create IXAudio2SourceVoice.");
 	}
 
 	SubmitBuffer();
@@ -435,25 +435,25 @@ void AudioSourceInterface::SubmitBuffer()
 
 	if (FAILED(m_IXAudio2SourceVoice->SubmitSourceBuffer(&buffer)))
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to Submit XAUDIO2_BUFFER to IXAudio2SourceVoice.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to Submit XAUDIO2_BUFFER to IXAudio2SourceVoice.");
 	}
 }
 void AudioSourceInterface::Play()
 {
 	if (FAILED(m_IXAudio2SourceVoice->Start()))
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to Start IXAudio2SourceVoice.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to Start IXAudio2SourceVoice.");
 	}
 }
 void AudioSourceInterface::Stop()
 {
 	if (FAILED(m_IXAudio2SourceVoice->Stop()))
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to Stop IXAudio2SourceVoice.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to Stop IXAudio2SourceVoice.");
 	}
 	if (FAILED(m_IXAudio2SourceVoice->FlushSourceBuffers()))
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to Flush buffers for IXAudio2SourceVoice.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to Flush buffers for IXAudio2SourceVoice.");
 	}
 	SubmitBuffer();
 	SubmitBuffer();
@@ -462,7 +462,7 @@ void AudioSourceInterface::Pause()
 {
 	if (FAILED(m_IXAudio2SourceVoice->Stop()))
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to Stop IXAudio2SourceVoice.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to Stop IXAudio2SourceVoice.");
 	}
 }
 void AudioSourceInterface::Stream_Internal()
@@ -489,14 +489,14 @@ void AudioSourceInterface::SetPitch_Internal(float value)
 
 	if (FAILED(m_IXAudio2SourceVoice->SetFrequencyRatio(newFreqRatio)))
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to SetFrequencyRatio IXAudio2SourceVoice.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to SetFrequencyRatio IXAudio2SourceVoice.");
 	}
 }
 void AudioSourceInterface::SetVolume_Internal(float value)
 {
 	if (FAILED(m_IXAudio2SourceVoice->SetVolume(value)))
 	{
-		GEAR_ASSERT(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to SetVolume IXAudio2SourceVoice.");
+		GEAR_FATAL(ErrorCode::AUDIO | ErrorCode::FUNC_FAILED, "Failed to SetVolume IXAudio2SourceVoice.");
 	}
 }
 #else

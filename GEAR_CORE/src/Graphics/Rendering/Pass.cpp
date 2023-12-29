@@ -160,7 +160,7 @@ void Pass::Execute(RenderGraph* renderGraph, CommandBufferRef cmdBuffer, uint32_
 	}
 	else
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Invalid PassParameter Type.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Invalid PassParameter Type.");
 	}
 }
 
@@ -293,7 +293,7 @@ std::vector<Barrier2Ref> Pass::TransitionResource(RenderGraph* renderGraph, cons
 	}
 	else
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "ResourceView is neither an ImageView or a BufferView.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "ResourceView is neither an ImageView or a BufferView.");
 	}
 
 	Resource& resource = renderGraph->GetTrackedResource(passResourceView.GetResource());

@@ -16,7 +16,7 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 
 	if (!(stbi_is_hdr(m_CI.filepath.c_str()) && m_CI.filepath.find(".hdr") != std::string::npos))
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::NOT_SUPPORTED, "%s: is not a supported file format.", m_CI.filepath)
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::NOT_SUPPORTED, "%s: is not a supported file format.", m_CI.filepath)
 	}
 
 	m_HDRTextureCI.debugName = "GEAR_CORE_Skybox_HDR: " + m_CI.debugName;
@@ -56,8 +56,8 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	m_GeneratedDiffuseCubemapCI.dataType = Texture::DataType::DATA;
 	m_GeneratedDiffuseCubemapCI.data.data = nullptr;
 	m_GeneratedDiffuseCubemapCI.data.size = 0;
-	m_GeneratedDiffuseCubemapCI.data.width = m_CI.generatedCubemapSize/16;
-	m_GeneratedDiffuseCubemapCI.data.height = m_CI.generatedCubemapSize/16;
+	m_GeneratedDiffuseCubemapCI.data.width = m_CI.generatedCubemapSize / 16;
+	m_GeneratedDiffuseCubemapCI.data.height = m_CI.generatedCubemapSize / 16;
 	m_GeneratedDiffuseCubemapCI.data.depth = 1;
 	m_GeneratedDiffuseCubemapCI.mipLevels = 1;
 	m_GeneratedDiffuseCubemapCI.arrayLayers = 6;
@@ -135,7 +135,7 @@ void Skybox::Update(const Transform& transform)
 		{
 			if (!(stbi_is_hdr(m_CI.filepath.c_str()) && m_CI.filepath.find(".hdr") != std::string::npos))
 			{
-				GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::NOT_SUPPORTED, "%s: is not a supported file format.", m_CI.filepath)
+				GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::NOT_SUPPORTED, "%s: is not a supported file format.", m_CI.filepath)
 			}
 
 			m_HDRTextureCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;

@@ -119,7 +119,7 @@ bool Camera::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo
 	}
 	else
 	{
-		GEAR_ASSERT(ErrorCode::OBJECTS | ErrorCode::INVALID_VALUE, "Unknown projection type.");
+		GEAR_FATAL(ErrorCode::OBJECTS | ErrorCode::INVALID_VALUE, "Unknown projection type.");
 	}
 	return CompareCreateInfoHash(newHash);
 }
@@ -138,7 +138,7 @@ void Camera::DefineProjection()
 	}
 	else
 	{
-		GEAR_ASSERT(ErrorCode::OBJECTS | ErrorCode::INVALID_VALUE, "Unknown projection type.");
+		GEAR_FATAL(ErrorCode::OBJECTS | ErrorCode::INVALID_VALUE, "Unknown projection type.");
 	}
 
 	if (miru::base::GraphicsAPI::IsVulkan())

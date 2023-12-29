@@ -103,7 +103,7 @@ const std::pair<uint32_t, uint32_t> TaskPassParameters::FindResourceViewSetBindi
 				return { set, binding };
 		}
 	}
-	GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Failed to find Resource: %s in RenderPipeline: %s.", name.c_str(), m_RenderPipeline->m_CI.debugName.c_str());
+	GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Failed to find Resource: %s in RenderPipeline: %s.", name.c_str(), m_RenderPipeline->m_CI.debugName.c_str());
 	return { 0, 0 };
 }
 
@@ -115,7 +115,7 @@ void TaskPassParameters::SetResourceView(const std::pair<uint32_t, uint32_t>& se
 	const Shader::ResourceBindingDescription& rbd = m_RenderPipeline->GetRBDs().at(set).at(binding);
 	if (rbd.type != resourceView.type)
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "The Resource DescriptorType does not match ResourceBindingDescription DescriptorType.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "The Resource DescriptorType does not match ResourceBindingDescription DescriptorType.");
 	}
 	
 	resourceView.stage = rbd.stage;
@@ -219,7 +219,7 @@ void TaskPassParameters::SetResourceView(const std::pair<uint32_t, uint32_t>& se
 	}
 	else
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Resource::State is not SHADER_READ_ONLY or SHADER_READ_WRITE.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Resource::State is not SHADER_READ_ONLY or SHADER_READ_WRITE.");
 	}
 }
 
@@ -280,7 +280,7 @@ void TaskPassParameters::AddAttachment(uint32_t index, const ResourceView& resou
 		}
 		else
 		{
-			GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Resource::State is not COLOUR_ATTACHMENT or DEPTH_STENCIL_ATTACHMENT.");
+			GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Resource::State is not COLOUR_ATTACHMENT or DEPTH_STENCIL_ATTACHMENT.");
 		}
 
 		m_OutputResourceViews.push_back(resourceView);
@@ -320,7 +320,7 @@ void TaskPassParameters::AddAttachmentWithResolve(uint32_t index, const Resource
 		}
 		else
 		{
-			GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Resource::State is not COLOUR_ATTACHMENT or DEPTH_STENCIL_ATTACHMENT.");
+			GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Resource::State is not COLOUR_ATTACHMENT or DEPTH_STENCIL_ATTACHMENT.");
 		}
 
 		m_OutputResourceViews.push_back(resourceView); 
@@ -330,7 +330,7 @@ void TaskPassParameters::AddAttachmentWithResolve(uint32_t index, const Resource
 	}
 	else
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "ResourceView::ImageViews multisample and/or resolve are invalid.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "ResourceView::ImageViews multisample and/or resolve are invalid.");
 	}
 }
 

@@ -25,7 +25,7 @@ FontLibrary::FontLibrary()
 {
 	if (FT_Init_FreeType(&m_FT_Lib))
 	{
-		GEAR_ASSERT(ErrorCode::OBJECTS | ErrorCode::INIT_FAILED, "Failed to initialise freetype.lib.");
+		GEAR_FATAL(ErrorCode::OBJECTS | ErrorCode::INIT_FAILED, "Failed to initialise freetype.lib.");
 	}
 }
 FontLibrary::~FontLibrary()
@@ -52,7 +52,7 @@ Ref<FontLibrary::Font> FontLibrary::GenerateFont(const GenerateInfo& GI)
 	FT_Face face;
 	if (FT_New_Face(m_FT_Lib, GI.filepath.c_str(), 0, &face))
 	{
-		GEAR_ASSERT(ErrorCode::OBJECTS | ErrorCode::LOAD_FAILED, "Failed to load font.");
+		GEAR_FATAL(ErrorCode::OBJECTS | ErrorCode::LOAD_FAILED, "Failed to load font.");
 	}
 	FT_Set_Pixel_Sizes(face, 0, GI.fontHeightPx);
 

@@ -20,7 +20,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_DepthTexture = m_CI.format >= Image::Format::D16_UNORM;
 	if (m_Cubemap && m_CI.arrayLayers % 6 != 0)
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "For TYPE_CUBE or TYPE_CUBE_ARRAY, arrayLayers must be a multiple of 6");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "For TYPE_CUBE or TYPE_CUBE_ARRAY, arrayLayers must be a multiple of 6");
 	}
 
 	//Load data
@@ -208,7 +208,7 @@ void Texture::LoadImageData(std::vector<uint8_t>& imageData)
 				}
 				else
 				{
-					GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Unknown ColourSpace.");
+					GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Unknown ColourSpace.");
 				}
 			}
 		}
@@ -239,7 +239,7 @@ void Texture::LoadImageData(std::vector<uint8_t>& imageData)
 	}
 	else
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Unknown Texture::CreateInfo::DataType and/or invalid parameters.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Unknown Texture::CreateInfo::DataType and/or invalid parameters.");
 	}
 
 	if (m_Width == 0 && m_Height == 0 && m_Depth == 0)

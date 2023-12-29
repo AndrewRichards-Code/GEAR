@@ -133,7 +133,7 @@ void RenderGraph::EndEventScope()
 	}
 	else
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "RenderGraph::FrameData::ScopeStack is empty. Unable to pop element from the stack.")
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "RenderGraph::FrameData::ScopeStack is empty. Unable to pop element from the stack.")
 	}
 }
 
@@ -145,7 +145,7 @@ void RenderGraph::Compile()
 	FrameData& data = m_FrameData[m_FrameIndex];
 	if (!data.ScopeStack.empty())
 	{
-		GEAR_ASSERT(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "RenderGraph Scope stack in not empty.");
+		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_STATE, "RenderGraph Scope stack in not empty.");
 	}
 
 	//Build Adjacency Lists
@@ -420,7 +420,7 @@ ImageViewRef RenderGraph::CreateImageView(const ImageRef& image, Image::Type typ
 Resource& RenderGraph::GetTrackedResource(const Resource& passResource)
 {
 	FrameData& data = m_FrameData[m_FrameIndex];
-	GEAR_ASSERT(!arc::FindInVector(data.Resources, passResource), "Pass's Resource not found in RenderGraph's Resource");
+	GEAR_FATAL(!arc::FindInVector(data.Resources, passResource), "Pass's Resource not found in RenderGraph's Resource");
 
 	auto it = arc::FindPositionInVector(data.Resources, passResource);
 	return *it;
@@ -429,7 +429,7 @@ Resource& RenderGraph::GetTrackedResource(const Resource& passResource)
 const Resource& RenderGraph::GetTrackedResource(const Resource& passResource) const
 {
 	const FrameData& data = m_FrameData[m_FrameIndex];
-	GEAR_ASSERT(!arc::FindInVector(data.Resources, passResource), "Pass's Resource not found in RenderGraph's Resource");
+	GEAR_FATAL(!arc::FindInVector(data.Resources, passResource), "Pass's Resource not found in RenderGraph's Resource");
 
 	auto it = arc::FindPositionInVectorConst(data.Resources, passResource);
 	return *it;

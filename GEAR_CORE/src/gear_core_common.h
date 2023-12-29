@@ -168,9 +168,7 @@ inline arc::Log GearLog("GEAR_CORE");
 #define GEAR_SET_ERROR_CODE_TO_STRING_FUNCTION GearLog.SetErrorCodeToStringFunction(ErrorCodeToString)
 
 //Triggered if x != 0
-#define GEAR_ASSERT(errorCode, fmt, ...) if(static_cast<int64_t>(errorCode) != 0) { ARC_FATAL(static_cast<int64_t>(errorCode), fmt, __VA_ARGS__);  ARC_ASSERT(false); }
-
-#define GEAR_FATAL(errorCode, fmt, ...) if(static_cast<int64_t>(errorCode) != 0) { ARC_FATAL(static_cast<int64_t>(errorCode), fmt, __VA_ARGS__); }
+#define GEAR_FATAL(errorCode, fmt, ...) if(static_cast<int64_t>(errorCode) != 0) { ARC_FATAL(static_cast<int64_t>(errorCode), fmt, __VA_ARGS__); ARC_ASSERT(false); }
 #define GEAR_ERROR(errorCode, fmt, ...) if(static_cast<int64_t>(errorCode) != 0) { ARC_ERROR(static_cast<int64_t>(errorCode), fmt, __VA_ARGS__); }
 #define GEAR_WARN(errorCode, fmt, ...) if(static_cast<int64_t>(errorCode) != 0) { ARC_WARN(static_cast<int64_t>(errorCode), fmt, __VA_ARGS__); }
 #define GEAR_INFO(errorCode, fmt, ...) if(static_cast<int64_t>(errorCode) != 0) { ARC_INFO(static_cast<int64_t>(errorCode), fmt, __VA_ARGS__); }

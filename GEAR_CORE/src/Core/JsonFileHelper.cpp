@@ -19,7 +19,7 @@ void gear::core::LoadJsonFile(const std::string& filepath, const std::string& fi
 	}
 	else
 	{
-		GEAR_ASSERT(ErrorCode::CORE | ErrorCode::NO_FILE, "Unable to open %s.", _filepath);
+		GEAR_FATAL(ErrorCode::CORE | ErrorCode::NO_FILE, "Unable to open %s.", _filepath);
 		return;
 	}
 	file.close();
@@ -51,7 +51,7 @@ void gear::core::SaveJsonFile(const std::string& filepath, const std::string& fi
 	std::ofstream file(_filepath, std::ios::binary);
 	if (!file.is_open())
 	{
-		GEAR_ASSERT(ErrorCode::SCENE | ErrorCode::NO_FILE, "Can not save to file: %s", _filepath);
+		GEAR_FATAL(ErrorCode::SCENE | ErrorCode::NO_FILE, "Can not save to file: %s", _filepath);
 		return;
 	}
 	else
