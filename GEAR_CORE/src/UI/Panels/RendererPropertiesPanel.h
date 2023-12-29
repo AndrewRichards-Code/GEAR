@@ -21,6 +21,7 @@ namespace gear
 				void Draw() override;
 			private:
 				void DrawPostProcessingUI();
+				static std::string PipelineStageBitToString(miru::base::PipelineStageBit pipelingStages);
 
 			public:
 				inline void SetViewportPanel(const Ref<ViewportPanel>& viewportPanel) { m_ViewportPanel = viewportPanel; }
