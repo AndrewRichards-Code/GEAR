@@ -15,10 +15,23 @@ namespace gear
 		class GEAR_API Mesh : public ObjectComponentInterface
 		{
 		public:
+			enum class VertexAttributes : uint32_t
+			{
+				NONE = 0x00,
+				POSITIONS = 0x01,
+				TEXCOORDS = 0x02,
+				NORMALS = 0x04,
+				TANGENTS = 0x08,
+				BINORMALS = 0x10,
+				COLOURS = 0x20
+			};
+
+		public:
 			struct CreateInfo : public ObjectComponentInterface::CreateInfo
 			{
 				std::string						filepath;	//Option 1
 				utils::ModelLoader::ModelData	modelData;	//Option 2
+				VertexAttributes				vertexAttributes;
 			};
 
 		private:
