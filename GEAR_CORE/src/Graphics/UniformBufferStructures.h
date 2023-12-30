@@ -49,6 +49,15 @@ namespace gear
 				GEAR_FLOAT4		position;
 			};
 
+			struct DebugProbeInfo
+			{
+				GEAR_FLOAT4X4	proj;
+				GEAR_FLOAT4X4	view;
+				GEAR_FLOAT		minDepth;
+				GEAR_FLOAT		maxDepth;
+				GEAR_UINT		showColourCubemap;
+			};
+
 			//Per model - Set 1
 
 			struct Model
@@ -110,6 +119,7 @@ namespace gear
 			{ "DEBUGCAMERA",	SetUpdateType::PER_VIEW		},
 			{ "LIGHTS",			SetUpdateType::PER_VIEW		},
 			{ "PROBEINFO",		SetUpdateType::PER_VIEW		},
+			{ "DEBUGPROBEINFO",	SetUpdateType::PER_VIEW		},
 			{ "HDRINFO",		SetUpdateType::PER_VIEW		},
 			{ "MODEL",			SetUpdateType::PER_MODEL	},
 			{ "PBRCONSTANTS",	SetUpdateType::PER_MATERIAL }

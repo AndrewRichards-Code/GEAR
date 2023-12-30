@@ -62,20 +62,23 @@ void gear::ui::componentui::AddLightComponent(Entity entity, void* device)
 
 void gear::ui::componentui::DrawProbeComponentUI(Ref<Probe> probe)
 {
-	if (DrawTreeNode("Probe"))
+	size_t id = 1;
+	if (DrawTreeNode("Probe", true, (void*)id++))
 	{
 		Probe::CreateInfo& CI = probe->m_CI;
 
 		DrawDropDownMenu("Direction Type", CI.directionType);
 		DrawDropDownMenu("Capture Type", CI.captureType);
+		uint32_t minSize = 16, maxSize = 2048;
+		float sliderSizeSpeed = 0.001f;
 		if (CI.directionType == Probe::DirectionType::MONO)
 		{
-			DrawUint32("Image Width", CI.imageWidth, 1, 16384);
-			DrawUint32("Image Height", CI.imageHeight, 1, 16384);
+			DrawUint32("Image Width", CI.imageWidth, minSize, maxSize, true, 100.0f, sliderSizeSpeed);
+			DrawUint32("Image Height", CI.imageHeight, minSize, maxSize, true, 100.0f, sliderSizeSpeed);
 		}
 		else
 		{
-			DrawUint32("Image Size", CI.imageWidth, 1, 16384, true);
+			DrawUint32("Image Size", CI.imageWidth, minSize, maxSize, true, 100.0f, sliderSizeSpeed);
 		}
 		if (CI.directionType == Probe::DirectionType::MONO)
 		{
@@ -88,26 +91,36 @@ void gear::ui::componentui::DrawProbeComponentUI(Ref<Probe> probe)
 			}
 			else
 			{
-				DrawFloat("Orthographic Size", CI.orthographicScale, 1.0f);
+				DrawFloat("Orthographic Scale", CI.orthographicScale, 1.0f);
 			}
 		}
 		DrawFloat("Near", CI.zNear, 0.0, CI.zFar);
 		DrawFloat("Far", CI.zFar, CI.zNear);
 
-		if (DrawTreeNode("Shadow Map Debug View"))
+		if (DrawTreeNode("Shadow Map Debug View", true, (void*)id++))
 		{
+			using namespace miru::base;
+			using namespace graphics;
+
 			probe->m_RenderDebugView = true;
+			Ref<Uniformbuffer<UniformBufferStructures::DebugProbeInfo>>& debugProbeInfo = DebugRender::GetDebugProbeInfo();
+
+			//Debug Texture
 			if (probe->m_DebugTexture)
 			{
-				const miru::base::ImageViewRef& debugImageView = probe->m_DebugTexture->GetImageView();
-				const miru::base::Image::CreateInfo& debugImageCI = debugImageView->GetCreateInfo().image->GetCreateInfo();
+				const ImageViewRef& debugImageView = probe->m_DebugTexture->GetImageView();
+				const Image::CreateInfo& debugImageCI = debugImageView->GetCreateInfo().image->GetCreateInfo();
 				float imageRatio = float(debugImageCI.width) / float(debugImageCI.height);
 				float width = std::max(ImGui::GetContentRegionMax().x - 100.0f, 1.0f);
 				float height = width * imageRatio;
 				const ImTextureID& id = GetTextureID(debugImageView, UIContext::GetUIContext(), false);
 				ImGui::Image(id, ImVec2(width, height));
+			}
 
-				Ref<Camera>& debugCamera = graphics::DebugRender::GetCamera();
+			//Debug Texture Camera Controls
+			if (probe->m_CI.directionType == Probe::DirectionType::OMNI)
+			{
+				Ref<Camera>& debugCamera = DebugRender::GetCamera();
 				static Transform transform = Transform();
 				static float m_Roll = 0;
 				static float m_Pitch = 0;
@@ -115,12 +128,12 @@ void gear::ui::componentui::DrawProbeComponentUI(Ref<Probe> probe)
 				static mars::float2 m_InitialMousePosition;
 
 				auto GetMousePositionInViewport = [&]() -> float2
-				{
-					double mousePosition_x, mousePosition_y;
-					UIContext::GetUIContext()->GetWindow()->GetMousePosition(mousePosition_x, mousePosition_y);
+					{
+						double mousePosition_x, mousePosition_y;
+						UIContext::GetUIContext()->GetWindow()->GetMousePosition(mousePosition_x, mousePosition_y);
 
-					return float2((float)mousePosition_x, (float)mousePosition_y);
-				};
+						return float2((float)mousePosition_x, (float)mousePosition_y);
+					};
 
 				//Stop camera snapping back when new input is detected
 				if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) || ImGui::IsMouseClicked(ImGuiMouseButton_Middle))
@@ -144,16 +157,14 @@ void gear::ui::componentui::DrawProbeComponentUI(Ref<Probe> probe)
 				debugCamera->Update(transform);
 
 			}
-			else
-			{
-				const miru::base::ImageViewRef& debugImageView = probe->m_DepthTexture->GetImageView();
-				const miru::base::Image::CreateInfo& debugImageCI = debugImageView->GetCreateInfo().image->GetCreateInfo();
-				float imageRatio = float(debugImageCI.width) / float(debugImageCI.height);
-				float width = std::max(ImGui::GetContentRegionMax().x - 100.0f, 1.0f);
-				float height = width * imageRatio;
-				const ImTextureID& id = GetTextureID(debugImageView, UIContext::GetUIContext(), false);
-				ImGui::Image(id, ImVec2(width, height));
-			}
+			debugProbeInfo->proj = probe->GetUB()->proj;
+			debugProbeInfo->view = probe->GetUB()->view[0];
+
+			//DebugProbeInfo
+			
+			DrawCheckbox("Show Colour Cubemap", (bool&)debugProbeInfo->showColourCubemap);
+			DrawFloat("Min Depth", debugProbeInfo->minDepth, 0.0f, debugProbeInfo->maxDepth, DefaultWidth, 1e-6f, "%.6f");
+			DrawFloat("Max Depth", debugProbeInfo->maxDepth, debugProbeInfo->minDepth, 1.0f, DefaultWidth, 1e-6f, "%.6f");
 		
 			EndDrawTreeNode();
 		}

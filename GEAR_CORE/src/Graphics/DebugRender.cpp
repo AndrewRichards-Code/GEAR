@@ -8,6 +8,7 @@ using namespace graphics;
 
 void* DebugRender::s_Device = nullptr;
 Ref<objects::Camera> DebugRender::s_Camera = nullptr;
+Ref<Uniformbuffer<UniformBufferStructures::DebugProbeInfo>> DebugRender::s_DebugProbeInfo = nullptr;
 
 Ref<objects::Camera>& DebugRender::GetCamera()
 {
@@ -23,4 +24,20 @@ Ref<objects::Camera>& DebugRender::GetCamera()
 	}
 
 	return s_Camera;
+}
+
+Ref<Uniformbuffer<UniformBufferStructures::DebugProbeInfo>>& DebugRender::GetDebugProbeInfo()
+{
+	if (!s_DebugProbeInfo && s_Device)
+	{
+		UniformBufferStructures::DebugProbeInfo zero = { 0 };
+		zero.maxDepth = 1.0f;
+		Uniformbuffer<UniformBufferStructures::DebugProbeInfo>::CreateInfo ubCI;
+		ubCI.debugName = "GEAR_CORE_DebugProbeInfo: GEAR_CORE_DebugRender";
+		ubCI.device = s_Device;
+		ubCI.data = &zero;
+		s_DebugProbeInfo = CreateRef<Uniformbuffer<UniformBufferStructures::DebugProbeInfo>>(&ubCI);
+	}
+
+	return s_DebugProbeInfo;
 }

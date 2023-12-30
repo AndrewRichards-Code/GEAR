@@ -3,6 +3,7 @@
 #include "CubeFunctions.h"
 #include "Depth.h"
 
+//General
 struct VS_IN
 {
 	uint vertex_id : SV_VertexID;
@@ -23,14 +24,6 @@ struct PS_OUT
 
 //Co-ordinate Axes
 MIRU_UNIFORM_BUFFER(0, 0, Camera, camera);
-
-//Copy
-MIRU_IMAGE_2D(0, 0, float4, sourceImage);
-
-//ShowDepth
-MIRU_UNIFORM_BUFFER(0, 0, Camera, debugCamera);
-MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 0, 1, float4, image2D);
-MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 1, float4, cubemap);
 
 VS_OUT vs_coordinate_axes(VS_IN IN)
 {
@@ -120,6 +113,8 @@ PS_OUT ps_coordinate_axes(PS_IN IN)
 	return OUT;
 }
 
+//Copy
+MIRU_IMAGE_2D(0, 0, float4, sourceImage);
 
 VS_OUT vs_copy(VS_IN IN)
 {
@@ -136,6 +131,12 @@ PS_OUT ps_copy(PS_IN IN)
 	return OUT;
 }
 
+
+//ShowDepth
+MIRU_UNIFORM_BUFFER(0, 0, Camera, debugCamera);
+MIRU_UNIFORM_BUFFER(0, 1, DebugProbeInfo, debugProbeInfo);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 0, 2, float4, image2D);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 2, float4, cubemap);
 
 VS_OUT vs_show_depth_image2D(VS_IN IN)
 {
@@ -173,8 +174,21 @@ PS_OUT ps_show_depth_image2D(PS_IN IN)
 	textureCoords.y = 1.0 - textureCoords.y; 
 #endif
 	
-	float depth = LineariseDepth(image2D_ImageCIS.Sample(image2D_SamplerCIS, textureCoords).x, debugCamera.proj);
-	OUT.colour = float4(depth, depth, depth, 1.0);
+	float depth = /*LineariseDepth(*/image2D_ImageCIS.Sample(image2D_SamplerCIS, textureCoords).x/*, debugProbeInfo.proj)*/;
+	depth = clamp(depth, debugProbeInfo.minDepth, debugProbeInfo.maxDepth);
+	float4 depthOutput = float4(depth, depth, depth, 1.0);
+	if (debugProbeInfo.showColourCubemap)
+	{
+		float4x4 viewProj = mul(debugProbeInfo.view, debugProbeInfo.proj);
+		float4x4 viewProj_Inv = inverse(viewProj);
+		float3 view = normalize(mul(IN.v_NDCPosition, viewProj_Inv)).xyz;
+		float4 faceColour = CubemapFaceColour(UVWToFaceIndex(view));
+		OUT.colour = lerp(depthOutput, faceColour, 0.1);
+	}
+	else
+	{
+		OUT.colour = depthOutput;
+	}
 	return OUT;
 }
 
@@ -210,13 +224,17 @@ PS_OUT ps_show_depth_cubemap(PS_IN IN)
 	float4x4 viewProj_Inv = inverse(viewProj);
 	float3 view = normalize(mul(IN.v_NDCPosition, viewProj_Inv)).xyz;
 	
-	float depth = /*LineariseDepth(*/cubemap_ImageCIS.Sample(cubemap_SamplerCIS, view).x/*, debugCamera.proj)*/;
-	float minValue = 0.995;
-	//depth = ((1.0 - minValue) * depth) + minValue;
-	depth = (depth - minValue) / (1.0 - minValue);
+	float depth = /*LineariseDepth(*/cubemap_ImageCIS.Sample(cubemap_SamplerCIS, view).x/*, debugProbeInfo.proj)*/;
+	depth = clamp(depth, debugProbeInfo.minDepth, debugProbeInfo.maxDepth) / (debugProbeInfo.maxDepth - debugProbeInfo.minDepth);
 	float4 depthOutput = float4(depth, depth, depth, 1.0);
-	float4 faceColour = CubemapFaceColour(UVWToFaceIndex(view));
-	
-	OUT.colour = lerp(depthOutput, faceColour, 0.1);
+	if (debugProbeInfo.showColourCubemap)
+	{
+		float4 faceColour = CubemapFaceColour(UVWToFaceIndex(view));
+		OUT.colour = lerp(depthOutput, faceColour, 0.1);
+	}
+	else
+	{
+		OUT.colour = depthOutput;
+	}
 	return OUT;
 }
