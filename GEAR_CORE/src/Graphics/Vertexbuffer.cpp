@@ -12,39 +12,43 @@ Vertexbuffer::Vertexbuffer(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
-	m_VertexBufferUploadCI.debugName = "GEAR_CORE_VertexBufferUpload: " + m_CI.debugName;
-	m_VertexBufferUploadCI.device = m_CI.device;
-	m_VertexBufferUploadCI.usage = Buffer::UsageBit::TRANSFER_SRC_BIT;
-	m_VertexBufferUploadCI.size = m_CI.size;
-	m_VertexBufferUploadCI.data = m_CI.data;
-	m_VertexBufferUploadCI.allocator = AllocatorManager::GetCPUAllocator();
-	m_VertexBufferUpload = Buffer::Create(&m_VertexBufferUploadCI);
+	Buffer::CreateInfo vertexBufferUploadCI;
+	vertexBufferUploadCI.debugName = "GEAR_CORE_VertexBufferUpload: " + m_CI.debugName;
+	vertexBufferUploadCI.device = m_CI.device;
+	vertexBufferUploadCI.usage = Buffer::UsageBit::TRANSFER_SRC_BIT;
+	vertexBufferUploadCI.size = m_CI.size;
+	vertexBufferUploadCI.data = m_CI.data;
+	vertexBufferUploadCI.allocator = AllocatorManager::GetCPUAllocator();
+	m_VertexBufferUpload = Buffer::Create(&vertexBufferUploadCI);
 
-	m_VertexBufferCI.debugName = "GEAR_CORE_VertexBuffer: " + m_CI.debugName;
-	m_VertexBufferCI.device = m_CI.device;
-	m_VertexBufferCI.usage = Buffer::UsageBit::TRANSFER_DST_BIT | Buffer::UsageBit::VERTEX_BIT;
-	m_VertexBufferCI.size = m_CI.size;
-	m_VertexBufferCI.data = nullptr;
-	m_VertexBufferCI.allocator = AllocatorManager::GetGPUAllocator();
-	m_VertexBuffer = Buffer::Create(&m_VertexBufferCI);
+	Buffer::CreateInfo vertexBufferCI;
+	vertexBufferCI.debugName = "GEAR_CORE_VertexBuffer: " + m_CI.debugName;
+	vertexBufferCI.device = m_CI.device;
+	vertexBufferCI.usage = Buffer::UsageBit::TRANSFER_DST_BIT | Buffer::UsageBit::VERTEX_BIT;
+	vertexBufferCI.size = m_CI.size;
+	vertexBufferCI.data = nullptr;
+	vertexBufferCI.allocator = AllocatorManager::GetGPUAllocator();
+	m_VertexBuffer = Buffer::Create(&vertexBufferCI);
 
-	m_VertexBufferViewUploadCI.debugName = "GEAR_CORE_VertexBufferViewUpload: " + m_CI.debugName;
-	m_VertexBufferViewUploadCI.device = m_CI.device;
-	m_VertexBufferViewUploadCI.type = BufferView::Type::VERTEX;
-	m_VertexBufferViewUploadCI.buffer = m_VertexBufferUpload;
-	m_VertexBufferViewUploadCI.offset = 0;
-	m_VertexBufferViewUploadCI.size = m_CI.size;
-	m_VertexBufferViewUploadCI.stride = m_CI.stride;
-	m_VertexBufferViewUpload = BufferView::Create(&m_VertexBufferViewUploadCI);
+	BufferView::CreateInfo vertexBufferViewUploadCI;
+	vertexBufferViewUploadCI.debugName = "GEAR_CORE_VertexBufferViewUpload: " + m_CI.debugName;
+	vertexBufferViewUploadCI.device = m_CI.device;
+	vertexBufferViewUploadCI.type = BufferView::Type::VERTEX;
+	vertexBufferViewUploadCI.buffer = m_VertexBufferUpload;
+	vertexBufferViewUploadCI.offset = 0;
+	vertexBufferViewUploadCI.size = m_CI.size;
+	vertexBufferViewUploadCI.stride = m_CI.stride;
+	m_VertexBufferViewUpload = BufferView::Create(&vertexBufferViewUploadCI);
 
-	m_VertexBufferViewCI.debugName = "GEAR_CORE_VertexBufferView: " + m_CI.debugName;
-	m_VertexBufferViewCI.device = m_CI.device;
-	m_VertexBufferViewCI.type = BufferView::Type::VERTEX;
-	m_VertexBufferViewCI.buffer = m_VertexBuffer;
-	m_VertexBufferViewCI.offset = 0;
-	m_VertexBufferViewCI.size = m_CI.size;
-	m_VertexBufferViewCI.stride = m_CI.stride;
-	m_VertexBufferView = BufferView::Create(&m_VertexBufferViewCI);
+	BufferView::CreateInfo vertexBufferViewCI;
+	vertexBufferViewCI.debugName = "GEAR_CORE_VertexBufferView: " + m_CI.debugName;
+	vertexBufferViewCI.device = m_CI.device;
+	vertexBufferViewCI.type = BufferView::Type::VERTEX;
+	vertexBufferViewCI.buffer = m_VertexBuffer;
+	vertexBufferViewCI.offset = 0;
+	vertexBufferViewCI.size = m_CI.size;
+	vertexBufferViewCI.stride = m_CI.stride;
+	m_VertexBufferView = BufferView::Create(&vertexBufferViewCI);
 }
 
 Vertexbuffer::~Vertexbuffer()

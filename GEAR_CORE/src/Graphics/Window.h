@@ -37,13 +37,10 @@ namespace gear
 
 			//Context and Swapchain
 			miru::base::ContextRef m_Context;
-			miru::base::Context::CreateInfo m_ContextCI;
 			miru::base::SwapchainRef m_Swapchain;
-			miru::base::Swapchain::CreateInfo m_SwapchainCI;
 
 			//RenderSurface
 			Ref<RenderSurface> m_RenderSurface;
-			RenderSurface::CreateInfo m_RenderSurfaceCI;
 
 			//Window
 			CreateInfo m_CI;

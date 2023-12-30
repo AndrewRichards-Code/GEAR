@@ -10,19 +10,16 @@ namespace gear
 		public:
 			struct CreateInfo
 			{
-				std::string debugName;
-				void* device;
-				void* data;
+				std::string	debugName;
+				void*		device;
+				void*		data;
 				size_t		size;
 				size_t		stride;
 			};
 
 		private:
 			miru::base::BufferRef m_VertexBuffer, m_VertexBufferUpload;
-			miru::base::Buffer::CreateInfo m_VertexBufferCI, m_VertexBufferUploadCI;
-
 			miru::base::BufferViewRef m_VertexBufferView, m_VertexBufferViewUpload;
-			miru::base::BufferView::CreateInfo m_VertexBufferViewCI, m_VertexBufferViewUploadCI;
 
 			CreateInfo m_CI;
 

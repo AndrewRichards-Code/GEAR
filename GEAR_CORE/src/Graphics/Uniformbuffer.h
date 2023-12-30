@@ -32,10 +32,7 @@ namespace gear
 
 		private:
 			miru::base::BufferRef m_UniformBuffer, m_UniformBufferUpload;
-			miru::base::Buffer::CreateInfo m_UniformBufferCI, m_UniformBufferUploadCI;
-
 			miru::base::BufferViewRef m_UniformBufferView, m_UniformBufferViewUpload;
-			miru::base::BufferView::CreateInfo m_UniformBufferViewCI, m_UniformBufferViewUploadCI;
 
 			CreateInfo m_CI;
 
@@ -44,39 +41,45 @@ namespace gear
 			{
 				m_CI = *pCreateInfo;
 
-				m_UniformBufferUploadCI.debugName = "GEAR_CORE_UniformBufferUpload: " + m_CI.debugName;
-				m_UniformBufferUploadCI.device = m_CI.device;
-				m_UniformBufferUploadCI.usage = miru::base::Buffer::UsageBit::TRANSFER_SRC_BIT;
-				m_UniformBufferUploadCI.size = GetSize();
-				m_UniformBufferUploadCI.data = m_CI.data;
-				m_UniformBufferUploadCI.allocator = AllocatorManager::GetCPUAllocator();
-				m_UniformBufferUpload = miru::base::Buffer::Create(&m_UniformBufferUploadCI);
+				miru::base::Buffer::CreateInfo uniformBufferCI, uniformBufferUploadCI;
+				miru::base::BufferView::CreateInfo uniformBufferViewCI, uniformBufferViewUploadCI;
 
-				m_UniformBufferCI.debugName = "GEAR_CORE_UniformBuffer: " + m_CI.debugName;
-				m_UniformBufferCI.device = m_CI.device;
-				m_UniformBufferCI.usage = miru::base::Buffer::UsageBit::TRANSFER_DST_BIT | miru::base::Buffer::UsageBit::UNIFORM_BIT;
-				m_UniformBufferCI.size = GetSize();
-				m_UniformBufferCI.data = nullptr;
-				m_UniformBufferCI.allocator = AllocatorManager::GetGPUAllocator();
-				m_UniformBuffer = miru::base::Buffer::Create(&m_UniformBufferCI);
+				uniformBufferUploadCI.debugName = "GEAR_CORE_UniformBufferUpload: " + m_CI.debugName;
+				uniformBufferUploadCI.device = m_CI.device;
+				uniformBufferUploadCI.usage = miru::base::Buffer::UsageBit::TRANSFER_SRC_BIT;
+				uniformBufferUploadCI.size = GetSize();
+				uniformBufferUploadCI.data = m_CI.data;
+				uniformBufferUploadCI.allocator = AllocatorManager::GetCPUAllocator();
+				m_UniformBufferUpload = miru::base::Buffer::Create(&uniformBufferUploadCI);
 
-				m_UniformBufferViewUploadCI.debugName = "GEAR_CORE_UniformBufferViewUpload: " + m_CI.debugName;
-				m_UniformBufferViewUploadCI.device = m_CI.device;
-				m_UniformBufferViewUploadCI.type = miru::base::BufferView::Type::UNIFORM;
-				m_UniformBufferViewUploadCI.buffer = m_UniformBufferUpload;
-				m_UniformBufferViewUploadCI.offset = 0;
-				m_UniformBufferViewUploadCI.size = GetSize();
-				m_UniformBufferViewUploadCI.stride = 0;
-				m_UniformBufferViewUpload = miru::base::BufferView::Create(&m_UniformBufferViewUploadCI);
+				uniformBufferCI.debugName = "GEAR_CORE_UniformBuffer: " + m_CI.debugName;
+				uniformBufferCI.device = m_CI.device;
+				uniformBufferCI.usage = miru::base::Buffer::UsageBit::TRANSFER_DST_BIT | miru::base::Buffer::UsageBit::UNIFORM_BIT;
+				uniformBufferCI.size = GetSize();
+				uniformBufferCI.data = nullptr;
+				uniformBufferCI.allocator = AllocatorManager::GetGPUAllocator();
+				m_UniformBuffer = miru::base::Buffer::Create(&uniformBufferCI);
 
-				m_UniformBufferViewCI.debugName = "GEAR_CORE_UniformBufferView: " + m_CI.debugName;
-				m_UniformBufferViewCI.device = m_CI.device;
-				m_UniformBufferViewCI.type = miru::base::BufferView::Type::UNIFORM;
-				m_UniformBufferViewCI.buffer = m_UniformBuffer;
-				m_UniformBufferViewCI.offset = 0;
-				m_UniformBufferViewCI.size = GetSize();
-				m_UniformBufferViewCI.stride = 0;
-				m_UniformBufferView = miru::base::BufferView::Create(&m_UniformBufferViewCI);
+				uniformBufferViewUploadCI.debugName = "GEAR_CORE_UniformBufferViewUpload: " + m_CI.debugName;
+				uniformBufferViewUploadCI.device = m_CI.device;
+				uniformBufferViewUploadCI.type = miru::base::BufferView::Type::UNIFORM;
+				uniformBufferViewUploadCI.buffer = m_UniformBufferUpload;
+				uniformBufferViewUploadCI.offset = 0;
+				uniformBufferViewUploadCI.size = GetSize();
+				uniformBufferViewUploadCI.stride = 0;
+				m_UniformBufferViewUpload = miru::base::BufferView::Create(&uniformBufferViewUploadCI);
+
+				uniformBufferViewCI.debugName = "GEAR_CORE_UniformBufferView: " + m_CI.debugName;
+				uniformBufferViewCI.device = m_CI.device;
+				uniformBufferViewCI.type = miru::base::BufferView::Type::UNIFORM;
+				uniformBufferViewCI.buffer = m_UniformBuffer;
+				uniformBufferViewCI.offset = 0;
+				uniformBufferViewCI.size = GetSize();
+				uniformBufferViewCI.stride = 0;
+				m_UniformBufferView = miru::base::BufferView::Create(&uniformBufferViewCI);
+				
+				//Account of vptr of the base class.
+				memcpy((void*)((uint8_t*)this + 0x8), m_CI.data, sizeof(T));
 			}
 			~Uniformbuffer() {}
 
@@ -84,7 +87,7 @@ namespace gear
 
 			void SubmitData() const
 			{
-				m_UniformBufferUploadCI.allocator->SubmitData(m_UniformBufferUpload->GetAllocation(), 0, GetSize(), (void*)((uint8_t*)this + 0x8)); //Account of vptr of the base class.
+				m_UniformBufferUpload->GetCreateInfo().allocator->SubmitData(m_UniformBufferUpload->GetAllocation(), 0, GetSize(), (void*)((uint8_t*)this + 0x8)); //Account of vptr of the base class.
 			}
 
 			inline const miru::base::BufferRef& GetCPUBuffer() const override { return m_UniformBufferUpload; };

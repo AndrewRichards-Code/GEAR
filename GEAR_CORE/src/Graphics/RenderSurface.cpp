@@ -33,115 +33,123 @@ void RenderSurface::CreateAttachments()
 {
 	//ColourSRGB
 	{
-		m_ColourSRGBImageCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - ColourSRGBImage";
-		m_ColourSRGBImageCI.device = m_CI.pContext->GetDevice();
-		m_ColourSRGBImageCI.type = Image::Type::TYPE_2D;
-		m_ColourSRGBImageCI.format = SRGBFormat;
-		m_ColourSRGBImageCI.width = m_CurrentWidth;
-		m_ColourSRGBImageCI.height = m_CurrentHeight;
-		m_ColourSRGBImageCI.depth = 1;
-		m_ColourSRGBImageCI.mipLevels = 1;
-		m_ColourSRGBImageCI.arrayLayers = 1;
-		m_ColourSRGBImageCI.sampleCount = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-		m_ColourSRGBImageCI.usage = Image::UsageBit::COLOUR_ATTACHMENT_BIT | Image::UsageBit::SAMPLED_BIT;
-		m_ColourSRGBImageCI.layout = Image::Layout::UNKNOWN;
-		m_ColourSRGBImageCI.size = 0;
-		m_ColourSRGBImageCI.data = nullptr;
-		m_ColourSRGBImageCI.allocator = m_AttachmentAllocator;
-		m_ColourSRGBImageCI.externalImage = nullptr;
-		m_ColourSRGBImage = Image::Create(&m_ColourSRGBImageCI);
+		Image::CreateInfo colourSRGBImageCI;
+		colourSRGBImageCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - ColourSRGBImage";
+		colourSRGBImageCI.device = m_CI.pContext->GetDevice();
+		colourSRGBImageCI.type = Image::Type::TYPE_2D;
+		colourSRGBImageCI.format = SRGBFormat;
+		colourSRGBImageCI.width = m_CurrentWidth;
+		colourSRGBImageCI.height = m_CurrentHeight;
+		colourSRGBImageCI.depth = 1;
+		colourSRGBImageCI.mipLevels = 1;
+		colourSRGBImageCI.arrayLayers = 1;
+		colourSRGBImageCI.sampleCount = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+		colourSRGBImageCI.usage = Image::UsageBit::COLOUR_ATTACHMENT_BIT | Image::UsageBit::SAMPLED_BIT;
+		colourSRGBImageCI.layout = Image::Layout::UNKNOWN;
+		colourSRGBImageCI.size = 0;
+		colourSRGBImageCI.data = nullptr;
+		colourSRGBImageCI.allocator = m_AttachmentAllocator;
+		colourSRGBImageCI.externalImage = nullptr;
+		m_ColourSRGBImage = Image::Create(&colourSRGBImageCI);
 
-		m_ColourSRGBImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - ColourSRGBImageView";
-		m_ColourSRGBImageViewCI.device = m_CI.pContext->GetDevice();
-		m_ColourSRGBImageViewCI.image = m_ColourSRGBImage;
-		m_ColourSRGBImageViewCI.viewType = Image::Type::TYPE_2D;
-		m_ColourSRGBImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
+		ImageView::CreateInfo colourSRGBImageViewCI;
+		colourSRGBImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - ColourSRGBImageView";
+		colourSRGBImageViewCI.device = m_CI.pContext->GetDevice();
+		colourSRGBImageViewCI.image = m_ColourSRGBImage;
+		colourSRGBImageViewCI.viewType = Image::Type::TYPE_2D;
+		colourSRGBImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
 		m_ColourSRGBImageView = ImageView::Create(&m_ColourSRGBImageViewCI);
 	}
 
 	//Depth
 	{
-		m_DepthImageCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - DepthImage";
-		m_DepthImageCI.device = m_CI.pContext->GetDevice();
-		m_DepthImageCI.type = Image::Type::TYPE_2D;
-		m_DepthImageCI.format = DepthFormat;
-		m_DepthImageCI.width = m_CurrentWidth;
-		m_DepthImageCI.height = m_CurrentHeight;
-		m_DepthImageCI.depth = 1;
-		m_DepthImageCI.mipLevels = 1;
-		m_DepthImageCI.arrayLayers = 1;
-		m_DepthImageCI.sampleCount = m_CI.samples;
-		m_DepthImageCI.usage = Image::UsageBit::DEPTH_STENCIL_ATTACHMENT_BIT;
-		m_DepthImageCI.layout = Image::Layout::UNKNOWN;
-		m_DepthImageCI.size = 0;
-		m_DepthImageCI.data = nullptr;
-		m_DepthImageCI.allocator = m_AttachmentAllocator;
-		m_DepthImageCI.externalImage = nullptr;
-		m_DepthImage = Image::Create(&m_DepthImageCI);
+		Image::CreateInfo depthImageCI;
+		depthImageCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - DepthImage";
+		depthImageCI.device = m_CI.pContext->GetDevice();
+		depthImageCI.type = Image::Type::TYPE_2D;
+		depthImageCI.format = DepthFormat;
+		depthImageCI.width = m_CurrentWidth;
+		depthImageCI.height = m_CurrentHeight;
+		depthImageCI.depth = 1;
+		depthImageCI.mipLevels = 1;
+		depthImageCI.arrayLayers = 1;
+		depthImageCI.sampleCount = m_CI.samples;
+		depthImageCI.usage = Image::UsageBit::DEPTH_STENCIL_ATTACHMENT_BIT;
+		depthImageCI.layout = Image::Layout::UNKNOWN;
+		depthImageCI.size = 0;
+		depthImageCI.data = nullptr;
+		depthImageCI.allocator = m_AttachmentAllocator;
+		depthImageCI.externalImage = nullptr;
+		m_DepthImage = Image::Create(&depthImageCI);
 
-		m_DepthImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - DepthImageView";
-		m_DepthImageViewCI.device = m_CI.pContext->GetDevice();
-		m_DepthImageViewCI.image = m_DepthImage;
-		m_DepthImageViewCI.viewType = Image::Type::TYPE_2D;
-		m_DepthImageViewCI.subresourceRange = { Image::AspectBit::DEPTH_BIT, 0, 1, 0, 1 };
-		m_DepthImageView = ImageView::Create(&m_DepthImageViewCI);
+		ImageView::CreateInfo depthImageViewCI;
+		depthImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - DepthImageView";
+		depthImageViewCI.device = m_CI.pContext->GetDevice();
+		depthImageViewCI.image = m_DepthImage;
+		depthImageViewCI.viewType = Image::Type::TYPE_2D;
+		depthImageViewCI.subresourceRange = { Image::AspectBit::DEPTH_BIT, 0, 1, 0, 1 };
+		m_DepthImageView = ImageView::Create(&depthImageViewCI);
 	}
 
 	//MSAAColour
 	if (m_CI.samples > Image::SampleCountBit::SAMPLE_COUNT_1_BIT)
 	{
-		m_MSAAColourImageCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - MSAAColourImage";
-		m_MSAAColourImageCI.device = m_CI.pContext->GetDevice();
-		m_MSAAColourImageCI.type = Image::Type::TYPE_2D;
-		m_MSAAColourImageCI.format = HDRFormat;
-		m_MSAAColourImageCI.width = m_CurrentWidth;
-		m_MSAAColourImageCI.height = m_CurrentHeight;
-		m_MSAAColourImageCI.depth = 1;
-		m_MSAAColourImageCI.mipLevels = 1;
-		m_MSAAColourImageCI.arrayLayers = 1;
-		m_MSAAColourImageCI.sampleCount = m_CI.samples;
-		m_MSAAColourImageCI.usage = Image::UsageBit::COLOUR_ATTACHMENT_BIT;
-		m_MSAAColourImageCI.layout = Image::Layout::UNKNOWN;
-		m_MSAAColourImageCI.size = 0;
-		m_MSAAColourImageCI.data = nullptr;
-		m_MSAAColourImageCI.allocator = m_AttachmentAllocator;
-		m_MSAAColourImageCI.externalImage = nullptr;
-		m_MSAAColourImage = Image::Create(&m_MSAAColourImageCI);
+		Image::CreateInfo MSAAColourImageCI;
+		MSAAColourImageCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - MSAAColourImage";
+		MSAAColourImageCI.device = m_CI.pContext->GetDevice();
+		MSAAColourImageCI.type = Image::Type::TYPE_2D;
+		MSAAColourImageCI.format = HDRFormat;
+		MSAAColourImageCI.width = m_CurrentWidth;
+		MSAAColourImageCI.height = m_CurrentHeight;
+		MSAAColourImageCI.depth = 1;
+		MSAAColourImageCI.mipLevels = 1;
+		MSAAColourImageCI.arrayLayers = 1;
+		MSAAColourImageCI.sampleCount = m_CI.samples;
+		MSAAColourImageCI.usage = Image::UsageBit::COLOUR_ATTACHMENT_BIT;
+		MSAAColourImageCI.layout = Image::Layout::UNKNOWN;
+		MSAAColourImageCI.size = 0;
+		MSAAColourImageCI.data = nullptr;
+		MSAAColourImageCI.allocator = m_AttachmentAllocator;
+		MSAAColourImageCI.externalImage = nullptr;
+		m_MSAAColourImage = Image::Create(&MSAAColourImageCI);
 
-		m_MSAAColourImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - MSAAColourImageView";
-		m_MSAAColourImageViewCI.device = m_CI.pContext->GetDevice();
-		m_MSAAColourImageViewCI.image = m_MSAAColourImage;
-		m_MSAAColourImageViewCI.viewType = Image::Type::TYPE_2D;
-		m_MSAAColourImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
-		m_MSAAColourImageView = ImageView::Create(&m_MSAAColourImageViewCI);
+		ImageView::CreateInfo MSAAColourImageViewCI;
+		MSAAColourImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - MSAAColourImageView";
+		MSAAColourImageViewCI.device = m_CI.pContext->GetDevice();
+		MSAAColourImageViewCI.image = m_MSAAColourImage;
+		MSAAColourImageViewCI.viewType = Image::Type::TYPE_2D;
+		MSAAColourImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
+		m_MSAAColourImageView = ImageView::Create(&MSAAColourImageViewCI);
 	}
 
 	//Colour
 	{
-		m_ColourImageCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - ColourImage";
-		m_ColourImageCI.device = m_CI.pContext->GetDevice();
-		m_ColourImageCI.type = Image::Type::TYPE_2D;
-		m_ColourImageCI.format = HDRFormat;
-		m_ColourImageCI.width = m_CurrentWidth;
-		m_ColourImageCI.height = m_CurrentHeight;
-		m_ColourImageCI.depth = 1;
-		m_ColourImageCI.mipLevels = 1;
-		m_ColourImageCI.arrayLayers = 1;
-		m_ColourImageCI.sampleCount = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-		m_ColourImageCI.usage = Image::UsageBit::COLOUR_ATTACHMENT_BIT | Image::UsageBit::STORAGE_BIT | Image::UsageBit::SAMPLED_BIT;
-		m_ColourImageCI.layout = Image::Layout::UNKNOWN;
-		m_ColourImageCI.size = 0;
-		m_ColourImageCI.data = nullptr;
-		m_ColourImageCI.allocator = m_AttachmentAllocator;
-		m_ColourImageCI.externalImage = nullptr;
-		m_ColourImage = Image::Create(&m_ColourImageCI);
+		Image::CreateInfo colourImageCI;
+		colourImageCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - ColourImage";
+		colourImageCI.device = m_CI.pContext->GetDevice();
+		colourImageCI.type = Image::Type::TYPE_2D;
+		colourImageCI.format = HDRFormat;
+		colourImageCI.width = m_CurrentWidth;
+		colourImageCI.height = m_CurrentHeight;
+		colourImageCI.depth = 1;
+		colourImageCI.mipLevels = 1;
+		colourImageCI.arrayLayers = 1;
+		colourImageCI.sampleCount = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+		colourImageCI.usage = Image::UsageBit::COLOUR_ATTACHMENT_BIT | Image::UsageBit::STORAGE_BIT | Image::UsageBit::SAMPLED_BIT;
+		colourImageCI.layout = Image::Layout::UNKNOWN;
+		colourImageCI.size = 0;
+		colourImageCI.data = nullptr;
+		colourImageCI.allocator = m_AttachmentAllocator;
+		colourImageCI.externalImage = nullptr;
+		m_ColourImage = Image::Create(&colourImageCI);
 
-		m_ColourImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - ColourImageView";
-		m_ColourImageViewCI.device = m_CI.pContext->GetDevice();
-		m_ColourImageViewCI.image = m_ColourImage;
-		m_ColourImageViewCI.viewType = Image::Type::TYPE_2D;
-		m_ColourImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
-		m_ColourImageView = ImageView::Create(&m_ColourImageViewCI);
+		ImageView::CreateInfo colourImageViewCI;
+		colourImageViewCI.debugName = "GEAR_CORE_RenderSurface: " + m_CI.debugName + " - ColourImageView";
+		colourImageViewCI.device = m_CI.pContext->GetDevice();
+		colourImageViewCI.image = m_ColourImage;
+		colourImageViewCI.viewType = Image::Type::TYPE_2D;
+		colourImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
+		m_ColourImageView = ImageView::Create(&colourImageViewCI);
 	}
 }
 

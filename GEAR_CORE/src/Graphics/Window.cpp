@@ -231,22 +231,24 @@ bool Window::Init()
 
 	m_Context = m_CI.applicationContext.GetContext();
 
-	m_SwapchainCI.debugName = "GEAR_CORE_Swapchain";
-	m_SwapchainCI.context = m_Context;
-	m_SwapchainCI.pWindow = glfwGetWin32Window(m_Window);
-	m_SwapchainCI.width = m_CurrentWidth;
-	m_SwapchainCI.height = m_CurrentHeight;
-	m_SwapchainCI.swapchainCount = 2;
-	m_SwapchainCI.vSync = m_CI.vSync;
-	m_SwapchainCI.bpcColourSpace = Swapchain::BPC_ColourSpace::B8G8R8A8_UNORM_SRGB_NONLINEAR;
-	m_Swapchain = Swapchain::Create(&m_SwapchainCI);
+	Swapchain::CreateInfo swapchainCI;
+	swapchainCI.debugName = "GEAR_CORE_Swapchain";
+	swapchainCI.context = m_Context;
+	swapchainCI.pWindow = glfwGetWin32Window(m_Window);
+	swapchainCI.width = m_CurrentWidth;
+	swapchainCI.height = m_CurrentHeight;
+	swapchainCI.swapchainCount = 2;
+	swapchainCI.vSync = m_CI.vSync;
+	swapchainCI.bpcColourSpace = Swapchain::BPC_ColourSpace::B8G8R8A8_UNORM_SRGB_NONLINEAR;
+	m_Swapchain = Swapchain::Create(&swapchainCI);
 
-	m_RenderSurfaceCI.debugName = m_CI.applicationContext.GetCreateInfo().applicationName;
-	m_RenderSurfaceCI.pContext = m_Context;
-	m_RenderSurfaceCI.width = m_CI.width;
-	m_RenderSurfaceCI.height = m_CI.height;
-	m_RenderSurfaceCI.samples = m_CI.samples;
-	m_RenderSurface = CreateRef<RenderSurface>(&m_RenderSurfaceCI);
+	RenderSurface::CreateInfo renderSurfaceCI;
+	renderSurfaceCI.debugName = m_CI.applicationContext.GetCreateInfo().applicationName;
+	renderSurfaceCI.pContext = m_Context;
+	renderSurfaceCI.width = m_CI.width;
+	renderSurfaceCI.height = m_CI.height;
+	renderSurfaceCI.samples = m_CI.samples;
+	m_RenderSurface = CreateRef<RenderSurface>(&renderSurfaceCI);
 
 	return true;
 }

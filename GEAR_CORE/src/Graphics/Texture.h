@@ -49,19 +49,12 @@ namespace gear
 
 		private:
 			miru::base::BufferRef m_ImageUploadBuffer;
-			miru::base::Buffer::CreateInfo m_ImageUploadBufferCI;
-
 			miru::base::BufferViewRef m_ImageUploadBufferView;
-			miru::base::BufferView::CreateInfo m_ImageUploadBufferViewCI;
 
 			miru::base::ImageRef m_Image;
-			miru::base::Image::CreateInfo m_TextureCI;
-
 			miru::base::ImageViewRef m_ImageView;
-			miru::base::ImageView::CreateInfo m_TextureImageViewCI;
 
 			miru::base::SamplerRef m_Sampler;
-			miru::base::Sampler::CreateInfo m_SamplerCI;
 
 			CreateInfo m_CI;
 

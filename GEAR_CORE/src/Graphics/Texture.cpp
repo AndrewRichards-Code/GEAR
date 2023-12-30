@@ -41,54 +41,58 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	m_GenerateMipMaps = m_CI.mipLevels > 1 && m_CI.generateMipMaps;
 
 	//Upload buffer
-	m_ImageUploadBufferCI.debugName = "GEAR_CORE_TextureUploadBuffer: " + m_CI.debugName;
-	m_ImageUploadBufferCI.device = m_CI.device;
-	m_ImageUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC_BIT | Buffer::UsageBit::TRANSFER_DST_BIT;
-	m_ImageUploadBufferCI.imageDimension = { m_Width, m_Height, std::max(m_Depth, m_CI.arrayLayers), Image::GetFormatSize(m_CI.format) };
-	m_ImageUploadBufferCI.size = imageData.size();
-	m_ImageUploadBufferCI.data = imageData.data();
-	m_ImageUploadBufferCI.allocator = AllocatorManager::GetCPUAllocator();
-	m_ImageUploadBuffer = Buffer::Create(&m_ImageUploadBufferCI);
+	Buffer::CreateInfo imageUploadBufferCI;
+	imageUploadBufferCI.debugName = "GEAR_CORE_TextureUploadBuffer: " + m_CI.debugName;
+	imageUploadBufferCI.device = m_CI.device;
+	imageUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC_BIT | Buffer::UsageBit::TRANSFER_DST_BIT;
+	imageUploadBufferCI.imageDimension = { m_Width, m_Height, std::max(m_Depth, m_CI.arrayLayers), Image::GetFormatSize(m_CI.format) };
+	imageUploadBufferCI.size = imageData.size();
+	imageUploadBufferCI.data = imageData.data();
+	imageUploadBufferCI.allocator = AllocatorManager::GetCPUAllocator();
+	m_ImageUploadBuffer = Buffer::Create(&imageUploadBufferCI);
 
-	m_ImageUploadBufferViewCI.debugName = "GEAR_CORE_TextureUploadBufferView: " + m_CI.debugName;
-	m_ImageUploadBufferViewCI.device = m_CI.device;
-	m_ImageUploadBufferViewCI.type = BufferView::Type::UNIFORM_TEXEL;
-	m_ImageUploadBufferViewCI.buffer = m_ImageUploadBuffer;
-	m_ImageUploadBufferViewCI.offset = 0;
-	m_ImageUploadBufferViewCI.size = m_ImageUploadBuffer->GetCreateInfo().size;
-	m_ImageUploadBufferViewCI.stride = 0;
-	m_ImageUploadBufferView = BufferView::Create(&m_ImageUploadBufferViewCI);
+	BufferView::CreateInfo imageUploadBufferViewCI;
+	imageUploadBufferViewCI.debugName = "GEAR_CORE_TextureUploadBufferView: " + m_CI.debugName;
+	imageUploadBufferViewCI.device = m_CI.device;
+	imageUploadBufferViewCI.type = BufferView::Type::UNIFORM_TEXEL;
+	imageUploadBufferViewCI.buffer = m_ImageUploadBuffer;
+	imageUploadBufferViewCI.offset = 0;
+	imageUploadBufferViewCI.size = m_ImageUploadBuffer->GetCreateInfo().size;
+	imageUploadBufferViewCI.stride = 0;
+	m_ImageUploadBufferView = BufferView::Create(&imageUploadBufferViewCI);
 
 	//Image
-	m_TextureCI.debugName = "GEAR_CORE_Texture: " + m_CI.debugName;
-	m_TextureCI.device = m_CI.device;
-	m_TextureCI.type = m_CI.type;
-	m_TextureCI.format = m_CI.format;
-	m_TextureCI.width = m_Width;
-	m_TextureCI.height = m_Height;
-	m_TextureCI.depth = m_Depth;
-	m_TextureCI.mipLevels = m_CI.mipLevels;
-	m_TextureCI.arrayLayers = m_CI.arrayLayers;
-	m_TextureCI.sampleCount = m_CI.samples;
-	m_TextureCI.usage = m_CI.usage | Image::UsageBit::SAMPLED_BIT | Image::UsageBit::TRANSFER_DST_BIT | Image::UsageBit::TRANSFER_SRC_BIT | (m_GenerateMipMaps ? Image::UsageBit::STORAGE_BIT : Image::UsageBit(0));
-	m_TextureCI.layout = Image::Layout::UNKNOWN;
-	m_TextureCI.size = 0;
-	m_TextureCI.data = nullptr;
-	m_TextureCI.allocator = AllocatorManager::GetGPUAllocator();
-	m_TextureCI.externalImage = nullptr;
-	m_Image = Image::Create(&m_TextureCI);
+	Image::CreateInfo imageCI;
+	imageCI.debugName = "GEAR_CORE_Texture: " + m_CI.debugName;
+	imageCI.device = m_CI.device;
+	imageCI.type = m_CI.type;
+	imageCI.format = m_CI.format;
+	imageCI.width = m_Width;
+	imageCI.height = m_Height;
+	imageCI.depth = m_Depth;
+	imageCI.mipLevels = m_CI.mipLevels;
+	imageCI.arrayLayers = m_CI.arrayLayers;
+	imageCI.sampleCount = m_CI.samples;
+	imageCI.usage = m_CI.usage | Image::UsageBit::SAMPLED_BIT | Image::UsageBit::TRANSFER_DST_BIT | Image::UsageBit::TRANSFER_SRC_BIT | (m_GenerateMipMaps ? Image::UsageBit::STORAGE_BIT : Image::UsageBit(0));
+	imageCI.layout = Image::Layout::UNKNOWN;
+	imageCI.size = 0;
+	imageCI.data = nullptr;
+	imageCI.allocator = AllocatorManager::GetGPUAllocator();
+	imageCI.externalImage = nullptr;
+	m_Image = Image::Create(&imageCI);
 
 	//ImageView
-	m_TextureImageViewCI.debugName = "GEAR_CORE_TextureImageView: " + m_CI.debugName;
-	m_TextureImageViewCI.device = m_CI.device;
-	m_TextureImageViewCI.image = m_Image;
-	m_TextureImageViewCI.viewType = m_CI.type;
-	m_TextureImageViewCI.subresourceRange.aspect = m_DepthTexture ? Image::AspectBit::DEPTH_BIT : Image::AspectBit::COLOUR_BIT;
-	m_TextureImageViewCI.subresourceRange.baseMipLevel = 0;
-	m_TextureImageViewCI.subresourceRange.mipLevelCount = m_CI.mipLevels;
-	m_TextureImageViewCI.subresourceRange.baseArrayLayer = 0;
-	m_TextureImageViewCI.subresourceRange.arrayLayerCount = m_CI.arrayLayers;
-	m_ImageView = ImageView::Create(&m_TextureImageViewCI);
+	ImageView::CreateInfo imageViewCI;
+	imageViewCI.debugName = "GEAR_CORE_TextureImageView: " + m_CI.debugName;
+	imageViewCI.device = m_CI.device;
+	imageViewCI.image = m_Image;
+	imageViewCI.viewType = m_CI.type;
+	imageViewCI.subresourceRange.aspect = m_DepthTexture ? Image::AspectBit::DEPTH_BIT : Image::AspectBit::COLOUR_BIT;
+	imageViewCI.subresourceRange.baseMipLevel = 0;
+	imageViewCI.subresourceRange.mipLevelCount = m_CI.mipLevels;
+	imageViewCI.subresourceRange.baseArrayLayer = 0;
+	imageViewCI.subresourceRange.arrayLayerCount = m_CI.arrayLayers;
+	m_ImageView = ImageView::Create(&imageViewCI);
 
 	//Default sampler
 	CreateSampler();
@@ -104,14 +108,14 @@ void Texture::Reload()
 	std::vector<uint8_t> imageData;
 	LoadImageData(imageData);
 
-	m_ImageUploadBufferCI.allocator->SubmitData(m_ImageUploadBuffer->GetAllocation(), 0, imageData.size(), imageData.data());
+	m_ImageUploadBuffer->GetCreateInfo().allocator->SubmitData(m_ImageUploadBuffer->GetAllocation(), 0, imageData.size(), imageData.data());
 
 	m_GeneratedMipMaps = false;
 }
 
 void Texture::SubmitImageData(std::vector<uint8_t>& imageData)
 {
-	m_ImageUploadBufferCI.allocator->SubmitData(m_ImageUploadBuffer->GetAllocation(), 0, imageData.size(), imageData.data());
+	m_ImageUploadBuffer->GetCreateInfo().allocator->SubmitData(m_ImageUploadBuffer->GetAllocation(), 0, imageData.size(), imageData.data());
 }
 
 void Texture::AccessImageData(std::vector<uint8_t>& imageData)
@@ -119,29 +123,30 @@ void Texture::AccessImageData(std::vector<uint8_t>& imageData)
 	imageData.clear();
 	imageData.resize(m_ImageUploadBuffer->GetCreateInfo().size);
 
-	m_ImageUploadBufferCI.allocator->AccessData(m_ImageUploadBuffer->GetAllocation(), 0, imageData.size(), imageData.data());
+	m_ImageUploadBuffer->GetCreateInfo().allocator->AccessData(m_ImageUploadBuffer->GetAllocation(), 0, imageData.size(), imageData.data());
 }
 
 void Texture::CreateSampler()
 {
-	m_SamplerCI.debugName = "GEAR_CORE_Sampler: " + m_CI.debugName;
-	m_SamplerCI.device = m_CI.device;
-	m_SamplerCI.magFilter = Sampler::Filter::LINEAR;
-	m_SamplerCI.minFilter = Sampler::Filter::LINEAR;
-	m_SamplerCI.mipmapMode = Sampler::MipmapMode::LINEAR;
-	m_SamplerCI.addressModeU = Sampler::AddressMode::REPEAT;
-	m_SamplerCI.addressModeV = Sampler::AddressMode::REPEAT;
-	m_SamplerCI.addressModeW = Sampler::AddressMode::REPEAT;
-	m_SamplerCI.mipLodBias = 0.0f;
-	m_SamplerCI.anisotropyEnable = m_AnisotrophicValue > 1.0f;
-	m_SamplerCI.maxAnisotropy = m_AnisotrophicValue;
-	m_SamplerCI.compareEnable = false;
-	m_SamplerCI.compareOp = CompareOp::NEVER;
-	m_SamplerCI.minLod = 0.0f;
-	m_SamplerCI.maxLod = static_cast<float>(m_CI.mipLevels);
-	m_SamplerCI.borderColour = Sampler::BorderColour::FLOAT_OPAQUE_BLACK;
-	m_SamplerCI.unnormalisedCoordinates = false;
-	m_Sampler = Sampler::Create(&m_SamplerCI);
+	Sampler::CreateInfo samplerCI;
+	samplerCI.debugName = "GEAR_CORE_Sampler: " + m_CI.debugName;
+	samplerCI.device = m_CI.device;
+	samplerCI.magFilter = Sampler::Filter::LINEAR;
+	samplerCI.minFilter = Sampler::Filter::LINEAR;
+	samplerCI.mipmapMode = Sampler::MipmapMode::LINEAR;
+	samplerCI.addressModeU = Sampler::AddressMode::REPEAT;
+	samplerCI.addressModeV = Sampler::AddressMode::REPEAT;
+	samplerCI.addressModeW = Sampler::AddressMode::REPEAT;
+	samplerCI.mipLodBias = 0.0f;
+	samplerCI.anisotropyEnable = m_AnisotrophicValue > 1.0f;
+	samplerCI.maxAnisotropy = m_AnisotrophicValue;
+	samplerCI.compareEnable = false;
+	samplerCI.compareOp = CompareOp::NEVER;
+	samplerCI.minLod = 0.0f;
+	samplerCI.maxLod = static_cast<float>(m_CI.mipLevels);
+	samplerCI.borderColour = Sampler::BorderColour::FLOAT_OPAQUE_BLACK;
+	samplerCI.unnormalisedCoordinates = false;
+	m_Sampler = Sampler::Create(&samplerCI);
 }
 
 void Texture::LoadImageData(std::vector<uint8_t>& imageData)

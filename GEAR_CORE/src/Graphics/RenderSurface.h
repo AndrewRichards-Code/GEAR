@@ -23,27 +23,19 @@ namespace gear
 
 			//ColourSRGBImage
 			miru::base::ImageRef m_ColourSRGBImage;
-			miru::base::Image::CreateInfo m_ColourSRGBImageCI;
 			miru::base::ImageViewRef m_ColourSRGBImageView;
-			miru::base::ImageView::CreateInfo m_ColourSRGBImageViewCI;
 
 			//DepthImage
 			miru::base::ImageRef m_DepthImage;
-			miru::base::Image::CreateInfo m_DepthImageCI;
 			miru::base::ImageViewRef m_DepthImageView;
-			miru::base::ImageView::CreateInfo m_DepthImageViewCI;
 
 			//MSAAColourImage
 			miru::base::ImageRef m_MSAAColourImage;
-			miru::base::Image::CreateInfo m_MSAAColourImageCI;
 			miru::base::ImageViewRef m_MSAAColourImageView;
-			miru::base::ImageView::CreateInfo m_MSAAColourImageViewCI;
 
 			//ColourImage
 			miru::base::ImageRef m_ColourImage;
-			miru::base::Image::CreateInfo m_ColourImageCI;
 			miru::base::ImageViewRef m_ColourImageView;
-			miru::base::ImageView::CreateInfo m_ColourImageViewCI;
 
 			CreateInfo m_CI;
 

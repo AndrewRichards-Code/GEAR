@@ -30,10 +30,7 @@ namespace gear
 
 		private:
 			miru::base::BufferRef m_ShaderStorageBuffer, m_ShaderStorageBufferUpload;
-			miru::base::Buffer::CreateInfo m_ShaderStorageBufferCI, m_ShaderStorageBufferUploadCI;
-
 			miru::base::BufferViewRef m_ShaderStorageBufferView, m_ShaderStorageBufferViewUpload;
-			miru::base::BufferView::CreateInfo m_ShaderStorageBufferViewCI, m_ShaderStorageBufferViewUploadCI;
 
 			CreateInfo m_CI;
 
@@ -42,51 +39,57 @@ namespace gear
 			{
 				m_CI = *pCreateInfo;
 
-				m_ShaderStorageBufferUploadCI.debugName = "GEAR_CORE_ShaderStorageBufferUpload: " + m_CI.debugName;
-				m_ShaderStorageBufferUploadCI.device = m_CI.device;
-				m_ShaderStorageBufferUploadCI.usage = miru::base::Buffer::UsageBit::TRANSFER_SRC_BIT | miru::base::Buffer::UsageBit::TRANSFER_DST_BIT;
-				m_ShaderStorageBufferUploadCI.size = GetSize();
-				m_ShaderStorageBufferUploadCI.data = m_CI.data;
-				m_ShaderStorageBufferUploadCI.allocator = AllocatorManager::GetCPUAllocator();
-				m_ShaderStorageBufferUpload = miru::base::Buffer::Create(&m_ShaderStorageBufferUploadCI);
+				miru::base::Buffer::CreateInfo shaderStorageBufferCI, shaderStorageBufferUploadCI;
+				miru::base::BufferView::CreateInfo shaderStorageBufferViewCI, shaderStorageBufferViewUploadCI;
 
-				m_ShaderStorageBufferCI.debugName = "GEAR_CORE_ShaderStorageBuffer: " + m_CI.debugName;
-				m_ShaderStorageBufferCI.device = m_CI.device;
-				m_ShaderStorageBufferCI.usage = miru::base::Buffer::UsageBit::TRANSFER_SRC_BIT | miru::base::Buffer::UsageBit::TRANSFER_DST_BIT | miru::base::Buffer::UsageBit::STORAGE_BIT;
-				m_ShaderStorageBufferCI.size = GetSize();
-				m_ShaderStorageBufferCI.data = nullptr;
-				m_ShaderStorageBufferCI.allocator = AllocatorManager::GetGPUAllocator();
-				m_ShaderStorageBuffer = miru::base::Buffer::Create(&m_ShaderStorageBufferCI);
+				shaderStorageBufferUploadCI.debugName = "GEAR_CORE_ShaderStorageBufferUpload: " + m_CI.debugName;
+				shaderStorageBufferUploadCI.device = m_CI.device;
+				shaderStorageBufferUploadCI.usage = miru::base::Buffer::UsageBit::TRANSFER_SRC_BIT | miru::base::Buffer::UsageBit::TRANSFER_DST_BIT;
+				shaderStorageBufferUploadCI.size = GetSize();
+				shaderStorageBufferUploadCI.data = m_CI.data;
+				shaderStorageBufferUploadCI.allocator = AllocatorManager::GetCPUAllocator();
+				m_ShaderStorageBufferUpload = miru::base::Buffer::Create(&shaderStorageBufferUploadCI);
 
-				m_ShaderStorageBufferViewUploadCI.debugName = "GEAR_CORE_ShaderStorageViewUpload: " + m_CI.debugName;
-				m_ShaderStorageBufferViewUploadCI.device = m_CI.device;
-				m_ShaderStorageBufferViewUploadCI.type = miru::base::BufferView::Type::UNIFORM;
-				m_ShaderStorageBufferViewUploadCI.buffer = m_ShaderStorageBufferUpload;
-				m_ShaderStorageBufferViewUploadCI.offset = 0;
-				m_ShaderStorageBufferViewUploadCI.size = GetSize();
-				m_ShaderStorageBufferViewUploadCI.stride = 0;
-				m_ShaderStorageBufferViewUpload = miru::base::BufferView::Create(&m_ShaderStorageBufferViewUploadCI);
+				shaderStorageBufferCI.debugName = "GEAR_CORE_ShaderStorageBuffer: " + m_CI.debugName;
+				shaderStorageBufferCI.device = m_CI.device;
+				shaderStorageBufferCI.usage = miru::base::Buffer::UsageBit::TRANSFER_SRC_BIT | miru::base::Buffer::UsageBit::TRANSFER_DST_BIT | miru::base::Buffer::UsageBit::STORAGE_BIT;
+				shaderStorageBufferCI.size = GetSize();
+				shaderStorageBufferCI.data = nullptr;
+				shaderStorageBufferCI.allocator = AllocatorManager::GetGPUAllocator();
+				m_ShaderStorageBuffer = miru::base::Buffer::Create(&shaderStorageBufferCI);
 
-				m_ShaderStorageBufferViewCI.debugName = "GEAR_CORE_ShaderStorageView: " + m_CI.debugName;
-				m_ShaderStorageBufferViewCI.device = m_CI.device;
-				m_ShaderStorageBufferViewCI.type = miru::base::BufferView::Type::UNIFORM;
-				m_ShaderStorageBufferViewCI.buffer = m_ShaderStorageBuffer;
-				m_ShaderStorageBufferViewCI.offset = 0;
-				m_ShaderStorageBufferViewCI.size = GetSize();
-				m_ShaderStorageBufferViewCI.stride = 0;
-				m_ShaderStorageBufferView = miru::base::BufferView::Create(&m_ShaderStorageBufferViewCI);
+				shaderStorageBufferViewUploadCI.debugName = "GEAR_CORE_ShaderStorageViewUpload: " + m_CI.debugName;
+				shaderStorageBufferViewUploadCI.device = m_CI.device;
+				shaderStorageBufferViewUploadCI.type = miru::base::BufferView::Type::UNIFORM;
+				shaderStorageBufferViewUploadCI.buffer = m_ShaderStorageBufferUpload;
+				shaderStorageBufferViewUploadCI.offset = 0;
+				shaderStorageBufferViewUploadCI.size = GetSize();
+				shaderStorageBufferViewUploadCI.stride = 0;
+				m_ShaderStorageBufferViewUpload = miru::base::BufferView::Create(&shaderStorageBufferViewUploadCI);
+
+				shaderStorageBufferViewCI.debugName = "GEAR_CORE_ShaderStorageView: " + m_CI.debugName;
+				shaderStorageBufferViewCI.device = m_CI.device;
+				shaderStorageBufferViewCI.type = miru::base::BufferView::Type::UNIFORM;
+				shaderStorageBufferViewCI.buffer = m_ShaderStorageBuffer;
+				shaderStorageBufferViewCI.offset = 0;
+				shaderStorageBufferViewCI.size = GetSize();
+				shaderStorageBufferViewCI.stride = 0;
+				m_ShaderStorageBufferView = miru::base::BufferView::Create(&shaderStorageBufferViewCI);
+
+				//Account of vptr of the base class.
+				memcpy((void*)((uint8_t*)this + 0x8), m_CI.data, sizeof(T));
 			}
 			~Storagebuffer() {}
 
 			const CreateInfo& GetCreateInfo() { return m_CI; }
 
-			void SubmitData(const void* data, size_t  size) const
+			void SubmitData() const
 			{
-				m_ShaderStorageBufferUploadCI.pAllocator->SubmitData(m_ShaderStorageBufferUpload->GetAllocation(), (size_t)size, (void*)data);
+				m_ShaderStorageBufferUpload->GetCreateInfo().pAllocator->SubmitData(m_ShaderStorageBufferUpload->GetAllocation(), GetSize(), (void*)((uint8_t*)this + 0x8)); //Account of vptr of the base class.
 			}
-			void AccessData(void* data, size_t size) const
+			void AccessData() const
 			{
-				m_ShaderStorageBufferUploadCI.pAllocator->AccessData(m_ShaderStorageBufferUpload->GetAllocation(), size, data);
+				m_ShaderStorageBufferUpload->GetCreateInfo().pAllocator->AccessData(m_ShaderStorageBufferUpload->GetAllocation(), GetSize(), (void*)((uint8_t*)this + 0x8)); //Account of vptr of the base class.
 			}
 
 			inline const miru::base::BufferRef& GetCPUBuffer() const override { return m_ShaderStorageBufferUpload; };
