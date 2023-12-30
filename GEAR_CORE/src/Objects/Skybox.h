@@ -21,28 +21,14 @@ namespace gear
 
 		private:
 			Ref<Model> m_Model;
-			Model::CreateInfo m_ModelCI;
-
 			Ref<Mesh> m_Mesh;
-			Mesh::CreateInfo m_MeshCI;
-
 			Ref<Material> m_Material;
-			Material::CreateInfo m_MaterialCI;
 
 			Ref<graphics::Texture> m_HDRTexture;
-			graphics::Texture::CreateInfo m_HDRTextureCI;
-
 			Ref<graphics::Texture> m_GeneratedCubemap;
-			graphics::Texture::CreateInfo m_GeneratedCubemapCI;
-
 			Ref<graphics::Texture> m_GeneratedDiffuseCubemap;
-			graphics::Texture::CreateInfo m_GeneratedDiffuseCubemapCI;
-
 			Ref<graphics::Texture> m_GeneratedSpecularCubemap;
-			graphics::Texture::CreateInfo m_GeneratedSpecularCubemapCI;
-
 			Ref<graphics::Texture> m_GeneratedSpecularBRDF_LUT;
-			graphics::Texture::CreateInfo m_GeneratedSpecularBRDF_LUT_CI;
 
 		public:
 			bool m_Generated = false;

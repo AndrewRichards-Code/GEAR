@@ -36,13 +36,9 @@ namespace gear
 			};
 
 			Ref<graphics::Texture> m_ColourTexture;
-			graphics::Texture::CreateInfo m_ColourTextureCI;
-
 			Ref<graphics::Texture> m_DepthTexture;
-			graphics::Texture::CreateInfo m_DepthTextureCI;
 
 			Ref<graphics::RenderPipeline> m_ShadowRenderPipeline;
-			graphics::RenderPipeline::LoadInfo m_ShadowRenderPipelineLI;
 
 			bool m_RenderDebugView = false;
 			Ref<graphics::Texture> m_DebugTexture = nullptr;
@@ -50,6 +46,11 @@ namespace gear
 		private:
 			typedef graphics::UniformBufferStructures::ProbeInfo ProbeInfoUB;
 			Ref<graphics::Uniformbuffer<ProbeInfoUB>> m_UB;
+
+			DirectionType m_CurrentDirectionType = DirectionType::MONO;
+			CaptureType m_CurrentCaptureType = CaptureType::SHADOW;
+			uint32_t m_CurrentImageWidth = 0;
+			uint32_t m_CurrentImageHeight = 0;
 
 		public:
 			CreateInfo m_CI;
@@ -64,7 +65,8 @@ namespace gear
 			const Ref<graphics::Uniformbuffer<ProbeInfoUB>>& GetUB() const { return m_UB; };
 
 		private:
-			void CreateTexture(Ref<graphics::Texture>& texture, graphics::Texture::CreateInfo& textureCI, bool colour = true);
+			void InitialiseTexturesAndPipeline();
+			void CreateTexture(Ref<graphics::Texture>& texture, bool colour = true);
 			void CreateRenderPipeline();
 			void InitialiseUB();
 		};

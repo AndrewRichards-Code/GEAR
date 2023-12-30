@@ -35,19 +35,21 @@ void gear::ui::componentui::DrawCameraComponentUI(Entity entity)
 		DrawDouble("FOV", fovDeg, 0.0, 180.0);
 		pp.horizonalFOV = DegToRad(fovDeg);
 		pp.aspectRatio = screenRatio;
-		DrawFloat("Near", pp.zNear,  0.0, pp.zFar);
+		DrawFloat("Near", pp.zNear, 0.0, pp.zFar);
 		DrawFloat("Far", pp.zFar, pp.zNear);
 
 		CI.perspectiveParams = pp;
 	}
 	else
 	{
-		static Camera::OrthographicParameters op = { -1.0f, 1.0f, -screenRatio, +screenRatio, 0.001f, 3000.0f };
+		static Camera::OrthographicParameters op = { -screenRatio, +screenRatio, -1.0f, +1.0f, 0.001f, 3000.0f };
+		static float orthographicScale = 1.0f;
 
-		op.left = -1.0f;
-		op.right = +1.0f;
-		op.bottom = -screenRatio;
-		op.top = +screenRatio;
+		DrawFloat("Orthographic Scale", orthographicScale, 1.0f);
+		op.left = orthographicScale * -screenRatio;
+		op.right = orthographicScale * +screenRatio;
+		op.bottom = orthographicScale * -1.0f;
+		op.top = orthographicScale * +1.0f;
 		DrawFloat("Near", op.near, 0.0f, op.far);
 		DrawFloat("Far", op.far, op.near);
 

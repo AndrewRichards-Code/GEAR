@@ -131,8 +131,23 @@ void ViewportPanel::UpdateCameraTransform()
 	if (!found)
 		return;
 
+	//Aspect Ratio update
+	const float& aspectRatio = m_CI.renderer->GetRenderSurface()->GetRatio();
+	if (camera->m_CI.projectionType == Camera::ProjectionType::ORTHOGRAPHIC)
+	{
+		//camera->m_CI.orthographicParams.left = -aspectRatio;
+		//camera->m_CI.orthographicParams.right = +aspectRatio;
+	}
+	else if (camera->m_CI.projectionType == Camera::ProjectionType::PERSPECTIVE)
+	{
+		camera->m_CI.perspectiveParams.aspectRatio = aspectRatio;
+	}
+	else
+	{
+		GEAR_FATAL(ErrorCode::OBJECTS | ErrorCode::INVALID_VALUE, "Unknown projection type.");
+	}
+
 	//View matrix update
-	camera->m_CI.perspectiveParams.aspectRatio = m_CI.renderer->GetRenderSurface()->GetRatio();
 	
 	//Mouse Control
 	if (ImGui::IsWindowFocused())

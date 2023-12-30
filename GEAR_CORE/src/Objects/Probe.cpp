@@ -15,13 +15,7 @@ Probe::Probe(CreateInfo* pCreateInfo)
 	m_CI = *pCreateInfo;
 
 	InitialiseUB();
-
-	if (m_CI.captureType == CaptureType::REFLECTION)
-		CreateTexture(m_ColourTexture, m_ColourTextureCI);
-
-	CreateTexture(m_DepthTexture, m_DepthTextureCI, false);
-
-	CreateRenderPipeline();
+	InitialiseTexturesAndPipeline();
 
 	Update(Transform());
 }
@@ -34,33 +28,39 @@ void Probe::Update(const Transform& transform)
 {
 	if (CreateInfoHasChanged(&m_CI))
 	{
+		//Textures and Pipeline
+		InitialiseTexturesAndPipeline();
+
 		//Projection
 		{
 			if (m_CI.directionType == DirectionType::OMNI)
 				m_CI.projectionType = Camera::ProjectionType::PERSPECTIVE;
 
 			const float& aspectRatio = static_cast<float>(m_CI.imageWidth) / static_cast<float>(m_CI.imageHeight);
-			const float orthoScale = 10.0f;
 			if (m_CI.projectionType == Camera::ProjectionType::PERSPECTIVE)
 			{
 				m_UB->proj = float4x4::Perspective(
 					m_CI.directionType == DirectionType::OMNI ? DegToRad(90.0) : m_CI.perspectiveHorizonalFOV,
 					m_CI.directionType == DirectionType::OMNI ? 1.0f : aspectRatio,
 					m_CI.zNear,
-					m_CI.zFar);
+					m_CI.zFar,
+					true);
 			}
 			else
 			{
 				m_UB->proj = float4x4::Orthographic(
-					m_CI.orthographicScale * -1.0f,
-					m_CI.orthographicScale * +1.0f,
 					m_CI.orthographicScale * -aspectRatio,
 					m_CI.orthographicScale * +aspectRatio,
+					m_CI.orthographicScale * -1.0f,
+					m_CI.orthographicScale * +1.0f,
 					m_CI.zNear,
-					m_CI.zFar);
+					m_CI.zFar,
+					true);
 			}
 			if (miru::base::GraphicsAPI::IsVulkan())
 				m_UB->proj.f *= -1;
+
+			m_UB->SubmitData();
 		}
 	}
 	if (TransformHasChanged(transform))
@@ -114,9 +114,31 @@ bool Probe::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo)
 	return CompareCreateInfoHash(newHash);
 }
 
-void Probe::CreateTexture(Ref<Texture>& texture, Texture::CreateInfo& textureCI, bool colour)
+void Probe::InitialiseTexturesAndPipeline()
 {
-	//TODO: Add mips and multisampling 
+	if (m_CurrentDirectionType != m_CI.directionType
+		|| m_CurrentCaptureType != m_CI.captureType
+		|| m_CurrentImageWidth != m_CI.imageWidth
+		|| m_CurrentImageHeight != m_CI.imageHeight)
+	{
+		if (m_CI.captureType == CaptureType::REFLECTION)
+		{
+			CreateTexture(m_ColourTexture);
+		}
+		CreateTexture(m_DepthTexture, false);
+		CreateRenderPipeline();
+
+		m_CurrentDirectionType = m_CI.directionType;
+		m_CurrentCaptureType = m_CI.captureType;
+		m_CurrentImageWidth = m_CI.imageWidth;
+		m_CurrentImageHeight = m_CI.imageHeight;
+	}
+}
+
+void Probe::CreateTexture(Ref<Texture>& texture, bool colour)
+{
+	//TODO: Add mips and multisampling
+	Texture::CreateInfo textureCI;
 	textureCI.debugName = (colour ? "GEAR_CORE_Texture_Colour: " : "GEAR_CORE_Texture_Depth: ") + m_CI.debugName;
 	textureCI.device = m_CI.device;
 	textureCI.dataType = Texture::DataType::DATA;
@@ -138,25 +160,27 @@ void Probe::CreateTexture(Ref<Texture>& texture, Texture::CreateInfo& textureCI,
 
 void Probe::CreateRenderPipeline()
 {
-	m_ShadowRenderPipelineLI.device = m_CI.device;
-	m_ShadowRenderPipelineLI.filepath = "res/pipelines/Shadow.grpf";
-	m_ShadowRenderPipelineLI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	RenderPipeline::LoadInfo shadowRenderPipelineLI;
+
+	shadowRenderPipelineLI.device = m_CI.device;
+	shadowRenderPipelineLI.filepath = "res/pipelines/Shadow.grpf";
+	shadowRenderPipelineLI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	if (m_CI.captureType == CaptureType::REFLECTION)
-		m_ShadowRenderPipelineLI.colourAttachmentFormats.push_back(Image::Format::R32G32B32A32_SFLOAT);
-	m_ShadowRenderPipelineLI.depthAttachmentFormat = Image::Format::D32_SFLOAT;
-	m_ShadowRenderPipeline = CreateRef<RenderPipeline>(&m_ShadowRenderPipelineLI);
+		shadowRenderPipelineLI.colourAttachmentFormats.push_back(Image::Format::R32G32B32A32_SFLOAT);
+	shadowRenderPipelineLI.depthAttachmentFormat = Image::Format::D32_SFLOAT;
+	m_ShadowRenderPipeline = CreateRef<RenderPipeline>(&shadowRenderPipelineLI);
 }
 
 void Probe::InitialiseUB()
 {
 	if (!m_UB)
 	{
-		float zero0[sizeof(ProbeInfoUB)] = { 0 };
+		ProbeInfoUB zero = { 0 };
 
 		Uniformbuffer<ProbeInfoUB>::CreateInfo ubCI;
 		ubCI.debugName = GenereateDebugName<Uniformbuffer<ProbeInfoUB>>(m_CI.debugName);
 		ubCI.device = m_CI.device;
-		ubCI.data = zero0;
+		ubCI.data = &zero;
 		m_UB = CreateRef<Uniformbuffer<ProbeInfoUB>>(&ubCI);
 	}
 }
