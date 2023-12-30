@@ -15,7 +15,7 @@ struct VS_IN
 struct VS_OUT
 {
 	MIRU_LOCATION(0, float4, v_Position, SV_POSITION);
-	MIRU_LOCATION(1, float3, v_TextCoord, TEXCOORD1);
+	MIRU_LOCATION(1, float3, v_TexCoord, TEXCOORD1);
 	MIRU_LOCATION(2, float4, v_Normal, NORMAL2);
 	MIRU_LOCATION(3, float4, v_Tangent, TANGENT3);
 	MIRU_LOCATION(4, float4, v_Binormal, BINORMAL4);
@@ -37,7 +37,7 @@ VS_OUT vs_main(VS_IN IN)
 	VS_OUT OUT;
 	
 	OUT.v_Position = mul(IN.positions, mul(model.modl, mul(camera.view, camera.proj)));
-	OUT.v_TextCoord = IN.positions.xyz;
+	OUT.v_TexCoord = IN.positions.xyz;
 	OUT.v_Normal = IN.normals;
 	OUT.v_Tangent = IN.tangents;
 	OUT.v_Binormal = IN.binormals;
@@ -50,7 +50,7 @@ PS_OUT ps_main(PS_IN IN)
 {
 	PS_OUT OUT;
 	
-	OUT.colour = skybox_ImageCIS.SampleLevel(skybox_SamplerCIS, IN.v_TextCoord, 0.0);
+	OUT.colour = skybox_ImageCIS.SampleLevel(skybox_SamplerCIS, IN.v_TexCoord, 0.0);
 	OUT.colour.a = 1.0;
 	
 	return OUT;
