@@ -85,6 +85,8 @@ void SceneHierarchyPanel::Draw()
 			if (viewportPanel)
 			{
 				void* device = viewportPanel->GetCreateInfo().renderer->GetDevice();
+				entt::registry& reg = scene->GetRegistry();
+				const bool& foundCamera = !reg.view<CameraComponent>().empty();
 
 				if (ImGui::MenuItem("Create Camera"))
 				{
@@ -92,21 +94,21 @@ void SceneHierarchyPanel::Draw()
 					newEntity.GetComponent<NameComponent>().name = "Camera";
 					AddCameraComponent(newEntity, device);
 				}
-				if (ImGui::MenuItem("Create Light"))
+				if (ImGui::MenuItem("Create Light", nullptr, false, foundCamera))
 				{
 					Entity newEntity = scene->CreateEntity();
 					newEntity.GetComponent<NameComponent>().name = "Light";
 					AddLightComponent(newEntity, device);
 					ImGui::CloseCurrentPopup();
 				}
-				if (ImGui::MenuItem("Create Skybox"))
+				if (ImGui::MenuItem("Create Skybox", nullptr, false, foundCamera))
 				{
 					Entity newEntity = scene->CreateEntity();
 					newEntity.GetComponent<NameComponent>().name = "Skybox";
 					AddSkyboxComponent(newEntity, device);
 					ImGui::CloseCurrentPopup();
 				}
-				if (ImGui::MenuItem("Create Model"))
+				if (ImGui::MenuItem("Create Model", nullptr, false, foundCamera))
 				{
 					Entity newEntity = scene->CreateEntity();
 					newEntity.GetComponent<NameComponent>().name = "Model";
