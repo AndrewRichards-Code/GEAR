@@ -203,7 +203,7 @@ Pass::TransitionDetails Pass::GetTransitionDetails(const Resource::State& state,
 	case Resource::State::VERTEX_BUFFER:
 	{
 		accesses = src ? Barrier::AccessBit::NONE_BIT : Barrier::AccessBit::VERTEX_ATTRIBUTE_READ_BIT;
-		pipelineStage = src ? stage : PipelineStageBit::VERTEX_SHADER_BIT;
+		pipelineStage = src ? stage : GraphicsAPI::IsD3D12() ? PipelineStageBit::VERTEX_SHADER_BIT : PipelineStageBit::VERTEX_INPUT_BIT;
 		break;
 	}
 	case Resource::State::INDEX_BUFFER:
