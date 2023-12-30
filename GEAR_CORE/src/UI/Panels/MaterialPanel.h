@@ -28,12 +28,12 @@ namespace gear
 				void Draw() override;
 
 				inline void SetSelectedMaterial(const Ref<objects::Material>& material) { m_SelectedMaterial = material; }
-				inline void SetSelectedRenderPipline(graphics::RenderPipeline* renderPipeline) { m_SelectedRenderPipeline = renderPipeline; }
+				inline void SetSelectedRenderPipline(Ref<graphics::RenderPipeline>& renderPipeline) { m_SelectedRenderPipeline = renderPipeline; }
 
 				//Members
 			private:
 				Ref<objects::Material> m_SelectedMaterial = nullptr;
-				graphics::RenderPipeline* m_SelectedRenderPipeline = nullptr;
+				Ref<graphics::RenderPipeline> m_SelectedRenderPipeline = nullptr;
 			};
 		}
 	}

@@ -164,7 +164,7 @@ void gear::ui::componentui::DrawMaterialUI(Ref<Material>& material, UIContext* u
 	}
 }
 
-void gear::ui::componentui::DrawRenderPipelineUI(RenderPipeline* renderPipeline)
+void gear::ui::componentui::DrawRenderPipelineUI(Ref<RenderPipeline>& renderPipeline)
 {
 	if (DrawTreeNode("Render Pipeline", false))
 	{

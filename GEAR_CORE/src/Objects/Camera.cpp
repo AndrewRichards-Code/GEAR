@@ -164,10 +164,10 @@ void Camera::SetPosition(const Transform& transform)
 
 void Camera::InitialiseUB()
 {
-	float zero[sizeof(CameraUB)] = { 0 };
+	CameraUB zero = { 0 };
 	Uniformbuffer<CameraUB>::CreateInfo ubCI;
 	ubCI.debugName = "GEAR_CORE_Camera_CameraUB: " + m_CI.debugName;
 	ubCI.device = m_CI.device;
-	ubCI.data = zero;
+	ubCI.data = &zero;
 	m_CameraUB = CreateRef<Uniformbuffer<CameraUB>>(&ubCI);
 }

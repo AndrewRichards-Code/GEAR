@@ -58,7 +58,7 @@ void RenderSurface::CreateAttachments()
 		colourSRGBImageViewCI.image = m_ColourSRGBImage;
 		colourSRGBImageViewCI.viewType = Image::Type::TYPE_2D;
 		colourSRGBImageViewCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
-		m_ColourSRGBImageView = ImageView::Create(&m_ColourSRGBImageViewCI);
+		m_ColourSRGBImageView = ImageView::Create(&colourSRGBImageViewCI);
 	}
 
 	//Depth

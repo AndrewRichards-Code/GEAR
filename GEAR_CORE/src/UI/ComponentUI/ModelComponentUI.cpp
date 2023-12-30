@@ -36,7 +36,7 @@ void gear::ui::componentui::DrawModelComponentUI(Entity entity)
 	if (viewportPanel)
 	{
 		Ref<Renderer>& renderer = viewportPanel->GetCreateInfo().renderer;
-		RenderPipeline* renderPipeline = renderer->GetRenderPipelines()[CI.renderPipelineName].get();
+		Ref<RenderPipeline>& renderPipeline = renderer->GetRenderPipelines()[CI.renderPipelineName];
 
 		Ref<MaterialPanel> materialPanel = UIContext::GetUIContext()->GetEditorPanelsByType<MaterialPanel>()[0];
 		if (materialPanel)
