@@ -120,10 +120,10 @@ namespace gear
 			bool DrawUint32(const std::string& label, uint32_t& value, uint32_t minValue, uint32_t maxValue, bool powerOf2 = false, float width = DefaultWidth, float speed = 1.0f);
 			bool DrawInt32(const std::string& label, int32_t& value, int32_t minValue, int32_t maxValue, float width = DefaultWidth, float speed = 1.0f);
 
-			bool DrawFloat(const std::string& label, float& value, float minValue, float maxValue = DefaultMaximumF, float width = DefaultWidth, float speed = DefaultSpeed);
-			bool DrawDouble(const std::string& label, double& value, double minValue, double maxValue = DefaultMaximumD, float width = DefaultWidth, float speed = DefaultSpeed);
-			bool DrawFloat3(const std::string& label, mars::float3& value, float resetValue = 0.0f, float width = DefaultWidth, float speed = DefaultSpeed);
-			bool DrawQuaternion(const std::string& label, mars::Quaternion& value, float width = DefaultWidth, float speed = 0.001f);
+			bool DrawFloat(const std::string& label, float& value, float minValue, float maxValue = DefaultMaximumF, float width = DefaultWidth, float speed = DefaultSpeed, const char* format = nullptr);
+			bool DrawDouble(const std::string& label, double& value, double minValue, double maxValue = DefaultMaximumD, float width = DefaultWidth, float speed = DefaultSpeed, const char* format = nullptr);
+			bool DrawFloat3(const std::string& label, mars::float3& value, float resetValue = 0.0f, float width = DefaultWidth, float speed = DefaultSpeed, const char* format = nullptr);
+			bool DrawQuaternion(const std::string& label, mars::Quaternion& value, float width = DefaultWidth, float speed = 0.001f, const char* format = nullptr);
 
 			bool DrawColourPicker3(const std::string& label, mars::float3& value, float width = DefaultWidth);
 			bool DrawColourPicker4(const std::string& label, mars::float4& value, float width = DefaultWidth);

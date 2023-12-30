@@ -329,9 +329,8 @@ std::vector<Barrier2Ref> Pass::TransitionResource(RenderGraph* renderGraph, cons
 		}
 		barriers.push_back(Barrier2::Create(&barrierCI));
 
-		constexpr auto resourceStates = magic_enum::enum_names<Resource::State>();
-
 #if 0
+		constexpr auto resourceStates = magic_enum::enum_names<Resource::State>();
 		std::string logMessage = "\n";
 		logMessage += "Resource: " + std::string((type == Barrier::Type::IMAGE) ? passResourceView.imageView->GetCreateInfo().debugName : passResourceView.bufferView->GetCreateInfo().debugName) + "\n";
 		logMessage += "Type: " + std::string((type == Barrier::Type::IMAGE) ? "IMAGE" : "BUFFER") + "\n";

@@ -88,23 +88,23 @@ bool gear::ui::componentui::DrawInt32(const std::string& label, int32_t& value, 
 	return ret;
 }
 
-bool gear::ui::componentui::DrawFloat(const std::string& label, float& value, float minValue, float maxValue, float width, float speed)
+bool gear::ui::componentui::DrawFloat(const std::string& label, float& value, float minValue, float maxValue, float width, float speed, const char* format)
 {
 	BeginColumnLabel(label, width);
-	bool ret = ImGui::DragFloat("##label", &value, speed, minValue, maxValue);
+	bool ret = ImGui::DragScalar("##label", ImGuiDataType_Float, (void*)&value, speed, (const void*)&minValue, (const void*)&maxValue, format ? format : "%.3f");
 	EndColumnLabel();
 	return ret;
 }
 
-bool gear::ui::componentui::DrawDouble(const std::string& label, double& value, double minValue, double maxValue, float width, float speed)
+bool gear::ui::componentui::DrawDouble(const std::string& label, double& value, double minValue, double maxValue, float width, float speed, const char* format)
 {
 	BeginColumnLabel(label, width);
-	bool ret = ImGui::DragScalar("##label", ImGuiDataType_Double, (void*)&value, speed, (const void*)&minValue, (const void*)&maxValue, "%.3f");
+	bool ret = ImGui::DragScalar("##label", ImGuiDataType_Double, (void*)&value, speed, (const void*)&minValue, (const void*)&maxValue, format ? format : "%.3f");
 	EndColumnLabel();
 	return ret;
 }
 
-bool gear::ui::componentui::DrawFloat3(const std::string& label, float3& value, float resetValue, float width, float speed)
+bool gear::ui::componentui::DrawFloat3(const std::string& label, float3& value, float resetValue, float width, float speed, const char* format)
 {
 	float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 	ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
@@ -125,7 +125,7 @@ bool gear::ui::componentui::DrawFloat3(const std::string& label, float3& value, 
 	}
 	ImGui::PopStyleColor(3);
 	ImGui::SameLine();
-	ret |= ImGui::DragFloat("##X", &value.x, speed);
+	ret |= ImGui::DragFloat("##X", &value.x, speed, 0.0f, 0.0f, format ? format : "%.3f");
 	ImGui::PopItemWidth();
 	ImGui::SameLine();
 
@@ -139,7 +139,7 @@ bool gear::ui::componentui::DrawFloat3(const std::string& label, float3& value, 
 	}
 	ImGui::PopStyleColor(3);
 	ImGui::SameLine();
-	ret |= ImGui::DragFloat("##Y", &value.y, speed);
+	ret |= ImGui::DragFloat("##Y", &value.y, speed, 0.0f, 0.0f, format ? format : "%.3f");
 	ImGui::PopItemWidth();
 	ImGui::SameLine();
 
@@ -153,7 +153,7 @@ bool gear::ui::componentui::DrawFloat3(const std::string& label, float3& value, 
 	}
 	ImGui::PopStyleColor(3);
 	ImGui::SameLine();
-	ret |= ImGui::DragFloat("##Z", &value.z, speed);
+	ret |= ImGui::DragFloat("##Z", &value.z, speed, 0.0f, 0.0f, format ? format : "%.3f");
 	ImGui::PopItemWidth();
 
 	ImGui::PopStyleVar();
@@ -162,7 +162,7 @@ bool gear::ui::componentui::DrawFloat3(const std::string& label, float3& value, 
 	return ret;
 }
 
-bool gear::ui::componentui::DrawQuaternion(const std::string& label, Quaternion& value, float width, float speed)
+bool gear::ui::componentui::DrawQuaternion(const std::string& label, Quaternion& value, float width, float speed, const char* format)
 {
 	float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 	ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
@@ -185,7 +185,7 @@ bool gear::ui::componentui::DrawQuaternion(const std::string& label, Quaternion&
 	}
 	ImGui::PopStyleColor(3);
 	ImGui::SameLine();
-	ret |= ImGui::DragScalar("##S", ImGuiDataType_Double, (void*)&value.s, speed, (const void*)&min, (const void*)&max, "%.3f");
+	ret |= ImGui::DragScalar("##S", ImGuiDataType_Double, (void*)&value.s, speed, (const void*)&min, (const void*)&max, format ? format : "%.3f");
 	ImGui::PopItemWidth();
 	ImGui::SameLine();
 
@@ -199,7 +199,7 @@ bool gear::ui::componentui::DrawQuaternion(const std::string& label, Quaternion&
 	}
 	ImGui::PopStyleColor(3);
 	ImGui::SameLine();
-	ret |= ImGui::DragScalar("##I", ImGuiDataType_Double, (void*)&value.i, speed, (const void*)&min, (const void*)&max, "%.3f");
+	ret |= ImGui::DragScalar("##I", ImGuiDataType_Double, (void*)&value.i, speed, (const void*)&min, (const void*)&max, format ? format : "%.3f");
 	ImGui::PopItemWidth();
 	ImGui::SameLine();
 
@@ -213,7 +213,7 @@ bool gear::ui::componentui::DrawQuaternion(const std::string& label, Quaternion&
 	}
 	ImGui::PopStyleColor(3);
 	ImGui::SameLine();
-	ret |= ImGui::DragScalar("##J", ImGuiDataType_Double, (void*)&value.j, speed, (const void*)&min, (const void*)&max, "%.3f");
+	ret |= ImGui::DragScalar("##J", ImGuiDataType_Double, (void*)&value.j, speed, (const void*)&min, (const void*)&max, format ? format : "%.3f");
 	ImGui::PopItemWidth();
 	ImGui::SameLine();
 
@@ -227,7 +227,7 @@ bool gear::ui::componentui::DrawQuaternion(const std::string& label, Quaternion&
 	}
 	ImGui::PopStyleColor(3);
 	ImGui::SameLine();
-	ret |= ImGui::DragScalar("##K", ImGuiDataType_Double, (void*)&value.k, speed, (const void*)&min, (const void*)&max, "%.3f");
+	ret |= ImGui::DragScalar("##K", ImGuiDataType_Double, (void*)&value.k, speed, (const void*)&min, (const void*)&max, format ? format : "%.3f");
 	ImGui::PopItemWidth();
 
 	ImGui::PopStyleVar();

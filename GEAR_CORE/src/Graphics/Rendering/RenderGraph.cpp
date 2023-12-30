@@ -419,6 +419,18 @@ ImageViewRef RenderGraph::CreateImageView(const ImageRef& image, Image::Type typ
 	return ImageView::Create(&imageViewCI);
 }
 
+bool RenderGraph::ResourceIsPresent(const Resource& passResource)
+{
+	FrameData& data = m_FrameData[m_FrameIndex];
+	return arc::FindInVector(data.Resources, passResource);
+}
+
+bool RenderGraph::ResourceIsPresent(const Resource& passResource) const
+{
+	const FrameData& data = m_FrameData[m_FrameIndex];
+	return arc::FindInVector(data.Resources, passResource);
+}
+
 Resource& RenderGraph::GetTrackedResource(const Resource& passResource)
 {
 	FrameData& data = m_FrameData[m_FrameIndex];

@@ -121,6 +121,8 @@ namespace gear
 			inline const std::vector<Ref<Pass>>& GetPasses(uint32_t frameIndex) const { return m_FrameData[frameIndex].Passes; }
 			inline const std::vector<Ref<Pass>>& GetTopologicallySortedPasses(uint32_t frameIndex) const { return m_FrameData[frameIndex].TopologicallySortedPasses; }
 
+			bool ResourceIsPresent(const Resource& passResource);
+			bool ResourceIsPresent(const Resource& passResource) const;
 			Resource& GetTrackedResource(const Resource& passResource);
 			const Resource& GetTrackedResource(const Resource& passResource) const;
 			miru::base::CommandBufferRef& GetCommandBuffer(miru::base::CommandPool::QueueType queueType);
