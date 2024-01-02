@@ -12,7 +12,6 @@
 			],
 			"binaryFilepath": "$BUILD_DIR/shaderbin/Debug_vs_6_4_vs_copy.spv",
 			"recompileArguments": {
-				"hlslFilepath": "res/shaders/HLSL/Debug.hlsl",
 				"rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.json",
 				"index": 2
 			}

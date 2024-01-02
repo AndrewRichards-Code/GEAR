@@ -37,35 +37,37 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 	m_RenderGraph = RenderGraph(m_Context, m_SwapchainImageCount);
 
 	//Present Synchronisation
+	Fence::CreateInfo drawFenceCI;
 	for (uint32_t i = 0; i < m_SwapchainImageCount; i++)
 	{
-		m_DrawFenceCI.debugName = "GEAR_CORE_Fence_Renderer_Draw_" + std::to_string(i);
-		m_DrawFenceCI.device = m_Device;
-		m_DrawFenceCI.signaled = true;
-		m_DrawFenceCI.timeout = UINT64_MAX;
-		m_DrawFences.emplace_back(Fence::Create(&m_DrawFenceCI));
+		drawFenceCI.debugName = "GEAR_CORE_Fence_Renderer_Draw_" + std::to_string(i);
+		drawFenceCI.device = m_Device;
+		drawFenceCI.signaled = true;
+		drawFenceCI.timeout = UINT64_MAX;
+		m_DrawFences.emplace_back(Fence::Create(&drawFenceCI));
 	}
 
-	m_AcquireSemaphoreCI.debugName = "GEAR_CORE_Seamphore_Renderer_Acquire";
-	m_AcquireSemaphoreCI.device = m_Device;
-	m_AcquireSemaphoreCI.type = Semaphore::Type::BINARY;
-	m_AcquireSemaphore = Semaphore::Create(&m_AcquireSemaphoreCI);
+	Semaphore::CreateInfo semaphoreCI;
+	semaphoreCI.debugName = "GEAR_CORE_Seamphore_Renderer_Acquire";
+	semaphoreCI.device = m_Device;
+	semaphoreCI.type = Semaphore::Type::BINARY;
+	m_AcquireSemaphore = Semaphore::Create(&semaphoreCI);
 
-	m_SubmitSemaphoreCI.debugName = "GEAR_CORE_Seamphore_Renderer_Submit";
-	m_SubmitSemaphoreCI.device = m_Device;
-	m_SubmitSemaphoreCI.type = Semaphore::Type::BINARY;
-	m_SubmitSemaphore = Semaphore::Create(&m_SubmitSemaphoreCI);
+	semaphoreCI.debugName = "GEAR_CORE_Seamphore_Renderer_Submit";
+	semaphoreCI.device = m_Device;
+	semaphoreCI.type = Semaphore::Type::BINARY;
+	m_SubmitSemaphore = Semaphore::Create(&semaphoreCI);
 
 	SubmitRenderSurface(m_CI.window->GetRenderSurface());
 	InitialiseRenderPipelines(m_RenderSurface);
 	DebugRender::Initialise(m_Device);
 
 	//Set Default Objects
-	float zero0[sizeof(UniformBufferStructures::Lights)] = { 0 };
+	UniformBufferStructures::Lights zero0 = {};
 	Uniformbuffer<UniformBufferStructures::Lights>::CreateInfo lightsUBCI;
 	lightsUBCI.debugName = "GEAR_CORE_LightUBType_Renderer: Empty";
 	lightsUBCI.device = m_Device;
-	lightsUBCI.data = zero0;
+	lightsUBCI.data = &zero0;
 	m_EmptyLightsUB = CreateRef<Uniformbuffer<UniformBufferStructures::Lights>>(&lightsUBCI);
 
 	uint8_t dataBlack[4] = { 0x00, 0x00, 0x00, 0xFF };

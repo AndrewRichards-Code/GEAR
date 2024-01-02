@@ -58,11 +58,8 @@ namespace gear
 
 			//Present Synchronisation Primitives
 			std::vector<miru::base::FenceRef> m_DrawFences;
-			miru::base::Fence::CreateInfo m_DrawFenceCI;
 			miru::base::SemaphoreRef m_AcquireSemaphore;
-			miru::base::Semaphore::CreateInfo m_AcquireSemaphoreCI;
 			miru::base::SemaphoreRef m_SubmitSemaphore;
-			miru::base::Semaphore::CreateInfo m_SubmitSemaphoreCI;
 
 			//Renderering Objects
 			Ref<objects::Camera> m_MainRenderCamera;
