@@ -232,6 +232,11 @@ void Renderer::SubmitTextLine(const Ref<Model>& obj)
 	m_TextQueue.push_back(obj);
 }
 
+void Renderer::SubmitTexturesForUpload(const std::vector<Ref<Texture>>& textures)
+{
+	m_TextureUploadQueue.insert(m_TextureUploadQueue.end(), textures.begin(), textures.end());
+}
+
 void Renderer::SubmitUIContext(ui::UIContext* uiContext)
 {
 	m_UIContext = uiContext;

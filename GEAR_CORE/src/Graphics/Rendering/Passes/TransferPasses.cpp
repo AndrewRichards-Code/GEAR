@@ -117,5 +117,12 @@ void TransferPasses::Upload(Renderer& renderer, std::vector<Ref<Camera>>& allCam
 		uploadPassParameters->AddResourceView(debugProbeInfoUB);
 	}
 
+	//Upload Textures
+	for (const auto& texture : renderer.GetTextureUploadQueue())
+	{
+		uploadPassParameters->AddResourceView(texture);
+	}
+	renderer.GetTextureUploadQueue().clear();
+
 	renderGraph.AddPass("Upload Transfer", uploadPassParameters, CommandPool::QueueType::TRANSFER, nullptr);
 }

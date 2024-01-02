@@ -69,6 +69,7 @@ namespace gear
 			Ref<objects::Skybox> m_Skybox;
 			std::vector<Ref<objects::Model>> m_ModelQueue;
 			std::vector<Ref<objects::Model>> m_TextQueue;
+			std::vector<Ref<Texture>> m_TextureUploadQueue;
 			ui::UIContext* m_UIContext = nullptr;
 			PostProcessingInfo m_PostProcessingInfo;
 
@@ -98,6 +99,7 @@ namespace gear
 			void SubmitSkybox(const Ref<objects::Skybox>& skybox);
 			void SubmitModel(const Ref<objects::Model>& obj);
 			void SubmitTextLine(const Ref<objects::Model>& obj);
+			void SubmitTexturesForUpload(const std::vector<Ref<Texture>>& textures);
 			void SubmitUIContext(ui::UIContext* uiContext);
 
 		private:
@@ -122,6 +124,7 @@ namespace gear
 			inline Ref<objects::Camera> GetTextCamera() { return m_TextCamera; }
 			inline const std::vector<Ref<objects::Model>>& GetModelQueue() const { return m_ModelQueue; }
 			inline const std::vector<Ref<objects::Model>>& GetTextQueue() const { return m_TextQueue; }
+			inline std::vector<Ref<Texture>>& GetTextureUploadQueue() { return m_TextureUploadQueue; }
 			inline const RenderGraph& GetRenderGraph() const { return m_RenderGraph; }
 			inline RenderGraph& GetRenderGraph() { return m_RenderGraph; }
 			inline PostProcessingInfo& GetPostProcessingInfo() { return m_PostProcessingInfo; }

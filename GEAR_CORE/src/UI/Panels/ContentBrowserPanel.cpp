@@ -7,6 +7,7 @@
 #include "Core/FileDialog.h"
 #include "Graphics/Texture.h"
 #include "Graphics/Window.h"
+#include "Graphics/Rendering/Renderer.h"
 
 using namespace gear;
 using namespace graphics;
@@ -46,67 +47,6 @@ ContentBrowserPanel::ContentBrowserPanel(CreateInfo* pCreateInfo)
 		fileExt.texture = CreateRef<Texture>(&tCI);
 	}
 
-	{
-		CommandPool::CreateInfo cmdPoolCI = { "ContentBrowser", UIContext::GetUIContext()->GetContext(), CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT, CommandPool::QueueType::GRAPHICS };
-		CommandPoolRef cmdPool = CommandPool::Create(&cmdPoolCI);
-
-		CommandBuffer::CreateInfo cmdBufferCI = { "ContentBrowser", cmdPool, CommandBuffer::Level::PRIMARY, 1 };
-		CommandBufferRef cmdBuffer = CommandBuffer::Create(&cmdBufferCI);
-
-		Fence::CreateInfo fenceCI = { "ContentBrowser", UIContext::GetUIContext()->GetDevice(), false, UINT64_MAX };
-		FenceRef fence = Fence::Create(&fenceCI);
-
-		cmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
-
-		std::vector<BarrierRef> barriers;
-		Barrier::CreateInfo barrierCI;
-		barrierCI.type = Barrier::Type::IMAGE;
-		barrierCI.srcAccess = Barrier::AccessBit::NONE_BIT;
-		barrierCI.dstAccess = Barrier::AccessBit::TRANSFER_WRITE_BIT;
-		barrierCI.srcQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-		barrierCI.dstQueueFamilyIndex = Barrier::QueueFamilyIgnored;
-		barrierCI.image = m_FolderTexture->GetImage();
-		barrierCI.oldLayout = Image::Layout::UNKNOWN;
-		barrierCI.newLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
-		barrierCI.subresourceRange = { Image::AspectBit::COLOUR_BIT, 0, 1, 0, 1 };
-		barriers.emplace_back(Barrier::Create(&barrierCI));
-		barrierCI.image = m_FileTexture->GetImage();
-		barriers.emplace_back(Barrier::Create(&barrierCI));
-		for (auto& fileExt : m_FileExtTextureFilepath)
-		{
-			barrierCI.image = fileExt.texture->GetImage();
-			barriers.emplace_back(Barrier::Create(&barrierCI));
-		}
-		cmdBuffer->PipelineBarrier(0, PipelineStageBit::TOP_OF_PIPE_BIT, PipelineStageBit::TRANSFER_BIT, DependencyBit::NONE_BIT, barriers);
-		barriers.clear();
-		
-		cmdBuffer->CopyBufferToImage(0, m_FolderTexture->GetCPUBuffer(), m_FolderTexture->GetImage(), Image::Layout::TRANSFER_DST_OPTIMAL, { { 0, 0, 0, { Image::AspectBit::COLOUR_BIT, 0, 0, 1 }, { 0, 0, 0 }, { m_FolderTexture->GetWidth(), m_FolderTexture->GetHeight(), m_FolderTexture->GetDepth() }} });
-		cmdBuffer->CopyBufferToImage(0, m_FileTexture->GetCPUBuffer(), m_FileTexture->GetImage(), Image::Layout::TRANSFER_DST_OPTIMAL, { { 0, 0, 0, { Image::AspectBit::COLOUR_BIT, 0, 0, 1 }, { 0, 0, 0 }, { m_FileTexture->GetWidth(), m_FileTexture->GetHeight(), m_FileTexture->GetDepth() }} });
-		for (auto& fileExt : m_FileExtTextureFilepath)
-			cmdBuffer->CopyBufferToImage(0, fileExt.texture->GetCPUBuffer(), fileExt.texture->GetImage(), Image::Layout::TRANSFER_DST_OPTIMAL, { { 0, 0, 0, { Image::AspectBit::COLOUR_BIT, 0, 0, 1 }, { 0, 0, 0 }, { fileExt.texture->GetWidth(), fileExt.texture->GetHeight(), fileExt.texture->GetDepth() }} });
-
-		barrierCI.srcAccess = Barrier::AccessBit::TRANSFER_WRITE_BIT;
-		barrierCI.dstAccess = Barrier::AccessBit::SHADER_READ_BIT;
-		barrierCI.image = m_FolderTexture->GetImage();
-		barrierCI.oldLayout = Image::Layout::TRANSFER_DST_OPTIMAL;
-		barrierCI.newLayout = Image::Layout::SHADER_READ_ONLY_OPTIMAL;
-		barriers.emplace_back(Barrier::Create(&barrierCI));
-		barrierCI.image = m_FileTexture->GetImage();
-		barriers.emplace_back(Barrier::Create(&barrierCI));
-		for (auto& fileExt : m_FileExtTextureFilepath)
-		{
-			barrierCI.image = fileExt.texture->GetImage();
-			barriers.emplace_back(Barrier::Create(&barrierCI));
-		}
-		cmdBuffer->PipelineBarrier(0, PipelineStageBit::TRANSFER_BIT, PipelineStageBit::FRAGMENT_SHADER_BIT, DependencyBit::NONE_BIT, barriers);
-		barriers.clear();
-
-		cmdBuffer->End(0);
-		CommandBuffer::SubmitInfo si = { {0}, {}, {}, {}, {}, {} };
-		cmdBuffer->Submit({ si }, fence);
-		fence->Wait();
-	}
-
 	m_FolderTextureID = GetTextureID(m_FolderTexture->GetImageView(), UIContext::GetUIContext(), false);
 	m_FileTextureID = GetTextureID(m_FileTexture->GetImageView(), UIContext::GetUIContext(), false);
 	for (auto& fileExt : m_FileExtTextureFilepath)
@@ -125,6 +65,31 @@ ContentBrowserPanel::~ContentBrowserPanel()
 
 void ContentBrowserPanel::Draw()
 {
+	UIContext* uiContext = UIContext::GetUIContext();
+	if (!uiContext)
+		return;
+
+	//Submit Folder and File Texture to be uploaded
+	if (m_UploadFolderAndFileTextures)
+	{
+		for (auto& panel : uiContext->GetEditorPanelsByType<ViewportPanel>())
+		{
+			if (panel)
+			{
+				std::vector<Ref<Texture>> textures;
+				textures.reserve(m_FileExtTextureFilepath.size() + 2);
+				textures.push_back(m_FolderTexture);
+				textures.push_back(m_FileTexture);
+				for (auto& fileExt : m_FileExtTextureFilepath)
+					textures.push_back(fileExt.texture);
+
+				panel->GetCreateInfo().renderer->SubmitTexturesForUpload(textures);
+				m_UploadFolderAndFileTextures = false;
+				break;
+			}
+		}
+	}
+
 	std::string id = UIContext::GetUIContext()->GetUniqueIDString<ContentBrowserPanel>("Content Browser", this);
 	if (ImGui::Begin(id.c_str(), &m_Open))
 	{
@@ -223,7 +188,7 @@ void ContentBrowserPanel::Draw()
 							ContentEditorPanel::CreateInfo contentEditorCI;
 							contentEditorCI.currentFilepathFull = directory.path();
 							contentEditorCI.filepathExt = pathExtStr;
-							UIContext::GetUIContext()->GetEditorPanels().emplace_back(CreateRef<ContentEditorPanel>(&contentEditorCI));
+							uiContext->GetEditorPanels().emplace_back(CreateRef<ContentEditorPanel>(&contentEditorCI));
 						}
 					}
 

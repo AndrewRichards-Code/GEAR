@@ -58,6 +58,9 @@ namespace gear
 			void SetResourceView(const std::pair<uint32_t, uint32_t>& set_binding, ResourceView resourceView);
 			void SetResourceView(const std::string& name, ResourceView resourceView);
 
+			//Use with caution as the Resource will be added to this pass even if it's not used by a RenderPipeline
+			void AddResourceViewAtPipelineStage(ResourceView resourceView, miru::base::PipelineStageBit pipelineStage);
+
 			void AddVertexBuffer(ResourceView resourceView);
 			void AddIndexBuffer(ResourceView resourceView);
 

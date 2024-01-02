@@ -36,6 +36,7 @@ namespace gear
 			private:
 				CreateInfo m_CI;
 
+				bool m_UploadFolderAndFileTextures = true;
 				Ref<graphics::Texture> m_FolderTexture;
 				Ref<graphics::Texture> m_FileTexture;
 				const std::string m_FolderTextureFilepath = "res/icons/icons8-folder-512.png";

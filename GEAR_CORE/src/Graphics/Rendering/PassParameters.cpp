@@ -118,8 +118,6 @@ void TaskPassParameters::SetResourceView(const std::pair<uint32_t, uint32_t>& se
 		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "The Resource DescriptorType does not match ResourceBindingDescription DescriptorType.");
 	}
 	
-	resourceView.pipelineStage = ResourceView::ShaderStageToPipelineStage(rbd.stage);
-
 	switch (resourceView.descriptorType)
 	{
 	case DescriptorType::SAMPLER:
@@ -208,6 +206,18 @@ void TaskPassParameters::SetResourceView(const std::pair<uint32_t, uint32_t>& se
 	}
 	}
 
+	AddResourceViewAtPipelineStage(resourceView, ResourceView::ShaderStageToPipelineStage(rbd.stage));
+}
+
+void TaskPassParameters::SetResourceView(const std::string& name, ResourceView resourceView)
+{
+	SetResourceView(FindResourceViewSetBinding(name), resourceView);
+}
+
+void TaskPassParameters::AddResourceViewAtPipelineStage(ResourceView resourceView, PipelineStageBit pipelineStage)
+{
+	resourceView.pipelineStage = pipelineStage;
+
 	if (resourceView.state == Resource::State::SHADER_READ_ONLY)
 	{
 		m_InputResourceViews.push_back(resourceView);
@@ -221,11 +231,6 @@ void TaskPassParameters::SetResourceView(const std::pair<uint32_t, uint32_t>& se
 	{
 		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "Resource::State is not SHADER_READ_ONLY or SHADER_READ_WRITE.");
 	}
-}
-
-void TaskPassParameters::SetResourceView(const std::string& name, ResourceView resourceView)
-{
-	SetResourceView(FindResourceViewSetBinding(name), resourceView);
 }
 
 void TaskPassParameters::AddVertexBuffer(ResourceView resourceView)
