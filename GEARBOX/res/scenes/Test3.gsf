@@ -9,12 +9,12 @@
                         1.0,
                         1.0,
                         1.0,
-                        2.0
+                        20.0
                     ],
                     "debugName": "Light",
                     "spotInnerAngle": 0.7853981852531433,
                     "spotOuterAngle": 0.7853981852531433,
-                    "type": 2
+                    "type": 0
                 },
                 "NameComponent": {
                     "name": "Light"
@@ -48,9 +48,9 @@
                     "debugName": "Model-Cube",
                     "mesh": {
                         "material": [
-                            6329905403170970994
+                            14714151125182500088
                         ],
-                        "uuid": 15503392900199281392
+                        "uuid": 14225638176759617795
                     },
                     "renderPipelineName": "PBROpaque"
                 },
@@ -119,9 +119,9 @@
                     "debugName": "Model-Cube",
                     "mesh": {
                         "material": [
-                            16730467119178410765
+                            9276284822617795263
                         ],
-                        "uuid": 1823474128842560752
+                        "uuid": 5180807828337550151
                     },
                     "renderPipelineName": "PBROpaque"
                 },
@@ -156,7 +156,7 @@
                 "CameraComponent": {
                     "debugName": "Camera",
                     "orthographicParams": {
-                        "bottom": 1.4459278583526611,
+                        "bottom": 2.5674374103546143,
                         "far": 0.0,
                         "left": 3370280550400.0,
                         "near": 3000.0,
@@ -164,7 +164,7 @@
                         "top": 0.0010000000474974513
                     },
                     "perspectiveParams": {
-                        "aspectRatio": 1.4459278583526611,
+                        "aspectRatio": 2.5674374103546143,
                         "horizonalFOV": 1.5707963267948966,
                         "zFar": 3000.0,
                         "zNear": 0.0010000000474974513
@@ -200,7 +200,7 @@
             }
         },
         "references": {
-            "15503392900199281392": {
+            "14225638176759617795": {
                 "data": {
                     "debugName": "Mesh-Cube",
                     "filepath": "C:\\Users\\Andrew\\source\\repos\\GEAR\\GEARBOX\\res\\obj\\cube.fbx"
@@ -209,31 +209,9 @@
                     "hash_code": 3736462184517488487,
                     "name": "struct gear::objects::Mesh::CreateInfo"
                 },
-                "uuid": 15503392900199281392
+                "uuid": 14225638176759617795
             },
-            "16730467119178410765": {
-                "data": {
-                    "debugName": "DefaultMaterial",
-                    "filepath": "res/assets/DefaultMaterial.gaf"
-                },
-                "type": {
-                    "hash_code": 18167184297631927809,
-                    "name": "struct gear::objects::Material::CreateInfo"
-                },
-                "uuid": 16730467119178410765
-            },
-            "1823474128842560752": {
-                "data": {
-                    "debugName": "Mesh-Cube",
-                    "filepath": "C:\\Users\\Andrew\\source\\repos\\GEAR\\GEARBOX\\res\\obj\\quad.fbx"
-                },
-                "type": {
-                    "hash_code": 3736462184517488487,
-                    "name": "struct gear::objects::Mesh::CreateInfo"
-                },
-                "uuid": 1823474128842560752
-            },
-            "6329905403170970994": {
+            "14714151125182500088": {
                 "data": {
                     "debugName": "Material",
                     "filepath": "res/assets/Material.gaf"
@@ -242,7 +220,29 @@
                     "hash_code": 18167184297631927809,
                     "name": "struct gear::objects::Material::CreateInfo"
                 },
-                "uuid": 6329905403170970994
+                "uuid": 14714151125182500088
+            },
+            "5180807828337550151": {
+                "data": {
+                    "debugName": "Mesh-Cube",
+                    "filepath": "C:\\Users\\Andrew\\source\\repos\\GEAR\\GEARBOX\\res\\obj\\quad.fbx"
+                },
+                "type": {
+                    "hash_code": 3736462184517488487,
+                    "name": "struct gear::objects::Mesh::CreateInfo"
+                },
+                "uuid": 5180807828337550151
+            },
+            "9276284822617795263": {
+                "data": {
+                    "debugName": "DefaultMaterial",
+                    "filepath": "res/assets/DefaultMaterial.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 9276284822617795263
             }
         },
         "uuid": 17601971750853432418

@@ -83,14 +83,26 @@ void MainRenderPasses::PBROpaque(Renderer& renderer)
 	const std::vector<Ref<objects::Light>>& lights = renderer.GetLights();
 	const Ref<objects::Skybox>& skybox = renderer.GetSkybox();
 
+	bool hasLights = !lights.empty();
+	bool omni = false;
+	Ref<objects::Probe> probe = nullptr;
+	if (hasLights)
+	{
+		probe = lights[0]->GetProbe();
+		omni =  probe->m_CI.directionType == Probe::DirectionType::OMNI;
+	}
+
 	const Renderer::DefaultObjects& defaultObject = renderer.GetDefaultObjects();
-	const Ref<Uniformbuffer<UniformBufferStructures::Lights>>& lightsUB = !lights.empty() ? lights[0]->GetUB() : defaultObject.emptyLightsUB;
+
+	const Ref<Uniformbuffer<UniformBufferStructures::Lights>>& lightsUB = hasLights ? lights[0]->GetUB() : defaultObject.emptyLightsUB;
+
 	const Ref<Texture>& diffuseIrradiance = skybox ? skybox->GetGeneratedDiffuseCubemap() : defaultObject.blackCubeTexture;
 	const Ref<Texture>& specularIrradiance = skybox ? skybox->GetGeneratedSpecularCubemap() : defaultObject.blackCubeTexture;
 	const Ref<Texture>& specularBRDF_LUT = skybox ? skybox->GetGeneratedSpecularBRDF_LUT() : defaultObject.black2DTexture;
-	const Ref<Texture>& shadowMap2D = !lights.empty() ? lights[0]->GetProbe()->m_DepthTexture : defaultObject.black2DTexture;
-	const Ref<Texture>& shadowMapCube = !lights.empty() ? lights[0]->GetProbe()->m_DepthTexture : defaultObject.blackCubeTexture;
-	const Ref<Uniformbuffer<UniformBufferStructures::ProbeInfo>>& probeInfoUB = !lights.empty() ? lights[0]->GetProbe()->GetUB() : defaultObject.emptyProbeUB;
+
+	const Ref<Texture>& shadowMap2D = probe && !omni ? probe->m_DepthTexture : defaultObject.black2DTexture;
+	const Ref<Texture>& shadowMapCube = probe && omni ? probe->m_DepthTexture : defaultObject.blackCubeTexture;
+	const Ref<Uniformbuffer<UniformBufferStructures::ProbeInfo>>& probeInfoUB = probe ? probe->GetUB() : defaultObject.emptyProbeUB;
 
 	for (const auto& model : renderer.GetModelQueue())
 	{
@@ -109,7 +121,7 @@ void MainRenderPasses::PBROpaque(Renderer& renderer)
 			mainRenderPassParameters->SetResourceView("specularIrradiance", ResourceView(specularIrradiance, DescriptorType::COMBINED_IMAGE_SAMPLER));
 			mainRenderPassParameters->SetResourceView("specularBRDF_LUT", ResourceView(specularBRDF_LUT, DescriptorType::COMBINED_IMAGE_SAMPLER));
 			mainRenderPassParameters->SetResourceView("shadowMap2D", ResourceView(shadowMap2D, DescriptorType::COMBINED_IMAGE_SAMPLER));
-			//mainRenderPassParameters->SetResourceView("shadowMapCube", ResourceView(shadowMapCube, DescriptorType::COMBINED_IMAGE_SAMPLER));
+			mainRenderPassParameters->SetResourceView("shadowMapCube", ResourceView(shadowMapCube, DescriptorType::COMBINED_IMAGE_SAMPLER));
 			mainRenderPassParameters->SetResourceView("probeInfo", ResourceView(probeInfoUB));
 			mainRenderPassParameters->SetResourceView("model", ResourceView(model->GetUB()));
 			mainRenderPassParameters->SetResourceView("pbrConstants", ResourceView(material->GetUB()));

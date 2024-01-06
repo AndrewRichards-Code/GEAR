@@ -93,37 +93,42 @@ float3 GetEmissive(PS_IN IN)
 	return pbrConstants.emissive.rgb * emissive_ImageCIS.Sample(emissive_SamplerCIS, IN.texCoord).rgb; 
 }
 
-
-
-float GetShadowStrength(float4 worldSpacePosition, float type)
+float GetShadowStrength(float4 worldSpacePosition, Light light, float type)
 {
 	float shadowStrength = 1.0;
+	float bias = 0.000001;
+	float lightSpaceZ = 1.0;
+	float shadowDepth = 0.0;
 	
 	if (type == 0.0)
 	{
+		float3 lightDirection = worldSpacePosition.xyz - light.position.xyz;
+		uint faceID = UVWToFaceIndex(lightDirection);
+		float3 lightSpaceProjectedPosition = PerspectiveDivide(worldSpacePosition, probeInfo.view[faceID], probeInfo.proj);
+		lightSpaceZ = lightSpaceProjectedPosition.z;
+		shadowDepth = shadowMapCube_ImageCIS.SampleLevel(shadowMapCube_SamplerCIS, lightDirection, 0.0).x;
 	}
 	else if (type == 1.0)
 	{
-	}
+		lightSpaceZ = 1.0;
+		shadowDepth = 0.0;
+	}	
 	else if (type == 2.0)
 	{
 		float3 lightSpaceProjectedPosition = PerspectiveDivide(worldSpacePosition, probeInfo.view[0], probeInfo.proj);
 		float2 shadowTextureCoords = (lightSpaceProjectedPosition.xy / 2.0) + float2(0.5, 0.5);
-		float lightSpaceZ = lightSpaceProjectedPosition.z;
-		float shadowDepth = shadowMap2D_ImageCIS.SampleLevel(shadowMap2D_SamplerCIS, shadowTextureCoords, 0.0).x;
-		
-		float bias = 0.000001;
-		
-		if (shadowDepth - bias > lightSpaceZ) //Reverse Z
-		{
-			shadowStrength = 0.0;
-		}
+		lightSpaceZ = lightSpaceProjectedPosition.z;
+		shadowDepth = shadowMap2D_ImageCIS.SampleLevel(shadowMap2D_SamplerCIS, shadowTextureCoords, 0.0).x;
 	}
 	else
 	{
 		shadowStrength = 1.0;
 	}
 	
+	if (shadowDepth - bias > lightSpaceZ) //Reverse Z
+	{
+		shadowStrength = 0.0;
+	}
 	return shadowStrength;
 }
 
@@ -160,7 +165,7 @@ PS_OUT ps_main(PS_IN IN)
 		if (light.type_valid_spotInner_spotOuter.y == 0.0)
 			continue;
 		
-		if (GetShadowStrength(IN.worldSpace, light.type_valid_spotInner_spotOuter.x) == 0.0)
+		if (GetShadowStrength(IN.worldSpace, light, light.type_valid_spotInner_spotOuter.x) == 0.0)
 			continue;
 		
 		//Input light vector(retro).
