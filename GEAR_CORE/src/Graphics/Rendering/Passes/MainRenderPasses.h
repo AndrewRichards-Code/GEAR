@@ -18,7 +18,7 @@ namespace gear
 				public:
 					static void Clear(Renderer& renderer);
 					static void Skybox(Renderer& renderer, Ref<objects::Skybox> skybox);
-					static void PBROpaque(Renderer& renderer, Ref<objects::Light> light, Ref<objects::Skybox> skybox);
+					static void PBROpaque(Renderer& renderer);
 				};
 			}
 		}

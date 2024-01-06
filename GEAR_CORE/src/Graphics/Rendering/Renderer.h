@@ -43,6 +43,13 @@ namespace gear
 					Ref<Uniformbuffer<UniformBufferStructures::HDRInfo>> UB;
 				} hdrSettings;
 			};
+			struct DefaultObjects
+			{
+				Ref<Uniformbuffer<UniformBufferStructures::Lights>> emptyLightsUB;
+				Ref<Uniformbuffer<UniformBufferStructures::ProbeInfo>> emptyProbeUB;
+				Ref<Texture> black2DTexture;
+				Ref<Texture> blackCubeTexture;
+			};
 
 		private:
 			CreateInfo m_CI;
@@ -73,10 +80,7 @@ namespace gear
 			ui::UIContext* m_UIContext = nullptr;
 			PostProcessingInfo m_PostProcessingInfo;
 
-			//Default Objects
-			Ref<Uniformbuffer<UniformBufferStructures::Lights>> m_EmptyLightsUB;
-			Ref<Texture> m_Black2DTexture;
-			Ref<Texture> m_BlackCubeTexture;
+			static DefaultObjects s_DefaultObjects;
 
 			uint32_t m_FrameIndex = 0;
 			uint32_t m_FrameCount = 0;
@@ -91,6 +95,9 @@ namespace gear
 		private:
 			void InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface);
 			void UninitialiseRenderPipelines();
+
+			void InitialiseDefaultObjects();
+			void UninitialiseDefaultObjects();
 
 		public:
 			void SubmitRenderSurface(const Ref<RenderSurface>& renderSurface);
@@ -122,12 +129,15 @@ namespace gear
 			inline Ref<RenderSurface> GetRenderSurface() { return m_RenderSurface; }
 			inline Ref<objects::Camera> GetCamera() { return m_MainRenderCamera; }
 			inline Ref<objects::Camera> GetTextCamera() { return m_TextCamera; }
+			inline const std::vector<Ref<objects::Light>>& GetLights() { return m_Lights; }
+			inline const Ref<objects::Skybox>& GetSkybox() { return m_Skybox; }
 			inline const std::vector<Ref<objects::Model>>& GetModelQueue() const { return m_ModelQueue; }
 			inline const std::vector<Ref<objects::Model>>& GetTextQueue() const { return m_TextQueue; }
 			inline std::vector<Ref<Texture>>& GetTextureUploadQueue() { return m_TextureUploadQueue; }
 			inline const RenderGraph& GetRenderGraph() const { return m_RenderGraph; }
 			inline RenderGraph& GetRenderGraph() { return m_RenderGraph; }
 			inline PostProcessingInfo& GetPostProcessingInfo() { return m_PostProcessingInfo; }
+			static inline const DefaultObjects& GetDefaultObjects() { return s_DefaultObjects; }
 
 			inline const uint32_t& GetFrameIndex() const { return m_FrameIndex; }
 			inline const uint32_t& GetFrameCount() const { return m_FrameCount; }

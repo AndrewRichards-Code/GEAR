@@ -6,6 +6,7 @@
 #include "Graphics/VertexBuffer.h"
 
 #include "Objects/Light.h"
+#include "Objects/Probe.h"
 
 using namespace gear;
 using namespace graphics;
@@ -71,13 +72,25 @@ void MainRenderPasses::Skybox(Renderer& renderer, Ref<objects::Skybox> skybox)
 		});
 }
 
-void MainRenderPasses::PBROpaque(Renderer& renderer, Ref<objects::Light> light, Ref<objects::Skybox> skybox)
+void MainRenderPasses::PBROpaque(Renderer& renderer)
 {
 	RenderGraph& renderGraph = renderer.GetRenderGraph();
 	const Ref<RenderSurface>& renderSurface = renderer.GetRenderSurface();
 	uint32_t width = renderSurface->GetWidth();
 	uint32_t height = renderSurface->GetHeight();
 	bool msaa = renderSurface->GetAntiAliasing() > Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+
+	const std::vector<Ref<objects::Light>>& lights = renderer.GetLights();
+	const Ref<objects::Skybox>& skybox = renderer.GetSkybox();
+
+	const Renderer::DefaultObjects& defaultObject = renderer.GetDefaultObjects();
+	const Ref<Uniformbuffer<UniformBufferStructures::Lights>>& lightsUB = !lights.empty() ? lights[0]->GetUB() : defaultObject.emptyLightsUB;
+	const Ref<Texture>& diffuseIrradiance = skybox ? skybox->GetGeneratedDiffuseCubemap() : defaultObject.blackCubeTexture;
+	const Ref<Texture>& specularIrradiance = skybox ? skybox->GetGeneratedSpecularCubemap() : defaultObject.blackCubeTexture;
+	const Ref<Texture>& specularBRDF_LUT = skybox ? skybox->GetGeneratedSpecularBRDF_LUT() : defaultObject.black2DTexture;
+	const Ref<Texture>& shadowMap2D = !lights.empty() ? lights[0]->GetProbe()->m_DepthTexture : defaultObject.black2DTexture;
+	const Ref<Texture>& shadowMapCube = !lights.empty() ? lights[0]->GetProbe()->m_DepthTexture : defaultObject.blackCubeTexture;
+	const Ref<Uniformbuffer<UniformBufferStructures::ProbeInfo>>& probeInfoUB = !lights.empty() ? lights[0]->GetProbe()->GetUB() : defaultObject.emptyProbeUB;
 
 	for (const auto& model : renderer.GetModelQueue())
 	{
@@ -87,21 +100,25 @@ void MainRenderPasses::PBROpaque(Renderer& renderer, Ref<objects::Light> light, 
 		{
 			Ref<TaskPassParameters> mainRenderPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["PBROpaque"]);
 			const Ref<objects::Material>& material = mesh->GetMaterial(i);
+			auto& materialTextures = material->GetTextures();
 			mainRenderPassParameters->AddVertexBuffer(ResourceView(mesh->GetVertexBuffers()[i]));
 			mainRenderPassParameters->AddIndexBuffer(ResourceView(mesh->GetIndexBuffers()[i]));
 			mainRenderPassParameters->SetResourceView("camera", ResourceView(renderer.GetCamera()->GetCameraUB()));
-			mainRenderPassParameters->SetResourceView("lights", ResourceView(light->GetUB()));
-			mainRenderPassParameters->SetResourceView("diffuseIrradiance", ResourceView(skybox->GetGeneratedDiffuseCubemap(), DescriptorType::COMBINED_IMAGE_SAMPLER));
-			mainRenderPassParameters->SetResourceView("specularIrradiance", ResourceView(skybox->GetGeneratedSpecularCubemap(), DescriptorType::COMBINED_IMAGE_SAMPLER));
-			mainRenderPassParameters->SetResourceView("specularBRDF_LUT", ResourceView(skybox->GetGeneratedSpecularBRDF_LUT(), DescriptorType::COMBINED_IMAGE_SAMPLER));
+			mainRenderPassParameters->SetResourceView("lights", ResourceView(lightsUB));
+			mainRenderPassParameters->SetResourceView("diffuseIrradiance", ResourceView(diffuseIrradiance, DescriptorType::COMBINED_IMAGE_SAMPLER));
+			mainRenderPassParameters->SetResourceView("specularIrradiance", ResourceView(specularIrradiance, DescriptorType::COMBINED_IMAGE_SAMPLER));
+			mainRenderPassParameters->SetResourceView("specularBRDF_LUT", ResourceView(specularBRDF_LUT, DescriptorType::COMBINED_IMAGE_SAMPLER));
+			mainRenderPassParameters->SetResourceView("shadowMap2D", ResourceView(shadowMap2D, DescriptorType::COMBINED_IMAGE_SAMPLER));
+			//mainRenderPassParameters->SetResourceView("shadowMapCube", ResourceView(shadowMapCube, DescriptorType::COMBINED_IMAGE_SAMPLER));
+			mainRenderPassParameters->SetResourceView("probeInfo", ResourceView(probeInfoUB));
 			mainRenderPassParameters->SetResourceView("model", ResourceView(model->GetUB()));
 			mainRenderPassParameters->SetResourceView("pbrConstants", ResourceView(material->GetUB()));
-			mainRenderPassParameters->SetResourceView("normal", ResourceView(material->GetTextures()[Material::TextureType::NORMAL], DescriptorType::COMBINED_IMAGE_SAMPLER));
-			mainRenderPassParameters->SetResourceView("albedo", ResourceView(material->GetTextures()[Material::TextureType::ALBEDO], DescriptorType::COMBINED_IMAGE_SAMPLER));
-			mainRenderPassParameters->SetResourceView("metallic", ResourceView(material->GetTextures()[Material::TextureType::METALLIC], DescriptorType::COMBINED_IMAGE_SAMPLER));
-			mainRenderPassParameters->SetResourceView("roughness", ResourceView(material->GetTextures()[Material::TextureType::ROUGHNESS], DescriptorType::COMBINED_IMAGE_SAMPLER));
-			mainRenderPassParameters->SetResourceView("ambientOcclusion", ResourceView(material->GetTextures()[Material::TextureType::AMBIENT_OCCLUSION], DescriptorType::COMBINED_IMAGE_SAMPLER));
-			mainRenderPassParameters->SetResourceView("emissive", ResourceView(material->GetTextures()[Material::TextureType::EMISSIVE], DescriptorType::COMBINED_IMAGE_SAMPLER));
+			mainRenderPassParameters->SetResourceView("normal", ResourceView(materialTextures[Material::TextureType::NORMAL], DescriptorType::COMBINED_IMAGE_SAMPLER));
+			mainRenderPassParameters->SetResourceView("albedo", ResourceView(materialTextures[Material::TextureType::ALBEDO], DescriptorType::COMBINED_IMAGE_SAMPLER));
+			mainRenderPassParameters->SetResourceView("metallic", ResourceView(materialTextures[Material::TextureType::METALLIC], DescriptorType::COMBINED_IMAGE_SAMPLER));
+			mainRenderPassParameters->SetResourceView("roughness", ResourceView(materialTextures[Material::TextureType::ROUGHNESS], DescriptorType::COMBINED_IMAGE_SAMPLER));
+			mainRenderPassParameters->SetResourceView("ambientOcclusion", ResourceView(materialTextures[Material::TextureType::AMBIENT_OCCLUSION], DescriptorType::COMBINED_IMAGE_SAMPLER));
+			mainRenderPassParameters->SetResourceView("emissive", ResourceView(materialTextures[Material::TextureType::EMISSIVE], DescriptorType::COMBINED_IMAGE_SAMPLER));
 			if (msaa)
 				mainRenderPassParameters->AddAttachmentWithResolve(0, ResourceView(renderSurface->GetMSAAColourImageView(), Resource::State::COLOUR_ATTACHMENT),
 					ResourceView(renderSurface->GetColourImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 0.0f });

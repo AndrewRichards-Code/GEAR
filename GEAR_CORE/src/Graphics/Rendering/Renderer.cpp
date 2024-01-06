@@ -26,6 +26,7 @@ using namespace miru;
 using namespace base;
 
 std::map<std::string, Ref<RenderPipeline>> Renderer::s_RenderPipelines;
+Renderer::DefaultObjects Renderer::s_DefaultObjects;
 
 Renderer::Renderer(CreateInfo* pCreateInfo)
 {
@@ -63,47 +64,7 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 	DebugRender::Initialise(m_Device);
 
 	//Set Default Objects
-	UniformBufferStructures::Lights zero0 = {};
-	Uniformbuffer<UniformBufferStructures::Lights>::CreateInfo lightsUBCI;
-	lightsUBCI.debugName = "GEAR_CORE_LightUBType_Renderer: Empty";
-	lightsUBCI.device = m_Device;
-	lightsUBCI.data = &zero0;
-	m_EmptyLightsUB = CreateRef<Uniformbuffer<UniformBufferStructures::Lights>>(&lightsUBCI);
-
-	uint8_t dataBlack[4] = { 0x00, 0x00, 0x00, 0xFF };
-	Texture::CreateInfo texCI;
-	texCI.debugName = "GEAR_CORE_Texture_Renderer: Black Texture 2D";
-	texCI.device = m_Device;
-	texCI.dataType = Texture::DataType::DATA;
-	texCI.data.data = dataBlack;
-	texCI.data.size = 4;
-	texCI.data.width = 1;
-	texCI.data.height = 1;
-	texCI.data.depth = 1;
-	texCI.mipLevels = 1;
-	texCI.arrayLayers = 1;
-	texCI.type = miru::base::Image::Type::TYPE_2D;
-	texCI.format = miru::base::Image::Format::R8G8B8A8_UNORM;
-	texCI.samples = miru::base::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-	texCI.usage = miru::base::Image::UsageBit(0);
-	texCI.generateMipMaps = false;
-	texCI.gammaSpace = GammaSpace::LINEAR;
-	m_Black2DTexture = CreateRef<Texture>(&texCI);
-
-	uint8_t dataBlackCube[24] = {
-		0x00, 0x00, 0x00, 0xFF,
-		0x00, 0x00, 0x00, 0xFF,
-		0x00, 0x00, 0x00, 0xFF,
-		0x00, 0x00, 0x00, 0xFF,
-		0x00, 0x00, 0x00, 0xFF,
-		0x00, 0x00, 0x00, 0xFF
-	};
-	texCI.debugName = "GEAR_CORE_Texture_Renderer: Black Texture cube";
-	texCI.data.data = dataBlackCube;
-	texCI.data.size = 24;
-	texCI.arrayLayers = 6;
-	texCI.type = miru::base::Image::Type::TYPE_CUBE;
-	m_BlackCubeTexture = CreateRef<Texture>(&texCI);
+	InitialiseDefaultObjects();
 
 	//Set up Post Processing Info
 	{
@@ -133,6 +94,8 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 Renderer::~Renderer()
 {
 	m_Context->DeviceWaitIdle();
+
+	UninitialiseDefaultObjects();
 
 	DebugRender::Uninitialise();
 	UninitialiseRenderPipelines();
@@ -189,6 +152,66 @@ void Renderer::UninitialiseRenderPipelines()
 		pipeline.second = nullptr;
 
 	s_RenderPipelines.clear();
+}
+
+void Renderer::InitialiseDefaultObjects()
+{
+	UniformBufferStructures::Lights zero0 = {};
+	Uniformbuffer<UniformBufferStructures::Lights>::CreateInfo lightsUBCI;
+	lightsUBCI.debugName = "GEAR_CORE_LightUBType_Renderer: Empty";
+	lightsUBCI.device = m_Device;
+	lightsUBCI.data = &zero0;
+	s_DefaultObjects.emptyLightsUB = CreateRef<Uniformbuffer<UniformBufferStructures::Lights>>(&lightsUBCI);
+
+	UniformBufferStructures::ProbeInfo zero1 = {};
+	Uniformbuffer<UniformBufferStructures::ProbeInfo>::CreateInfo probeUBCI;
+	probeUBCI.debugName = "GEAR_CORE_ProbeUBType_Renderer: Empty";
+	probeUBCI.device = m_Device;
+	probeUBCI.data = &zero1;
+	s_DefaultObjects.emptyProbeUB = CreateRef<Uniformbuffer<UniformBufferStructures::ProbeInfo>>(&probeUBCI);
+
+	uint8_t dataBlack[4] = { 0x00, 0x00, 0x00, 0xFF };
+	Texture::CreateInfo texCI;
+	texCI.debugName = "GEAR_CORE_Texture_Renderer: Black Texture 2D";
+	texCI.device = m_Device;
+	texCI.dataType = Texture::DataType::DATA;
+	texCI.data.data = dataBlack;
+	texCI.data.size = 4;
+	texCI.data.width = 1;
+	texCI.data.height = 1;
+	texCI.data.depth = 1;
+	texCI.mipLevels = 1;
+	texCI.arrayLayers = 1;
+	texCI.type = miru::base::Image::Type::TYPE_2D;
+	texCI.format = miru::base::Image::Format::R8G8B8A8_UNORM;
+	texCI.samples = miru::base::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+	texCI.usage = miru::base::Image::UsageBit(0);
+	texCI.generateMipMaps = false;
+	texCI.gammaSpace = GammaSpace::LINEAR;
+	s_DefaultObjects.black2DTexture = CreateRef<Texture>(&texCI);
+
+	uint8_t dataBlackCube[24] = {
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF
+	};
+	texCI.debugName = "GEAR_CORE_Texture_Renderer: Black Texture cube";
+	texCI.data.data = dataBlackCube;
+	texCI.data.size = 24;
+	texCI.arrayLayers = 6;
+	texCI.type = miru::base::Image::Type::TYPE_CUBE;
+	s_DefaultObjects.blackCubeTexture = CreateRef<Texture>(&texCI);
+}
+
+void Renderer::UninitialiseDefaultObjects()
+{
+	s_DefaultObjects.emptyLightsUB = nullptr;
+	s_DefaultObjects.emptyProbeUB = nullptr;
+	s_DefaultObjects.black2DTexture = nullptr;
+	s_DefaultObjects.blackCubeTexture = nullptr;
 }
 
 void Renderer::SubmitRenderSurface(const Ref<RenderSurface>& renderSurface)
@@ -285,8 +308,8 @@ void Renderer::Draw()
 			}
 		}
 	}
-	texturesToProcess.insert(m_Black2DTexture);
-	texturesToProcess.insert(m_BlackCubeTexture);
+	texturesToProcess.insert(s_DefaultObjects.black2DTexture);
+	texturesToProcess.insert(s_DefaultObjects.blackCubeTexture);
 
 	//Reload textures
 	if (m_ReloadTextures)
@@ -336,11 +359,21 @@ void Renderer::Draw()
 		//Shadows
 		{
 			GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "Shadows");
-			for (const auto& light : m_Lights)
 			{
-				GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, light->GetProbe()->m_CI.debugName);
-				passes::ShadowPasses::Main(*this, light);
-				passes::ShadowPasses::DebugShowDepth(*this, light);
+				GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "Main");
+				for (const auto& light : m_Lights)
+				{
+					GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, light->GetProbe()->m_CI.debugName);
+					passes::ShadowPasses::Main(*this, light);
+				}
+			}
+			{
+				GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "DebugShowDepth");
+				for (const auto& light : m_Lights)
+				{
+					GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, light->GetProbe()->m_CI.debugName);
+					passes::ShadowPasses::DebugShowDepth(*this, light);
+				}
 			}
 		}
 
@@ -355,10 +388,10 @@ void Renderer::Draw()
 				passes::MainRenderPasses::Skybox(*this, m_Skybox);
 				clear = false;
 			}
-			if (m_MainRenderCamera && !m_ModelQueue.empty() && !m_Lights.empty() && m_Skybox)
+			if (m_MainRenderCamera && !m_ModelQueue.empty() && (!m_Lights.empty() || m_Skybox))
 			{
 				GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "PBR Opaque");
-				passes::MainRenderPasses::PBROpaque(*this, m_Lights[0], m_Skybox);
+				passes::MainRenderPasses::PBROpaque(*this);
 				clear = false;
 			}
 

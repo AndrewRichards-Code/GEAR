@@ -1,6 +1,7 @@
 #include "msc_common.h"
 #include "UniformBufferStructures.h"
 #include "PBRFunctions.h"
+#include "../Depth.h"
 #include "../CubeFunctions.h"
 
 struct VS_IN
@@ -31,9 +32,12 @@ struct PS_OUT
 
 MIRU_UNIFORM_BUFFER(0, 0, Camera, camera);
 MIRU_UNIFORM_BUFFER(0, 1, Lights, lights);
-MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 2, float4, diffuseIrradiance);
-MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 3, float4, specularIrradiance);
-MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 0, 4, float4, specularBRDF_LUT);
+MIRU_UNIFORM_BUFFER(0, 2, ProbeInfo, probeInfo);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 3, float4, diffuseIrradiance);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 4, float4, specularIrradiance);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 0, 5, float4, specularBRDF_LUT);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 0, 6, float4, shadowMap2D);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 7, float4, shadowMapCube);
 
 MIRU_UNIFORM_BUFFER(1, 0, Model, model);
 
@@ -89,6 +93,40 @@ float3 GetEmissive(PS_IN IN)
 	return pbrConstants.emissive.rgb * emissive_ImageCIS.Sample(emissive_SamplerCIS, IN.texCoord).rgb; 
 }
 
+
+
+float GetShadowStrength(float4 worldSpacePosition, float type)
+{
+	float shadowStrength = 1.0;
+	
+	if (type == 0.0)
+	{
+	}
+	else if (type == 1.0)
+	{
+	}
+	else if (type == 2.0)
+	{
+		float3 lightSpaceProjectedPosition = PerspectiveDivide(worldSpacePosition, probeInfo.view[0], probeInfo.proj);
+		float2 shadowTextureCoords = (lightSpaceProjectedPosition.xy / 2.0) + float2(0.5, 0.5);
+		float lightSpaceZ = lightSpaceProjectedPosition.z;
+		float shadowDepth = shadowMap2D_ImageCIS.SampleLevel(shadowMap2D_SamplerCIS, shadowTextureCoords, 0.0).x;
+		
+		float bias = 0.000001;
+		
+		if (shadowDepth - bias > lightSpaceZ) //Reverse Z
+		{
+			shadowStrength = 0.0;
+		}
+	}
+	else
+	{
+		shadowStrength = 1.0;
+	}
+	
+	return shadowStrength;
+}
+
 PS_OUT ps_main(PS_IN IN)
 {
 	PS_OUT OUT;
@@ -120,6 +158,9 @@ PS_OUT ps_main(PS_IN IN)
 		Light light = lights.lights[i];
 		
 		if (light.type_valid_spotInner_spotOuter.y == 0.0)
+			continue;
+		
+		if (GetShadowStrength(IN.worldSpace, light.type_valid_spotInner_spotOuter.x) == 0.0)
 			continue;
 		
 		//Input light vector(retro).
@@ -171,7 +212,7 @@ PS_OUT ps_main(PS_IN IN)
 		
 		//Final Diffuse and Specular BRDF.
 		float3 diffuse = kD * albedo / PI;
-		float3 specular = (F * D * G) /max((4.0 * cosWi * cosWo), 0.000001);
+		float3 specular = (F * D * G) / max((4.0 * cosWi * cosWo), 0.000001);
 		float3 ambient = float3(0.03, 0.03, 0.03) * albedo * ambientOcclusion;
 		
 		//Final light contribution.
