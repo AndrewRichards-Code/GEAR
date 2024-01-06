@@ -84,12 +84,12 @@ void Light::InitialiseUB()
 {
 	if (!s_UB)
 	{
-		float zero0[sizeof(LightUB)] = { 0 };
+		LightUB zero0 = {};
 
 		Uniformbuffer<LightUB>::CreateInfo ubCI;
 		ubCI.debugName = "GEAR_CORE_Light_LightUBType: " + m_CI.debugName;
 		ubCI.device = m_CI.device;
-		ubCI.data = zero0;
+		ubCI.data = &zero0;
 		s_UB = CreateRef<Uniformbuffer<LightUB>>(&ubCI);
 	}
 }

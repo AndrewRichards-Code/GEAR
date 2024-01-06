@@ -55,6 +55,7 @@ void ShadowPasses::DebugShowDepth(Renderer& renderer, Ref<Light> light)
 {
 	RenderGraph& renderGraph = renderer.GetRenderGraph();
 	const Ref<Probe>& probe = light->GetProbe();
+
 	if (probe->m_RenderDebugView)
 	{
 		Ref<Texture>& debugShowDepthTexture = probe->m_DebugTexture;

@@ -13,3 +13,14 @@ float LineariseDepth(float storedDepthValue, float4x4 projectionMatrix)
 
 	return a / (d - b);
 }
+
+float3 PerspectiveDivide(float4 worldSpacePosition, float4x4 view, float4x4 proj)
+{
+	float4 projectedPosition = mul(worldSpacePosition, mul(view, proj));
+	float3 ndcPosition = projectedPosition.xyz / projectedPosition.w; //Do the perspective divide.
+	//NDC flipped between D3D12 and Vulkan. https://github.com/gpuweb/gpuweb/issues/416
+#if MIRU_D3D12
+	ndcPosition.y *= -1.0;
+#endif
+	return ndcPosition;
+}

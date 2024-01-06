@@ -159,6 +159,12 @@ VS_OUT vs_show_depth_image2D(VS_IN IN)
 			break;
 	}
 	OUT.v_NDCPosition = OUT.v_Position;
+	
+	//NDC flipped between D3D12 and Vulkan. Usually handled by our projection matrix, but we don't have one here.
+	//https://github.com/gpuweb/gpuweb/issues/416
+#if MIRU_D3D12
+	OUT.v_NDCPosition.y *= -1.0;
+#endif
 
 	return OUT;
 }
@@ -168,14 +174,8 @@ PS_OUT ps_show_depth_image2D(PS_IN IN)
 	PS_OUT OUT;
 	float2 textureCoords = (IN.v_NDCPosition.xy / 2.0) + float2(0.5, 0.5);
 	
-	//Texture flipped between D3D12 and Vulkan. Usually handled by our projection matrix, but we don't have one here.
-	//https://github.com/gpuweb/gpuweb/issues/416
-#if MIRU_D3D12
-	textureCoords.y = 1.0 - textureCoords.y; 
-#endif
-	
-	float depth = /*LineariseDepth(*/image2D_ImageCIS.Sample(image2D_SamplerCIS, textureCoords).x/*, debugProbeInfo.proj)*/;
-	depth = clamp(depth, debugProbeInfo.minDepth, debugProbeInfo.maxDepth);
+	float depth = image2D_ImageCIS.Sample(image2D_SamplerCIS, textureCoords).x;
+	depth = clamp(depth, debugProbeInfo.minDepth, debugProbeInfo.maxDepth) / (debugProbeInfo.maxDepth - debugProbeInfo.minDepth);
 	float4 depthOutput = float4(depth, depth, depth, 1.0);
 	if (debugProbeInfo.showColourCubemap)
 	{
@@ -224,7 +224,7 @@ PS_OUT ps_show_depth_cubemap(PS_IN IN)
 	float4x4 viewProj_Inv = inverse(viewProj);
 	float3 view = normalize(mul(IN.v_NDCPosition, viewProj_Inv)).xyz;
 	
-	float depth = /*LineariseDepth(*/cubemap_ImageCIS.Sample(cubemap_SamplerCIS, view).x/*, debugProbeInfo.proj)*/;
+	float depth = cubemap_ImageCIS.Sample(cubemap_SamplerCIS, view).x;
 	depth = clamp(depth, debugProbeInfo.minDepth, debugProbeInfo.maxDepth) / (debugProbeInfo.maxDepth - debugProbeInfo.minDepth);
 	float4 depthOutput = float4(depth, depth, depth, 1.0);
 	if (debugProbeInfo.showColourCubemap)
