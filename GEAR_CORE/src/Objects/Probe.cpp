@@ -156,6 +156,13 @@ void Probe::CreateTexture(Ref<Texture>& texture, bool colour)
 	textureCI.generateMipMaps = false;
 	textureCI.gammaSpace = GammaSpace::LINEAR;
 	texture = CreateRef<Texture>(&textureCI);
+
+	Sampler::CreateInfo samplerCI = texture->GetSampler()->GetCreateInfo();
+	samplerCI.addressModeU = miru::base::Sampler::AddressMode::CLAMP_TO_BORDER;
+	samplerCI.addressModeV = miru::base::Sampler::AddressMode::CLAMP_TO_BORDER;
+	samplerCI.addressModeW = miru::base::Sampler::AddressMode::CLAMP_TO_BORDER;
+	samplerCI.borderColour = miru::base::Sampler::BorderColour::FLOAT_OPAQUE_BLACK;
+	texture->SetSampler(&samplerCI);
 }
 
 void Probe::CreateRenderPipeline()
@@ -184,4 +191,3 @@ void Probe::InitialiseUB()
 		m_UB = CreateRef<Uniformbuffer<ProbeInfoUB>>(&ubCI);
 	}
 }
-

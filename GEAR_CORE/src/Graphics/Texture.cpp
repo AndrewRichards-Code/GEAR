@@ -126,6 +126,16 @@ void Texture::AccessImageData(std::vector<uint8_t>& imageData)
 	m_ImageUploadBuffer->GetCreateInfo().allocator->AccessData(m_ImageUploadBuffer->GetAllocation(), 0, imageData.size(), imageData.data());
 }
 
+void Texture::SetSampler(Sampler::CreateInfo* pSamplerCreateInfo)
+{
+	SetSampler(Sampler::Create(pSamplerCreateInfo));
+}
+
+void Texture::SetSampler(SamplerRef sampler)
+{
+	m_Sampler = sampler;
+}
+
 void Texture::CreateSampler()
 {
 	Sampler::CreateInfo samplerCI;
@@ -138,8 +148,8 @@ void Texture::CreateSampler()
 	samplerCI.addressModeV = Sampler::AddressMode::REPEAT;
 	samplerCI.addressModeW = Sampler::AddressMode::REPEAT;
 	samplerCI.mipLodBias = 0.0f;
-	samplerCI.anisotropyEnable = m_AnisotrophicValue > 1.0f;
-	samplerCI.maxAnisotropy = m_AnisotrophicValue;
+	samplerCI.anisotropyEnable = false;
+	samplerCI.maxAnisotropy = 1.0f;
 	samplerCI.compareEnable = false;
 	samplerCI.compareOp = CompareOp::NEVER;
 	samplerCI.minLod = 0.0f;

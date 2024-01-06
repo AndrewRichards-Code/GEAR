@@ -66,7 +66,6 @@ namespace gear
 			bool m_HDR = false;
 			bool m_Cubemap = false;
 			bool m_DepthTexture = false;
-			float m_AnisotrophicValue = 1.0f;
 
 		public:
 			bool m_GenerateMipMaps = false;
@@ -97,9 +96,11 @@ namespace gear
 			inline bool IsCubemap() const { return m_Cubemap; }
 			inline bool IsDepthTexture() const { return m_DepthTexture; }
 
-			inline void SetAnisotrophicValue(float anisostrphicVal) { m_AnisotrophicValue = anisostrphicVal; CreateSampler(); };
-			inline float GetAnisotrophicValue() const { return m_AnisotrophicValue; };
-			inline std::string GetAnisotrophicValue() { return std::to_string(static_cast<int>(m_AnisotrophicValue)); }
+			inline float GetAnisotrophicValue() const { return m_Sampler->GetCreateInfo().maxAnisotropy; };
+			inline std::string GetAnisotrophicValue() { return std::to_string(static_cast<int>(m_Sampler->GetCreateInfo().maxAnisotropy)); }
+
+			void SetSampler(miru::base::Sampler::CreateInfo* pSamplerCreateInfo);
+			void SetSampler(miru::base::SamplerRef sampler);
 
 		private:
 			void CreateSampler();
