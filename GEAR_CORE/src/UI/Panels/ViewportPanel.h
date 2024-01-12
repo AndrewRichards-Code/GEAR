@@ -7,6 +7,10 @@ namespace gear
 	{
 		class Renderer;
 	}
+	namespace objects
+	{
+		class Camera;
+	}
 	namespace ui
 	{
 		namespace panels
@@ -30,6 +34,7 @@ namespace gear
 			private:
 				void UpdateCameraTransform();
 				mars::float2 GetMousePositionInViewport();
+				float GetMouseScrollWheel();
 
 			public:
 				inline CreateInfo& GetCreateInfo() { return m_CI; }
@@ -41,14 +46,15 @@ namespace gear
 				static uint32_t s_ViewportPanelCount;
 				uint32_t m_ViewID; //0 is invalid;
 
-				void* m_ImageID = 0;
+				void* m_ImageID = nullptr;
 				mars::float2 m_CurrentSize;
 
 				//Camera Control
-				float m_Roll = 0;
-				float m_Pitch = 0;
-				float m_Yaw = 0;
+				float m_Roll = 0.0f;
+				float m_Pitch = 0.0f;
+				float m_Yaw = 0.0f;
 				mars::float2 m_InitialMousePosition;
+				float m_InitalMouseScrollWheel = 0.0f;
 			};
 		}
 	}

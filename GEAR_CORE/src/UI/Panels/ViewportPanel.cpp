@@ -6,6 +6,7 @@
 #include "UI/UIContext.h"
 
 #include "Graphics/Rendering/Renderer.h"
+#include "Graphics/Picker.h"
 #include "Graphics/Window.h"
 
 using namespace gear;
@@ -152,13 +153,19 @@ void ViewportPanel::UpdateCameraTransform()
 	//Mouse Control
 	if (ImGui::IsWindowFocused())
 	{
+		
+		const float& multiplier = ImGui::IsKeyDown(ImGuiKey::ImGuiKey_LeftShift) ? 4.0f : 1.0f;
+		const float& speed = 1.0f * multiplier;
+
 		//Stop camera snapping back when new input is detected
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) || ImGui::IsMouseClicked(ImGuiMouseButton_Middle))
 		{
 			m_InitialMousePosition = GetMousePositionInViewport();
 		}
 
-		//Main update
+		//Main update UE5 control style.
+		
+		//Pan
 		if (ImGui::IsMouseDown(ImGuiMouseButton_::ImGuiMouseButton_Right))
 		{
 			const float2& mouse = GetMousePositionInViewport();
@@ -170,6 +177,8 @@ void ViewportPanel::UpdateCameraTransform()
 
 			transform.orientation = Quaternion::FromEulerAngles(float3(m_Pitch, m_Yaw, m_Roll));
 		}
+		
+		//Translate: Left, right, up and down.
 		if (ImGui::IsMouseDown(ImGuiMouseButton_::ImGuiMouseButton_Middle))
 		{
 			const float2& mouse = GetMousePositionInViewport();
@@ -179,9 +188,38 @@ void ViewportPanel::UpdateCameraTransform()
 			float x_offset = delta.x;
 			float y_offset = delta.y;
 
-			transform.translation +=
-				(camera->m_Right * -x_offset) +
-				(camera->m_Up * y_offset);
+			transform.translation += ((camera->m_Right * -x_offset) + (camera->m_Up * y_offset)) * speed;
+		}
+
+		//Translate: Back and forth.
+		const float& newMouseScrollWheel = GetMouseScrollWheel();
+		if (newMouseScrollWheel != m_InitalMouseScrollWheel)
+		{
+			transform.translation += (camera->m_Direction * -(newMouseScrollWheel - m_InitalMouseScrollWheel));
+			m_InitalMouseScrollWheel = newMouseScrollWheel;
+		}
+
+		//Picker objects in viewport.
+		if (ImGui::IsMouseDown(ImGuiMouseButton_::ImGuiMouseButton_Left))
+		{
+			float2 mouse = GetMousePositionInViewport();
+			Ref<Model> nearestModel = graphics::Picker::GetNearestModel(m_CI.renderer->GetModelQueue(), camera, mouse, m_CurrentSize);
+			if (nearestModel)
+			{
+				const auto& vModelComponents = sceneHierarchyPanel->GetScene()->GetRegistry().view<scene::TransformComponent, scene::ModelComponent>();
+				for (auto& entity : vModelComponents)
+				{
+					Ref<Model> _model = vModelComponents.get<scene::ModelComponent>(entity);
+					if (_model == nearestModel)
+					{
+						scene::Entity _entity;
+						_entity.m_CI = { sceneHierarchyPanel->GetScene().get() };
+						_entity.m_Entity = entity;
+
+						sceneHierarchyPanel->GetSelectedEntity() = _entity;
+					}
+				}
+			}
 		}
 	}
 
@@ -203,6 +241,27 @@ float2 ViewportPanel::GetMousePositionInViewport()
 {
 	double mousePosition_x, mousePosition_y;
 	m_CI.renderer->GetWindow()->GetMousePosition(mousePosition_x, mousePosition_y);
+	float2 mousePosition(static_cast<float>(mousePosition_x), static_cast<float>(mousePosition_y)); //Mouse position in Window space.
 
-	return float2((float)mousePosition_x, (float)mousePosition_y);
+	//https://github.com/ocornut/imgui/issues/2486
+	ImGuiViewport* mainViewport = ImGui::GetMainViewport();
+	float2 mainViewportPosition(mainViewport->WorkPos.x, mainViewport->WorkPos.y); //Main Viewport position in OS Screen space.
+
+	const ImVec2& _regionMin = ImGui::GetWindowContentRegionMin();
+	float2 regionMin(_regionMin.x, _regionMin.y); //Content region minimum position in Window space.
+
+	const ImVec2& _windowPos = ImGui::GetWindowPos(); 
+	float2 windowPos(_windowPos.x, _windowPos.y); //Window position in OS Screen space.
+
+	float2 mouse = mousePosition - (regionMin + windowPos) + mainViewportPosition;
+
+	return float2(std::clamp(mouse.x, 0.0f, m_CurrentSize.x), std::clamp(mouse.y, 0.0f, m_CurrentSize.y));
+}
+
+float ViewportPanel::GetMouseScrollWheel()
+{
+	double mouseScroll;
+	m_CI.renderer->GetWindow()->GetScrollPosition(mouseScroll);
+
+	return static_cast<float>(mouseScroll);
 }
