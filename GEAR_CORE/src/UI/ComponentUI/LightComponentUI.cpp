@@ -113,8 +113,8 @@ void gear::ui::componentui::DrawProbeComponentUI(Ref<Probe> probe)
 				float imageRatio = float(debugImageCI.width) / float(debugImageCI.height);
 				float width = std::max(ImGui::GetContentRegionMax().x - 100.0f, 1.0f);
 				float height = width * imageRatio;
-				const ImTextureID& id = GetTextureID(debugImageView, UIContext::GetUIContext(), false);
-				ImGui::Image(id, ImVec2(width, height));
+				//const ImTextureID& id = GetTextureID(debugImageView, UIContext::GetUIContext(), false);
+				//ImGui::Image(id, ImVec2(width, height));
 			}
 
 			//Debug Texture Camera Controls
