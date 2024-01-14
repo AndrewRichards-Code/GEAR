@@ -8,8 +8,7 @@ Inspired by Yan Chernikov's (aka TheCheno) videos on C++, OpenGL and Game Engine
 
 This repository is under active development and is not currently intended for commerical release or use.
 
-## GEARBOX Demo
-GEARBOX Editor - Work in Progress
+## GEARBOX Editor (Work in Progress)
 ![gearbox_screenshot](/Branding/Screenshots/gearbox_screenshot_2.png)
 
 ## Features (Work in Progress)
@@ -23,14 +22,11 @@ GEARBOX Editor - Work in Progress
 * Runtime Shader and Pipeline recompilation.
 
 # Projects
-## GEAR_CORE
-Contains the core functionality of the game engine. Build as a dynamic library; Dynamic Runtime Linking (MD).
+* GEAR_CORE: Contains the core functionality of the game engine. Build as a dynamic library; Dynamic Runtime Linking (MD).
 
-## GEAR_NATIVE_SCRTIPT
-Contains the native script that are dynamically loaded by GEAR_CORE. Build as a dynamic library; Dynamic Runtime Linking (MD).
+* GEAR_NATIVE_SCRTIPT: Contains the native script that are dynamically loaded by GEAR_CORE. Build as a dynamic library; Dynamic Runtime Linking (MD).
 
-## GEARBOX
-A simple level editor using ImGui. Build as executable; Dynamic Runtime Linking (MD).
+* GEARBOX: A simple level editor using ImGui. Build as executable; Dynamic Runtime Linking (MD).
 
 ## External Projects
 
@@ -50,3 +46,6 @@ A simple level editor using ImGui. Build as executable; Dynamic Runtime Linking 
 - Toolset: v143 
 - Windows SDK: 10.0.22621.0
 - ISO C++ 20
+
+### Note
+Committed `.gsf` may connect absolute paths and are therefore not fully compatible. This will be addressed.
