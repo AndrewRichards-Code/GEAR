@@ -300,6 +300,16 @@ set(IMGUI_CPP_FILES
 target_sources(GEAR_CORE PRIVATE ${IMGUI_CPP_FILES} ${IMGUI_HEADERS})
 source_group("src\\ImGui" FILES ${IMGUI_CPP_FILES} ${IMGUI_HEADERS})
 
+#ImGuizmo
+set(IMGUIZMO_HEADERS
+  "${CMAKE_CURRENT_SOURCE_DIR}/../External/ImGuizmo/ImGuizmo.h"
+)
+set(IMGUIZMO_CPP_FILES
+  "${CMAKE_CURRENT_SOURCE_DIR}/../External/ImGuizmo/ImGuizmo.cpp"
+)
+target_sources(GEAR_CORE PRIVATE ${IMGUIZMO_CPP_FILES} ${IMGUIZMO_HEADERS})
+source_group("src\\ImGuizmo" FILES ${IMGUIZMO_CPP_FILES} ${IMGUIZMO_HEADERS})
+
 #Utils
 set(Utils_SRC_HEADERS
 	"src/Utils/FileUtils.h"

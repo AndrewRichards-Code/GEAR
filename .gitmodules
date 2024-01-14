@@ -13,4 +13,3 @@
 [submodule "External/ImGuizmo"]
 	path = External/ImGuizmo
 	url = git@github.com:CedricGuillemet/ImGuizmo.git
-	branch = master
