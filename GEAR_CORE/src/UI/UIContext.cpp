@@ -17,6 +17,8 @@
 #include "imgui/backends/imgui_impl_vulkan.h"
 #include "imgui/backends/imgui_impl_dx12.h"
 
+#include "ImGuizmo/ImGuizmo.h"
+
 using namespace gear;
 using namespace ui;
 using namespace panels;
@@ -302,6 +304,9 @@ void UIContext::BeginFrame()
 
 	// Start the Dear ImGui frame
 	ImGui::NewFrame();
+
+	// Start the ImGuizmo frame
+	ImGuizmo::BeginFrame();
 }
 
 void UIContext::EndFrame()

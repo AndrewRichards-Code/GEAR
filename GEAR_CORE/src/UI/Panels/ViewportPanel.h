@@ -23,6 +23,12 @@ namespace gear
 				{
 					Ref<graphics::rendering::Renderer> renderer;
 				};
+				enum class TransformationType : uint8_t
+				{
+					TRANSLATION,
+					ROTATION,
+					SCALE
+				};
 
 				//Methods
 			public:
@@ -32,7 +38,11 @@ namespace gear
 				void Draw() override;
 
 			private:
+				void DrawOverlay(const std::string& parentPanelID);
+				void DrawGuizmos();
+
 				void UpdateCameraTransform();
+				
 				mars::float2 GetMousePositionInViewport();
 				float GetMouseScrollWheel();
 
@@ -53,8 +63,14 @@ namespace gear
 				float m_Roll = 0.0f;
 				float m_Pitch = 0.0f;
 				float m_Yaw = 0.0f;
+				float m_CameraSpeed = 1.0f;
 				mars::float2 m_InitialMousePosition;
 				float m_InitalMouseScrollWheel = 0.0f;
+				bool m_GuizmoActive = false;
+				
+				TransformationType m_TransformType = TransformationType::TRANSLATION;
+				bool m_TransformSnapping = false;
+				float m_TransformSnappingValues[3] = { 0.1f, 1.0f, 0.1f };
 			};
 		}
 	}

@@ -9,6 +9,8 @@
 #include "Graphics/Picker.h"
 #include "Graphics/Window.h"
 
+#include "ImGuizmo/ImGuizmo.h"
+
 using namespace gear;
 using namespace ui;
 using namespace panels;
@@ -39,8 +41,7 @@ void ViewportPanel::Draw()
 	std::string id = UIContext::GetUIContext()->GetUniqueIDString("Viewport", this);
 	if (ImGui::Begin(id.c_str(), &m_Open))
 	{
-		UpdateCameraTransform();
-
+		//Don't display view during resize.
 		ImGuiMouseCursor cursorType = ImGui::GetMouseCursor();
 		bool mouseLeftDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
 		if (cursorType != ImGuiMouseCursor_Arrow && mouseLeftDown)
@@ -49,6 +50,7 @@ void ViewportPanel::Draw()
 			return;
 		}
 
+		//Check for resize.
 		bool resized = false;
 		ImVec2 size = ImGui::GetContentRegionAvail();
 		if ((size.x != m_CurrentSize.x) || (size.y != m_CurrentSize.y))
@@ -64,6 +66,7 @@ void ViewportPanel::Draw()
 			resized = true;
 		}
 
+		//Draw main view.
 		const uint32_t& m_FrameIndex = m_CI.renderer->GetFrameIndex();
 		ImageViewRef colourImageView = m_CI.renderer->GetRenderSurface()->GetColourSRGBImageView();
 		uint32_t width = colourImageView->GetCreateInfo().image->GetCreateInfo().width;
@@ -72,6 +75,9 @@ void ViewportPanel::Draw()
 		m_ImageID = componentui::GetTextureID(colourImageView, UIContext::GetUIContext(), resized);
 		ImGui::Image(m_ImageID, ImVec2(static_cast<float>(width), static_cast<float>(height)));
 
+		DrawGuizmos();
+
+		//Load scene via drag and drop
 		if (ImGui::BeginDragDropTarget())
 		{
 			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(".gsf");
@@ -90,6 +96,7 @@ void ViewportPanel::Draw()
 			}
 		}
 
+		//Set the RendererPropertiesPanel's viewport.
 		if (ImGui::IsWindowFocused())
 		{
 			Ref<RendererPropertiesPanel> rendererPropertiesPanel = UIContext::GetUIContext()->GetEditorPanelsByType<RendererPropertiesPanel>()[0];
@@ -102,9 +109,108 @@ void ViewportPanel::Draw()
 				}
 			}
 		}
+
+		DrawOverlay(id);
+
+		UpdateCameraTransform();
 		
 	}
 	ImGui::End();
+}
+
+void ViewportPanel::DrawOverlay(const std::string& parentPanelID)
+{
+	const Ref<Camera>& camera = m_CI.renderer->GetCamera();
+	if (!camera)
+		return;
+
+	ImGui::SetCursorPos({ 5.0f + ImGui::GetWindowContentRegionMin().x, 5.0f + ImGui::GetWindowContentRegionMin().y });
+	std::string id = parentPanelID + "_Overlay";
+
+	ImGui::PushStyleColor(ImGuiCol_HeaderActive,	{ 0.0f, 0.0f, 0.0f, 0.0f });
+	ImGui::PushStyleColor(ImGuiCol_Header,			{ 0.0f, 0.0f, 0.0f, 0.0f });
+	ImGui::PushStyleColor(ImGuiCol_HeaderHovered,	{ 0.0f, 0.0f, 0.0f, 0.0f });
+	ImGui::PushStyleColor(ImGuiCol_ChildBg,			{ 0.0f, 0.0f, 0.0f, 0.2f });
+	if (ImGui::BeginChild(id.c_str(), {250.0f, 150.0f}, true))
+	{
+		static bool open = false;
+		if (ImGui::CollapsingHeader("Camera Setting", open ? ImGuiTreeNodeFlags_DefaultOpen : 0))
+		{
+			ui::componentui::DrawFloat("Camera Speed", m_CameraSpeed, 1.0f, 10.0f);
+		}
+		if (ImGui::CollapsingHeader("Transform Settings", open ? ImGuiTreeNodeFlags_DefaultOpen : 0))
+		{
+			ui::componentui::DrawDropDownMenu("Type", m_TransformType);
+			ui::componentui::DrawCheckbox("Snapping", m_TransformSnapping);
+			ui::componentui::DrawFloat("Snapping Value", m_TransformSnappingValues[(size_t)m_TransformType], 0.0f);
+
+		}
+	}
+	ImGui::EndChild();
+	ImGui::PopStyleColor(4);
+}
+
+void ViewportPanel::DrawGuizmos()
+{
+	const Ref<Camera>& camera = m_CI.renderer->GetCamera();
+	if (!camera)
+		return;
+	
+	Ref<SceneHierarchyPanel> sceneHierarchyPanel = UIContext::GetUIContext()->GetEditorPanelsByType<SceneHierarchyPanel>()[0];
+	if (!sceneHierarchyPanel)
+		return;
+
+	scene::Entity entity = sceneHierarchyPanel->GetSelectedEntity();
+	if (entity && entity.HasComponent<scene::TransformComponent>())
+	{
+		ImGuizmo::SetOrthographic(camera->m_CI.projectionType == Camera::ProjectionType::ORTHOGRAPHIC);
+		ImGuizmo::SetDrawlist();
+		ImGuizmo::AllowAxisFlip(false);
+
+		const ImVec2& windowPos = ImGui::GetWindowPos();
+		ImGuizmo::SetRect(windowPos.x, windowPos.y, m_CurrentSize.x, m_CurrentSize.y);
+
+		const Ref<graphics::Uniformbuffer<graphics::UniformBufferStructures::Camera>>& cameraUB = camera->GetCameraUB();
+
+		const Camera::PerspectiveParameters& pp = camera->m_CI.perspectiveParams;
+		float4x4 cameraProj = mars::float4x4::Perspective(pp.horizonalFOV, pp.aspectRatio, pp.zNear, pp.zFar);
+		float4x4 cameraView = cameraUB->view;
+
+		Transform& entityTransform = entity.GetComponent<scene::TransformComponent>().transform;
+		float4x4 modelModl = TransformToMatrix4(entityTransform);
+
+		cameraProj.Transpose();
+		cameraView.Transpose();
+		modelModl.Transpose();
+
+		float snappingValues[3] = { m_TransformSnappingValues[(size_t)m_TransformType], m_TransformSnappingValues[(size_t)m_TransformType], m_TransformSnappingValues[(size_t)m_TransformType] };
+		switch (m_TransformType)
+		{
+		default:
+		case ViewportPanel::TransformationType::TRANSLATION:
+		{
+			ImGuizmo::Manipulate(cameraView.GetData(), cameraProj.GetData(), ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::MODE::LOCAL, &(modelModl.a), nullptr, m_TransformSnapping ? snappingValues : nullptr);
+			break;
+		}
+		case ViewportPanel::TransformationType::ROTATION:
+		{
+			ImGuizmo::Manipulate(cameraView.GetData(), cameraProj.GetData(), ImGuizmo::OPERATION::ROTATE, ImGuizmo::MODE::LOCAL, &(modelModl.a), nullptr, m_TransformSnapping ? snappingValues : nullptr);
+			break;
+		}
+		case ViewportPanel::TransformationType::SCALE:
+		{
+			ImGuizmo::Manipulate(cameraView.GetData(), cameraProj.GetData(), ImGuizmo::OPERATION::SCALEU, ImGuizmo::MODE::LOCAL, &(modelModl.a), nullptr, m_TransformSnapping ? snappingValues : nullptr);
+			break;
+		}
+		}
+
+
+		m_GuizmoActive = ImGuizmo::IsUsing();
+		if (m_GuizmoActive)
+		{
+			entityTransform = Matrix4ToTransform(modelModl.Transpose());
+		}
+	}
 }
 
 void ViewportPanel::UpdateCameraTransform()
@@ -116,6 +222,7 @@ void ViewportPanel::UpdateCameraTransform()
 	Ref<SceneHierarchyPanel> sceneHierarchyPanel = UIContext::GetUIContext()->GetEditorPanelsByType<SceneHierarchyPanel>()[0];
 	if (!sceneHierarchyPanel)
 		return;
+
 	Transform transform = Transform();
 	bool found = false;
 	const auto& vCameraComponents = sceneHierarchyPanel->GetScene()->GetRegistry().view<scene::TransformComponent, scene::CameraComponent>();
@@ -155,7 +262,7 @@ void ViewportPanel::UpdateCameraTransform()
 	{
 		
 		const float& multiplier = ImGui::IsKeyDown(ImGuiKey::ImGuiKey_LeftShift) ? 4.0f : 1.0f;
-		const float& speed = 1.0f * multiplier;
+		const float& speed = m_CameraSpeed * multiplier;
 
 		//Stop camera snapping back when new input is detected
 		if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) || ImGui::IsMouseClicked(ImGuiMouseButton_Middle))
@@ -195,12 +302,12 @@ void ViewportPanel::UpdateCameraTransform()
 		const float& newMouseScrollWheel = GetMouseScrollWheel();
 		if (newMouseScrollWheel != m_InitalMouseScrollWheel)
 		{
-			transform.translation += (camera->m_Direction * -(newMouseScrollWheel - m_InitalMouseScrollWheel));
+			transform.translation += (camera->m_Direction * speed * -(newMouseScrollWheel - m_InitalMouseScrollWheel));
 			m_InitalMouseScrollWheel = newMouseScrollWheel;
 		}
 
 		//Picker objects in viewport.
-		if (ImGui::IsMouseDown(ImGuiMouseButton_::ImGuiMouseButton_Left))
+		if (ImGui::IsMouseDown(ImGuiMouseButton_::ImGuiMouseButton_Left) && !m_GuizmoActive)
 		{
 			float2 mouse = GetMousePositionInViewport();
 			Ref<Model> nearestModel = graphics::Picker::GetNearestModel(m_CI.renderer->GetModelQueue(), camera, mouse, m_CurrentSize);

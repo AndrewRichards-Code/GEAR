@@ -3,6 +3,44 @@
     "scene": {
         "debugName": "Test3.gsf",
         "entities": {
+            "10093444859765557517": {
+                "ModelComponent": {
+                    "debugName": "Sphere",
+                    "mesh": {
+                        "material": [
+                            166066150820426607
+                        ],
+                        "uuid": 10449879080490853928
+                    },
+                    "renderPipelineName": "PBROpaque"
+                },
+                "NameComponent": {
+                    "name": "Sphere"
+                },
+                "TransformComponent": {
+                    "transform": {
+                        "orientation": [
+                            1.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ],
+                        "scale": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ],
+                        "translation": [
+                            2.319999933242798,
+                            1.0,
+                            0.0
+                        ]
+                    }
+                },
+                "UUIDComponent": {
+                    "uuid": 10093444859765557517
+                }
+            },
             "1675327227977939747": {
                 "LightComponent": {
                     "colour": [
@@ -48,9 +86,9 @@
                     "debugName": "Model-Cube",
                     "mesh": {
                         "material": [
-                            14714151125182500088
+                            16981507439818362311
                         ],
-                        "uuid": 14225638176759617795
+                        "uuid": 5687065012851643983
                     },
                     "renderPipelineName": "PBROpaque"
                 },
@@ -119,9 +157,9 @@
                     "debugName": "Model-Cube",
                     "mesh": {
                         "material": [
-                            9276284822617795263
+                            6967456690129819496
                         ],
-                        "uuid": 5180807828337550151
+                        "uuid": 6674389823399132722
                     },
                     "renderPipelineName": "PBROpaque"
                 },
@@ -156,7 +194,7 @@
                 "CameraComponent": {
                     "debugName": "Camera",
                     "orthographicParams": {
-                        "bottom": 2.5674374103546143,
+                        "bottom": 2.3506743907928467,
                         "far": 0.0,
                         "left": 3370280550400.0,
                         "near": 3000.0,
@@ -164,7 +202,7 @@
                         "top": 0.0010000000474974513
                     },
                     "perspectiveParams": {
-                        "aspectRatio": 2.5674374103546143,
+                        "aspectRatio": 2.3506743907928467,
                         "horizonalFOV": 1.5707963267948966,
                         "zFar": 3000.0,
                         "zNear": 0.0010000000474974513
@@ -177,10 +215,10 @@
                 "TransformComponent": {
                     "transform": {
                         "orientation": [
-                            0.898284699624861,
-                            0.23848273047109259,
-                            -0.3567101719701035,
-                            0.09470184211505504
+                            0.9236102599172819,
+                            0.20702215134157811,
+                            -0.3148121986147736,
+                            0.070563419933901
                         ],
                         "scale": [
                             1.0,
@@ -188,9 +226,9 @@
                             1.0
                         ],
                         "translation": [
-                            3.94172739982605,
-                            3.865913152694702,
-                            -3.2296605110168457
+                            4.485763072967529,
+                            3.1783576011657715,
+                            -2.909456729888916
                         ]
                     }
                 },
@@ -200,40 +238,18 @@
             }
         },
         "references": {
-            "14225638176759617795": {
+            "10449879080490853928": {
                 "data": {
                     "debugName": "Mesh-Cube",
-                    "filepath": "C:\\Users\\Andrew\\source\\repos\\GEAR\\GEARBOX\\res\\obj\\cube.fbx"
+                    "filepath": "C:\\Users\\Andrew\\source\\repos\\GEAR\\GEAR_TEST\\res\\obj\\sphere.fbx"
                 },
                 "type": {
                     "hash_code": 3736462184517488487,
                     "name": "struct gear::objects::Mesh::CreateInfo"
                 },
-                "uuid": 14225638176759617795
+                "uuid": 10449879080490853928
             },
-            "14714151125182500088": {
-                "data": {
-                    "debugName": "Material",
-                    "filepath": "res/assets/Material.gaf"
-                },
-                "type": {
-                    "hash_code": 18167184297631927809,
-                    "name": "struct gear::objects::Material::CreateInfo"
-                },
-                "uuid": 14714151125182500088
-            },
-            "5180807828337550151": {
-                "data": {
-                    "debugName": "Mesh-Cube",
-                    "filepath": "C:\\Users\\Andrew\\source\\repos\\GEAR\\GEARBOX\\res\\obj\\quad.fbx"
-                },
-                "type": {
-                    "hash_code": 3736462184517488487,
-                    "name": "struct gear::objects::Mesh::CreateInfo"
-                },
-                "uuid": 5180807828337550151
-            },
-            "9276284822617795263": {
+            "166066150820426607": {
                 "data": {
                     "debugName": "DefaultMaterial",
                     "filepath": "res/assets/DefaultMaterial.gaf"
@@ -242,7 +258,51 @@
                     "hash_code": 18167184297631927809,
                     "name": "struct gear::objects::Material::CreateInfo"
                 },
-                "uuid": 9276284822617795263
+                "uuid": 166066150820426607
+            },
+            "16981507439818362311": {
+                "data": {
+                    "debugName": "Material",
+                    "filepath": "res/assets/Material.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 16981507439818362311
+            },
+            "5687065012851643983": {
+                "data": {
+                    "debugName": "Mesh-Cube",
+                    "filepath": "C:\\Users\\Andrew\\source\\repos\\GEAR\\GEARBOX\\res\\obj\\cube.fbx"
+                },
+                "type": {
+                    "hash_code": 3736462184517488487,
+                    "name": "struct gear::objects::Mesh::CreateInfo"
+                },
+                "uuid": 5687065012851643983
+            },
+            "6674389823399132722": {
+                "data": {
+                    "debugName": "Mesh-Cube",
+                    "filepath": "C:\\Users\\Andrew\\source\\repos\\GEAR\\GEARBOX\\res\\obj\\quad.fbx"
+                },
+                "type": {
+                    "hash_code": 3736462184517488487,
+                    "name": "struct gear::objects::Mesh::CreateInfo"
+                },
+                "uuid": 6674389823399132722
+            },
+            "6967456690129819496": {
+                "data": {
+                    "debugName": "DefaultMaterial",
+                    "filepath": "res/assets/DefaultMaterial.gaf"
+                },
+                "type": {
+                    "hash_code": 18167184297631927809,
+                    "name": "struct gear::objects::Material::CreateInfo"
+                },
+                "uuid": 6967456690129819496
             }
         },
         "uuid": 17601971750853432418
