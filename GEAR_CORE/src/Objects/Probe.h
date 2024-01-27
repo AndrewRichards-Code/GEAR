@@ -60,9 +60,10 @@ namespace gear
 			~Probe();
 
 			void Update(const Transform& transform) override;
-			bool CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo) override;
+			const Ref<graphics::Uniformbuffer<ProbeInfoUB>>& GetUB() const { return m_UB; }
 
-			const Ref<graphics::Uniformbuffer<ProbeInfoUB>>& GetUB() const { return m_UB; };
+		protected:
+			bool CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo) override;
 
 		private:
 			void InitialiseTexturesAndPipeline();

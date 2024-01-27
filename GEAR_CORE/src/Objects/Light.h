@@ -48,7 +48,7 @@ namespace gear
 			const Ref<Probe>& GetProbe() const { return m_Probe; };
 
 			//Update the light from the current state of Light::CreateInfo m_CI.
-			void Update(const Transform& transform);
+			void Update(const Transform& transform) override;
 
 		protected:
 			bool CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo) override;
