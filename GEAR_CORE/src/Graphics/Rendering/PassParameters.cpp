@@ -113,6 +113,13 @@ void TaskPassParameters::SetResourceView(const std::pair<uint32_t, uint32_t>& se
 	const uint32_t& binding = set_binding.second;
 
 	const Shader::ResourceBindingDescription& rbd = m_RenderPipeline->GetRBDs().at(set).at(binding);
+	if (GraphicsAPI::IsD3D12() && rbd.type == DescriptorType::D3D12_STRUCTURED_BUFFER
+		&& resourceView.descriptorType == DescriptorType::STORAGE_BUFFER)
+	{
+		resourceView.descriptorType = DescriptorType::D3D12_STRUCTURED_BUFFER;
+	}
+
+
 	if (rbd.type != resourceView.descriptorType)
 	{
 		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::INVALID_VALUE, "The Resource DescriptorType does not match ResourceBindingDescription DescriptorType.");
@@ -200,6 +207,15 @@ void TaskPassParameters::SetResourceView(const std::pair<uint32_t, uint32_t>& se
 	case DescriptorType::ACCELERATION_STRUCTURE:
 	{
 		m_DescriptorSets[set]->AddAccelerationStructure(0, binding, { resourceView.accelerationStructure });
+
+		resourceView.state = Resource::State::SHADER_READ_ONLY;
+		break;
+	}
+	case DescriptorType::D3D12_STRUCTURED_BUFFER:
+	{
+		DescriptorSet::DescriptorBufferInfo info;
+		info.bufferView = resourceView.bufferView;
+		m_DescriptorSets[set]->AddBuffer(0, binding, { info });
 
 		resourceView.state = Resource::State::SHADER_READ_ONLY;
 		break;

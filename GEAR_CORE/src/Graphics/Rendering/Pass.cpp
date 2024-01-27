@@ -227,7 +227,7 @@ Pass::TransitionDetails Pass::GetTransitionDetails(const Resource::State& state,
 	}
 	case Resource::State::SHADER_READ_WRITE:
 	{
-		accesses = GraphicsAPI::IsD3D12() ? Barrier::AccessBit::SHADER_WRITE_BIT : (Barrier::AccessBit::SHADER_WRITE_BIT | Barrier::AccessBit::SHADER_READ_BIT);
+		accesses = GraphicsAPI::IsD3D12() ? Barrier::AccessBit::SHADER_WRITE_BIT : (src ? Barrier::AccessBit::NONE_BIT : (Barrier::AccessBit::SHADER_WRITE_BIT | Barrier::AccessBit::SHADER_READ_BIT));
 		layout = GraphicsAPI::IsD3D12() ? Image::Layout::D3D12_UNORDERED_ACCESS : Image::Layout::GENERAL;
 		pipelineStage = GraphicsAPI::IsD3D12() && src ? PipelineStageBit::ALL_COMMANDS_BIT : stage;
 		break;
