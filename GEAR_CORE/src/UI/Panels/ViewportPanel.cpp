@@ -42,6 +42,8 @@ void ViewportPanel::Draw()
 	std::string id = UIContext::GetUIContext()->GetUniqueIDString("Viewport", this);
 	if (ImGui::Begin(id.c_str(), &m_Open))
 	{
+		m_CI.renderer->SetDebugRendering(m_DebugRendering);
+
 		//Don't display view during resize.
 		ImGuiMouseCursor cursorType = ImGui::GetMouseCursor();
 		bool mouseLeftDown = ImGui::IsMouseDown(ImGuiMouseButton_Left);
@@ -138,6 +140,7 @@ void ViewportPanel::DrawOverlay(const std::string& parentPanelID)
 		if (ImGui::CollapsingHeader("Camera Setting", open ? ImGuiTreeNodeFlags_DefaultOpen : 0))
 		{
 			ui::componentui::DrawFloat("Camera Speed", m_CameraSpeed, 1.0f, 10.0f);
+			ui::componentui::DrawCheckbox("Debug Rendering", m_DebugRendering);
 		}
 		if (ImGui::CollapsingHeader("Transform Settings", open ? ImGuiTreeNodeFlags_DefaultOpen : 0))
 		{
@@ -153,6 +156,9 @@ void ViewportPanel::DrawOverlay(const std::string& parentPanelID)
 
 void ViewportPanel::DrawGuizmos()
 {
+	if (!m_DebugRendering)
+		return;
+
 	const Ref<Camera>& camera = m_CI.renderer->GetCamera();
 	if (!camera)
 		return;
@@ -204,7 +210,6 @@ void ViewportPanel::DrawGuizmos()
 			break;
 		}
 		}
-
 
 		m_GuizmoActive = ImGuizmo::IsUsing();
 		if (m_GuizmoActive)

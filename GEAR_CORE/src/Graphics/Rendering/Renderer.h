@@ -87,6 +87,7 @@ namespace gear
 			uint32_t m_SwapchainImageCount = 0;
 
 			bool m_ReloadTextures = false;
+			bool m_DebugRendering = false;
 
 		public:
 			Renderer(CreateInfo* pCreateInfo);
@@ -138,6 +139,7 @@ namespace gear
 			inline RenderGraph& GetRenderGraph() { return m_RenderGraph; }
 			inline PostProcessingInfo& GetPostProcessingInfo() { return m_PostProcessingInfo; }
 			static inline const DefaultObjects& GetDefaultObjects() { return s_DefaultObjects; }
+			inline void SetDebugRendering(bool debugRendeing) { m_DebugRendering = debugRendeing; }
 
 			inline const uint32_t& GetFrameIndex() const { return m_FrameIndex; }
 			inline const uint32_t& GetFrameCount() const { return m_FrameCount; }

@@ -421,17 +421,20 @@ void Renderer::Draw()
 		//On Screen Display
 		{
 			GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "On Screen Display");
-			if (m_TextCamera)
+			if (m_DebugRendering)
 			{
-				passes::OnScreenDisplayPasses::Text(*this);
-			}
-			if (m_MainRenderCamera)
-			{
-				passes::OnScreenDisplayPasses::CoordinateAxes(*this);
-			}
-			if (!m_Lights.empty())
-			{
-				passes::OnScreenDisplayPasses::Boxes(*this);
+				if (m_TextCamera)
+				{
+					passes::OnScreenDisplayPasses::Text(*this);
+				}
+				if (m_MainRenderCamera)
+				{
+					passes::OnScreenDisplayPasses::CoordinateAxes(*this);
+				}
+				if (!m_Lights.empty())
+				{
+					passes::OnScreenDisplayPasses::Boxes(*this);
+				}
 			}
 		}
 

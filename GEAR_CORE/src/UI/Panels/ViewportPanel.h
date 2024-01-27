@@ -67,6 +67,7 @@ namespace gear
 				mars::float2 m_InitialMousePosition;
 				float m_InitalMouseScrollWheel = 0.0f;
 				bool m_GuizmoActive = false;
+				bool m_DebugRendering = true;
 				
 				TransformationType m_TransformType = TransformationType::TRANSLATION;
 				bool m_TransformSnapping = false;
