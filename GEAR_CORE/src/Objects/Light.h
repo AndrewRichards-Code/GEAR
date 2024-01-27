@@ -2,8 +2,6 @@
 #include "Objects/ObjectInterface.h"
 #include "Graphics/Uniformbuffer.h"
 
-#define GEAR_MAX_LIGHTS 8
-
 namespace gear 
 {
 	namespace objects
@@ -28,11 +26,13 @@ namespace gear
 				float			spotOuterAngle; //Radians
 			};
 
+			static const uint32_t s_MaxLights = 8;
+
 		private:
 			typedef graphics::UniformBufferStructures::Lights LightUB;
 			static Ref<graphics::Uniformbuffer<LightUB>> s_UB;
 
-			static int s_NumOfLights;
+			static uint32_t s_NumOfLights;
 			size_t m_LightID;
 			Ref<Probe> m_Probe;
 
@@ -43,6 +43,7 @@ namespace gear
 			Light(CreateInfo* pCreateInfo);
 			~Light();
 
+			const size_t GetLightID() { return m_LightID; }
 			const Ref<graphics::Uniformbuffer<LightUB>>& GetUB() const { return s_UB; };
 			const Ref<Probe>& GetProbe() const { return m_Probe; };
 

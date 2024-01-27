@@ -7,7 +7,7 @@ using namespace graphics;
 using namespace objects;
 using namespace mars;
 
-int Light::s_NumOfLights = 0;
+uint32_t Light::s_NumOfLights = 0;
 
 typedef graphics::UniformBufferStructures::Lights LightUB;
 Ref<graphics::Uniformbuffer<LightUB>> Light::s_UB = nullptr;
@@ -18,7 +18,7 @@ Light::Light(CreateInfo* pCreateInfo)
 
 	InitialiseUB();
 
-	if (s_NumOfLights < GEAR_MAX_LIGHTS)
+	if (s_NumOfLights < s_MaxLights)
 	{
 		m_LightID = s_NumOfLights;
 		s_NumOfLights++;
