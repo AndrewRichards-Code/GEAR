@@ -116,6 +116,12 @@ void TransferPasses::Upload(Renderer& renderer, std::vector<Ref<Camera>>& allCam
 		debugProbeInfoUB->SubmitData();
 		uploadPassParameters->AddResourceView(debugProbeInfoUB);
 	}
+	Ref<Storagebuffer<UniformBufferStructures::Model>>& debugModelSB = DebugRender::GetDebugModelMatricesStoragebuffer();
+	if (debugModelSB)
+	{
+		debugModelSB->SubmitData();
+		uploadPassParameters->AddResourceView(debugModelSB);
+	}
 
 	//Upload Textures
 	for (const auto& texture : renderer.GetTextureUploadQueue())

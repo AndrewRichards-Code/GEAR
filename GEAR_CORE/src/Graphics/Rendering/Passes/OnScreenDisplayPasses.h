@@ -16,6 +16,7 @@ namespace gear
 				public:
 					static void Text(Renderer& renderer);
 					static void CoordinateAxes(Renderer& renderer);
+					static void Boxes(Renderer& renderer);
 				};
 			}
 		}

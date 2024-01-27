@@ -115,8 +115,9 @@ void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface
 		{ "res/pipelines/Cube.grpf",					{ RenderSurface::HDRFormat },	RenderSurface::DepthFormat },
 		{ "res/pipelines/Text.grpf",					{ RenderSurface::SRGBFormat },	Image::Format::UNKNOWN },
 		{ "res/pipelines/HDR.grpf",						{ RenderSurface::SRGBFormat },	Image::Format::UNKNOWN },
+		{ "res/pipelines/DebugBoxes.grpf",				{ RenderSurface::SRGBFormat },	Image::Format::UNKNOWN },
 		{ "res/pipelines/DebugCoordinateAxes.grpf",		{ RenderSurface::SRGBFormat },	Image::Format::UNKNOWN },
-		{ "res/pipelines/DebugCopy.grpf",				{ swapchainFormat },			Image::Format::UNKNOWN},
+		{ "res/pipelines/DebugCopy.grpf",				{ swapchainFormat },			Image::Format::UNKNOWN },
 		{ "res/pipelines/DebugShowDepth.grpf",			{ RenderSurface::SRGBFormat },	Image::Format::UNKNOWN },
 		{ "res/pipelines/DebugShowDepthCubemap.grpf",	{ RenderSurface::SRGBFormat },	Image::Format::UNKNOWN },
 		{ "res/pipelines/Mipmap.grpf",					{},								Image::Format::UNKNOWN },
@@ -427,6 +428,10 @@ void Renderer::Draw()
 			if (m_MainRenderCamera)
 			{
 				passes::OnScreenDisplayPasses::CoordinateAxes(*this);
+			}
+			if (!m_Lights.empty())
+			{
+				passes::OnScreenDisplayPasses::Boxes(*this);
 			}
 		}
 

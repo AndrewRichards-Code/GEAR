@@ -2,6 +2,7 @@
 
 #include "Graphics/Rendering/Passes/OnScreenDisplayPasses.h"
 #include "Graphics/Rendering/Renderer.h"
+#include "Graphics/DebugRender.h"
 #include "Graphics/IndexBuffer.h"
 #include "Graphics/VertexBuffer.h"
 
@@ -58,5 +59,31 @@ void OnScreenDisplayPasses::CoordinateAxes(Renderer& renderer)
 		[](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 		{
 			cmdBuffer->Draw(frameIndex, 6);
+		});
+}
+
+void OnScreenDisplayPasses::Boxes(Renderer& renderer)
+{
+	RenderGraph& renderGraph = renderer.GetRenderGraph();
+	const Ref<RenderSurface>& renderSurface = renderer.GetRenderSurface();
+	uint32_t width = renderSurface->GetWidth();
+	uint32_t height = renderSurface->GetHeight();
+
+	const Ref<Storagebuffer<UniformBufferStructures::Model>>& debugMatrices = DebugRender::GetDebugModelMatricesStoragebuffer();
+	if (!debugMatrices)
+		return;
+
+	const uint32_t& count = debugMatrices->GetCreateInfo().count;
+
+	Ref<TaskPassParameters> osdBoxesPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["DebugBoxes"]);
+	osdBoxesPassParameters->SetResourceView("camera", ResourceView(renderer.GetCamera()->GetCameraUB()));
+	osdBoxesPassParameters->SetResourceView("modelMatrices", ResourceView(debugMatrices));
+	osdBoxesPassParameters->AddAttachment(0, ResourceView(renderSurface->GetColourSRGBImageView(), Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::LOAD, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
+	osdBoxesPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
+
+	renderGraph.AddPass("Boxes", osdBoxesPassParameters, CommandPool::QueueType::GRAPHICS,
+		[count](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+		{
+			cmdBuffer->Draw(frameIndex, 24, count);
 		});
 }

@@ -238,3 +238,69 @@ PS_OUT ps_show_depth_cubemap(PS_IN IN)
 	}
 	return OUT;
 }
+
+//DrawBoxes
+MIRU_STRUCTURED_BUFFER(0, 1, Model, modelMatrices);
+
+VS_OUT vs_main_boxes(VS_IN IN, uint instancedID : SV_InstanceID)
+{
+	VS_OUT OUT;
+	
+	switch (IN.vertex_id)
+	{
+		case 0:
+		case 7:
+		case 16:
+			OUT.v_Position = float4(-0.25, -0.25, -0.25, 1.0); //0
+			break;
+		case 1:
+		case 2:
+		case 18:
+			OUT.v_Position = float4(+0.25, -0.25, -0.25, 1.0); //1
+			break;
+		case 3:
+		case 4:
+		case 20:
+			OUT.v_Position = float4(+0.25, +0.25, -0.25, 1.0); //2
+			break;
+		case 5:
+		case 6:
+		case 22:
+			OUT.v_Position = float4(-0.25, +0.25, -0.25, 1.0); //3
+			break;
+		case 8:
+		case 15:
+		case 17:
+			OUT.v_Position = float4(-0.25, -0.25, +0.25, 1.0); //4
+			break;
+		case 9:
+		case 10:
+		case 19:
+			OUT.v_Position = float4(+0.25, -0.25, +0.25, 1.0); //5
+			break;
+		case 11:
+		case 12:
+		case 21:
+			OUT.v_Position = float4(+0.25, +0.25, +0.25, 1.0); //6
+			break;
+		case 13:
+		case 14:
+		case 23:
+			OUT.v_Position = float4(-0.25, +0.25, +0.25, 1.0); //7
+			break;
+	}
+	
+	Model model = modelMatrices[instancedID];
+	OUT.v_Position = mul(OUT.v_Position, mul(model.modl, mul(camera.view, camera.proj)));
+	OUT.v_Colour = float4(model.texCoordScale0, model.texCoordScale1);
+	
+	return OUT;
+}
+
+PS_OUT ps_main_boxes(PS_IN IN)
+{
+	PS_OUT OUT;
+	OUT.colour = IN.v_Colour;
+	
+	return OUT;
+}

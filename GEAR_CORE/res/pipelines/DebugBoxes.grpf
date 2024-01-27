@@ -1,0 +1,127 @@
+{
+  "fileType": "GEAR_RENDER_PIPELINE_FILE",
+  "debugName": "DebugBoxes",
+  "shaders": [
+    {
+      "debugName": "Debug_vs_6_4_vs_main_boxes.spv",
+      "stageAndEntryPoints": [
+        {
+          "stage": "VERTEX_BIT",
+          "entryPoint": "vs_main_boxes"
+        }
+      ],
+      "binaryFilepath": "$BUILD_DIR/shaderbin/Debug_vs_6_4_vs_main_boxes.spv",
+      "recompileArguments": {
+        "rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.json",
+        "index": 8
+      }
+    },
+    {
+      "debugName": "Debug_ps_6_4_ps_main_boxes.spv",
+      "stageAndEntryPoints": [
+        {
+          "stage": "FRAGMENT_BIT",
+          "entryPoint": "ps_main_boxes"
+        }
+      ],
+      "binaryFilepath": "$BUILD_DIR/shaderbin/Debug_ps_6_4_ps_main_boxes.spv",
+      "recompileArguments": {
+        "rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.json",
+        "index": 9
+      }
+    }
+  ],
+  "inputAssemblyState": {
+    "topology": "LINE_LIST",
+    "primitiveRestartEnable": false
+  },
+  "viewportState": {
+    "viewports": [
+      {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 0.0,
+        "height": 0.0,
+        "minDepth": 0.0,
+        "maxDepth": 1.0
+      }
+    ],
+    "scissors": [
+      {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 0.0,
+        "height": 0.0
+      }
+    ]
+  },
+  "rasterisationState": {
+    "depthClampEnable": false,
+    "rasteriserDiscardEnable": false,
+    "polygonMode": "FILL",
+    "cullMode": "NONE_BIT",
+    "frontFace": "CLOCKWISE",
+    "depthBiasEnable": false,
+    "depthBiasConstantFactor": 0.0,
+    "depthBiasClamp": 0.0,
+    "depthBiasSlopeFactor": 0.0,
+    "lineWidth": 2.0
+  },
+  "multisampleState": {
+    "rasterisationSamples": "SAMPLE_COUNT_1_BIT",
+    "sampleShadingEnable": false,
+    "minSampleShading": 1.0,
+    "sampleMask": 4294967295,
+    "alphaToCoverageEnable": false,
+    "alphaToOneEnable": false
+  },
+  "depthStencilState": {
+    "depthTestEnable": false,
+    "depthWriteEnable": false,
+    "depthCompareOp": "ALWAYS",
+    "depthBoundsTestEnable": false,
+    "stencilTestEnable": false,
+    "front": {
+      "failOp": "",
+      "passOp": "",
+      "depthFailOp": "",
+      "compareOp": "",
+      "compareMask": "",
+      "writeMask": "",
+      "reference": ""
+    },
+    "back": {
+      "failOp": "",
+      "passOp": "",
+      "depthFailOp": "",
+      "compareOp": "",
+      "compareMask": "",
+      "writeMask": "",
+      "reference": ""
+    },
+    "minDepthBounds": 0.0,
+    "maxDepthBounds": 1.0
+  },
+  "colourBlendState": {
+    "logicOpEnable": false,
+    "logicOp": "CLEAR",
+    "attachments": [
+      {
+        "blendEnable": true,
+        "srcColourBlendFactor": "SRC_ALPHA",
+        "dstColourBlendFactor": "ONE_MINUS_SRC_ALPHA",
+        "colourBlendOp": "ADD",
+        "srcAlphaBlendFactor": "ONE",
+        "dstAlphaBlendFactor": "ZERO",
+        "alphaBlendOp": "ADD",
+        "colourWriteMask": [ "R_BIT", "G_BIT", "B_BIT", "A_BIT" ]
+      }
+    ],
+    "blendConstants": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  }
+}

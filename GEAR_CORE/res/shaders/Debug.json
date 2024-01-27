@@ -66,8 +66,7 @@
       "cso": true,
       "spv": true,
       "dxcArguments": []
-    }
-    ,
+    },
     {
       "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.hlsl",
       "outputDirectory": "$BUILD_DIR/shaderbin",
@@ -84,6 +83,28 @@
       "outputDirectory": "$BUILD_DIR/shaderbin",
       "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "$SOURCE_DIR/GEAR_CORE/src/Graphics" ],
       "entryPoint": "ps_show_depth_cubemap",
+      "shaderModel": "ps_6_4",
+      "macros": [],
+      "cso": true,
+      "spv": true,
+      "dxcArguments": []
+    },
+    {
+      "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.hlsl",
+      "outputDirectory": "$BUILD_DIR/shaderbin",
+      "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "$SOURCE_DIR/GEAR_CORE/src/Graphics" ],
+      "entryPoint": "vs_main_boxes",
+      "shaderModel": "vs_6_4",
+      "macros": [],
+      "cso": true,
+      "spv": true,
+      "dxcArguments": []
+    },
+    {
+      "hlslFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.hlsl",
+      "outputDirectory": "$BUILD_DIR/shaderbin",
+      "includeDirectories": [ "$SOURCE_DIR/External/MIRU/MIRU_SHADER_COMPILER/shaders/includes", "$SOURCE_DIR/GEAR_CORE/src/Graphics" ],
+      "entryPoint": "ps_main_boxes",
       "shaderModel": "ps_6_4",
       "macros": [],
       "cso": true,
