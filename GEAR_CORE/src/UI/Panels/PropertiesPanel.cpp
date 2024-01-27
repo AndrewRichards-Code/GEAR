@@ -52,7 +52,9 @@ void PropertiesPanel::Draw()
 					});
 			}
 			else
+			{
 				entity = sceneHierarchyPanel->GetSelectedEntity();
+			}
 
 			void* device = viewportPanel->GetCreateInfo().renderer->GetDevice();
 			const float& screenRatio = viewportPanel->GetCreateInfo().renderer->GetRenderSurface()->GetRatio();
@@ -66,8 +68,10 @@ void PropertiesPanel::Draw()
 				DrawComponentUI<ModelComponent>("Model", entity, true, DrawModelComponentUI, entity);
 				
 				if (ImGui::Button("Add Component"))
+				{
 					ImGui::OpenPopup("AddComponents");
-				
+				}
+
 				if (ImGui::BeginPopup("AddComponents"))
 				{
 					if (ImGui::MenuItem("Camera"))

@@ -246,47 +246,49 @@ VS_OUT vs_main_boxes(VS_IN IN, uint instancedID : SV_InstanceID)
 {
 	VS_OUT OUT;
 	
+	const float size = 0.125;
+	
 	switch (IN.vertex_id)
 	{
 		case 0:
 		case 7:
 		case 16:
-			OUT.v_Position = float4(-0.25, -0.25, -0.25, 1.0); //0
+			OUT.v_Position = float4(-size, -size, -size, 1.0); //0
 			break;
 		case 1:
 		case 2:
 		case 18:
-			OUT.v_Position = float4(+0.25, -0.25, -0.25, 1.0); //1
+			OUT.v_Position = float4(+size, -size, -size, 1.0); //1
 			break;
 		case 3:
 		case 4:
 		case 20:
-			OUT.v_Position = float4(+0.25, +0.25, -0.25, 1.0); //2
+			OUT.v_Position = float4(+size, +size, -size, 1.0); //2
 			break;
 		case 5:
 		case 6:
 		case 22:
-			OUT.v_Position = float4(-0.25, +0.25, -0.25, 1.0); //3
+			OUT.v_Position = float4(-size, +size, -size, 1.0); //3
 			break;
 		case 8:
 		case 15:
 		case 17:
-			OUT.v_Position = float4(-0.25, -0.25, +0.25, 1.0); //4
+			OUT.v_Position = float4(-size, -size, +size, 1.0); //4
 			break;
 		case 9:
 		case 10:
 		case 19:
-			OUT.v_Position = float4(+0.25, -0.25, +0.25, 1.0); //5
+			OUT.v_Position = float4(+size, -size, +size, 1.0); //5
 			break;
 		case 11:
 		case 12:
 		case 21:
-			OUT.v_Position = float4(+0.25, +0.25, +0.25, 1.0); //6
+			OUT.v_Position = float4(+size, +size, +size, 1.0); //6
 			break;
 		case 13:
 		case 14:
 		case 23:
-			OUT.v_Position = float4(-0.25, +0.25, +0.25, 1.0); //7
+			OUT.v_Position = float4(-size, +size, +size, 1.0); //7
 			break;
 	}
 	
