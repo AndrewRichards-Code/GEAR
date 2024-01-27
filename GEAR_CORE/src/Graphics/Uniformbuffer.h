@@ -44,7 +44,7 @@ namespace gear
 				miru::base::Buffer::CreateInfo uniformBufferCI, uniformBufferUploadCI;
 				miru::base::BufferView::CreateInfo uniformBufferViewCI, uniformBufferViewUploadCI;
 
-				uniformBufferUploadCI.debugName = "GEAR_CORE_UniformBufferUpload: " + m_CI.debugName;
+				uniformBufferUploadCI.debugName = "GEAR_CORE_UniformbufferUpload: " + m_CI.debugName;
 				uniformBufferUploadCI.device = m_CI.device;
 				uniformBufferUploadCI.usage = miru::base::Buffer::UsageBit::TRANSFER_SRC_BIT;
 				uniformBufferUploadCI.size = GetSize();
@@ -52,7 +52,7 @@ namespace gear
 				uniformBufferUploadCI.allocator = AllocatorManager::GetCPUAllocator();
 				m_UniformBufferUpload = miru::base::Buffer::Create(&uniformBufferUploadCI);
 
-				uniformBufferCI.debugName = "GEAR_CORE_UniformBuffer: " + m_CI.debugName;
+				uniformBufferCI.debugName = "GEAR_CORE_Uniformbuffer: " + m_CI.debugName;
 				uniformBufferCI.device = m_CI.device;
 				uniformBufferCI.usage = miru::base::Buffer::UsageBit::TRANSFER_DST_BIT | miru::base::Buffer::UsageBit::UNIFORM_BIT;
 				uniformBufferCI.size = GetSize();
@@ -60,7 +60,7 @@ namespace gear
 				uniformBufferCI.allocator = AllocatorManager::GetGPUAllocator();
 				m_UniformBuffer = miru::base::Buffer::Create(&uniformBufferCI);
 
-				uniformBufferViewUploadCI.debugName = "GEAR_CORE_UniformBufferViewUpload: " + m_CI.debugName;
+				uniformBufferViewUploadCI.debugName = "GEAR_CORE_UniformbufferViewUpload: " + m_CI.debugName;
 				uniformBufferViewUploadCI.device = m_CI.device;
 				uniformBufferViewUploadCI.type = miru::base::BufferView::Type::UNIFORM;
 				uniformBufferViewUploadCI.buffer = m_UniformBufferUpload;
@@ -69,7 +69,7 @@ namespace gear
 				uniformBufferViewUploadCI.stride = 0;
 				m_UniformBufferViewUpload = miru::base::BufferView::Create(&uniformBufferViewUploadCI);
 
-				uniformBufferViewCI.debugName = "GEAR_CORE_UniformBufferView: " + m_CI.debugName;
+				uniformBufferViewCI.debugName = "GEAR_CORE_UniformbufferView: " + m_CI.debugName;
 				uniformBufferViewCI.device = m_CI.device;
 				uniformBufferViewCI.type = miru::base::BufferView::Type::UNIFORM;
 				uniformBufferViewCI.buffer = m_UniformBuffer;
