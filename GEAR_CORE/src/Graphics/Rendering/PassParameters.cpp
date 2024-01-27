@@ -304,6 +304,9 @@ void TaskPassParameters::AddAttachment(uint32_t index, ResourceView resourceView
 
 		resourceView.pipelineStage = PipelineStageBit::PIXEL_SHADER_BIT;
 
+		m_InputResourceViews.push_back(resourceView);
+		m_InputResourceViews.back().pipelineStage = PipelineStageBit::PIXEL_SHADER_BIT;
+
 		m_OutputResourceViews.push_back(resourceView);
 		m_OutputResourceViews.back().pipelineStage = PipelineStageBit::PIXEL_SHADER_BIT;
 	}
@@ -346,6 +349,11 @@ void TaskPassParameters::AddAttachmentWithResolve(uint32_t index, ResourceView r
 
 		resourceView.pipelineStage = PipelineStageBit::PIXEL_SHADER_BIT;
 		resolveResourceView.pipelineStage = PipelineStageBit::PIXEL_SHADER_BIT;
+
+		m_InputResourceViews.push_back(resourceView);
+		m_InputResourceViews.back().pipelineStage = PipelineStageBit::PIXEL_SHADER_BIT;
+		m_InputResourceViews.push_back(resolveResourceView);
+		m_InputResourceViews.back().pipelineStage = PipelineStageBit::PIXEL_SHADER_BIT;
 
 		m_OutputResourceViews.push_back(resourceView); 
 		m_OutputResourceViews.back().pipelineStage = PipelineStageBit::PIXEL_SHADER_BIT;
