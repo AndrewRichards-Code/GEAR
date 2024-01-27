@@ -303,9 +303,11 @@ source_group("src\\ImGui" FILES ${IMGUI_CPP_FILES} ${IMGUI_HEADERS})
 #ImGuizmo
 set(IMGUIZMO_HEADERS
   "${CMAKE_CURRENT_SOURCE_DIR}/../External/ImGuizmo/ImGuizmo.h"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../External/ImGuizmo/GraphEditor.h"
 )
 set(IMGUIZMO_CPP_FILES
   "${CMAKE_CURRENT_SOURCE_DIR}/../External/ImGuizmo/ImGuizmo.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/../External/ImGuizmo/GraphEditor.cpp"
 )
 target_sources(GEAR_CORE PRIVATE ${IMGUIZMO_CPP_FILES} ${IMGUIZMO_HEADERS})
 source_group("src\\ImGuizmo" FILES ${IMGUIZMO_CPP_FILES} ${IMGUIZMO_HEADERS})
@@ -405,6 +407,7 @@ set(GEAR_CORE_RENDER_PIPELINE_FILES
 	"res/pipelines/BloomPrefilter.grpf"
 	"res/pipelines/BloomUpsample.grpf"
 	"res/pipelines/Cube.grpf"
+	"res/pipelines/DebugBoxes.grpf"
 	"res/pipelines/DebugCoordinateAxes.grpf"
 	"res/pipelines/DebugCopy.grpf"
 	"res/pipelines/DebugShowDepth.grpf"

@@ -1,8 +1,8 @@
 {
     "fileType": "GEARBOX_CONFIG_FILE",
     "options": {
-        "api": 2,
-        "debugValidationLayers": true,
+        "api": 1,
+        "debugValidationLayers": false,
         "fullscreen": false,
         "fullscreenMonitorIndex": 0,
         "graphicsDebugger": 0,

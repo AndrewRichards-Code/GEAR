@@ -7,6 +7,8 @@
 #include "Graphics/Rendering/RenderGraph.h"
 #include "Core/ParseStack.h"
 
+#include "ImGuizmo/GraphEditor.h"
+
 using namespace gear;
 using namespace graphics;
 using namespace rendering;
@@ -28,6 +30,8 @@ RendererPropertiesPanel::~RendererPropertiesPanel()
 
 void RendererPropertiesPanel::Draw()
 {
+	DrawRenderGraph();
+
 	std::string id = UIContext::GetUIContext()->GetUniqueIDString("Renderer Properties", this);
 	if (ImGui::Begin(id.c_str(), &m_Open))
 	{
@@ -36,6 +40,7 @@ void RendererPropertiesPanel::Draw()
 			Ref<Renderer>& renderer = m_ViewportPanel->GetCreateInfo().renderer;
 			const RenderGraph& renderGraph = renderer->GetRenderGraph();
 			
+
 			auto GetResourceTypeString = [](const ResourceView& resourceView) -> std::string
 			{
 				if (resourceView.IsImageView())
@@ -123,6 +128,204 @@ void RendererPropertiesPanel::Draw()
 			DrawPostProcessingUI();
 		}
 	}
+	ImGui::End();
+}
+
+class RenderGraphEditorDelegate final : public GraphEditor::Delegate
+{
+public:
+	bool AllowedLink(GraphEditor::NodeIndex from, GraphEditor::NodeIndex to) override
+	{
+		return false;
+	}
+
+	void SelectNode(GraphEditor::NodeIndex nodeIndex, bool selected) override
+	{
+		m_Nodes[nodeIndex].selected = selected;
+	}
+
+	void MoveSelectedNodes(const ImVec2 delta) override
+	{
+		for (auto& node : m_Nodes)
+		{
+			if (!node.selected)
+			{
+				continue;
+			}
+			node.x += delta.x;
+			node.y += delta.y;
+		}
+	}
+
+	virtual void RightClick(GraphEditor::NodeIndex nodeIndex, GraphEditor::SlotIndex slotIndexInput, GraphEditor::SlotIndex slotIndexOutput) override
+	{
+	}
+
+	void AddLink(GraphEditor::NodeIndex inputNodeIndex, GraphEditor::SlotIndex inputSlotIndex, GraphEditor::NodeIndex outputNodeIndex, GraphEditor::SlotIndex outputSlotIndex) override
+	{
+		for (const auto& link : m_Links)
+		{
+			if (link.mInputNodeIndex == inputNodeIndex && link.mInputSlotIndex == inputSlotIndex
+				&& link.mOutputNodeIndex == outputNodeIndex && link.mOutputSlotIndex == outputSlotIndex)
+				return;
+
+		}
+		m_Links.push_back({ inputNodeIndex, inputSlotIndex, outputNodeIndex, outputSlotIndex });
+	}
+
+	void DelLink(GraphEditor::LinkIndex linkIndex) override
+	{
+		m_Links.erase(m_Links.begin() + linkIndex);
+	}
+
+	void CustomDraw(ImDrawList* drawList, ImRect rectangle, GraphEditor::NodeIndex nodeIndex) override
+	{
+		drawList->AddLine(rectangle.Min, rectangle.Max, IM_COL32(0, 0, 0, 255));
+		drawList->AddText(rectangle.Min, IM_COL32(255, 128, 64, 255), "Draw");
+	}
+
+	const size_t GetTemplateCount() override
+	{
+		return m_Templates.size();
+	}
+
+	const GraphEditor::Template GetTemplate(GraphEditor::TemplateIndex index) override
+	{
+		return m_Templates[index];
+	}
+
+	const size_t GetNodeCount() override
+	{
+		return m_Nodes.size();
+	}
+
+	const GraphEditor::Node GetNode(GraphEditor::NodeIndex index) override
+	{
+		const auto& myNode = m_Nodes[index];
+		GraphEditor::Node result;
+		result.mName = myNode.name.c_str();
+		result.mTemplateIndex = myNode.templateIndex;
+		result.mRect.Min.x = myNode.x;
+		result.mRect.Min.y = myNode.y;
+		result.mRect.Max.x = myNode.x + 200;
+		result.mRect.Max.y = myNode.y + 200;
+		result.mSelected = myNode.selected;
+		return result;
+	}
+
+	const size_t GetLinkCount() override
+	{
+		return m_Links.size();
+	}
+
+	const GraphEditor::Link GetLink(GraphEditor::LinkIndex index) override
+	{
+		return m_Links[index];
+	}
+
+	size_t GetTemplate(uint8_t inputCount, uint8_t outputCount)
+	{
+		for (size_t i = 0; i < m_Templates.size(); i++)
+		{
+			const GraphEditor::Template _template = m_Templates[i];
+			if (_template.mInputCount == inputCount && _template.mOutputCount == outputCount)
+			{
+				return i;
+			}
+		}
+
+		m_Templates.push_back({
+			IM_COL32(160, 160, 180, 255),
+			IM_COL32(100, 100, 140, 255),
+			IM_COL32(110, 110, 150, 255),
+			inputCount,
+			nullptr,
+			nullptr,
+			outputCount,
+			nullptr,
+			nullptr
+		});
+		return m_Templates.size() - 1;
+	}
+
+	void Reset()
+	{
+		m_Nodes.clear();
+		m_Links.clear();
+		m_Templates.clear();
+	}
+
+	void Initialise(Ref<Renderer>& renderer, const RenderGraph& renderGraph)
+	{
+		const uint32_t& frameIndex = renderer->GetFrameIndex();
+		const auto& passes = renderGraph.GetPasses(frameIndex);
+		const auto& adjacencyLists = renderGraph.GetAdjacencyLists(frameIndex);
+
+		if (passes.size() == m_Nodes.size())
+		{
+			return;
+		}
+
+		Reset();
+
+		float x = 0.0f;
+		float y = 0.0f;
+		size_t i = 0;
+		for (const auto& pass : passes)
+		{
+			const uint8_t inputCount = static_cast<uint8_t>(pass->GetInputResourceViews().size());
+			const uint8_t outputCount = static_cast<uint8_t>(pass->GetOutputResourceViews().size());
+			GraphEditor::TemplateIndex templateIndex = GetTemplate(inputCount, outputCount);
+
+			m_Nodes.push_back({
+				pass->GetName(),
+				templateIndex,
+				x, y,
+				false
+				});
+			x += 400.0f;
+
+			for (const size_t& otherPassIndex : adjacencyLists[i])
+			{
+				AddLink(i, 0, otherPassIndex, 0);
+			}
+
+			i++;
+		}
+
+	}
+
+private:
+	struct Node
+	{
+		std::string name;
+		GraphEditor::TemplateIndex templateIndex;
+		float x, y;
+		bool selected;
+	};
+
+	std::vector<Node> m_Nodes;
+	std::vector<GraphEditor::Link> m_Links;
+	std::vector<GraphEditor::Template> m_Templates;
+};
+
+static RenderGraphEditorDelegate rged;
+static GraphEditor::Options options;
+static GraphEditor::ViewState viewState;
+static GraphEditor::FitOnScreen fit = GraphEditor::Fit_None;
+
+void RendererPropertiesPanel::DrawRenderGraph()
+{
+	if (m_ViewportPanel)
+	{
+		Ref<Renderer>& renderer = m_ViewportPanel->GetCreateInfo().renderer;
+		const RenderGraph& renderGraph = renderer->GetRenderGraph();
+
+		rged.Initialise(renderer, renderGraph);
+	}
+
+	ImGui::Begin("Graph Editor", nullptr, 0);
+	GraphEditor::Show(rged, options, viewState, true, &fit);
 	ImGui::End();
 }
 

@@ -19,8 +19,11 @@ namespace gear
 				~RendererPropertiesPanel();
 
 				void Draw() override;
+
 			private:
+				void DrawRenderGraph();
 				void DrawPostProcessingUI();
+
 				static std::string PipelineStageBitToString(miru::base::PipelineStageBit pipelingStages);
 
 			public:
