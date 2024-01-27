@@ -5,6 +5,7 @@
 #include "UI/ComponentUI/ComponentUI.h"
 #include "UI/UIContext.h"
 
+#include "Graphics/DebugRender.h"
 #include "Graphics/Rendering/Renderer.h"
 #include "Graphics/Picker.h"
 #include "Graphics/Window.h"
@@ -211,6 +212,24 @@ void ViewportPanel::DrawGuizmos()
 			entityTransform = Matrix4ToTransform(modelModl.Transpose());
 		}
 	}
+
+	const auto& vLightComponents = sceneHierarchyPanel->GetScene()->GetRegistry().view<scene::LightComponent, scene::TransformComponent>();
+	for (const auto& entity : vLightComponents)
+	{
+		using namespace graphics;
+		using namespace objects;
+
+		const Ref<Light>& light = vLightComponents.get<scene::LightComponent>(entity);
+		const Transform& transform = vLightComponents.get<scene::TransformComponent>(entity);
+		const Light::CreateInfo& CI = light->m_CI;
+
+		std::vector<UniformBufferStructures::Model>& debugMatrices = DebugRender::GetDebugModelMatrices();
+		debugMatrices.resize(std::max(debugMatrices.size(), light->GetLightID() + 1));
+		UniformBufferStructures::Model& model = debugMatrices[light->GetLightID()];
+		model.modl = TransformToMatrix4(transform);
+		model.texCoordScale0 = { CI.colour.r, CI.colour.g };
+		model.texCoordScale1 = { CI.colour.b, CI.colour.a };
+	}
 }
 
 void ViewportPanel::UpdateCameraTransform()
@@ -310,14 +329,33 @@ void ViewportPanel::UpdateCameraTransform()
 		if (ImGui::IsMouseDown(ImGuiMouseButton_::ImGuiMouseButton_Left) && !m_GuizmoActive)
 		{
 			float2 mouse = GetMousePositionInViewport();
+
 			Ref<Model> nearestModel = graphics::Picker::GetNearestModel(m_CI.renderer->GetModelQueue(), camera, mouse, m_CurrentSize);
 			if (nearestModel)
 			{
-				const auto& vModelComponents = sceneHierarchyPanel->GetScene()->GetRegistry().view<scene::TransformComponent, scene::ModelComponent>();
+				const auto& vModelComponents = sceneHierarchyPanel->GetScene()->GetRegistry().view<scene::ModelComponent>();
 				for (auto& entity : vModelComponents)
 				{
 					Ref<Model> _model = vModelComponents.get<scene::ModelComponent>(entity);
 					if (_model == nearestModel)
+					{
+						scene::Entity _entity;
+						_entity.m_CI = { sceneHierarchyPanel->GetScene().get() };
+						_entity.m_Entity = entity;
+
+						sceneHierarchyPanel->GetSelectedEntity() = _entity;
+					}
+				}
+			}
+
+			Ref<Light> nearestLight = graphics::Picker::GetNearestLight(m_CI.renderer->GetLights(), camera, mouse, m_CurrentSize);
+			if (nearestLight)
+			{
+				const auto& vLightComponents = sceneHierarchyPanel->GetScene()->GetRegistry().view<scene::LightComponent>();
+				for (auto& entity : vLightComponents)
+				{
+					Ref<Light> _light = vLightComponents.get<scene::LightComponent>(entity);
+					if (_light == nearestLight)
 					{
 						scene::Entity _entity;
 						_entity.m_CI = { sceneHierarchyPanel->GetScene().get() };

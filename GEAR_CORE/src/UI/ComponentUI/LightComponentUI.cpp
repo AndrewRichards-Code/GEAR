@@ -42,16 +42,7 @@ void gear::ui::componentui::DrawLightComponentUI(Entity entity)
 
 	DrawProbeComponentUI(light->GetProbe());
 
-	const Transform& transform = entity.GetComponent<TransformComponent>();
-	light->Update(transform);
-
-	using namespace graphics;
-	std::vector<UniformBufferStructures::Model>& debugMatrices = DebugRender::GetDebugModelMatrices();
-	debugMatrices.resize(std::max(debugMatrices.size(), light->GetLightID() + 1));
-	UniformBufferStructures::Model& model = debugMatrices[light->GetLightID()];
-	model.modl = TransformToMatrix4(transform);
-	model.texCoordScale0 = { CI.colour.r, CI.colour.g };
-	model.texCoordScale1 = { CI.colour.b, CI.colour.a };
+	light->Update(entity.GetComponent<TransformComponent>());
 }
 
 void gear::ui::componentui::AddLightComponent(Entity entity, void* device)
