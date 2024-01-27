@@ -218,22 +218,21 @@ void ViewportPanel::DrawGuizmos()
 		}
 	}
 
+	std::vector<graphics::UniformBufferStructures::Model>& debugMatrices = graphics::DebugRender::GetDebugModelMatrices();
+	debugMatrices.clear();
+
 	const auto& vLightComponents = sceneHierarchyPanel->GetScene()->GetRegistry().view<scene::LightComponent, scene::TransformComponent>();
 	for (const auto& entity : vLightComponents)
 	{
-		using namespace graphics;
-		using namespace objects;
-
 		const Ref<Light>& light = vLightComponents.get<scene::LightComponent>(entity);
 		const Transform& transform = vLightComponents.get<scene::TransformComponent>(entity);
 		const Light::CreateInfo& CI = light->m_CI;
 
-		std::vector<UniformBufferStructures::Model>& debugMatrices = DebugRender::GetDebugModelMatrices();
-		debugMatrices.resize(std::max(debugMatrices.size(), light->GetLightID() + 1));
-		UniformBufferStructures::Model& model = debugMatrices[light->GetLightID()];
+		graphics::UniformBufferStructures::Model model;
 		model.modl = TransformToMatrix4(transform);
 		model.texCoordScale0 = { CI.colour.r, CI.colour.g };
 		model.texCoordScale1 = { CI.colour.b, CI.colour.a };
+		debugMatrices.emplace_back(model);
 	}
 }
 
