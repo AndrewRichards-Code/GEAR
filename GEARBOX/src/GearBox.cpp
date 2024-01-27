@@ -37,6 +37,8 @@ Ref<Application> CreateApplication(int argc, char** argv)
 	{
 		if (applicationCI.commandLineOptions.api == GraphicsAPI::API::UNKNOWN)
 			applicationCI.commandLineOptions.api = configFile.GetOption<miru::base::GraphicsAPI::API>("api");
+		if (applicationCI.commandLineOptions.debugValidationLayers == false)
+			applicationCI.commandLineOptions.debugValidationLayers = configFile.GetOption<bool>("debugValidationLayers");
 		if (applicationCI.commandLineOptions.graphicsDebugger == debug::GraphicsDebugger::DebuggerType::NONE)
 			applicationCI.commandLineOptions.graphicsDebugger = configFile.GetOption<miru::debug::GraphicsDebugger::DebuggerType>("graphicsDebugger");
 	}
