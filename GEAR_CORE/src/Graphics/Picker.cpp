@@ -1,6 +1,7 @@
 #include "gear_core_common.h"
 #include "Graphics/Picker.h"
 #include "Objects/Camera.h"
+#include "Objects/Light.h"
 #include "Objects/Model.h"
 #include "Objects/Mesh.h"
 
@@ -178,4 +179,31 @@ Ref<Model> Picker::GetNearestModel(const std::vector<Ref<Model>>& models, const 
 	}
 
 	return nearestModel;
+}
+
+Ref<Light> Picker::GetNearestLight(const std::vector<Ref<Light>>& lights, const Ref<Camera>& camera, const float2& pixelCoords, const float2& viewportSize)
+{
+	Ray pickingRay = GetPickingRay(camera, pixelCoords, viewportSize);
+
+	Ref<Light> nearestLight = nullptr;
+	float shortestLength = std::numeric_limits<float>::max();
+
+	for (const auto& light : lights)
+	{
+		const float3& position = light->GetUB()->lights[light->GetLightID()].position;
+		const float3& direction = position - pickingRay.origin;
+		const float& length = direction.Length<float>();
+		float dot = float3::Dot<float>(float3::Normalise(direction), pickingRay.direction);
+
+		bool hit = dot > 0.9995;
+		bool closer = length <= shortestLength;
+
+		if (hit && closer)
+		{
+			shortestLength = length;
+			nearestLight = light;
+		}
+	}
+
+	return nearestLight;
 }

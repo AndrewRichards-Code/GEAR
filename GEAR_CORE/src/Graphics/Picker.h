@@ -7,6 +7,7 @@ namespace gear
 	{
 		class Camera;
 		class Model;
+		class Light;
 	}
 	namespace graphics
 	{
@@ -28,6 +29,7 @@ namespace gear
 			static float RayIntersectsModelGeometry(const Ref<objects::Model>& model, const Ray& ray);
 
 			static Ref<objects::Model> GetNearestModel(const std::vector<Ref<objects::Model>>& models, const Ref<objects::Camera>& camera, const mars::float2& pixelCoords, const mars::float2& viewportSize);
+			static Ref<objects::Light> GetNearestLight(const std::vector<Ref<objects::Light>>& lights, const Ref<objects::Camera>& camera, const mars::float2& pixelCoords, const mars::float2& viewportSize);
 		};
 	}
 }
