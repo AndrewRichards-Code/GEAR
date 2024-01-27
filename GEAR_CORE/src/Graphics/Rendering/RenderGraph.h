@@ -120,6 +120,7 @@ namespace gear
 
 			inline const std::vector<Ref<Pass>>& GetPasses(uint32_t frameIndex) const { return m_FrameData[frameIndex].Passes; }
 			inline const std::vector<Ref<Pass>>& GetTopologicallySortedPasses(uint32_t frameIndex) const { return m_FrameData[frameIndex].TopologicallySortedPasses; }
+			inline const std::vector<std::vector<size_t>>& GetAdjacencyLists(uint32_t frameIndex) const { return m_FrameData[frameIndex].AdjacencyLists; }
 
 			bool ResourceIsPresent(const Resource& passResource);
 			bool ResourceIsPresent(const Resource& passResource) const;
