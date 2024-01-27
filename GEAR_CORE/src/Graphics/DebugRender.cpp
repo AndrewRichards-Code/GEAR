@@ -9,6 +9,8 @@ using namespace graphics;
 void* DebugRender::s_Device = nullptr;
 Ref<objects::Camera> DebugRender::s_Camera = nullptr;
 Ref<Uniformbuffer<UniformBufferStructures::DebugProbeInfo>> DebugRender::s_DebugProbeInfo = nullptr;
+Ref<Storagebuffer<UniformBufferStructures::Model>> DebugRender::s_DebugModelMatricesSB = nullptr;
+std::vector<UniformBufferStructures::Model> DebugRender::s_DebugModelMatrices = {};
 
 Ref<objects::Camera>& DebugRender::GetCamera()
 {
@@ -40,4 +42,33 @@ Ref<Uniformbuffer<UniformBufferStructures::DebugProbeInfo>>& DebugRender::GetDeb
 	}
 
 	return s_DebugProbeInfo;
+}
+
+Ref<Storagebuffer<UniformBufferStructures::Model>>& DebugRender::GetDebugModelMatricesStoragebuffer()
+{
+	bool create = !s_DebugModelMatricesSB && !s_DebugModelMatrices.empty() && s_Device;
+	bool sameSize = false;
+
+	if (s_DebugModelMatricesSB)
+	{
+		sameSize = s_DebugModelMatricesSB->GetCreateInfo().count == s_DebugModelMatrices.size();
+		create |= !sameSize;
+	}
+
+	if (create)
+	{
+		Storagebuffer<UniformBufferStructures::Model>::CreateInfo sbCI;
+		sbCI.debugName = "GEAR_CORE_DebugModelMatrices: GEAR_CORE_DebugRender";
+		sbCI.device = s_Device;
+		sbCI.data = s_DebugModelMatrices.data();
+		sbCI.count = s_DebugModelMatrices.size();
+		s_DebugModelMatricesSB = CreateRef<Storagebuffer<UniformBufferStructures::Model>>(&sbCI);
+	}
+
+	if (sameSize)
+	{
+		s_DebugModelMatricesSB->m_Data = s_DebugModelMatrices;
+	}
+
+	return s_DebugModelMatricesSB;
 }
