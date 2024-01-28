@@ -99,7 +99,7 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 		&& rpCI.shaderCreateInfo.back().stageAndEntryPoints.size() == 1 
 		&& rpCI.shaderCreateInfo.back().stageAndEntryPoints.back().first == Shader::StageBit::COMPUTE_BIT)
 	{
-		*this = graphics::RenderPipeline(&rpCI);
+		*this = RenderPipeline(&rpCI);
 		return;
 	}
 
@@ -219,9 +219,13 @@ RenderPipeline::RenderPipeline(LoadInfo* pLoadInfo)
 	rpCI.colourBlendState.blendConstants[3] = colourBlendState["blendConstants"][3];
 
 	//Dynamic Rendering
-	rpCI.dynamicRendering = { 0, pLoadInfo->colourAttachmentFormats, pLoadInfo->depthAttachmentFormat, Image::Format::UNKNOWN };
+	uint32_t viewMask = 0;
+	if (pipeline_grpf.find("dynamicRendering") != pipeline_grpf.end())
+		viewMask = pipeline_grpf["dynamicRendering"]["viewMask"];
 
-	*this = graphics::RenderPipeline(&rpCI);
+	rpCI.dynamicRendering = { viewMask, pLoadInfo->colourAttachmentFormats, pLoadInfo->depthAttachmentFormat, Image::Format::UNKNOWN };
+
+	*this = RenderPipeline(&rpCI);
 }
 
 RenderPipeline::~RenderPipeline()
