@@ -301,3 +301,4 @@ Logs
 /External/FREETYPE/release static/
 /External/GLFW/include/
 /External/GLFW/lib-vc2022/
+/.vscode

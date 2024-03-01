@@ -422,10 +422,10 @@ std::string RendererPropertiesPanel::PipelineStageBitToString(miru::base::Pipeli
 				return "RAY_TRACING_SHADER_BIT";
 			case PipelineStageBit::FRAGMENT_DENSITY_PROCESS_BIT:
 				return "FRAGMENT_DENSITY_PROCESS_BIT";
-			case PipelineStageBit::TASK_SHADER_BIT_EXT:
-				return "TASK_SHADER_BIT_EXT";
-			case PipelineStageBit::MESH_SHADER_BIT_EXT:
-				return "MESH_SHADER_BIT_EXT";
+			case PipelineStageBit::TASK_SHADER_BIT:
+				return "TASK_SHADER_BIT";
+			case PipelineStageBit::MESH_SHADER_BIT:
+				return "MESH_SHADER_BIT";
 			case PipelineStageBit::VIDEO_DECODE_BIT:
 				return "VIDEO_DECODE_BIT";
 			case PipelineStageBit::VIDEO_ENCODE_BIT:

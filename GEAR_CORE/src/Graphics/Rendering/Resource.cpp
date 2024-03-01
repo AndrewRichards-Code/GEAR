@@ -380,10 +380,10 @@ PipelineStageBit ResourceView::ShaderStageToPipelineStage(const Shader::StageBit
 		return PipelineStageBit::FRAGMENT_SHADER_BIT;
 	case Shader::StageBit::COMPUTE_BIT:
 		return PipelineStageBit::COMPUTE_SHADER_BIT;
-	case Shader::StageBit::TASK_BIT_EXT:
-		return PipelineStageBit::TASK_SHADER_BIT_EXT;
-	case Shader::StageBit::MESH_BIT_EXT:
-		return PipelineStageBit::MESH_SHADER_BIT_EXT;
+	case Shader::StageBit::TASK_BIT:
+		return PipelineStageBit::TASK_SHADER_BIT;
+	case Shader::StageBit::MESH_BIT:
+		return PipelineStageBit::MESH_SHADER_BIT;
 	case Shader::StageBit::RAYGEN_BIT:
 	case Shader::StageBit::ANY_HIT_BIT:
 	case Shader::StageBit::CLOSEST_HIT_BIT:

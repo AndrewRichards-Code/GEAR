@@ -19,7 +19,7 @@ void SwapchinUIPasses::CopyToSwapchain(Renderer& renderer)
 	const Ref<Window>& window = renderer.GetWindow();
 	uint32_t width = window->GetWidth();
 	uint32_t height = window->GetHeight();
-	const ImageViewRef& swapchainImageView = window->GetSwapchain()->m_SwapchainImageViews[renderer.GetFrameIndex()];
+	const ImageViewRef& swapchainImageView = window->GetSwapchain()->m_SwapchainImageViews[renderer.GetSwapchainImageIndex()];
 
 	Ref<TaskPassParameters> copyToSwapchainPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["DebugCopy"]);
 	copyToSwapchainPassParameters->SetResourceView("sourceImage", ResourceView(renderSurface->GetColourSRGBImageView(), Resource::State::SHADER_READ_ONLY));
@@ -40,7 +40,7 @@ void SwapchinUIPasses::ExternalUI(Renderer& renderer, ui::UIContext* uiContext)
 	const Ref<Window>& window = renderer.GetWindow();
 	uint32_t width = window->GetWidth();
 	uint32_t height = window->GetHeight();
-	const ImageViewRef& swapchainImageView = window->GetSwapchain()->m_SwapchainImageViews[renderer.GetFrameIndex()];
+	const ImageViewRef& swapchainImageView = window->GetSwapchain()->m_SwapchainImageViews[renderer.GetSwapchainImageIndex()];
 
 	Ref<TaskPassParameters> externalUIPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["DebugCopy"]);
 	for (const auto& textureID : uiContext->m_TextureIDs)

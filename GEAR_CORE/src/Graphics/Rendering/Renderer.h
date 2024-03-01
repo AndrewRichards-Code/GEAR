@@ -65,8 +65,8 @@ namespace gear
 
 			//Present Synchronisation Primitives
 			std::vector<miru::base::FenceRef> m_DrawFences;
-			miru::base::SemaphoreRef m_AcquireSemaphore;
-			miru::base::SemaphoreRef m_SubmitSemaphore;
+			std::vector<miru::base::SemaphoreRef> m_AcquireSemaphores;
+			std::vector<miru::base::SemaphoreRef> m_SubmitSemaphores;
 
 			//Renderering Objects
 			Ref<objects::Camera> m_MainRenderCamera;
@@ -84,6 +84,7 @@ namespace gear
 
 			uint32_t m_FrameIndex = 0;
 			uint32_t m_FrameCount = 0;
+			uint32_t m_SwapchainImageIndex = 0;
 			uint32_t m_SwapchainImageCount = 0;
 
 			bool m_ReloadTextures = false;
@@ -143,6 +144,8 @@ namespace gear
 
 			inline const uint32_t& GetFrameIndex() const { return m_FrameIndex; }
 			inline const uint32_t& GetFrameCount() const { return m_FrameCount; }
+			inline const uint32_t& GetSwapchainImageIndex() const { return m_SwapchainImageIndex; }
+			inline const uint32_t& GetSwapchainImageCount() const { return m_SwapchainImageCount; }
 
 		};
 	}

@@ -46,18 +46,18 @@ Renderer::Renderer(CreateInfo* pCreateInfo)
 		drawFenceCI.signaled = true;
 		drawFenceCI.timeout = UINT64_MAX;
 		m_DrawFences.emplace_back(Fence::Create(&drawFenceCI));
+
+		Semaphore::CreateInfo semaphoreCI;
+		semaphoreCI.debugName = "GEAR_CORE_Seamphore_Renderer_Acquire_" + std::to_string(i);
+		semaphoreCI.device = m_Device;
+		semaphoreCI.type = Semaphore::Type::BINARY;
+		m_AcquireSemaphores.emplace_back(Semaphore::Create(&semaphoreCI));
+
+		semaphoreCI.debugName = "GEAR_CORE_Seamphore_Renderer_Submit_" + std::to_string(i);
+		semaphoreCI.device = m_Device;
+		semaphoreCI.type = Semaphore::Type::BINARY;
+		m_SubmitSemaphores.emplace_back(Semaphore::Create(&semaphoreCI));
 	}
-
-	Semaphore::CreateInfo semaphoreCI;
-	semaphoreCI.debugName = "GEAR_CORE_Seamphore_Renderer_Acquire";
-	semaphoreCI.device = m_Device;
-	semaphoreCI.type = Semaphore::Type::BINARY;
-	m_AcquireSemaphore = Semaphore::Create(&semaphoreCI);
-
-	semaphoreCI.debugName = "GEAR_CORE_Seamphore_Renderer_Submit";
-	semaphoreCI.device = m_Device;
-	semaphoreCI.type = Semaphore::Type::BINARY;
-	m_SubmitSemaphore = Semaphore::Create(&semaphoreCI);
 
 	SubmitRenderSurface(m_CI.window->GetRenderSurface());
 	InitialiseRenderPipelines(m_RenderSurface);
@@ -268,13 +268,13 @@ void Renderer::SubmitUIContext(ui::UIContext* uiContext)
 
 void Renderer::AcquireNextImage()
 {
-	if (m_CI.shouldPresent)
-	{
-		m_CI.window->GetSwapchain()->AcquireNextImage(m_AcquireSemaphore, m_FrameIndex);
-	}
-
 	m_DrawFences[m_FrameIndex]->Wait();
 	m_DrawFences[m_FrameIndex]->Reset();
+
+	if (m_CI.shouldPresent)
+	{
+		m_CI.window->GetSwapchain()->AcquireNextImage(m_AcquireSemaphores[m_FrameIndex], m_SwapchainImageIndex);
+	}
 }
 
 void Renderer::Draw()
@@ -469,19 +469,17 @@ void Renderer::Present()
 	const Ref<CommandPool>& graphicsCmdPool = graphicsCmdBuffer->GetCreateInfo().commandPool;
 	if (m_CI.shouldPresent)
 	{
-		CommandBuffer::SubmitInfo submitInfo = { { m_FrameIndex }, { m_AcquireSemaphore }, {}, { base::PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT }, { m_SubmitSemaphore }, {} };
+		CommandBuffer::SubmitInfo submitInfo = { { m_FrameIndex }, { m_AcquireSemaphores[m_FrameIndex] }, {}, { base::PipelineStageBit::COLOUR_ATTACHMENT_OUTPUT_BIT }, { m_SubmitSemaphores[m_FrameIndex] }, {} };
 		graphicsCmdBuffer->Submit({ submitInfo }, m_DrawFences[m_FrameIndex]);
-		m_CI.window->GetSwapchain()->Present(graphicsCmdPool, m_SubmitSemaphore, m_FrameIndex);
+		m_CI.window->GetSwapchain()->Present(graphicsCmdPool, m_SubmitSemaphores[m_FrameIndex], m_SwapchainImageIndex);
 	}
 	else
 	{
 		CommandBuffer::SubmitInfo submitInfo = { { m_FrameIndex }, {}, {}, {}, {}, {} };
 		graphicsCmdBuffer->Submit({ submitInfo }, m_DrawFences[m_FrameIndex]);
-
-		//Increment m_FrameIndex as AcquireNextImage() will not update it.
-		m_FrameIndex = (m_FrameIndex + 1) % m_SwapchainImageCount;
 	}
 
+	m_FrameIndex = (m_FrameIndex + 1) % m_SwapchainImageCount;
 	m_FrameCount++;
 }
 
