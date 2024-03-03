@@ -171,12 +171,12 @@ void Renderer::InitialiseDefaultObjects()
 	probeUBCI.data = &zero1;
 	s_DefaultObjects.emptyProbeUB = CreateRef<Uniformbuffer<UniformBufferStructures::ProbeInfo>>(&probeUBCI);
 
-	uint8_t dataBlack[4] = { 0x00, 0x00, 0x00, 0xFF };
+	uint8_t dataBlack2D[4] = { 0x00, 0x00, 0x00, 0xFF };
 	Texture::CreateInfo texCI;
 	texCI.debugName = "GEAR_CORE_Texture_Renderer: Black Texture 2D";
 	texCI.device = m_Device;
 	texCI.dataType = Texture::DataType::DATA;
-	texCI.data.data = dataBlack;
+	texCI.data.data = dataBlack2D;
 	texCI.data.size = 4;
 	texCI.data.width = 1;
 	texCI.data.height = 1;
@@ -191,6 +191,17 @@ void Renderer::InitialiseDefaultObjects()
 	texCI.gammaSpace = GammaSpace::LINEAR;
 	s_DefaultObjects.black2DTexture = CreateRef<Texture>(&texCI);
 
+	uint8_t dataBlack2DArray[8] = {
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF
+	};
+	texCI.debugName = "GEAR_CORE_Texture_Renderer: Black Texture 2D Array";
+	texCI.data.data = dataBlack2DArray;
+	texCI.data.size = 8;
+	texCI.arrayLayers = 2;
+	texCI.type = miru::base::Image::Type::TYPE_2D_ARRAY;
+	s_DefaultObjects.black2DArrayTexture = CreateRef<Texture>(&texCI);
+
 	uint8_t dataBlackCube[24] = {
 		0x00, 0x00, 0x00, 0xFF,
 		0x00, 0x00, 0x00, 0xFF,
@@ -199,12 +210,33 @@ void Renderer::InitialiseDefaultObjects()
 		0x00, 0x00, 0x00, 0xFF,
 		0x00, 0x00, 0x00, 0xFF
 	};
-	texCI.debugName = "GEAR_CORE_Texture_Renderer: Black Texture cube";
+	texCI.debugName = "GEAR_CORE_Texture_Renderer: Black Texture Cube";
 	texCI.data.data = dataBlackCube;
 	texCI.data.size = 24;
 	texCI.arrayLayers = 6;
 	texCI.type = miru::base::Image::Type::TYPE_CUBE;
 	s_DefaultObjects.blackCubeTexture = CreateRef<Texture>(&texCI);
+
+	uint8_t dataBlackCubeArray[48] = {
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF,
+		0x00, 0x00, 0x00, 0xFF
+	};
+	texCI.debugName = "GEAR_CORE_Texture_Renderer: Black Texture Cube Array";
+	texCI.data.data = dataBlackCubeArray;
+	texCI.data.size = 48;
+	texCI.arrayLayers = 12;
+	texCI.type = miru::base::Image::Type::TYPE_CUBE_ARRAY;
+	s_DefaultObjects.blackCubeArrayTexture = CreateRef<Texture>(&texCI);
 }
 
 void Renderer::UninitialiseDefaultObjects()
@@ -212,7 +244,9 @@ void Renderer::UninitialiseDefaultObjects()
 	s_DefaultObjects.emptyLightsUB = nullptr;
 	s_DefaultObjects.emptyProbeUB = nullptr;
 	s_DefaultObjects.black2DTexture = nullptr;
+	s_DefaultObjects.black2DArrayTexture = nullptr;
 	s_DefaultObjects.blackCubeTexture = nullptr;
+	s_DefaultObjects.blackCubeArrayTexture = nullptr;
 }
 
 void Renderer::SubmitRenderSurface(const Ref<RenderSurface>& renderSurface)

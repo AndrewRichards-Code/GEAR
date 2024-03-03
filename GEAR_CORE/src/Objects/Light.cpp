@@ -104,7 +104,7 @@ void Light::CreateProbe()
 	probeCI.imageWidth = 512;
 	probeCI.imageHeight = 512;
 	probeCI.projectionType = m_CI.type == Type::DIRECTIONAL ? Camera::ProjectionType::ORTHOGRAPHIC : Camera::ProjectionType::PERSPECTIVE;
-	probeCI.perspectiveHorizonalFOV = m_CI.type == Type::POINT ? pi / 2.0 : m_CI.type == Type::SPOT ? m_CI.spotOuterAngle : 0.0;
+	probeCI.perspectiveHorizonalFOV = m_CI.type == Type::POINT ? pi / 2.0 : m_CI.type == Type::SPOT ? m_CI.spotOuterAngle * 2.0 : 0.0;
 	probeCI.orthographicScale = 100.0f;
 	probeCI.zNear = 0.001f;
 	probeCI.zFar = 3000.0f;

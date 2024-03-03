@@ -281,7 +281,7 @@ void ViewportPanel::UpdateCameraTransform()
 	//View matrix update
 	
 	//Mouse Control
-	if (ImGui::IsWindowFocused())
+	if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered())
 	{
 		
 		const float& multiplier = ImGui::IsKeyDown(ImGuiKey::ImGuiKey_LeftShift) ? 4.0f : 1.0f;
@@ -370,6 +370,11 @@ void ViewportPanel::UpdateCameraTransform()
 				}
 			}
 		}
+	}
+	else
+	{
+		m_InitialMousePosition = GetMousePositionInViewport();
+		m_InitalMouseScrollWheel = GetMouseScrollWheel();
 	}
 
 	camera->Update(transform);

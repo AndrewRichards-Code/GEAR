@@ -3,22 +3,22 @@
 
 struct VS_IN
 {
-	MIRU_LOCATION(0, float4, positions, POSITION0);
-	MIRU_LOCATION(1, float2, texCoords, TEXCOORD1);
-	MIRU_LOCATION(2, float4, normals, NORMAL2);
-	MIRU_LOCATION(3, float4, tangents, TANGENT3);
-	MIRU_LOCATION(4, float4, binormals, BINORMAL4);
-	MIRU_LOCATION(5, float4, colours, COLOR5);
+	MIRU_LOCATION(0, float4, position, POSITION0);
+	MIRU_LOCATION(1, float2, texCoord, TEXCOORD1);
+	MIRU_LOCATION(2, float4, normal, NORMAL2);
+	MIRU_LOCATION(3, float4, tangent, TANGENT3);
+	MIRU_LOCATION(4, float4, binormal, BINORMAL4);
+	MIRU_LOCATION(5, float4, colour, COLOR5);
 };
 
 struct VS_OUT
 {
-	MIRU_LOCATION(0, float4, v_Position, SV_POSITION);
-	MIRU_LOCATION(1, float2, v_TexCoord, TEXCOORD1);
-	MIRU_LOCATION(2, float4, v_Normal, NORMAL2);
-	MIRU_LOCATION(3, float4, v_Tangent, TANGENT3);
-	MIRU_LOCATION(4, float4, v_Binormal, BINORMAL4);
-	MIRU_LOCATION(5, float4, v_Colour, COLOR5);
+	MIRU_LOCATION(0, float4, position, SV_POSITION);
+	MIRU_LOCATION(1, float2, texCoord, TEXCOORD1);
+	MIRU_LOCATION(2, float4, normal, NORMAL2);
+	MIRU_LOCATION(3, float4, tangent, TANGENT3);
+	MIRU_LOCATION(4, float4, binormal, BINORMAL4);
+	MIRU_LOCATION(5, float4, colour, COLOR5);
 };
 typedef VS_OUT PS_IN;
 
@@ -35,9 +35,9 @@ VS_OUT vs_main(VS_IN IN)
 {
 	VS_OUT OUT;
 	
-	OUT.v_Position = mul(IN.positions, mul(model.modl, mul(textCamera.view, textCamera.proj)));
-	OUT.v_TexCoord = IN.texCoords;
-	OUT.v_Colour = IN.colours;
+	OUT.position = mul(IN.position, mul(model.modl, mul(textCamera.view, textCamera.proj)));
+	OUT.texCoord = IN.texCoord;
+	OUT.colour = IN.colour;
 	
 	return OUT;
 }
@@ -46,15 +46,15 @@ PS_OUT ps_main(PS_IN IN)
 {
 	PS_OUT OUT;
 	
-	if (IN.v_TexCoord.x == -1.0 && IN.v_TexCoord.y == -1.0)
+	if (IN.texCoord.x == -1.0 && IN.texCoord.y == -1.0)
 	{
-		OUT.colour = IN.v_Colour;
+		OUT.colour = IN.colour;
 	}
 	else
 	{
-		float alpha = fontAtlas_ImageCIS.Sample(fontAtlas_SamplerCIS, IN.v_TexCoord).r;
+		float alpha = fontAtlas_ImageCIS.Sample(fontAtlas_SamplerCIS, IN.texCoord).r;
 		float4 sampled = float4(1.0, 1.0, 1.0, alpha);
-		OUT.colour = IN.v_Colour * sampled;
+		OUT.colour = IN.colour * sampled;
 	}
 	
 	return OUT;

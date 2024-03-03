@@ -17,8 +17,8 @@ using namespace mars;
 
 Picker::Ray Picker::GetPickingRay(const Ref<Camera>& camera, const float2& pixelCoords, const float2& viewportSize)
 {
-	float2 ndc = float2(pixelCoords.x / viewportSize.x, pixelCoords.y / viewportSize.y) * 2.0f - float2(1.0f, 1.0f);
-	float4 clipCoords = float4(ndc, float2(1.0f, 1.0f));
+	float2 clipCoordsXY = float2(pixelCoords.x / viewportSize.x, pixelCoords.y / viewportSize.y) * 2.0f - float2(1.0f, 1.0f);
+	float4 clipCoords = float4(clipCoordsXY, float2(1.0f, 1.0f));
 
 	const Ref<Uniformbuffer<UniformBufferStructures::Camera>>& cameraUB = camera->GetCameraUB();
 	float4x4 projInverse = float4x4::Inverse(cameraUB->proj);

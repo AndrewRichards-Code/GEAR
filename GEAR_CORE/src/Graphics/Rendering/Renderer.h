@@ -48,7 +48,9 @@ namespace gear
 				Ref<Uniformbuffer<UniformBufferStructures::Lights>> emptyLightsUB;
 				Ref<Uniformbuffer<UniformBufferStructures::ProbeInfo>> emptyProbeUB;
 				Ref<Texture> black2DTexture;
+				Ref<Texture> black2DArrayTexture;
 				Ref<Texture> blackCubeTexture;
+				Ref<Texture> blackCubeArrayTexture;
 			};
 
 		private:
