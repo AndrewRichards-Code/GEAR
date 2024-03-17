@@ -29,7 +29,7 @@ void Camera::Update(const Transform& transform)
 		DefineView(transform);
 		SetPosition(transform);
 	}
-	if (m_UpdateGPU)
+	if (GetUpdateGPUFlag())
 	{
 		m_CameraUB->SubmitData();
 	}

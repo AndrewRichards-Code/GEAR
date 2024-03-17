@@ -32,7 +32,7 @@ void Model::Update(const Transform& transform)
 	{
 		m_UB->modl = TransformToMatrix4(transform);
 	}
-	if (m_UpdateGPU)
+	if (GetUpdateGPUFlag())
 	{
 		m_UB->SubmitData();
 	}

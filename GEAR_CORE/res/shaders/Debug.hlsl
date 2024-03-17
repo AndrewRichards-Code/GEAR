@@ -142,7 +142,7 @@ typedef VS_OUT_2 PS_IN_2;
 MIRU_UNIFORM_BUFFER(0, 0, Camera, debugCamera);
 MIRU_UNIFORM_BUFFER(0, 1, DebugProbeInfo, debugProbeInfo);
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D_ARRAY, 0, 2, float4, image2DArray);
-MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE_ARRAY, 0, 2, float4, cubemapArray);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 2, float4, cubemap);
 
 VS_OUT_2 vs_show_depth_image2D(VS_IN IN)
 {
@@ -223,14 +223,14 @@ VS_OUT_2 vs_show_depth_cubemap(VS_IN IN)
 	return OUT;
 }
 
-PS_OUT ps_show_depth_cubemap(PS_IN_2 IN, uint viewID : SV_ViewID)
+PS_OUT ps_show_depth_cubemap(PS_IN_2 IN)
 {
 	PS_OUT OUT;
 	float4x4 viewProj = mul(debugCamera.view, debugCamera.proj);
 	float4x4 viewProj_Inv = inverse(viewProj);
 	float3 view = normalize(mul(IN.clipPosition, viewProj_Inv)).xyz;
 	
-	float depth = cubemapArray_ImageCIS.Sample(cubemapArray_SamplerCIS, float4(view, viewID)).x;
+	float depth = cubemap_ImageCIS.Sample(cubemap_SamplerCIS, view).x;
 	depth = clamp(depth, debugProbeInfo.minDepth, debugProbeInfo.maxDepth) / (debugProbeInfo.maxDepth - debugProbeInfo.minDepth);
 	float4 depthOutput = float4(depth, depth, depth, 1.0);
 	if (debugProbeInfo.showColourCubemap)

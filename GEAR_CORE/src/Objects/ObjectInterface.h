@@ -9,6 +9,9 @@ namespace gear
 	{
 		class GEAR_API ObjectInterface
 		{
+		protected:
+			typedef void(ObjectInterface::*ObjectUpdatedCallback)();
+
 		public:
 			struct CreateInfo
 			{
@@ -22,10 +25,20 @@ namespace gear
 			const bool& GetUpdateGPUFlag() const { return m_UpdateGPU; }
 			void ResetUpdateGPUFlag() { m_UpdateGPU = false; }
 
+			inline void SetCallback(ObjectInterface* _class, ObjectUpdatedCallback _method)
+			{
+				m_CallbackMap[_class] = _method;
+			}
+			inline void RemoveCallback(ObjectInterface* _class)
+			{
+				if (m_CallbackMap.find(_class) != m_CallbackMap.end())
+				{
+					m_CallbackMap.erase(_class);
+				}
+			}
+
 		protected:
-			uint64_t m_TransformHash = 0;
-			uint64_t m_CreateInfoHash = 0;
-			bool m_UpdateGPU = false;
+			void SetUpdateGPUFlag() { m_UpdateGPU = true; }
 
 			bool TransformHasChanged(const Transform& transform)
 			{
@@ -47,6 +60,7 @@ namespace gear
 				}
 				else
 				{
+					Callbacks();
 					m_TransformHash = newHash;
 					m_UpdateGPU |= true;
 					return true;
@@ -63,11 +77,34 @@ namespace gear
 				}
 				else
 				{
+					Callbacks();
 					m_CreateInfoHash = newHash;
 					m_UpdateGPU |= true;
 					return true;
 				}
 			}
+
+		private:
+			void Callbacks()
+			{
+				for (const auto& it : m_CallbackMap)
+				{
+					auto [_class, _method] = it;
+					if (_class)
+					{
+						(_class->*_method)();
+					}
+				}
+			}
+
+		protected:
+			uint64_t m_TransformHash = 0;
+			uint64_t m_CreateInfoHash = 0;
+		
+		private:
+			bool m_UpdateGPU = false;
+			std::unordered_map<ObjectInterface*, ObjectUpdatedCallback> m_CallbackMap;
+
 		};
 
 		class GEAR_API ObjectComponentInterface
@@ -86,8 +123,7 @@ namespace gear
 			void ResetUpdateGPUFlag() { m_UpdateGPU = false; }
 
 		protected:
-			uint64_t m_CreateInfoHash = 0;
-			bool m_UpdateGPU = false;
+			void SetUpdateGPUFlag() { m_UpdateGPU = true; }
 
 			virtual bool CreateInfoHasChanged(const ObjectComponentInterface::CreateInfo* pCreateInfo) = 0;
 			bool CompareCreateInfoHash(const uint64_t newHash)
@@ -104,6 +140,12 @@ namespace gear
 					return true;
 				}
 			}
+
+		protected:
+			uint64_t m_CreateInfoHash = 0;
+		
+		private:
+			bool m_UpdateGPU = false;
 		};
 
 		class GEAR_API ObjectViewInterface
@@ -125,10 +167,8 @@ namespace gear
 			const std::string GetViewIDString() const { return std::to_string(m_ViewID); }
 			bool ViewIDIsValid() const { return (m_ViewID != 0); }
 
-		protected:
-			ViewID m_ViewID = 0;
-
 		private:
+			ViewID m_ViewID = 0;
 			static ViewID s_GlobalViewID;
 		};
 	}

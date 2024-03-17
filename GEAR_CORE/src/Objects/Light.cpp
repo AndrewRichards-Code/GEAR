@@ -58,7 +58,7 @@ void Light::Update(const Transform& transform)
 		s_UB->lights[m_LightID].direction = transform.orientation.ToRotationMatrix4<float>() * float4(0, 0, 1, 0);
 	}
 	s_UB->lights[m_LightID].type_valid_spotInner_spotOuter.y = 1.0f;
-	if (m_UpdateGPU)
+	if (GetUpdateGPUFlag())
 	{
 		s_UB->SubmitData();
 	}

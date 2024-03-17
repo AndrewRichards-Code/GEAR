@@ -23,6 +23,10 @@ Probe::Probe(CreateInfo* pCreateInfo)
 
 Probe::~Probe()
 {
+	if (m_CI.viewCamera)
+	{
+		m_CI.viewCamera->RemoveCallback(this);
+	}
 }
 
 void Probe::Update(const Transform& transform)
@@ -31,13 +35,18 @@ void Probe::Update(const Transform& transform)
 	std::vector<Frustum> viewCameraSubFrusta;
 	float viewCameraNear = 0.0f;
 	float viewCameraFar = 1.0f;
-	bool viewCameraUpdated = false;
+
+	static bool setCallback = true;
+	if (m_CI.viewCamera && setCallback)
+	{
+		m_CI.viewCamera->SetCallback(this, (ObjectUpdatedCallback)(&Probe::UpdateFromViewCamera));
+		setCallback = false;
+	}
+
 	for (uint32_t i = 0; i < m_CI.shadowCascades; i++)
 	{
 		if (m_CI.viewCamera)
 		{
-			viewCameraUpdated = true; //m_CI.viewCamera->GetUpdateGPUFlag();
-
 			const Ref<Uniformbuffer<UniformBufferStructures::Camera>>& viewCameraUB = m_CI.viewCamera->GetCameraUB();
 			viewCameraNear = m_CI.viewCamera->m_CI.perspectiveParams.zNear;
 			viewCameraFar = m_CI.viewCamera->m_CI.perspectiveParams.zFar;
@@ -54,10 +63,8 @@ void Probe::Update(const Transform& transform)
 		}
 	}
 
-	if (CreateInfoHasChanged(&m_CI) || viewCameraUpdated)
+	if (CreateInfoHasChanged(&m_CI) || m_ViewCameraUpdated)
 	{
-		this->m_UpdateGPU = true;
-
 		//Textures and Pipeline
 		InitialiseTextures();
 
@@ -98,10 +105,8 @@ void Probe::Update(const Transform& transform)
 	
 		m_UB->SubmitData();
 	}
-	if (TransformHasChanged(transform) || viewCameraUpdated)
+	if (TransformHasChanged(transform) || m_ViewCameraUpdated)
 	{
-		this->m_UpdateGPU = true;
-
 		//View
 		{
 			if (m_CI.directionType == DirectionType::MONO)
@@ -151,6 +156,18 @@ void Probe::Update(const Transform& transform)
 
 		m_UB->SubmitData();
 	}
+
+	//Reset the m_ViewCameraUpdated for the next update from the view camera
+	if (m_ViewCameraUpdated)
+	{
+		m_ViewCameraUpdated = false;
+		SetUpdateGPUFlag(); //Ensure that the probe UB is updated
+	}
+}
+
+void Probe::UpdateFromViewCamera()
+{
+	m_ViewCameraUpdated = true;
 }
 
 bool Probe::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo)
@@ -204,7 +221,7 @@ void Probe::CreateTexture(Ref<Texture>& texture, bool colour)
 	textureCI.data.depth = 1;
 	textureCI.mipLevels = 1;
 	textureCI.arrayLayers = (m_CI.directionType == DirectionType::OMNI ? 6 : 1) * std::min(MaxShadowCascades, m_CI.shadowCascades);
-	textureCI.type = m_CI.directionType == DirectionType::OMNI ? Image::Type::TYPE_CUBE_ARRAY : Image::Type::TYPE_2D_ARRAY;
+	textureCI.type = m_CI.directionType == DirectionType::OMNI ? Image::Type::TYPE_CUBE : Image::Type::TYPE_2D_ARRAY;
 	textureCI.format = m_CI.captureType == CaptureType::REFLECTION ? Image::Format::R32G32B32A32_SFLOAT : Image::Format::D32_SFLOAT;
 	textureCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 	textureCI.usage = Image::UsageBit::SAMPLED_BIT | (m_CI.captureType == CaptureType::REFLECTION ? Image::UsageBit::COLOUR_ATTACHMENT_BIT : Image::UsageBit::DEPTH_STENCIL_ATTACHMENT_BIT);

@@ -41,6 +41,8 @@ namespace gear
 			Ref<graphics::Texture> m_ColourTexture;
 			Ref<graphics::Texture> m_DepthTexture;
 
+			bool m_ViewCameraUpdated = false;
+
 			bool m_RenderDebugView = false;
 			Ref<graphics::Texture> m_DebugTexture = nullptr;
 
@@ -63,6 +65,8 @@ namespace gear
 
 			void Update(const Transform& transform) override;
 			const Ref<graphics::Uniformbuffer<ProbeInfoUB>>& GetUB() const { return m_UB; }
+
+			void UpdateFromViewCamera();
 
 		protected:
 			bool CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo) override;

@@ -88,7 +88,7 @@ void ShadowPasses::DebugShowDepth(Renderer& renderer, Ref<Light> light)
 		if (omni)
 			debugShowDepthParameters->SetResourceView("debugCamera", ResourceView(DebugRender::GetCamera()->GetCameraUB()));
 		debugShowDepthParameters->SetResourceView("debugProbeInfo", ResourceView(DebugRender::GetDebugProbeInfo()));
-		debugShowDepthParameters->SetResourceView(omni ? "cubemap" : "image2D", ResourceView(probe->m_DepthTexture, DescriptorType::COMBINED_IMAGE_SAMPLER));
+		debugShowDepthParameters->SetResourceView(omni ? "cubemap" : "image2DArray", ResourceView(probe->m_DepthTexture, DescriptorType::COMBINED_IMAGE_SAMPLER));
 		debugShowDepthParameters->AddAttachment(0, ResourceView(debugShowDepthTexture, Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 1.0f });
 		debugShowDepthParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height), 1, 0b1111);
 
