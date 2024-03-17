@@ -48,6 +48,7 @@ namespace gear
 				GEAR_FLOAT4X4	view[6];
 				GEAR_FLOAT4		position;
 				GEAR_FLOAT4		farPlanes;
+				GEAR_UINT		shadowCascades;
 				GEAR_UINT		cubemap;
 			};
 

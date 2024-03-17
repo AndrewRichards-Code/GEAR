@@ -95,7 +95,42 @@ float3 GetEmissive(PS_IN IN)
 	return pbrConstants.emissive.rgb * emissive_ImageCIS.Sample(emissive_SamplerCIS, IN.texCoord).rgb; 
 }
 
-float GetShadowStrength(float4 worldPosition, float viewPositionZ, Light light, out float4 debugColour)
+float ShadowPCF(float2 shadowTextureCoords, uint shadowCascadeIndex, float lightSpaceZ)
+{
+	float shadowStrength = 0.0;
+	float bias = 0.00001;
+	uint range = 2;
+	uint size = 2 * range + 1;
+	float count = float(size * size);
+	
+	uint3 shadowMap2DArray_ImageCIS_Dim;
+	shadowMap2DArray_ImageCIS.GetDimensions(shadowMap2DArray_ImageCIS_Dim.x, shadowMap2DArray_ImageCIS_Dim.y, shadowMap2DArray_ImageCIS_Dim.z);
+	float scale = 0.75;
+	float dx = scale * (1.0 / float(shadowMap2DArray_ImageCIS_Dim.x));
+	float dy = scale * (1.0 / float(shadowMap2DArray_ImageCIS_Dim.y));
+	
+	for (int x = -range; x <= range; x++)
+	{
+		for (int y = -range; y <= range; y++)
+		{
+			float2 offset = float2(dx * x, dy * y);
+			float shadowDepth = shadowMap2DArray_ImageCIS.SampleLevel(shadowMap2DArray_SamplerCIS, float3(shadowTextureCoords + offset, shadowCascadeIndex), 0.0).x;
+			
+			if (shadowDepth - bias > lightSpaceZ) //Reverse Z
+			{
+				shadowStrength += 0.0;
+			}
+			else
+			{
+				shadowStrength += 1.0;
+			}
+		}
+	}
+	
+	return (shadowStrength / count);
+}
+
+float GetShadowStrength(float4 worldPosition, float viewPositionZ, Light light)
 {
 	float shadowStrength = 1.0;
 	float bias = 0.00001;
@@ -105,18 +140,11 @@ float GetShadowStrength(float4 worldPosition, float viewPositionZ, Light light, 
 	float type = light.type_valid_spotInner_spotOuter.x;
 	
 	uint shadowCascadeIndex = 0;
-	for (uint i = 0; i < 4; i++)
+	for (uint i = 0; i < probeInfo.shadowCascades; i++)
 	{
-		if (worldPosition.z < probeInfo.farPlanes[i])
+		if (viewPositionZ < probeInfo.farPlanes[i])
 		{
 			shadowCascadeIndex = i;
-			debugColour = float4(0,0,0,1);
-			/*if (i == 1)
-				debugColour = float4(1,0,0,1);
-			if (i == 2)
-				debugColour = float4(0,1,0,1);
-			if (i == 3)
-				debugColour = float4(0,0,1,1);*/
 			break;
 		}
 	}
@@ -131,10 +159,14 @@ float GetShadowStrength(float4 worldPosition, float viewPositionZ, Light light, 
 	}
 	else if (type == 1.0) //DIRECTIONAL
 	{
-		float3 lightSpaceProjectedPosition = PerspectiveDivide(worldPosition, probeInfo.view[0], probeInfo.proj[0]);
+		float3 lightSpaceProjectedPosition = PerspectiveDivide(worldPosition, probeInfo.view[shadowCascadeIndex], probeInfo.proj[shadowCascadeIndex]);
 		float2 shadowTextureCoords = (lightSpaceProjectedPosition.xy / 2.0) + float2(0.5, 0.5);
 		lightSpaceZ = lightSpaceProjectedPosition.z;
 		shadowDepth = shadowMap2DArray_ImageCIS.SampleLevel(shadowMap2DArray_SamplerCIS, float3(shadowTextureCoords, shadowCascadeIndex), 0.0).x;
+		//return ShadowPCF(shadowTextureCoords, shadowCascadeIndex, lightSpaceZ);
+		
+		if (viewPositionZ > probeInfo.farPlanes[probeInfo.shadowCascades - 1]) //Beyond furthest cascade
+			return shadowStrength;
 	}	
 	else if (type == 2.0) //SPOT
 	{
@@ -142,10 +174,6 @@ float GetShadowStrength(float4 worldPosition, float viewPositionZ, Light light, 
 		float2 shadowTextureCoords = (lightSpaceProjectedPosition.xy / 2.0) + float2(0.5, 0.5);
 		lightSpaceZ = lightSpaceProjectedPosition.z;
 		shadowDepth = shadowMap2DArray_ImageCIS.SampleLevel(shadowMap2DArray_SamplerCIS, float3(shadowTextureCoords, 0), 0.0).x;
-	}
-	else
-	{
-		shadowStrength = 1.0;
 	}
 	
 	if (shadowDepth - bias > lightSpaceZ) //Reverse Z
@@ -220,10 +248,7 @@ PS_OUT ps_main(PS_IN IN)
 		}
 		
 		//Shadows
-		float4 debugShadowColour;
-		float shadowStrength = GetShadowStrength(IN.worldPosition, IN.viewPosition.z, light, debugShadowColour);
-		Lo += debugShadowColour.rgb;
-		
+		float shadowStrength = GetShadowStrength(IN.worldPosition, IN.viewPosition.z, light);
 		Li *= shadowStrength;
 		
 		//Half vector between input and output vector.

@@ -3,6 +3,7 @@
 #include "Graphics/Texture.h"
 #include "Graphics/RenderPipeline.h"
 #include "Objects/Camera.h"
+#include "Graphics/Frustum.h"
 
 namespace gear
 {
@@ -33,9 +34,11 @@ namespace gear
 				double					perspectiveHorizonalFOV;					//In radians
 				float					zNear;										//Only for Camera::ProjectionType::PERSPECTIVE
 				float					zFar;										//Only for Camera::ProjectionType::PERSPECTIVE
+				Ref<Camera>				viewCamera;
 				uint32_t				shadowCascades = 1;
 				float					shadowCascadeDistances[MaxShadowCascades];	//Far planes for the cascades
-				Ref<Camera>				viewCamera;
+				float					shadowCascadeSplitLambda;
+				bool					calculateShadowCascadeDistances;
 			};
 
 			Ref<graphics::Texture> m_ColourTexture;
@@ -67,6 +70,7 @@ namespace gear
 			const Ref<graphics::Uniformbuffer<ProbeInfoUB>>& GetUB() const { return m_UB; }
 
 			void UpdateFromViewCamera();
+			float CalculateCascadeDistance(uint32_t i);
 
 		protected:
 			bool CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo) override;
@@ -75,6 +79,8 @@ namespace gear
 			void InitialiseTextures();
 			void CreateTexture(Ref<graphics::Texture>& texture, bool colour = true);
 			void InitialiseUB();
+
+			void CalculateViewCameraSubFrusta(std::vector<graphics::Frustum>& viewCameraSubFrusta, float& viewCameraNEar, float& viewCameraFar);
 		};
 	}
 }

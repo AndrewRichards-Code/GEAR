@@ -107,13 +107,14 @@ void Light::CreateProbe()
 	probeCI.perspectiveHorizonalFOV = m_CI.type == Type::POINT ? pi / 2.0 : m_CI.type == Type::SPOT ? m_CI.spotOuterAngle * 2.0 : 0.0;
 	probeCI.zNear = 0.001f;
 	probeCI.zFar = 3000.0f;
+	probeCI.viewCamera = m_CI.viewCamera;
 	if (m_CI.type == Type::DIRECTIONAL)
 	{
 		probeCI.shadowCascades = Probe::MaxShadowCascades;
-		probeCI.shadowCascadeDistances[0] = 5.0f;
-		probeCI.shadowCascadeDistances[1] = 10.0f;
-		probeCI.shadowCascadeDistances[2] = 100.0f;
-		probeCI.shadowCascadeDistances[3] = 3000.0f;
+		probeCI.shadowCascadeDistances[0] = 0.0f;
+		probeCI.shadowCascadeDistances[1] = 0.0f;
+		probeCI.shadowCascadeDistances[2] = 0.0f;
+		probeCI.shadowCascadeDistances[3] = 0.0f;
 	}
 	else
 	{
@@ -123,6 +124,7 @@ void Light::CreateProbe()
 		probeCI.shadowCascadeDistances[2] = 0.0f;
 		probeCI.shadowCascadeDistances[3] = 0.0f;
 	}
-	probeCI.viewCamera = m_CI.viewCamera;
+	probeCI.shadowCascadeSplitLambda = 0.99f;
+	probeCI.calculateShadowCascadeDistances = true;
 	m_Probe = CreateRef<Probe>(&probeCI);
 }

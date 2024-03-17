@@ -1,5 +1,4 @@
 #include "gear_core_common.h"
-#include "Graphics/Frustum.h"
 #include "Objects/Probe.h"
 
 using namespace gear;
@@ -33,8 +32,8 @@ void Probe::Update(const Transform& transform)
 {
 	//Get View Camera Details
 	std::vector<Frustum> viewCameraSubFrusta;
-	float viewCameraNear = 0.0f;
-	float viewCameraFar = 1.0f;
+	float viewCameraNear;
+	float viewCameraFar;
 
 	static bool setCallback = true;
 	if (m_CI.viewCamera && setCallback)
@@ -43,30 +42,12 @@ void Probe::Update(const Transform& transform)
 		setCallback = false;
 	}
 
-	for (uint32_t i = 0; i < m_CI.shadowCascades; i++)
-	{
-		if (m_CI.viewCamera)
-		{
-			const Ref<Uniformbuffer<UniformBufferStructures::Camera>>& viewCameraUB = m_CI.viewCamera->GetCameraUB();
-			viewCameraNear = m_CI.viewCamera->m_CI.perspectiveParams.zNear;
-			viewCameraFar = m_CI.viewCamera->m_CI.perspectiveParams.zFar;
-			const float& viewCameraClipRange = viewCameraFar - viewCameraNear;
-
-			Frustum& frustum = viewCameraSubFrusta.emplace_back(viewCameraUB->proj, viewCameraUB->view);
-			const float& near = i == 0 ? 0.0f : m_CI.shadowCascadeDistances[i - 1];
-			const float& far = m_CI.shadowCascadeDistances[i];
-			frustum.ScaleDistancesForNearAndFar(near / viewCameraClipRange, far / viewCameraClipRange);
-		}
-		else
-		{
-			viewCameraSubFrusta.emplace_back();
-		}
-	}
-
 	if (CreateInfoHasChanged(&m_CI) || m_ViewCameraUpdated)
 	{
 		//Textures and Pipeline
 		InitialiseTextures();
+
+		CalculateViewCameraSubFrusta(viewCameraSubFrusta, viewCameraNear, viewCameraFar);
 
 		//Projection
 		for (uint32_t i = 0; i < m_CI.shadowCascades; i++)
@@ -107,6 +88,8 @@ void Probe::Update(const Transform& transform)
 	}
 	if (TransformHasChanged(transform) || m_ViewCameraUpdated)
 	{
+		CalculateViewCameraSubFrusta(viewCameraSubFrusta, viewCameraNear, viewCameraFar);
+
 		//View
 		{
 			if (m_CI.directionType == DirectionType::MONO)
@@ -148,11 +131,11 @@ void Probe::Update(const Transform& transform)
 			m_UB->position = float4(transform.translation, 1.0f);
 		}
 
-
 		m_UB->farPlanes.x = viewCameraNear + m_CI.shadowCascadeDistances[0];
 		m_UB->farPlanes.y = viewCameraNear + m_CI.shadowCascadeDistances[1];
 		m_UB->farPlanes.z = viewCameraNear + m_CI.shadowCascadeDistances[2];
 		m_UB->farPlanes.w = viewCameraNear + m_CI.shadowCascadeDistances[3];
+		m_UB->shadowCascades = m_CI.shadowCascades;
 
 		m_UB->SubmitData();
 	}
@@ -170,6 +153,26 @@ void Probe::UpdateFromViewCamera()
 	m_ViewCameraUpdated = true;
 }
 
+float Probe::CalculateCascadeDistance(uint32_t i)
+{
+	if (!m_CI.viewCamera)
+		return 0.0f;
+
+	//https://github.com/SaschaWillems/Vulkan/blob/ba8fea35ac27f02b62b4f1aa93ae0c3262ee8852/examples/shadowmappingcascade/shadowmappingcascade.cpp#L634
+	float minZ = m_CI.viewCamera->m_CI.perspectiveParams.zNear;
+	float maxZ = m_CI.viewCamera->m_CI.perspectiveParams.zFar;
+	float ratio = maxZ / minZ;
+	float range = maxZ - minZ;
+
+	// Calculate split depths based on view camera frustum
+	// Based on method presented in https://developer.nvidia.com/gpugems/GPUGems3/gpugems3_ch10.html
+	float p = (i + 1) / static_cast<float>(m_CI.shadowCascades);
+	float log = minZ * std::pow(ratio, p);
+	float uniform = minZ + range * p;
+	float d = m_CI.shadowCascadeSplitLambda * (log - uniform) + uniform;
+	return (d - minZ);
+}
+
 bool Probe::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo)
 {
 	const CreateInfo& CI = *reinterpret_cast<const CreateInfo*>(pCreateInfo);
@@ -181,11 +184,14 @@ bool Probe::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo)
 	newHash ^= core::GetHash(CI.perspectiveHorizonalFOV);
 	newHash ^= core::GetHash(CI.zNear);
 	newHash ^= core::GetHash(CI.zFar);
+	newHash ^= core::GetHash(CI.viewCamera);
 	newHash ^= core::GetHash(CI.shadowCascades);
 	newHash ^= core::GetHash(CI.shadowCascadeDistances[0]);
 	newHash ^= core::GetHash(CI.shadowCascadeDistances[1]);
 	newHash ^= core::GetHash(CI.shadowCascadeDistances[2]);
 	newHash ^= core::GetHash(CI.shadowCascadeDistances[3]);
+	newHash ^= core::GetHash(CI.shadowCascadeSplitLambda);
+	newHash ^= core::GetHash(CI.calculateShadowCascadeDistances);
 	return CompareCreateInfoHash(newHash);
 }
 
@@ -248,5 +254,37 @@ void Probe::InitialiseUB()
 		ubCI.device = m_CI.device;
 		ubCI.data = &zero;
 		m_UB = CreateRef<Uniformbuffer<ProbeInfoUB>>(&ubCI);
+	}
+}
+
+void Probe::CalculateViewCameraSubFrusta(std::vector<Frustum>& viewCameraSubFrusta, float& viewCameraNear, float& viewCameraFar)
+{
+	viewCameraSubFrusta.clear();
+	viewCameraNear = 0.0f;
+	viewCameraFar = 1.0f;
+
+	for (uint32_t i = 0; i < m_CI.shadowCascades; i++)
+	{
+		if (m_CI.viewCamera)
+		{
+			const Ref<Uniformbuffer<UniformBufferStructures::Camera>>& viewCameraUB = m_CI.viewCamera->GetCameraUB();
+			viewCameraNear = m_CI.viewCamera->m_CI.perspectiveParams.zNear;
+			viewCameraFar = m_CI.viewCamera->m_CI.perspectiveParams.zFar;
+			const float& viewCameraClipRange = viewCameraFar - viewCameraNear;
+
+			if (m_CI.calculateShadowCascadeDistances)
+			{
+				m_CI.shadowCascadeDistances[i] = CalculateCascadeDistance(i);
+			}
+
+			Frustum& frustum = viewCameraSubFrusta.emplace_back(viewCameraUB->proj, viewCameraUB->view);
+			const float& near = i == 0 ? 0.0f : m_CI.shadowCascadeDistances[i - 1];
+			const float& far = m_CI.shadowCascadeDistances[i];
+			frustum.ScaleDistancesForNearAndFar(near / viewCameraClipRange, far / viewCameraClipRange);
+		}
+		else
+		{
+			viewCameraSubFrusta.emplace_back();
+		}
 	}
 }
