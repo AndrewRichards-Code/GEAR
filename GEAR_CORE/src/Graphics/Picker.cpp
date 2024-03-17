@@ -15,7 +15,7 @@ using namespace miru::base;
 
 using namespace mars;
 
-Picker::Ray Picker::GetPickingRay(const Ref<Camera>& camera, const float2& pixelCoords, const float2& viewportSize)
+Ray Picker::GetPickingRay(const Ref<Camera>& camera, const float2& pixelCoords, const float2& viewportSize)
 {
 	float2 clipCoordsXY = float2(pixelCoords.x / viewportSize.x, pixelCoords.y / viewportSize.y) * 2.0f - float2(1.0f, 1.0f);
 	float4 clipCoords = float4(clipCoordsXY, float2(1.0f, 1.0f));
@@ -33,18 +33,22 @@ Picker::Ray Picker::GetPickingRay(const Ref<Camera>& camera, const float2& pixel
 	return { cameraUB->position, worldCoords, 1.0f };
 }
 
-AabbData Picker::GetAABB(const Ref<Model>& model)
+BoundingBox Picker::GetAABB(const Ref<Model>& model)
 {
 	const Ref<Mesh>& mesh = model->GetMesh();
 	const float4x4& modl = model->GetModlMatrix();
 
-	AabbData aabb = {
-		+std::numeric_limits<float>::max(),
-		+std::numeric_limits<float>::max(),
-		+std::numeric_limits<float>::max(),
-		-std::numeric_limits<float>::max(),
-		-std::numeric_limits<float>::max(),
-		-std::numeric_limits<float>::max()
+	BoundingBox aabb = {
+		float3(
+			+std::numeric_limits<float>::max(),
+			+std::numeric_limits<float>::max(),
+			+std::numeric_limits<float>::max()
+		),
+		float3(
+			-std::numeric_limits<float>::max(),
+			-std::numeric_limits<float>::max(),
+			-std::numeric_limits<float>::max()
+		)
 	};
 
 	for (const auto& modelMesh : mesh->m_CI.modelData.meshes)
@@ -52,23 +56,19 @@ AabbData Picker::GetAABB(const Ref<Model>& model)
 		for (const auto& vertex : modelMesh.vertices)
 		{
 			const float3 worldPosition = modl * vertex.position;
-			aabb.minX = std::min(aabb.minX, worldPosition.x);
-			aabb.minY = std::min(aabb.minY, worldPosition.y);
-			aabb.minZ = std::min(aabb.minZ, worldPosition.z);
-			aabb.maxX = std::max(aabb.maxX, worldPosition.x);
-			aabb.maxY = std::max(aabb.maxY, worldPosition.y);
-			aabb.maxZ = std::max(aabb.maxZ, worldPosition.z);
+			aabb.min = float3::Min(aabb.min, worldPosition);
+			aabb.max = float3::Max(aabb.max, worldPosition);
 		}
 	}
 	return aabb;
 }
 
-float Picker::RayIntersectsAABB(const miru::base::AabbData& aabb, const Ray& ray)
+float Picker::RayIntersectsAABB(const BoundingBox& aabb, const Ray& ray)
 {
 	//https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-box-intersection.html
 
-	const float3& min = { aabb.minX, aabb.minY, aabb.minZ };
-	const float3& max = { aabb.maxX, aabb.maxY, aabb.maxZ };
+	const float3& min = aabb.min;
+	const float3& max = aabb.max;
 
 	float tmin = (min.x - ray.origin.x) / ray.direction.x;
 	float tmax = (max.x - ray.origin.x) / ray.direction.x;
@@ -160,7 +160,7 @@ Ref<Model> Picker::GetNearestModel(const std::vector<Ref<Model>>& models, const 
 
 	for (const auto& model : models)
 	{
-		AabbData aabb = GetAABB(model);
+		BoundingBox aabb = GetAABB(model);
 		float length = RayIntersectsAABB(aabb, pickingRay);
 		bool hit = length < std::numeric_limits<float>::max();
 		bool closer = length <= shortestLength;

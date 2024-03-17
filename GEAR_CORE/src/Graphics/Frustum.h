@@ -1,18 +1,14 @@
 #pragma once
 #include "gear_core_common.h"
+#include "Graphics/Picker.h"
 
 namespace gear 
 {
 	namespace graphics
 	{
-		struct BoundingBox
+		class GEAR_API Frustum
 		{
-			mars::float3 min;
-			mars::float3 max;
-		};
-
-		class Frustum
-		{
+			//Methods
 		public:
 			Frustum();
 			Frustum(const mars::float4x4& proj, const mars::float4x4& view);
@@ -25,6 +21,7 @@ namespace gear
 			const float GetMaxRadius() const;
 			const BoundingBox GetExtents() const;
 
+			//Members
 		public:
 			std::array<mars::float3, 8> corners;
 

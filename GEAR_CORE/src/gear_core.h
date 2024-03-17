@@ -25,6 +25,7 @@
 #include "Core/PlatformMacros.h"
 #include "Core/Sequencer.h"
 #include "Core/Timer.h"
+#include "Core/TypesCppHlsl.h"
 #include "Core/UUID.h"
 
 //Graphics
@@ -35,8 +36,10 @@
 #include "Graphics/Rendering/Resource.h"
 #include "Graphics/AllocatorManager.h"
 #include "Graphics/Colour.h"
+#include "Graphics/Frustum.h"
 #include "Graphics/DebugRender.h"
 #include "Graphics/Indexbuffer.h"
+#include "Graphics/Picker.h"
 #include "Graphics/RenderPipeline.h"
 #include "Graphics/RenderSurface.h"
 #include "Graphics/Storagebuffer.h"
@@ -55,7 +58,7 @@
 #include "Objects/Material.h"
 #include "Objects/Mesh.h"
 #include "Objects/Model.h"
-//#include "Objects/Probe.h"
+#include "Objects/Probe.h"
 #include "Objects/Skybox.h"
 #include "Objects/Text.h"
 #include "Objects/Transform.h"

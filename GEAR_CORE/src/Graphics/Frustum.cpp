@@ -1,4 +1,5 @@
 #include "Frustum.h"
+#include "Picker.h"
 #include <algorithm>
 
 using namespace gear;
@@ -53,7 +54,7 @@ const float3 Frustum::GetCentre() const
 	{
 		centre += corner;
 	}
-	centre *= (1.0f / static_cast<float>(corners.size()));
+	centre /= static_cast<float>(corners.size());
 
 	return centre;
 }

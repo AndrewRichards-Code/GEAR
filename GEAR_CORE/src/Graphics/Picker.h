@@ -11,21 +11,27 @@ namespace gear
 	}
 	namespace graphics
 	{
+		struct GEAR_API Ray
+		{
+			mars::float3 origin;
+			mars::float3 direction;
+			float length;
+		};
+
+		struct GEAR_API BoundingBox
+		{
+			mars::float3 min;
+			mars::float3 max;
+		};
+
 		class GEAR_API Picker
 		{
+			//Methods
 		public:
-			struct Ray
-			{
-				mars::float3 origin;
-				mars::float3 direction;
-				float length;
-			};
-
-
 			static Ray GetPickingRay(const Ref<objects::Camera>& camera, const mars::float2& pixelCoords, const mars::float2& viewportSize);
 			
-			static miru::base::AabbData GetAABB(const Ref<objects::Model>& model);
-			static float RayIntersectsAABB(const miru::base::AabbData& aabb, const Ray& ray);
+			static BoundingBox GetAABB(const Ref<objects::Model>& model);
+			static float RayIntersectsAABB(const BoundingBox& aabb, const Ray& ray);
 			static float RayIntersectsModelGeometry(const Ref<objects::Model>& model, const Ray& ray);
 
 			static Ref<objects::Model> GetNearestModel(const std::vector<Ref<objects::Model>>& models, const Ref<objects::Camera>& camera, const mars::float2& pixelCoords, const mars::float2& viewportSize);

@@ -13,17 +13,10 @@ namespace gear
 	{
 		class GEAR_API DebugRender
 		{
+			//Methods
+		private:
 			DebugRender() = delete;
 			~DebugRender() = delete;
-
-		private:
-			static void* s_Device;
-			static Ref<objects::Camera> s_Camera;
-
-			static Ref<Uniformbuffer<UniformBufferStructures::DebugProbeInfo>> s_DebugProbeInfo;
-
-			static std::vector<UniformBufferStructures::Model> s_DebugModelMatrices;
-			static Ref<Storagebuffer<UniformBufferStructures::Model>> s_DebugModelMatricesSB;
 
 		public:
 			static void Initialise(void* device)
@@ -44,6 +37,16 @@ namespace gear
 
 			static std::vector<UniformBufferStructures::Model>& GetDebugModelMatrices() { return s_DebugModelMatrices; }
 			static Ref<Storagebuffer<UniformBufferStructures::Model>>& GetDebugModelMatricesStoragebuffer();
+			
+			//Members
+		private:
+			static void* s_Device;
+			static Ref<objects::Camera> s_Camera;
+
+			static Ref<Uniformbuffer<UniformBufferStructures::DebugProbeInfo>> s_DebugProbeInfo;
+
+			static std::vector<UniformBufferStructures::Model> s_DebugModelMatrices;
+			static Ref<Storagebuffer<UniformBufferStructures::Model>> s_DebugModelMatricesSB;
 		};
 	}
 }
