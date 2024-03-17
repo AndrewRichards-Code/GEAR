@@ -95,7 +95,7 @@ float3 GetEmissive(PS_IN IN)
 	return pbrConstants.emissive.rgb * emissive_ImageCIS.Sample(emissive_SamplerCIS, IN.texCoord).rgb; 
 }
 
-float GetShadowStrength(float4 worldPosition, float viewPositionZ, Light light)
+float GetShadowStrength(float4 worldPosition, float viewPositionZ, Light light, out float4 debugColour)
 {
 	float shadowStrength = 1.0;
 	float bias = 0.00001;
@@ -110,6 +110,13 @@ float GetShadowStrength(float4 worldPosition, float viewPositionZ, Light light)
 		if (worldPosition.z < probeInfo.farPlanes[i])
 		{
 			shadowCascadeIndex = i;
+			debugColour = float4(0,0,0,1);
+			/*if (i == 1)
+				debugColour = float4(1,0,0,1);
+			if (i == 2)
+				debugColour = float4(0,1,0,1);
+			if (i == 3)
+				debugColour = float4(0,0,1,1);*/
 			break;
 		}
 	}
@@ -127,7 +134,7 @@ float GetShadowStrength(float4 worldPosition, float viewPositionZ, Light light)
 		float3 lightSpaceProjectedPosition = PerspectiveDivide(worldPosition, probeInfo.view[0], probeInfo.proj[0]);
 		float2 shadowTextureCoords = (lightSpaceProjectedPosition.xy / 2.0) + float2(0.5, 0.5);
 		lightSpaceZ = lightSpaceProjectedPosition.z;
-		shadowDepth = shadowMap2DArray_ImageCIS.SampleLevel(shadowMap2DArray_SamplerCIS, float3(shadowTextureCoords, 0), 0.0).x;
+		shadowDepth = shadowMap2DArray_ImageCIS.SampleLevel(shadowMap2DArray_SamplerCIS, float3(shadowTextureCoords, shadowCascadeIndex), 0.0).x;
 	}	
 	else if (type == 2.0) //SPOT
 	{
@@ -181,35 +188,43 @@ PS_OUT ps_main(PS_IN IN)
 		if (light.type_valid_spotInner_spotOuter.y == 0.0)
 			continue;
 		
-		if (GetShadowStrength(IN.worldPosition, IN.viewPosition.z, light) == 0.0)
-			continue;
-		
 		//Input light vector(retro).
 		float3 Wi;
-		float intensity = 1.0;
-		if (light.type_valid_spotInner_spotOuter.x == 0.0) //POINT
+		if (light.type_valid_spotInner_spotOuter.x == 0.0
+			|| light.type_valid_spotInner_spotOuter.x == 2.0) //POINT or SPOT
 		{
 			Wi = light.position.xyz - IN.worldPosition.xyz;
 		}
-		else if (light.type_valid_spotInner_spotOuter.x == 1.0) //DIRECTIONAL
+		else //DIRECTIONAL
 		{
 			Wi = normalize(-light.direction.xyz);
 		}
-		else if (light.type_valid_spotInner_spotOuter.x == 2.0) //SPOT
-		{
-			Wi = light.position.xyz - IN.worldPosition.xyz;
-			float3 spotWi = -light.direction.xyz;
-			float theta = dot(normalize(spotWi), normalize(Wi));
-			float epsilon = cos(light.type_valid_spotInner_spotOuter.z) - cos(light.type_valid_spotInner_spotOuter.w);
-			intensity = saturate(lerp(0.0, 1.0, ((theta - cos(light.type_valid_spotInner_spotOuter.w)) / max(epsilon, 0.000001))));
-		}
-		else
-		{
-			Wi = normalize(-light.direction.xyz);
-		}
+		
+		//Attenuation
 		float WiDistance = length(Wi);
 		float attenuation = 1.0 / (WiDistance * WiDistance);
-		float3 Li = normalize(light.colour.rgb) * light.colour.a * attenuation * intensity;
+		
+		//Input Radiance
+		float3 Li = normalize(light.colour.rgb) * light.colour.a * attenuation;
+		
+		//Calculate fade from inner to outer cone for spot.
+		if (light.type_valid_spotInner_spotOuter.x == 2.0) //SPOT
+		{
+			float3 spotWi = -light.direction.xyz;
+			float theta = dot(normalize(spotWi), normalize(Wi));
+			float cosInner = cos(light.type_valid_spotInner_spotOuter.z);
+			float cosOuter = cos(light.type_valid_spotInner_spotOuter.w);
+			float epsilon = cosInner - cosOuter;
+			float intensity = saturate(lerp(0.0, 1.0, ((theta - cosOuter) / max(epsilon, 0.000001))));
+			Li *= intensity;
+		}
+		
+		//Shadows
+		float4 debugShadowColour;
+		float shadowStrength = GetShadowStrength(IN.worldPosition, IN.viewPosition.z, light, debugShadowColour);
+		Lo += debugShadowColour.rgb;
+		
+		Li *= shadowStrength;
 		
 		//Half vector between input and output vector.
 		float3 Wh = normalize(Wo + Wi);
