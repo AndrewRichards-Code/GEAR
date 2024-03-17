@@ -362,7 +362,7 @@ target_include_directories(GEAR_CORE PRIVATE
 )
 if (WIN32)
 	target_include_directories(GEAR_CORE PRIVATE 
-			"${CMAKE_BINARY_DIR}/packages/Microsoft.Direct3D.D3D12.1.610.5/"
+			"${CMAKE_BINARY_DIR}/packages/Microsoft.Direct3D.D3D12.1.613.0/"
 			"${CMAKE_CURRENT_SOURCE_DIR}/../External/MIRU/External/D3D12MemoryAllocator/include/"
 	)
 	target_link_libraries(GEAR_CORE PRIVATE d3d12.lib dxgi.lib)
