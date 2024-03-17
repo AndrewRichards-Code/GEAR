@@ -129,7 +129,8 @@ void Renderer::InitialiseRenderPipelines(const Ref<RenderSurface>& renderSurface
 		{ "res/pipelines/BloomPrefilter.grpf",			{},								Image::Format::UNKNOWN },
 		{ "res/pipelines/BloomDownsample.grpf",			{},								Image::Format::UNKNOWN },
 		{ "res/pipelines/BloomUpsample.grpf",			{},								Image::Format::UNKNOWN },
-		{ "res/pipelines/Shadow.grpf",					{},								RenderSurface::DepthFormat },
+		{ "res/pipelines/ShadowCascades.grpf",			{},								RenderSurface::DepthFormat },
+		{ "res/pipelines/ShadowSingle.grpf",			{},								RenderSurface::DepthFormat },
 	};
 
 	RenderPipeline::LoadInfo renderPipelineLI;

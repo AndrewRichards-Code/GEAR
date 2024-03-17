@@ -6,12 +6,12 @@
 
 struct VS_IN
 {
-	MIRU_LOCATION(0, float4, positions, POSITION0);
-	MIRU_LOCATION(1, float2, texCoords, TEXCOORD1);
-	MIRU_LOCATION(2, float4, normals, NORMAL2);
-	MIRU_LOCATION(3, float4, tangents, TANGENT3);
-	MIRU_LOCATION(4, float4, binormals, BINORMAL4);
-	MIRU_LOCATION(5, float4, colours, COLOR5);
+	MIRU_LOCATION(0, float4, position, POSITION0);
+	MIRU_LOCATION(1, float2, texCoord, TEXCOORD1);
+	MIRU_LOCATION(2, float4, normal, NORMAL2);
+	MIRU_LOCATION(3, float4, tangent, TANGENT3);
+	MIRU_LOCATION(4, float4, binormal, BINORMAL4);
+	MIRU_LOCATION(5, float4, colour, COLOR5);
 };
 
 struct VS_OUT
@@ -19,9 +19,10 @@ struct VS_OUT
 	MIRU_LOCATION(0, float4, position, SV_POSITION);
 	MIRU_LOCATION(1, float2, texCoord, TEXCOORD1);
 	MIRU_LOCATION(2, float3x3, tbn, MATRIX2);
-	MIRU_LOCATION(6, float4, worldSpace, POSITION6);
-	MIRU_LOCATION(7, float4, vertexToCamera, POSITION7);
-	MIRU_LOCATION(8, float4, colour, COLOR8);
+	MIRU_LOCATION(6, float4, worldPosition, POSITION6);
+	MIRU_LOCATION(7, float4, viewPosition, POSITION7);
+	MIRU_LOCATION(8, float4, vertexToCamera, POSITION8);
+	MIRU_LOCATION(9, float4, colour, COLOR9);
 };
 typedef VS_OUT PS_IN;
 
@@ -36,7 +37,7 @@ MIRU_UNIFORM_BUFFER(0, 2, ProbeInfo, probeInfo);
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 3, float4, diffuseIrradiance);
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 4, float4, specularIrradiance);
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 0, 5, float4, specularBRDF_LUT);
-MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D, 0, 6, float4, shadowMap2D);
+MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_2D_ARRAY, 0, 6, float4, shadowMap2DArray);
 MIRU_COMBINED_IMAGE_SAMPLER(MIRU_IMAGE_CUBE, 0, 7, float4, shadowMapCube);
 
 MIRU_UNIFORM_BUFFER(1, 0, Model, model);
@@ -55,12 +56,13 @@ VS_OUT vs_main(VS_IN IN)
 {
 	VS_OUT OUT;
 	
-	OUT.position = mul(IN.positions, mul(model.modl, mul(camera.view, camera.proj)));
-	OUT.texCoord = float2(model.texCoordScale0.x * IN.texCoords.x, model.texCoordScale0.y * IN.texCoords.y);
-	OUT.tbn = float3x3(mul(IN.tangents, model.modl).xyz, mul(IN.binormals, model.modl).xyz, mul(IN.normals, model.modl).xyz);
-	OUT.worldSpace = mul(IN.positions, model.modl);
-	OUT.vertexToCamera = normalize(camera.position - OUT.worldSpace);
-	OUT.colour = IN.colours;
+	OUT.position = mul(IN.position, mul(model.modl, mul(camera.view, camera.proj)));
+	OUT.texCoord = float2(model.texCoordScale0.x * IN.texCoord.x, model.texCoordScale0.y * IN.texCoord.y);
+	OUT.tbn = float3x3(mul(IN.tangent, model.modl).xyz, mul(IN.binormal, model.modl).xyz, mul(IN.normal, model.modl).xyz);
+	OUT.worldPosition = mul(IN.position, model.modl);
+	OUT.viewPosition = mul(OUT.worldPosition, camera.view);
+	OUT.vertexToCamera = normalize(camera.position - OUT.worldPosition);
+	OUT.colour = IN.colour;
 	
 	return OUT;
 }
@@ -93,32 +95,46 @@ float3 GetEmissive(PS_IN IN)
 	return pbrConstants.emissive.rgb * emissive_ImageCIS.Sample(emissive_SamplerCIS, IN.texCoord).rgb; 
 }
 
-float GetShadowStrength(float4 worldSpacePosition, Light light, float type)
+float GetShadowStrength(float4 worldPosition, float viewPositionZ, Light light)
 {
 	float shadowStrength = 1.0;
-	float bias = 0.000001;
+	float bias = 0.00001;
 	float lightSpaceZ = 1.0;
 	float shadowDepth = 0.0;
 	
-	if (type == 0.0)
+	float type = light.type_valid_spotInner_spotOuter.x;
+	
+	uint shadowCascadeIndex = 0;
+	for (uint i = 0; i < 4; i++)
 	{
-		float3 lightDirection = worldSpacePosition.xyz - light.position.xyz;
+		if (worldPosition.z < probeInfo.farPlanes[i])
+		{
+			shadowCascadeIndex = i;
+			break;
+		}
+	}
+	
+	if (type == 0.0) //POINT
+	{
+		float3 lightDirection = worldPosition.xyz - light.position.xyz;
 		uint faceID = UVWToFaceIndex(lightDirection);
-		float3 lightSpaceProjectedPosition = PerspectiveDivide(worldSpacePosition, probeInfo.view[faceID], probeInfo.proj);
+		float3 lightSpaceProjectedPosition = PerspectiveDivide(worldPosition, probeInfo.view[faceID], probeInfo.proj[0]);
 		lightSpaceZ = lightSpaceProjectedPosition.z;
 		shadowDepth = shadowMapCube_ImageCIS.SampleLevel(shadowMapCube_SamplerCIS, lightDirection, 0.0).x;
 	}
-	else if (type == 1.0)
+	else if (type == 1.0) //DIRECTIONAL
 	{
-		lightSpaceZ = 1.0;
-		shadowDepth = 0.0;
-	}	
-	else if (type == 2.0)
-	{
-		float3 lightSpaceProjectedPosition = PerspectiveDivide(worldSpacePosition, probeInfo.view[0], probeInfo.proj);
+		float3 lightSpaceProjectedPosition = PerspectiveDivide(worldPosition, probeInfo.view[0], probeInfo.proj[0]);
 		float2 shadowTextureCoords = (lightSpaceProjectedPosition.xy / 2.0) + float2(0.5, 0.5);
 		lightSpaceZ = lightSpaceProjectedPosition.z;
-		shadowDepth = shadowMap2D_ImageCIS.SampleLevel(shadowMap2D_SamplerCIS, shadowTextureCoords, 0.0).x;
+		shadowDepth = shadowMap2DArray_ImageCIS.SampleLevel(shadowMap2DArray_SamplerCIS, float3(shadowTextureCoords, 0), 0.0).x;
+	}	
+	else if (type == 2.0) //SPOT
+	{
+		float3 lightSpaceProjectedPosition = PerspectiveDivide(worldPosition, probeInfo.view[0], probeInfo.proj[0]);
+		float2 shadowTextureCoords = (lightSpaceProjectedPosition.xy / 2.0) + float2(0.5, 0.5);
+		lightSpaceZ = lightSpaceProjectedPosition.z;
+		shadowDepth = shadowMap2DArray_ImageCIS.SampleLevel(shadowMap2DArray_SamplerCIS, float3(shadowTextureCoords, 0), 0.0).x;
 	}
 	else
 	{
@@ -165,7 +181,7 @@ PS_OUT ps_main(PS_IN IN)
 		if (light.type_valid_spotInner_spotOuter.y == 0.0)
 			continue;
 		
-		if (GetShadowStrength(IN.worldSpace, light, light.type_valid_spotInner_spotOuter.x) == 0.0)
+		if (GetShadowStrength(IN.worldPosition, IN.viewPosition.z, light) == 0.0)
 			continue;
 		
 		//Input light vector(retro).
@@ -173,7 +189,7 @@ PS_OUT ps_main(PS_IN IN)
 		float intensity = 1.0;
 		if (light.type_valid_spotInner_spotOuter.x == 0.0) //POINT
 		{
-			Wi = light.position.xyz - IN.worldSpace.xyz;
+			Wi = light.position.xyz - IN.worldPosition.xyz;
 		}
 		else if (light.type_valid_spotInner_spotOuter.x == 1.0) //DIRECTIONAL
 		{
@@ -181,7 +197,7 @@ PS_OUT ps_main(PS_IN IN)
 		}
 		else if (light.type_valid_spotInner_spotOuter.x == 2.0) //SPOT
 		{
-			Wi = light.position.xyz - IN.worldSpace.xyz;
+			Wi = light.position.xyz - IN.worldPosition.xyz;
 			float3 spotWi = -light.direction.xyz;
 			float theta = dot(normalize(spotWi), normalize(Wi));
 			float epsilon = cos(light.type_valid_spotInner_spotOuter.z) - cos(light.type_valid_spotInner_spotOuter.w);
@@ -193,7 +209,7 @@ PS_OUT ps_main(PS_IN IN)
 		}
 		float WiDistance = length(Wi);
 		float attenuation = 1.0 / (WiDistance * WiDistance);
-		float3 Li = light.colour.rgb * light.colour.a * attenuation * intensity;
+		float3 Li = normalize(light.colour.rgb) * light.colour.a * attenuation * intensity;
 		
 		//Half vector between input and output vector.
 		float3 Wh = normalize(Wo + Wi);

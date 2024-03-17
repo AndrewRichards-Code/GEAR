@@ -37,6 +37,7 @@ namespace gear
 			{
 				return miru::base::Context::ExtensionsBit::DYNAMIC_RENDERING
 					| miru::base::Context::ExtensionsBit::SYNCHRONISATION_2
+					| miru::base::Context::ExtensionsBit::MULTIVIEW
 					| miru::base::Context::ExtensionsBit::SHADER_VIEWPORT_INDEX_LAYER;
 			}
 

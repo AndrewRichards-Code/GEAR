@@ -151,17 +151,17 @@ VS_OUT_2 vs_show_depth_image2D(VS_IN IN)
 	{
 		case 0:
 		case 5:
-			OUT.position = float4(-1.0, -1.0, 1.0, 1.0);
+			OUT.position = float4(-1.0, -1.0, 0.0, 1.0);
 			break;
 		case 1:
-			OUT.position = float4(+1.0, -1.0, 1.0, 1.0);
+			OUT.position = float4(+1.0, -1.0, 0.0, 1.0);
 			break;
 		case 2:
 		case 3:
-			OUT.position = float4(+1.0, +1.0, 1.0, 1.0);
+			OUT.position = float4(+1.0, +1.0, 0.0, 1.0);
 			break;
 		case 4:
-			OUT.position = float4(-1.0, +1.0, 1.0, 1.0);
+			OUT.position = float4(-1.0, +1.0, 0.0, 1.0);
 			break;
 	}
 	OUT.clipPosition = OUT.position;
@@ -178,7 +178,7 @@ VS_OUT_2 vs_show_depth_image2D(VS_IN IN)
 PS_OUT ps_show_depth_image2D(PS_IN_2 IN, uint viewID : SV_ViewID)
 {
 	PS_OUT OUT;
-	float3 textureCoords = float3((IN.clipPosition.xy / 2.0) + float2(0.5, 0.5), float(viewID));
+	float3 textureCoords = float3((IN.clipPosition.xy / 2.0) + float2(0.5, 0.5), viewID);
 	
 	float depth = image2DArray_ImageCIS.Sample(image2DArray_SamplerCIS, textureCoords).x;
 	depth = clamp(depth, debugProbeInfo.minDepth, debugProbeInfo.maxDepth) / (debugProbeInfo.maxDepth - debugProbeInfo.minDepth);

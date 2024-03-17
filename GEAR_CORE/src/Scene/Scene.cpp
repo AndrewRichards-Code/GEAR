@@ -90,6 +90,7 @@ void Scene::OnUpdate(Ref<Renderer>& renderer, Timer& timer)
 	{
 		Ref<Light>& light = vLightComponents.get<LightComponent>(entity);
 		const Transform& transform = vLightComponents.get<TransformComponent>(entity);
+		light->m_CI.viewCamera = renderer->GetCamera();
 		light->Update(transform);
 		renderer->SubmitLight(light);
 	}

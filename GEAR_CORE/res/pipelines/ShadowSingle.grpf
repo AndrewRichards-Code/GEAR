@@ -1,33 +1,33 @@
 {
 	"fileType": "GEAR_RENDER_PIPELINE_FILE",
-	"debugName": "DebugShowDepth",
+	"debugName": "ShadowSingle",
 	"shaders": [
 		{
-			"debugName": "Debug_vs_6_4_vs_show_depth_image2D.spv",
+			"debugName": "Shadow_vs_6_4_vs_main_single.spv",
 			"stageAndEntryPoints": [
 				{
 					"stage": "VERTEX_BIT",
-					"entryPoint": "vs_show_depth_image2D"
+					"entryPoint": "vs_main_single"
 				}
 			],
-			"binaryFilepath": "$BUILD_DIR/shaderbin/Debug_vs_6_4_vs_show_depth_image2D.spv",
+			"binaryFilepath": "$BUILD_DIR/shaderbin/Shadow_vs_6_4_vs_main_single.spv",
 			"recompileArguments": {
-				"rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.json",
-				"index": 4
+				"rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Shadow.json",
+				"index": 0
 			}
 		},
 		{
-			"debugName": "Debug_ps_6_4_ps_show_depth_image2D.spv",
+			"debugName": "Shadow_ps_6_4_ps_main.spv",
 			"stageAndEntryPoints": [
 				{
 					"stage": "FRAGMENT_BIT",
-					"entryPoint": "ps_show_depth_image2D"
+					"entryPoint": "ps_main"
 				}
 			],
-			"binaryFilepath": "$BUILD_DIR/shaderbin/Debug_ps_6_4_ps_show_depth_image2D.spv",
+			"binaryFilepath": "$BUILD_DIR/shaderbin/Shadow_ps_6_4_ps_main.spv",
 			"recompileArguments": {
-				"rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Debug.json",
-				"index": 5
+				"rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Shadow.json",
+				"index": 2
 			}
 		}
 	],
@@ -50,8 +50,8 @@
 			{
 				"x": 0.0,
 				"y": 0.0,
-				"width": 256,
-				"height": 256
+				"width": 0.0,
+				"height": 0.0
 			}
 		]
 	},
@@ -76,8 +76,8 @@
 		"alphaToOneEnable": false
 	},
 	"depthStencilState": {
-		"depthTestEnable": false,
-		"depthWriteEnable": false,
+		"depthTestEnable": true,
+		"depthWriteEnable": true,
 		"depthCompareOp": "GREATER",
 		"depthBoundsTestEnable": false,
 		"stencilTestEnable": false,
@@ -104,27 +104,13 @@
 	},
 	"colourBlendState": {
 		"logicOpEnable": false,
-		"logicOp": "COPY",
-		"attachments": [
-			{
-				"blendEnable": true,
-				"srcColourBlendFactor": "SRC_ALPHA",
-				"dstColourBlendFactor": "ONE_MINUS_SRC_ALPHA",
-				"colourBlendOp": "ADD",
-				"srcAlphaBlendFactor": "ONE",
-				"dstAlphaBlendFactor": "ZERO",
-				"alphaBlendOp": "ADD",
-				"colourWriteMask": [ "R_BIT", "G_BIT", "B_BIT", "A_BIT" ]
-			}
-		],
+		"logicOp": "CLEAR",
+		"attachments": [],
 		"blendConstants": [
 			0.0,
 			0.0,
 			0.0,
 			0.0
 		]
-	},
-	"dynamicRendering": {
-		"viewMask": 15
 	}
 }

@@ -23,8 +23,10 @@ void ShadowPasses::Main(Renderer& renderer, Ref<Light> light)
 	RenderGraph& renderGraph = renderer.GetRenderGraph();
 	const Ref<Probe>& probe = light->GetProbe();
 	bool omni = probe->m_CI.directionType == Probe::DirectionType::OMNI;
-	uint32_t width = probe->m_DepthTexture->GetCreateInfo().data.width;
-	uint32_t height = probe->m_DepthTexture->GetCreateInfo().data.height;
+	bool shadowCascades = probe->m_CI.shadowCascades > 1;
+	const uint32_t& width = probe->m_DepthTexture->GetCreateInfo().data.width;
+	const uint32_t& height = probe->m_DepthTexture->GetCreateInfo().data.height;
+	const uint32_t& arrayLayers = probe->m_DepthTexture->GetCreateInfo().arrayLayers;
 
 	for (const auto& model : renderer.GetModelQueue())
 	{
@@ -32,20 +34,20 @@ void ShadowPasses::Main(Renderer& renderer, Ref<Light> light)
 		const Ref<Mesh>& mesh = model->GetMesh();
 		for (size_t i = 0; i < mesh->GetVertexBuffers().size(); i++)
 		{
-			Ref<TaskPassParameters> shadowPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["Shadow"]);
+			Ref<TaskPassParameters> shadowPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()[shadowCascades ? "ShadowCascades" : "ShadowSingle"]);
 			shadowPassParameters->AddVertexBuffer(ResourceView(mesh->GetVertexBuffers()[i]));
 			shadowPassParameters->AddIndexBuffer(ResourceView(mesh->GetIndexBuffers()[i]));
 			shadowPassParameters->SetResourceView("probeInfo", ResourceView(probe->GetUB()));
 			shadowPassParameters->SetResourceView("model", ResourceView(model->GetUB()));
 			shadowPassParameters->AddAttachment(0, ResourceView(probe->m_DepthTexture, Resource::State::DEPTH_STENCIL_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0 });
-			shadowPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height), probe->m_DepthTexture->GetCreateInfo().arrayLayers);
+			shadowPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height), arrayLayers, (shadowCascades ? 0b1111 : 0));
 
 			renderGraph.AddPass("Sub Mesh: " + std::to_string(i), shadowPassParameters, CommandPool::QueueType::GRAPHICS,
-				[mesh, i, omni](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
+				[mesh, i, arrayLayers](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)
 				{
 					cmdBuffer->BindVertexBuffers(frameIndex, { mesh->GetVertexBuffers()[i]->GetGPUBufferView() });
 					cmdBuffer->BindIndexBuffer(frameIndex, mesh->GetIndexBuffers()[i]->GetGPUBufferView());
-					cmdBuffer->DrawIndexed(frameIndex, mesh->GetIndexBuffers()[i]->GetCount(), omni ? 6 : 1);
+					cmdBuffer->DrawIndexed(frameIndex, mesh->GetIndexBuffers()[i]->GetCount(), arrayLayers);
 				});
 		}
 	}
@@ -67,8 +69,8 @@ void ShadowPasses::DebugShowDepth(Renderer& renderer, Ref<Light> light)
 			tCI.dataType = Texture::DataType::DATA;
 			tCI.data = { nullptr, 0, 256, 256, 1 };
 			tCI.mipLevels = 1;
-			tCI.arrayLayers = 1;
-			tCI.type = Image::Type::TYPE_2D;
+			tCI.arrayLayers = Probe::MaxShadowCascades;
+			tCI.type = Image::Type::TYPE_2D_ARRAY;
 			tCI.format = RenderSurface::SRGBFormat;
 			tCI.samples = Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
 			tCI.usage = Image::UsageBit::COLOUR_ATTACHMENT_BIT | Image::UsageBit::SAMPLED_BIT;
@@ -77,8 +79,8 @@ void ShadowPasses::DebugShowDepth(Renderer& renderer, Ref<Light> light)
 			debugShowDepthTexture = CreateRef<Texture>(&tCI);
 		}
 		bool omni = probe->m_CI.directionType == Probe::DirectionType::OMNI;
-		uint32_t width = debugShowDepthTexture->GetCreateInfo().data.width;
-		uint32_t height = debugShowDepthTexture->GetCreateInfo().data.height;
+		const uint32_t& width = debugShowDepthTexture->GetCreateInfo().data.width;
+		const uint32_t& height = debugShowDepthTexture->GetCreateInfo().data.height;
 
 		std::string renderPipelineName = omni ? "DebugShowDepthCubemap" : "DebugShowDepth";
 
@@ -88,7 +90,7 @@ void ShadowPasses::DebugShowDepth(Renderer& renderer, Ref<Light> light)
 		debugShowDepthParameters->SetResourceView("debugProbeInfo", ResourceView(DebugRender::GetDebugProbeInfo()));
 		debugShowDepthParameters->SetResourceView(omni ? "cubemap" : "image2D", ResourceView(probe->m_DepthTexture, DescriptorType::COMBINED_IMAGE_SAMPLER));
 		debugShowDepthParameters->AddAttachment(0, ResourceView(debugShowDepthTexture, Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.0f, 0.0f, 0.0f, 1.0f });
-		debugShowDepthParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
+		debugShowDepthParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height), 1, 0b1111);
 
 		renderGraph.AddPass(renderPipelineName, debugShowDepthParameters, CommandPool::QueueType::GRAPHICS,
 			[](Ref<CommandBuffer>& cmdBuffer, uint32_t frameIndex)

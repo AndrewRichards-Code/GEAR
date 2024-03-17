@@ -70,16 +70,7 @@ void gear::ui::componentui::DrawProbeComponentUI(Ref<Probe> probe)
 		DrawDropDownMenu("Direction Type", CI.directionType);
 		DrawDropDownMenu("Capture Type", CI.captureType);
 		uint32_t minSize = 16, maxSize = 2048;
-		float sliderSizeSpeed = 0.001f;
-		if (CI.directionType == Probe::DirectionType::MONO)
-		{
-			DrawUint32("Image Width", CI.imageWidth, minSize, maxSize, true, 100.0f, sliderSizeSpeed);
-			DrawUint32("Image Height", CI.imageHeight, minSize, maxSize, true, 100.0f, sliderSizeSpeed);
-		}
-		else
-		{
-			DrawUint32("Image Size", CI.imageWidth, minSize, maxSize, true, 100.0f, sliderSizeSpeed);
-		}
+		DrawUint32("Image Size", CI.imageSize, minSize, maxSize, true, 100.0f, 0.001f);
 		if (CI.directionType == Probe::DirectionType::MONO)
 		{
 			DrawDropDownMenu("Type", CI.projectionType);
@@ -89,15 +80,19 @@ void gear::ui::componentui::DrawProbeComponentUI(Ref<Probe> probe)
 				DrawDouble("FOV", fovDeg, 0.0, 180.0);
 				CI.perspectiveHorizonalFOV = DegToRad(fovDeg);
 			}
-			else
-			{
-				DrawFloat("Orthographic Scale", CI.orthographicScale, 1.0f);
-			}
 		}
 		DrawFloat("Near", CI.zNear, 0.0, CI.zFar);
 		DrawFloat("Far", CI.zFar, CI.zNear);
+		if (CI.projectionType == Camera::ProjectionType::ORTHOGRAPHIC && CI.captureType == Probe::CaptureType::SHADOW)
+		{
+			DrawUint32("Shadow Cascades", CI.shadowCascades, 1, Probe::MaxShadowCascades);
+			DrawFloat("Shadow Cascade Distance 0", CI.shadowCascadeDistances[0], CI.zNear,                     CI.shadowCascadeDistances[1]);
+			DrawFloat("Shadow Cascade Distance 1", CI.shadowCascadeDistances[1], CI.shadowCascadeDistances[0], CI.shadowCascadeDistances[2]);
+			DrawFloat("Shadow Cascade Distance 2", CI.shadowCascadeDistances[2], CI.shadowCascadeDistances[1], CI.shadowCascadeDistances[3]);
+			DrawFloat("Shadow Cascade Distance 3", CI.shadowCascadeDistances[3], CI.shadowCascadeDistances[2]);
+		}
 
-		if (DrawTreeNode("Shadow Map Debug View", true, (void*)id++))
+		if (DrawTreeNode("Shadow Map Debug View", true, (void*)id++) && CI.captureType == Probe::CaptureType::SHADOW)
 		{
 			using namespace miru::base;
 			using namespace graphics;
@@ -113,58 +108,86 @@ void gear::ui::componentui::DrawProbeComponentUI(Ref<Probe> probe)
 				float imageRatio = float(debugImageCI.width) / float(debugImageCI.height);
 				float width = std::max(ImGui::GetContentRegionMax().x - 100.0f, 1.0f);
 				float height = width * imageRatio;
-				//const ImTextureID& id = GetTextureID(debugImageView, UIContext::GetUIContext(), false);
-				//ImGui::Image(id, ImVec2(width, height));
+
+				ImageViewRef* debugImageViews = probe->m_DebugImageViews;
+				for (uint32_t i = 0; i < CI.shadowCascades; i++)
+				{
+					ImageView::CreateInfo debugImageViewCI = debugImageView->GetCreateInfo();
+					debugImageViewCI.debugName += " " + std::to_string(i);
+					debugImageViewCI.viewType = Image::Type::TYPE_2D;
+					debugImageViewCI.subresourceRange.baseArrayLayer = i;
+					debugImageViewCI.subresourceRange.arrayLayerCount = 1;
+
+					if (!debugImageViews[i])
+					{
+						debugImageViews[i] = ImageView::Create(&debugImageViewCI);
+					}
+					if (debugImageViews[i]->GetCreateInfo().image != debugImageView->GetCreateInfo().image)
+					{
+						debugImageViews[i] = ImageView::Create(&debugImageViewCI);
+					}
+				}
+
+				static uint32_t idx = 0;
+				DrawDropDownMenu("Shadow Cascade", { "0", "1", "2", "3" }, idx);
+				idx = std::min(idx, (CI.shadowCascades - 1));
+				const ImTextureID& id = GetTextureID(debugImageViews[idx], UIContext::GetUIContext(), false);
+				ImGui::Image(id, ImVec2(width, height));
+
+				debugProbeInfo->proj = probe->GetUB()->proj[idx];
+				debugProbeInfo->view = probe->GetUB()->view[idx];
 			}
 
 			//Debug Texture Camera Controls
-			if (probe->m_CI.directionType == Probe::DirectionType::OMNI)
+			static mars::float2 m_InitialMousePosition;
+			auto GetMousePositionInViewport = [&]() -> float2
+				{
+					double mousePosition_x, mousePosition_y;
+					UIContext::GetUIContext()->GetWindow()->GetMousePosition(mousePosition_x, mousePosition_y);
+
+					return float2((float)mousePosition_x, (float)mousePosition_y);
+				};
+
+			if (ImGui::IsWindowFocused() && ImGui::IsWindowHovered())
 			{
-				Ref<Camera>& debugCamera = DebugRender::GetCamera();
-				static Transform transform = Transform();
-				static float m_Roll = 0;
-				static float m_Pitch = 0;
-				static float m_Yaw = 0;
-				static mars::float2 m_InitialMousePosition;
+				if (probe->m_CI.directionType == Probe::DirectionType::OMNI)
+				{
+					Ref<Camera>& debugCamera = DebugRender::GetCamera();
+					static Transform transform = Transform();
+					static float m_Roll = 0;
+					static float m_Pitch = 0;
+					static float m_Yaw = 0;
 
-				auto GetMousePositionInViewport = [&]() -> float2
+					//Stop camera snapping back when new input is detected
+					if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) || ImGui::IsMouseClicked(ImGuiMouseButton_Middle))
 					{
-						double mousePosition_x, mousePosition_y;
-						UIContext::GetUIContext()->GetWindow()->GetMousePosition(mousePosition_x, mousePosition_y);
+						m_InitialMousePosition = GetMousePositionInViewport();
+					}
 
-						return float2((float)mousePosition_x, (float)mousePosition_y);
-					};
+					//Main update
+					if (ImGui::IsMouseDown(ImGuiMouseButton_::ImGuiMouseButton_Right))
+					{
+						const float2& mouse = GetMousePositionInViewport();
+						float2 delta = (mouse - m_InitialMousePosition) * 0.003f;
+						m_InitialMousePosition = mouse;
 
-				//Stop camera snapping back when new input is detected
-				if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) || ImGui::IsMouseClicked(ImGuiMouseButton_Middle))
-				{
-					m_InitialMousePosition = GetMousePositionInViewport();
+						m_Yaw += delta.x;
+						m_Pitch += delta.y;
+
+						transform.orientation = Quaternion::FromEulerAngles(float3(m_Pitch, m_Yaw, m_Roll));
+					}
+
+					debugCamera->Update(transform);
 				}
-
-				//Main update
-				if (ImGui::IsMouseDown(ImGuiMouseButton_::ImGuiMouseButton_Right))
-				{
-					const float2& mouse = GetMousePositionInViewport();
-					float2 delta = (mouse - m_InitialMousePosition) * 0.003f;
-					m_InitialMousePosition = mouse;
-
-					m_Yaw += delta.x;
-					m_Pitch += delta.y;
-
-					transform.orientation = Quaternion::FromEulerAngles(float3(m_Pitch, m_Yaw, m_Roll));
-				}
-
-				debugCamera->Update(transform);
-
 			}
-			debugProbeInfo->proj = probe->GetUB()->proj;
-			debugProbeInfo->view = probe->GetUB()->view[0];
+			else 
+			{
+				m_InitialMousePosition = GetMousePositionInViewport();
+			}
 
-			//DebugProbeInfo
-			
 			DrawCheckbox("Show Colour Cubemap", (bool&)debugProbeInfo->showColourCubemap);
-			DrawFloat("Min Depth", debugProbeInfo->minDepth, 0.0f, debugProbeInfo->maxDepth, DefaultWidth, 1e-6f, "%.6f");
-			DrawFloat("Max Depth", debugProbeInfo->maxDepth, debugProbeInfo->minDepth, 1.0f, DefaultWidth, 1e-6f, "%.6f");
+			DrawFloat("Min Depth", debugProbeInfo->minDepth, 0.0f, debugProbeInfo->maxDepth, DefaultWidth, 1e-3f, "%.3f");
+			DrawFloat("Max Depth", debugProbeInfo->maxDepth, debugProbeInfo->minDepth, 1.0f, DefaultWidth, 1e-3f, "%.3f");
 		
 			EndDrawTreeNode();
 		}

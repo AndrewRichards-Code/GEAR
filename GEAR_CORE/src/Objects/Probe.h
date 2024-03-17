@@ -22,26 +22,29 @@ namespace gear
 				REFLECTION
 			};
 
+			static constexpr uint32_t MaxShadowCascades = _countof(graphics::UniformBufferStructures::ProbeInfo::proj);
+
 			struct CreateInfo : public ObjectInterface::CreateInfo
 			{
 				DirectionType			directionType;
 				CaptureType				captureType;
-				uint32_t				imageWidth;
-				uint32_t				imageHeight;				//Only for DirectionType::MONO
-				Camera::ProjectionType	projectionType;				//DirectionType::ONMI will force Camera::ProjectionType::PERSPECTIVE
-				double					perspectiveHorizonalFOV;	//In radians
-				float					orthographicScale;
-				float					zNear;
-				float					zFar;
+				uint32_t				imageSize;
+				Camera::ProjectionType	projectionType;								//DirectionType::ONMI will force Camera::ProjectionType::PERSPECTIVE
+				double					perspectiveHorizonalFOV;					//In radians
+				float					zNear;										//Only for Camera::ProjectionType::PERSPECTIVE
+				float					zFar;										//Only for Camera::ProjectionType::PERSPECTIVE
+				uint32_t				shadowCascades = 1;
+				float					shadowCascadeDistances[MaxShadowCascades];	//Far planes for the cascades
+				Ref<Camera>				viewCamera;
 			};
 
 			Ref<graphics::Texture> m_ColourTexture;
 			Ref<graphics::Texture> m_DepthTexture;
 
-			Ref<graphics::RenderPipeline> m_ShadowRenderPipeline;
-
 			bool m_RenderDebugView = false;
 			Ref<graphics::Texture> m_DebugTexture = nullptr;
+
+			miru::base::ImageViewRef m_DebugImageViews[MaxShadowCascades] = {nullptr, nullptr, nullptr, nullptr};
 
 		private:
 			typedef graphics::UniformBufferStructures::ProbeInfo ProbeInfoUB;
@@ -49,8 +52,7 @@ namespace gear
 
 			DirectionType m_CurrentDirectionType = DirectionType::MONO;
 			CaptureType m_CurrentCaptureType = CaptureType::SHADOW;
-			uint32_t m_CurrentImageWidth = 0;
-			uint32_t m_CurrentImageHeight = 0;
+			uint32_t m_CurrentImageSize = 0;
 
 		public:
 			CreateInfo m_CI;
@@ -66,9 +68,8 @@ namespace gear
 			bool CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo) override;
 
 		private:
-			void InitialiseTexturesAndPipeline();
+			void InitialiseTextures();
 			void CreateTexture(Ref<graphics::Texture>& texture, bool colour = true);
-			void CreateRenderPipeline();
 			void InitialiseUB();
 		};
 	}

@@ -1,19 +1,19 @@
 {
 	"fileType": "GEAR_RENDER_PIPELINE_FILE",
-	"debugName": "Shadow",
+	"debugName": "ShadowCascades",
 	"shaders": [
 		{
-			"debugName": "Shadow_vs_6_4_vs_main.spv",
+			"debugName": "Shadow_vs_6_4_vs_main_single.spv",
 			"stageAndEntryPoints": [
 				{
 					"stage": "VERTEX_BIT",
-					"entryPoint": "vs_main"
+					"entryPoint": "vs_main_cascades"
 				}
 			],
-			"binaryFilepath": "$BUILD_DIR/shaderbin/Shadow_vs_6_4_vs_main.spv",
+			"binaryFilepath": "$BUILD_DIR/shaderbin/Shadow_vs_6_4_vs_main_cascades.spv",
 			"recompileArguments": {
 				"rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Shadow.json",
-				"index": 0
+				"index": 1
 			}
 		},
 		{
@@ -27,7 +27,7 @@
 			"binaryFilepath": "$BUILD_DIR/shaderbin/Shadow_ps_6_4_ps_main.spv",
 			"recompileArguments": {
 				"rafFilepath": "$SOURCE_DIR/GEAR_CORE/res/shaders/Shadow.json",
-				"index": 1
+				"index": 2
 			}
 		}
 	],
@@ -112,5 +112,8 @@
 			0.0,
 			0.0
 		]
+	},
+	"dynamicRendering": {
+		"viewMask": 15
 	}
 }

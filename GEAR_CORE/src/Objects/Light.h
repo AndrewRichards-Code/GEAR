@@ -24,6 +24,7 @@ namespace gear
 				mars::float4	colour;
 				float			spotInnerAngle; //Radians
 				float			spotOuterAngle; //Radians
+				Ref<Camera>		viewCamera;
 			};
 
 			static const uint32_t s_MaxLights = 8;

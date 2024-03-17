@@ -55,18 +55,15 @@ void UIContext::Update(gear::core::Timer timer)
 		else
 			it++;
 	}
+
 	//Remove closed panels
-	for (auto it = m_EditorPanels.begin(); it != m_EditorPanels.end(); it++)
+	for (auto it = m_EditorPanels.begin(); it != m_EditorPanels.end();)
 	{
 		Ref<Panel>& panel = *it;
 		if (!panel->IsOpen())
-		{
-			m_EditorPanels.erase(it);
-			if (!m_EditorPanels.empty())
-				it = m_EditorPanels.begin(); //Reset the iterator.
-			else
-				break;
-		}
+			it = m_EditorPanels.erase(it);
+		else
+			it++;
 	}
 }
 

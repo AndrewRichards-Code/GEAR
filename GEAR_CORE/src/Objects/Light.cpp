@@ -77,6 +77,7 @@ bool Light::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo)
 	newHash ^= core::GetHash(CI.colour.a);
 	newHash ^= core::GetHash(CI.spotInnerAngle);
 	newHash ^= core::GetHash(CI.spotOuterAngle);
+	newHash ^= core::GetHash(CI.viewCamera);
 	return CompareCreateInfoHash(newHash);
 }
 
@@ -101,12 +102,27 @@ void Light::CreateProbe()
 	probeCI.device = m_CI.device;
 	probeCI.directionType = m_CI.type == Type::POINT ? Probe::DirectionType::OMNI : Probe::DirectionType::MONO;
 	probeCI.captureType = Probe::CaptureType::SHADOW;
-	probeCI.imageWidth = 512;
-	probeCI.imageHeight = 512;
+	probeCI.imageSize = 512;
 	probeCI.projectionType = m_CI.type == Type::DIRECTIONAL ? Camera::ProjectionType::ORTHOGRAPHIC : Camera::ProjectionType::PERSPECTIVE;
 	probeCI.perspectiveHorizonalFOV = m_CI.type == Type::POINT ? pi / 2.0 : m_CI.type == Type::SPOT ? m_CI.spotOuterAngle * 2.0 : 0.0;
-	probeCI.orthographicScale = 100.0f;
 	probeCI.zNear = 0.001f;
 	probeCI.zFar = 3000.0f;
+	if (m_CI.type == Type::DIRECTIONAL)
+	{
+		probeCI.shadowCascades = Probe::MaxShadowCascades;
+		probeCI.shadowCascadeDistances[0] = 5.0f;
+		probeCI.shadowCascadeDistances[1] = 10.0f;
+		probeCI.shadowCascadeDistances[2] = 100.0f;
+		probeCI.shadowCascadeDistances[3] = 3000.0f;
+	}
+	else
+	{
+		probeCI.shadowCascades = 1;
+		probeCI.shadowCascadeDistances[0] = 3000.0f;
+		probeCI.shadowCascadeDistances[1] = 0.0f;
+		probeCI.shadowCascadeDistances[2] = 0.0f;
+		probeCI.shadowCascadeDistances[3] = 0.0f;
+	}
+	probeCI.viewCamera = m_CI.viewCamera;
 	m_Probe = CreateRef<Probe>(&probeCI);
 }
