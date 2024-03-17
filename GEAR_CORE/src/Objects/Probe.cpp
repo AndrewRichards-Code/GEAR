@@ -1,4 +1,5 @@
 #include "gear_core_common.h"
+#include "Graphics/Frustum.h"
 #include "Objects/Probe.h"
 
 using namespace gear;
@@ -27,7 +28,7 @@ Probe::~Probe()
 void Probe::Update(const Transform& transform)
 {
 	//Get View Camera Details
-	std::vector<Frustrum> viewCameraSubFrustra;
+	std::vector<Frustum> viewCameraSubFrusta;
 	float viewCameraNear = 0.0f;
 	float viewCameraFar = 1.0f;
 	bool viewCameraUpdated = false;
@@ -42,14 +43,14 @@ void Probe::Update(const Transform& transform)
 			viewCameraFar = m_CI.viewCamera->m_CI.perspectiveParams.zFar;
 			const float& viewCameraClipRange = viewCameraFar - viewCameraNear;
 
-			Frustrum& frustrum = viewCameraSubFrustra.emplace_back(viewCameraUB->proj, viewCameraUB->view);
+			Frustum& frustum = viewCameraSubFrusta.emplace_back(viewCameraUB->proj, viewCameraUB->view);
 			const float& near = i == 0 ? 0.0f : m_CI.shadowCascadeDistances[i - 1];
 			const float& far = m_CI.shadowCascadeDistances[i];
-			frustrum.ScaleDistancesForNearAndFar(near / viewCameraClipRange, far / viewCameraClipRange);
+			frustum.ScaleDistancesForNearAndFar(near / viewCameraClipRange, far / viewCameraClipRange);
 		}
 		else
 		{
-			viewCameraSubFrustra.emplace_back();
+			viewCameraSubFrusta.emplace_back();
 		}
 	}
 
@@ -78,7 +79,7 @@ void Probe::Update(const Transform& transform)
 			}
 			else
 			{
-				const BoundingBox& extents = viewCameraSubFrustra[i].GetExtents();
+				const BoundingBox& extents = viewCameraSubFrusta[i].GetExtents();
 
 				m_UB->proj[i] = float4x4::Orthographic(
 					extents.min.x,
@@ -114,8 +115,8 @@ void Probe::Update(const Transform& transform)
 						const float4x4& orientation = transform.orientation.ToRotationMatrix4<float>();
 						float3 lightDirection = (-float3(orientation * float4(0, 0, 1, 0))).Normalise();
 
-						const float3& centre = viewCameraSubFrustra[i].GetCentre();
-						const BoundingBox& extents = viewCameraSubFrustra[i].GetExtents();
+						const float3& centre = viewCameraSubFrusta[i].GetCentre();
+						const BoundingBox& extents = viewCameraSubFrusta[i].GetExtents();
 
 						orthoTransform.translation = centre + lightDirection * abs(extents.min.z);
 						m_UB->view[i] = TransformToMatrix4(orthoTransform).Inverse();

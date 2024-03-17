@@ -80,30 +80,5 @@ namespace gear
 			void SetPosition(const Transform& transform);
 			void InitialiseUB();
 		};
-
-		struct BoundingBox
-		{
-			mars::float3 min;
-			mars::float3 max;
-		};
-
-		class Frustrum
-		{
-		public:
-			Frustrum();
-			Frustrum(const mars::float4x4& proj, const mars::float4x4& view);
-			~Frustrum();
-
-			//Parameters are normalised value from the near to the far plane.
-			void ScaleDistancesForNearAndFar(float near, float far);
-
-			const mars::float3 GetCentre() const;
-			const float GetMaxRadius() const;
-			const BoundingBox GetExtents() const;
-
-		public:
-			std::array<mars::float3, 8> corners;
-
-		};
 	}
 }
