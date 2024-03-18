@@ -99,9 +99,9 @@ float ShadowPCF(float2 shadowTextureCoords, uint shadowCascadeIndex, float light
 {
 	float shadowStrength = 0.0;
 	float bias = 0.00001;
-	uint range = 2;
-	uint size = 2 * range + 1;
-	float count = float(size * size);
+	int range = 2;
+	int size = 2 * range + 1;
+	int count = size * size;
 	
 	uint3 shadowMap2DArray_ImageCIS_Dim;
 	shadowMap2DArray_ImageCIS.GetDimensions(shadowMap2DArray_ImageCIS_Dim.x, shadowMap2DArray_ImageCIS_Dim.y, shadowMap2DArray_ImageCIS_Dim.z);
@@ -123,11 +123,12 @@ float ShadowPCF(float2 shadowTextureCoords, uint shadowCascadeIndex, float light
 			else
 			{
 				shadowStrength += 1.0;
-			}
+			} 
 		}
 	}
+	shadowStrength /= count;
 	
-	return (shadowStrength / count);
+	return shadowStrength;
 }
 
 float GetShadowStrength(float4 worldPosition, float viewPositionZ, Light light)
@@ -162,8 +163,7 @@ float GetShadowStrength(float4 worldPosition, float viewPositionZ, Light light)
 		float3 lightSpaceProjectedPosition = PerspectiveDivide(worldPosition, probeInfo.view[shadowCascadeIndex], probeInfo.proj[shadowCascadeIndex]);
 		float2 shadowTextureCoords = (lightSpaceProjectedPosition.xy / 2.0) + float2(0.5, 0.5);
 		lightSpaceZ = lightSpaceProjectedPosition.z;
-		shadowDepth = shadowMap2DArray_ImageCIS.SampleLevel(shadowMap2DArray_SamplerCIS, float3(shadowTextureCoords, shadowCascadeIndex), 0.0).x;
-		//return ShadowPCF(shadowTextureCoords, shadowCascadeIndex, lightSpaceZ);
+		return ShadowPCF(shadowTextureCoords, shadowCascadeIndex, lightSpaceZ);
 		
 		if (viewPositionZ > probeInfo.farPlanes[probeInfo.shadowCascades - 1]) //Beyond furthest cascade
 			return shadowStrength;

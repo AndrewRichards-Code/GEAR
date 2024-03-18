@@ -418,11 +418,10 @@ void Renderer::Draw()
 			bool clear = true;
 			
 			GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "Main Render");
-			if (m_MainRenderCamera && m_Skybox)
+			if (m_MainRenderCamera && clear)
 			{
-				GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "Skybox");
-				passes::MainRenderPasses::Skybox(*this, m_Skybox);
-				clear = false;
+				GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "Clear");
+				passes::MainRenderPasses::Clear(*this);
 			}
 			if (m_MainRenderCamera && !m_ModelQueue.empty() && (!m_Lights.empty() || m_Skybox))
 			{
@@ -430,12 +429,13 @@ void Renderer::Draw()
 				passes::MainRenderPasses::PBROpaque(*this);
 				clear = false;
 			}
-
-			if (m_MainRenderCamera && clear)
+			if (m_MainRenderCamera && m_Skybox)
 			{
-				GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "Clear");
-				passes::MainRenderPasses::Clear(*this);
+				GEAR_RENDER_GRARH_EVENT_SCOPE(m_RenderGraph, "Skybox");
+				passes::MainRenderPasses::Skybox(*this, m_Skybox);
+				clear = false;
 			}
+
 		}
 		//Post Processing
 		{
