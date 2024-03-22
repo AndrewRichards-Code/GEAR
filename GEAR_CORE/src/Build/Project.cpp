@@ -63,21 +63,19 @@ void Project::AddScene(const Ref<Scene>& scene)
 
 void Project::RemoveScene(const Ref<Scene>& scene)
 {
-	if (!m_Scenes.empty())
+	for (auto it = m_Scenes.begin(); it != m_Scenes.end();)
 	{
-		for (auto it = m_Scenes.begin(); it != m_Scenes.end(); it++)
+		Ref<Scene>& _scene = *it;
+		if (_scene == scene)
 		{
-			Ref<Scene>& _scene = *it;
-			if (_scene == scene)
-			{
-				it = m_Scenes.erase(it);
+			it = m_Scenes.erase(it);
 
-				if (m_SelectedScene == scene)
-					m_SelectedScene = (it != m_Scenes.end() ? *it : nullptr);
-
-				if (m_Scenes.empty())
-					break;
-			}
+			if (m_SelectedScene == scene)
+				m_SelectedScene = (it != m_Scenes.end() ? *it : nullptr);
+		}
+		else
+		{
+			it++;
 		}
 	}
 }

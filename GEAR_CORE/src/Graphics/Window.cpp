@@ -226,6 +226,7 @@ bool Window::Init()
 	glfwSetCursorPosCallback(m_Window, cursor_position_callback);
 	glfwSetJoystickCallback(joystick_callback);
 	glfwSetScrollCallback(m_Window, scroll_callback);
+	glfwSetDropCallback(m_Window, drop_callback);
 
 	glfwGetWindowSize(m_Window, (int*)&m_CurrentWidth, (int*)&m_CurrentHeight);
 
@@ -344,4 +345,18 @@ void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	Window* win = (Window*)glfwGetWindowUserPointer(window);
 	win->m_ScrollPosition += yoffset;
+}
+
+void Window::drop_callback(GLFWwindow* window, int pathCount, const char** paths)
+{
+	Window* win = (Window*)glfwGetWindowUserPointer(window);
+	if (win->m_DropCallback)
+	{
+		std::vector<std::string> _paths;
+		for (size_t i = 0; i < pathCount; i++)
+		{
+			_paths.push_back(paths[i]);
+		}
+		win->m_DropCallback(_paths);
+	}
 }

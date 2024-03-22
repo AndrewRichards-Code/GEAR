@@ -19,6 +19,8 @@ namespace gear
 		class GEAR_API Window
 		{
 		public:
+			typedef void(*DropCallback)(const std::vector<std::string>& paths);
+
 			struct CreateInfo
 			{
 				core::ApplicationContext					applicationContext;
@@ -60,6 +62,9 @@ namespace gear
 			bool m_JoyButtons[MAX_JOY_BUTTONS];
 			double m_xJoy1, m_yJoy1, m_xJoy2, m_yJoy2, m_xJoy3, m_yJoy3;
 
+			//DropCallback
+			DropCallback m_DropCallback = nullptr;
+
 		public:
 			Window(CreateInfo* pCreateInfo);
 			virtual ~Window();
@@ -91,6 +96,7 @@ namespace gear
 			static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 			static void joystick_callback(int joy, int event);
 			static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+			static void drop_callback(GLFWwindow* window, int pathCount, const char** paths);
 
 		public:
 			inline GLFWwindow* GetGLFWwindow() { return m_Window; }
@@ -110,6 +116,8 @@ namespace gear
 			template<typename T>
 			inline std::string GetFPSString() const { return std::to_string(static_cast<T>(m_FPS)); }
 			inline std::string GetAntiAliasingValue() const { return m_RenderSurface->GetAntiAliasingValue(); }
+
+			inline void SetDropCallback(DropCallback callback) { m_DropCallback = callback; }
 		};
 	}
 }

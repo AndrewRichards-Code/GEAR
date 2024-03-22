@@ -243,6 +243,12 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 		window->GetContext()->DeviceWaitIdle();
 		ImGui_ImplVulkan_DestroyFontUploadObjects();
 	}
+
+	window->SetDropCallback([](const std::vector<std::string>& paths)
+		{
+			for(const auto& path : paths)
+				GEAR_INFO(1, path.c_str());
+		});
 }
 
 void UIContext::ShutDown()
