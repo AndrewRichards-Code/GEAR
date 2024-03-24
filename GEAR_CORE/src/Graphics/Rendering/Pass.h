@@ -29,6 +29,9 @@ namespace gear
 			void Execute(RenderGraph* renderGraph, miru::base::CommandBufferRef cmdBuffer, uint32_t frameIndex);
 
 		private:
+			void ExecuteTask(RenderGraph* renderGraph, miru::base::CommandBufferRef cmdBuffer, uint32_t frameIndex);
+			void ExecuteTransfer(RenderGraph* renderGraph, miru::base::CommandBufferRef cmdBuffer, uint32_t frameIndex);
+
 			TransitionDetails GetTransitionDetails(const Resource::State& state, const miru::base::PipelineStageBit& stage, bool src);
 			std::vector<miru::base::Barrier2Ref> TransitionResource(RenderGraph* renderGraph, const ResourceView& passResourceView, Resource::State overideNewState =  Resource::State::UNKNOWN);
 

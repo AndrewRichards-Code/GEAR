@@ -25,138 +25,14 @@ Pass::~Pass()
 
 void Pass::Execute(RenderGraph* renderGraph, CommandBufferRef cmdBuffer, uint32_t frameIndex)
 {
-	const CommandPool::QueueType cmdPoolType = cmdBuffer->GetCreateInfo().commandPool->GetCreateInfo().queueType;
+	
 	if (GetPassParameters()->GetType() == PassParameters::Type::TASK)
 	{
-		const Ref<TaskPassParameters>& passParameters = ref_cast<TaskPassParameters>(GetPassParameters());
-		std::vector<ResourceView>& inputResourceViews = GetInputResourceViews();
-		std::vector<ResourceView>& outputResourceViews = GetOutputResourceViews();
-		const RenderingInfo& renderingInfo = passParameters->GetRenderingInfo();
-
-		if (cmdPoolType != CommandPool::QueueType::TRANSFER)
-		{
-			cmdBuffer->BeginDebugLabel(frameIndex, m_PassName);
-		}
-
-		//Transition resources for the pass
-		{
-			CommandBuffer::DependencyInfo dependencyInfo = { DependencyBit::NONE_BIT, {} };
-			std::vector<Barrier2Ref>& barriers = dependencyInfo.barriers;
-
-			//Transition input and output resources
-			barriers.clear();
-			for (ResourceView& resourceView : inputResourceViews)
-			{
-				const auto& inputBarriers = TransitionResource(renderGraph, resourceView);
-				barriers.insert(barriers.end(), inputBarriers.begin(), inputBarriers.end());
-			}
-			for (ResourceView& resourceView : outputResourceViews)
-			{
-				const auto& outputBarriers = TransitionResource(renderGraph, resourceView);
-				barriers.insert(barriers.end(), outputBarriers.begin(), outputBarriers.end());
-			}
-			if (!barriers.empty())
-			{
-				cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
-			}
-		}
-
-		if (m_BeginRendering)
-		{
-			const uint32_t& width = renderingInfo.renderArea.extent.width;
-			const uint32_t& height = renderingInfo.renderArea.extent.height;
-
-			cmdBuffer->BeginRendering(frameIndex, renderingInfo);
-			cmdBuffer->SetViewport(frameIndex, { TaskPassParameters::CreateViewport(width, height) });
-			cmdBuffer->SetScissor(frameIndex, { TaskPassParameters::CreateScissor(width, height) });
-		}
-
-		cmdBuffer->BindPipeline(frameIndex, passParameters->GetPipeline());
-		cmdBuffer->BindDescriptorSets(frameIndex, passParameters->GetDescriptorSets(), 0, passParameters->GetPipeline());
-		m_RenderFunction(cmdBuffer, frameIndex);
-
-		if (m_EndRendering)
-		{
-			cmdBuffer->EndRendering(frameIndex);
-
-			for (ResourceView& resourceView : outputResourceViews)
-			{
-				if (resourceView.IsImageView() && resourceView.imageView->IsSwapchainImageView())
-				{
-					CommandBuffer::DependencyInfo dependencyInfo = { DependencyBit::NONE_BIT, { TransitionResource(renderGraph, resourceView, Resource::State::PRESENT) } };
-					cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
-				}
-			}
-		}
-
-		if (cmdPoolType != CommandPool::QueueType::TRANSFER)
-		{
-			cmdBuffer->EndDebugLabel(frameIndex);
-		}
+		ExecuteTask(renderGraph, cmdBuffer, frameIndex);
 	}
 	else if (GetPassParameters()->GetType() == PassParameters::Type::TRANSFER)
 	{
-		const Ref<TransferPassParameters>& passParameters = ref_cast<TransferPassParameters>(GetPassParameters());
-
-		if (cmdPoolType != CommandPool::QueueType::TRANSFER)
-		{
-			cmdBuffer->BeginDebugLabel(frameIndex, m_PassName);
-		}
-
-		//Transition resource pairs
-		CommandBuffer::DependencyInfo dependencyInfo = { DependencyBit::NONE_BIT, {} };
-		std::vector<Barrier2Ref>& barriers = dependencyInfo.barriers;
-		for (auto& [src, dst, rcr] : passParameters->GetResourceViewsPairs())
-		{
-			const auto& srcBarriers = TransitionResource(renderGraph, src);
-			barriers.insert(barriers.end(), srcBarriers.begin(), srcBarriers.end());
-			const auto& dstBarriers = TransitionResource(renderGraph, dst);
-			barriers.insert(barriers.end(), dstBarriers.begin(), dstBarriers.end());
-		}
-		cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
-
-		//Transfer resources
-		for (auto& [src, dst, rcr] : passParameters->GetResourceViewsPairs())
-		{
-			const bool& buffer_buffer = src.IsBufferView() && dst.IsBufferView();
-			const bool& buffer_image = src.IsBufferView() && dst.IsImageView();
-			const bool& image_buffer = src.IsImageView() && dst.IsBufferView();
-			const bool& image_image = src.IsImageView() && dst.IsImageView();
-
-			if (buffer_buffer)
-			{
-				const BufferRef& srcBuffer = src.bufferView->GetCreateInfo().buffer;
-				const BufferRef& dstBuffer = dst.bufferView->GetCreateInfo().buffer;
-				const Buffer::Copy& copyRegion = rcr.bufferCopy;
-				cmdBuffer->CopyBuffer(frameIndex, srcBuffer, dstBuffer, { copyRegion });
-			}
-			if (buffer_image)
-			{
-				const BufferRef& srcBuffer = src.bufferView->GetCreateInfo().buffer;
-				const ImageRef& dstImage = dst.imageView->GetCreateInfo().image;
-				const Image::BufferImageCopy& copyRegion = rcr.bufferImageCopy;
-				cmdBuffer->CopyBufferToImage(frameIndex, srcBuffer, dstImage, Image::Layout::TRANSFER_DST_OPTIMAL, { copyRegion });
-			}
-			if (image_buffer)
-			{
-				const ImageRef& srcImage = src.imageView->GetCreateInfo().image;
-				const BufferRef& dstBuffer = dst.bufferView->GetCreateInfo().buffer;
-				const Image::BufferImageCopy& copyRegion = rcr.bufferImageCopy;
-				cmdBuffer->CopyImageToBuffer(frameIndex, srcImage, dstBuffer, Image::Layout::TRANSFER_SRC_OPTIMAL, { copyRegion });
-			}
-			if (image_image)
-			{
-				const ImageRef& srcImage = src.imageView->GetCreateInfo().image;
-				const ImageRef& dstImage = dst.imageView->GetCreateInfo().image;
-				const Image::Copy& copyRegion = rcr.imageCopy;
-				cmdBuffer->CopyImage(frameIndex, srcImage, Image::Layout::TRANSFER_SRC_OPTIMAL, dstImage, Image::Layout::TRANSFER_DST_OPTIMAL, { copyRegion });
-			}
-		}
-
-		if (cmdPoolType != CommandPool::QueueType::TRANSFER)
-		{
-			cmdBuffer->EndDebugLabel(frameIndex);
-		}
+		ExecuteTransfer(renderGraph, cmdBuffer, frameIndex);
 	}
 	else
 	{
@@ -164,7 +40,141 @@ void Pass::Execute(RenderGraph* renderGraph, CommandBufferRef cmdBuffer, uint32_
 	}
 }
 
+void Pass::ExecuteTask(RenderGraph* renderGraph, miru::base::CommandBufferRef cmdBuffer, uint32_t frameIndex)
+{
+	const CommandPool::QueueType cmdPoolType = cmdBuffer->GetCreateInfo().commandPool->GetCreateInfo().queueType;
+	const Ref<TaskPassParameters>& passParameters = ref_cast<TaskPassParameters>(GetPassParameters());
+	std::vector<ResourceView>& inputResourceViews = GetInputResourceViews();
+	std::vector<ResourceView>& outputResourceViews = GetOutputResourceViews();
+	const RenderingInfo& renderingInfo = passParameters->GetRenderingInfo();
 
+	if (cmdPoolType != CommandPool::QueueType::TRANSFER)
+	{
+		cmdBuffer->BeginDebugLabel(frameIndex, m_PassName);
+	}
+
+	//Transition resources for the pass
+	{
+		CommandBuffer::DependencyInfo dependencyInfo = { DependencyBit::NONE_BIT, {} };
+		std::vector<Barrier2Ref>& barriers = dependencyInfo.barriers;
+
+		//Transition input and output resources
+		barriers.clear();
+		for (ResourceView& resourceView : inputResourceViews)
+		{
+			const auto& inputBarriers = TransitionResource(renderGraph, resourceView);
+			barriers.insert(barriers.end(), inputBarriers.begin(), inputBarriers.end());
+		}
+		for (ResourceView& resourceView : outputResourceViews)
+		{
+			const auto& outputBarriers = TransitionResource(renderGraph, resourceView);
+			barriers.insert(barriers.end(), outputBarriers.begin(), outputBarriers.end());
+		}
+		if (!barriers.empty())
+		{
+			cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
+		}
+	}
+
+	if (m_BeginRendering)
+	{
+		const uint32_t& width = renderingInfo.renderArea.extent.width;
+		const uint32_t& height = renderingInfo.renderArea.extent.height;
+
+		cmdBuffer->BeginRendering(frameIndex, renderingInfo);
+		cmdBuffer->SetViewport(frameIndex, { TaskPassParameters::CreateViewport(width, height) });
+		cmdBuffer->SetScissor(frameIndex, { TaskPassParameters::CreateScissor(width, height) });
+	}
+
+	cmdBuffer->BindPipeline(frameIndex, passParameters->GetPipeline());
+	cmdBuffer->BindDescriptorSets(frameIndex, passParameters->GetDescriptorSets(), 0, passParameters->GetPipeline());
+	m_RenderFunction(cmdBuffer, frameIndex);
+
+	if (m_EndRendering)
+	{
+		cmdBuffer->EndRendering(frameIndex);
+
+		for (ResourceView& resourceView : outputResourceViews)
+		{
+			if (resourceView.IsImageView() && resourceView.imageView->IsSwapchainImageView())
+			{
+				CommandBuffer::DependencyInfo dependencyInfo = { DependencyBit::NONE_BIT, { TransitionResource(renderGraph, resourceView, Resource::State::PRESENT) } };
+				cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
+			}
+		}
+	}
+
+	if (cmdPoolType != CommandPool::QueueType::TRANSFER)
+	{
+		cmdBuffer->EndDebugLabel(frameIndex);
+	}
+}
+
+void Pass::ExecuteTransfer(RenderGraph* renderGraph, miru::base::CommandBufferRef cmdBuffer, uint32_t frameIndex)
+{
+	const CommandPool::QueueType cmdPoolType = cmdBuffer->GetCreateInfo().commandPool->GetCreateInfo().queueType;
+	const Ref<TransferPassParameters>& passParameters = ref_cast<TransferPassParameters>(GetPassParameters());
+
+	if (cmdPoolType != CommandPool::QueueType::TRANSFER)
+	{
+		cmdBuffer->BeginDebugLabel(frameIndex, m_PassName);
+	}
+
+	//Transition resource pairs
+	CommandBuffer::DependencyInfo dependencyInfo = { DependencyBit::NONE_BIT, {} };
+	std::vector<Barrier2Ref>& barriers = dependencyInfo.barriers;
+	for (auto& [src, dst, rcr] : passParameters->GetResourceViewsPairs())
+	{
+		const auto& srcBarriers = TransitionResource(renderGraph, src);
+		barriers.insert(barriers.end(), srcBarriers.begin(), srcBarriers.end());
+		const auto& dstBarriers = TransitionResource(renderGraph, dst);
+		barriers.insert(barriers.end(), dstBarriers.begin(), dstBarriers.end());
+	}
+	cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
+
+	//Transfer resources
+	for (auto& [src, dst, rcr] : passParameters->GetResourceViewsPairs())
+	{
+		const bool& buffer_buffer = src.IsBufferView() && dst.IsBufferView();
+		const bool& buffer_image = src.IsBufferView() && dst.IsImageView();
+		const bool& image_buffer = src.IsImageView() && dst.IsBufferView();
+		const bool& image_image = src.IsImageView() && dst.IsImageView();
+
+		if (buffer_buffer)
+		{
+			const BufferRef& srcBuffer = src.bufferView->GetCreateInfo().buffer;
+			const BufferRef& dstBuffer = dst.bufferView->GetCreateInfo().buffer;
+			const Buffer::Copy& copyRegion = rcr.bufferCopy;
+			cmdBuffer->CopyBuffer(frameIndex, srcBuffer, dstBuffer, { copyRegion });
+		}
+		if (buffer_image)
+		{
+			const BufferRef& srcBuffer = src.bufferView->GetCreateInfo().buffer;
+			const ImageRef& dstImage = dst.imageView->GetCreateInfo().image;
+			const Image::BufferImageCopy& copyRegion = rcr.bufferImageCopy;
+			cmdBuffer->CopyBufferToImage(frameIndex, srcBuffer, dstImage, Image::Layout::TRANSFER_DST_OPTIMAL, { copyRegion });
+		}
+		if (image_buffer)
+		{
+			const ImageRef& srcImage = src.imageView->GetCreateInfo().image;
+			const BufferRef& dstBuffer = dst.bufferView->GetCreateInfo().buffer;
+			const Image::BufferImageCopy& copyRegion = rcr.bufferImageCopy;
+			cmdBuffer->CopyImageToBuffer(frameIndex, srcImage, dstBuffer, Image::Layout::TRANSFER_SRC_OPTIMAL, { copyRegion });
+		}
+		if (image_image)
+		{
+			const ImageRef& srcImage = src.imageView->GetCreateInfo().image;
+			const ImageRef& dstImage = dst.imageView->GetCreateInfo().image;
+			const Image::Copy& copyRegion = rcr.imageCopy;
+			cmdBuffer->CopyImage(frameIndex, srcImage, Image::Layout::TRANSFER_SRC_OPTIMAL, dstImage, Image::Layout::TRANSFER_DST_OPTIMAL, { copyRegion });
+		}
+	}
+
+	if (cmdPoolType != CommandPool::QueueType::TRANSFER)
+	{
+		cmdBuffer->EndDebugLabel(frameIndex);
+	}
+}
 
 Pass::TransitionDetails Pass::GetTransitionDetails(const Resource::State& state, const PipelineStageBit& stage, bool src)
 {
