@@ -37,14 +37,14 @@ void Model::Update(const Transform& transform)
 		m_UB->SubmitData();
 	}
 
-	m_CI.pMesh->Update();
+	m_CI.mesh->Update();
 }
 
 bool Model::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo)
 {
 	const CreateInfo& CI = *reinterpret_cast<const CreateInfo*>(pCreateInfo);
 	uint64_t newHash = 0;
-	newHash ^= core::GetHash((uint64_t)CI.pMesh.get());
+	newHash ^= core::GetHash((uint64_t)CI.mesh.get());
 	newHash ^= core::GetHash(CI.materialTextureScaling.x);
 	newHash ^= core::GetHash(CI.materialTextureScaling.x);
 	newHash ^= core::GetHash(CI.renderPipelineName);

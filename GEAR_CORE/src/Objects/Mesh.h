@@ -12,7 +12,7 @@ namespace gear
 	}
 	namespace objects
 	{
-		class GEAR_API Mesh : public ObjectComponentInterface
+		class GEAR_API Mesh : public ObjectComponentInterface, public asset::Asset
 		{
 		public:
 			enum class VertexAttributes : uint32_t
@@ -29,9 +29,8 @@ namespace gear
 		public:
 			struct CreateInfo : public ObjectComponentInterface::CreateInfo
 			{
-				std::string						filepath;	//Option 1
-				utils::ModelLoader::ModelData	modelData;	//Option 2
-				VertexAttributes				vertexAttributes;
+				Ref<utils::ModelLoader::ModelData>	modelData;
+				VertexAttributes					vertexAttributes;
 			};
 
 		private:
@@ -57,8 +56,8 @@ namespace gear
 			inline const std::vector<Ref<graphics::Indexbuffer>>& GetIndexBuffers() const { return m_IBs; }
 			inline const std::vector<Ref<objects::Material>>& GetMaterials() const { return m_Materials; }
 			inline std::vector<Ref<objects::Material>>& GetMaterials() { return m_Materials; }
-			inline const utils::ModelLoader::ModelData& GetModelData() const { return m_CI.modelData; }
-			inline utils::ModelLoader::ModelData& GetModelData() { return m_CI.modelData; }
+			inline const utils::ModelLoader::ModelData& GetModelData() const { return *m_CI.modelData; }
+			inline utils::ModelLoader::ModelData& GetModelData() { return *m_CI.modelData; }
 
 			inline void SetOverrideMaterial(size_t index, const Ref<objects::Material>& material) { m_Materials[index] = material; }
 			inline Ref<objects::Material>& GetMaterial(size_t index) { return m_Materials[index]; }

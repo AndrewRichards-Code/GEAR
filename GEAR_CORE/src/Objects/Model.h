@@ -14,7 +14,7 @@ namespace gear
 		public:
 			struct CreateInfo : public ObjectInterface::CreateInfo
 			{
-				Ref<Mesh>			pMesh;
+				Ref<Mesh>			mesh;
 				mars::float2		materialTextureScaling = mars::float2(1.0f, 1.0f);
 				std::string			renderPipelineName;
 			};
@@ -37,7 +37,7 @@ namespace gear
 			bool CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo) override;
 
 		public:
-			inline const Ref<objects::Mesh>& GetMesh() const { return m_CI.pMesh; }
+			inline const Ref<objects::Mesh>& GetMesh() const { return m_CI.mesh; }
 			inline const std::string& GetPipelineName() const { return m_CI.renderPipelineName; }
 
 			inline Ref<graphics::Uniformbuffer<ModelUB>>& GetUB() { return m_UB; }

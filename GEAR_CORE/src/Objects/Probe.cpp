@@ -219,12 +219,10 @@ void Probe::CreateTexture(Ref<Texture>& texture, bool colour)
 	Texture::CreateInfo textureCI;
 	textureCI.debugName = (colour ? "GEAR_CORE_Texture_Colour: " : "GEAR_CORE_Texture_Depth: ") + m_CI.debugName;
 	textureCI.device = m_CI.device;
-	textureCI.dataType = Texture::DataType::DATA;
-	textureCI.data.data = nullptr;
-	textureCI.data.size = 0;
-	textureCI.data.width = m_CI.imageSize;
-	textureCI.data.height = m_CI.imageSize;
-	textureCI.data.depth = 1;
+	textureCI.imageData = {};
+	textureCI.width = m_CI.imageSize;
+	textureCI.height = m_CI.imageSize;
+	textureCI.depth = 1;
 	textureCI.mipLevels = 1;
 	textureCI.arrayLayers = (m_CI.directionType == DirectionType::OMNI ? 6 : 1) * std::min(MaxShadowCascades, m_CI.shadowCascades);
 	textureCI.type = m_CI.directionType == DirectionType::OMNI ? Image::Type::TYPE_CUBE : Image::Type::TYPE_2D_ARRAY;

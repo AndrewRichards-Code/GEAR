@@ -3,6 +3,7 @@
 #include "Objects/Model.h"
 #include "Objects/Mesh.h"
 #include "Graphics/Texture.h"
+#include "Asset/AssetDataBuffer.h"
 
 namespace gear
 {
@@ -10,19 +11,20 @@ namespace gear
 	{
 
 
-		class GEAR_API Skybox : public ObjectInterface
+		class GEAR_API Skybox : public ObjectInterface, public asset::Asset
 		{
 		public:
 			struct CreateInfo : public ObjectInterface::CreateInfo
 			{
-				std::string				filepath;
-				uint32_t				generatedCubemapSize;
+				Ref<asset::ImageAssetDataBuffer>	textureData;
+				uint32_t							generatedCubemapSize;
 			};
 
 		private:
 			Ref<Model> m_Model;
 			Ref<Mesh> m_Mesh;
 			Ref<Material> m_Material;
+			Ref<asset::ImageAssetDataBuffer> m_TextureData;
 
 			Ref<graphics::Texture> m_HDRTexture;
 			Ref<graphics::Texture> m_GeneratedCubemap;

@@ -1,10 +1,13 @@
 #include "gear_core_common.h"
 #include "Objects/Skybox.h"
-#include "stb/stb_image.h"
+
+#include "Asset/EditorAssetManager.h"
+#include "UI/UIContext.h"
 
 using namespace gear;
 using namespace graphics;
 using namespace objects;
+using namespace project;
 using namespace mars;
 
 using namespace miru;
@@ -14,18 +17,14 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
 
-	if (!(stbi_is_hdr(m_CI.filepath.c_str()) && m_CI.filepath.find(".hdr") != std::string::npos))
-	{
-		GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::NOT_SUPPORTED, "%s: is not a supported file format.", m_CI.filepath)
-	}
-
 	Texture::CreateInfo textureCI;
-
 	textureCI = {};
 	textureCI.debugName = "GEAR_CORE_Skybox_HDR: " + m_CI.debugName;
 	textureCI.device = m_CI.device;
-	textureCI.dataType = Texture::DataType::FILE;
-	textureCI.file.filepaths = { m_CI.filepath };
+	textureCI.imageData = m_CI.textureData->Data;
+	textureCI.width = m_CI.textureData->width;
+	textureCI.height = m_CI.textureData->height;
+	textureCI.depth = m_CI.textureData->depth;
 	textureCI.mipLevels = 1;
 	textureCI.arrayLayers = 1;
 	textureCI.type = Image::Type::TYPE_2D;
@@ -39,12 +38,10 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	textureCI = {};
 	textureCI.debugName = "GEAR_CORE_Skybox_GeneratedCubemap: " + m_CI.debugName;
 	textureCI.device = m_CI.device;
-	textureCI.dataType = Texture::DataType::DATA;
-	textureCI.data.data = nullptr;
-	textureCI.data.size = 0;
-	textureCI.data.width = m_CI.generatedCubemapSize;
-	textureCI.data.height = m_CI.generatedCubemapSize;
-	textureCI.data.depth = 1;
+	textureCI.imageData = {};
+	textureCI.width = m_CI.generatedCubemapSize;
+	textureCI.height = m_CI.generatedCubemapSize;
+	textureCI.depth = 1;
 	textureCI.mipLevels = graphics::Texture::MaxMipLevel;
 	textureCI.arrayLayers = 6;
 	textureCI.type = Image::Type::TYPE_CUBE;
@@ -57,12 +54,10 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	textureCI = {};
 	textureCI.debugName = "GEAR_CORE_Skybox_GeneratedDiffuseCubemap: " + m_CI.debugName;
 	textureCI.device = m_CI.device;
-	textureCI.dataType = Texture::DataType::DATA;
-	textureCI.data.data = nullptr;
-	textureCI.data.size = 0;
-	textureCI.data.width = m_CI.generatedCubemapSize / 16;
-	textureCI.data.height = m_CI.generatedCubemapSize / 16;
-	textureCI.data.depth = 1;
+	textureCI.imageData = {};
+	textureCI.width = m_CI.generatedCubemapSize / 16;
+	textureCI.height = m_CI.generatedCubemapSize / 16;
+	textureCI.depth = 1;
 	textureCI.mipLevels = 1;
 	textureCI.arrayLayers = 6;
 	textureCI.type = Image::Type::TYPE_CUBE;
@@ -75,12 +70,10 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	textureCI = {};
 	textureCI.debugName = "GEAR_CORE_Skybox_GeneratedSpecularCubemap: " + m_CI.debugName;
 	textureCI.device = m_CI.device;
-	textureCI.dataType = Texture::DataType::DATA;
-	textureCI.data.data = nullptr;
-	textureCI.data.size = 0;
-	textureCI.data.width = m_CI.generatedCubemapSize;
-	textureCI.data.height = m_CI.generatedCubemapSize;
-	textureCI.data.depth = 1;
+	textureCI.imageData = {};
+	textureCI.width = m_CI.generatedCubemapSize;
+	textureCI.height = m_CI.generatedCubemapSize;
+	textureCI.depth = 1;
 	textureCI.mipLevels = graphics::Texture::MaxMipLevel;
 	textureCI.arrayLayers = 6;
 	textureCI.type = Image::Type::TYPE_CUBE;
@@ -93,12 +86,10 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	textureCI = {};
 	textureCI.debugName = "GEAR_CORE_Skybox_GeneratedSpecularBRDF_LUT: " + m_CI.debugName;
 	textureCI.device = m_CI.device;
-	textureCI.dataType = Texture::DataType::DATA;
-	textureCI.data.data = nullptr;
-	textureCI.data.size = 0;
-	textureCI.data.width = m_CI.generatedCubemapSize;
-	textureCI.data.height = m_CI.generatedCubemapSize;
-	textureCI.data.depth = 1;
+	textureCI.imageData = {};
+	textureCI.width = m_CI.generatedCubemapSize;
+	textureCI.height = m_CI.generatedCubemapSize;
+	textureCI.depth = 1;
 	textureCI.mipLevels = 1;
 	textureCI.arrayLayers = 1;
 	textureCI.type = Image::Type::TYPE_2D;
@@ -117,14 +108,14 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	Mesh::CreateInfo meshCI;
 	meshCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
 	meshCI.device = m_CI.device;
-	meshCI.filepath = "res/obj/cube.fbx";
+	meshCI.modelData = ui::UIContext::GetUIContext()->GetEditorAssetManager()->Import<utils::ModelLoader::ModelData>(Asset::Type::EXTERNAL_FILE, "res/obj/cube.fbx"); //TODO: Change this!
 	m_Mesh = CreateRef<Mesh>(&meshCI);
 	m_Mesh->SetOverrideMaterial(0, m_Material);
 
 	Model::CreateInfo modelCI;
 	modelCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
 	modelCI.device = m_CI.device;
-	modelCI.pMesh = m_Mesh;
+	modelCI.mesh = m_Mesh;
 	modelCI.renderPipelineName = "Cube";
 	m_Model = CreateRef<Model>(&modelCI);
 	
@@ -140,18 +131,15 @@ void Skybox::Update(const Transform& transform)
 {
 	if (CreateInfoHasChanged(&m_CI))
 	{
-		if (m_HDRTexture->GetCreateInfo().file.filepaths[0].compare(m_CI.filepath) != 0) 
+		if (m_TextureData!= m_CI.textureData)
 		{
-			if (!(stbi_is_hdr(m_CI.filepath.c_str()) && m_CI.filepath.find(".hdr") != std::string::npos))
-			{
-				GEAR_FATAL(ErrorCode::GRAPHICS | ErrorCode::NOT_SUPPORTED, "%s: is not a supported file format.", m_CI.filepath)
-			}
-
 			Texture::CreateInfo HDRTextureCI;
 			HDRTextureCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
 			HDRTextureCI.device = m_CI.device;
-			HDRTextureCI.dataType = Texture::DataType::FILE;
-			HDRTextureCI.file.filepaths = { m_CI.filepath };
+			HDRTextureCI.imageData = m_CI.textureData->Data;
+			HDRTextureCI.width = m_CI.textureData->width;
+			HDRTextureCI.height = m_CI.textureData->height;
+			HDRTextureCI.depth = m_CI.textureData->depth;
 			HDRTextureCI.mipLevels = 1;
 			HDRTextureCI.arrayLayers = 1;
 			HDRTextureCI.type = Image::Type::TYPE_2D;
@@ -163,6 +151,7 @@ void Skybox::Update(const Transform& transform)
 			m_HDRTexture = CreateRef<Texture>(&HDRTextureCI);
 
 			m_Generated = false;
+			m_TextureData= m_CI.textureData;
 		}
 	}
 	if (TransformHasChanged(transform))
@@ -176,7 +165,7 @@ bool Skybox::CreateInfoHasChanged(const ObjectInterface::CreateInfo* pCreateInfo
 {
 	const CreateInfo& CI = *reinterpret_cast<const CreateInfo*>(pCreateInfo);
 	uint64_t newHash = 0;
-	newHash ^= core::GetHash(CI.filepath);
+	newHash ^= core::GetHash(CI.textureData);
 	newHash ^= core::GetHash(CI.generatedCubemapSize);
 	return CompareCreateInfoHash(newHash);
 }

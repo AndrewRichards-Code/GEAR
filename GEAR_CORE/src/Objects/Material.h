@@ -1,7 +1,7 @@
 #pragma once
 #include "gear_core_common.h"
 #include "Objects/ObjectInterface.h"
-#include "Core/AssetFile.h"
+#include "Asset/AssetFile.h"
 #include "Graphics/Texture.h"
 #include "Graphics/Uniformbuffer.h"
 
@@ -9,7 +9,7 @@ namespace gear
 {
 	namespace objects
 	{
-		class GEAR_API Material : public ObjectComponentInterface
+		class GEAR_API Material : public ObjectComponentInterface, public asset::Asset
 		{
 		public:
 			enum class TextureType : uint32_t
@@ -27,14 +27,12 @@ namespace gear
 			{
 				std::map<TextureType, Ref<graphics::Texture>>	pbrTextures;
 				graphics::UniformBufferStructures::PBRConstants	pbrConstants;
-				std::string										filepath; //Optional
 			};
 
 		private:
 			static Ref<graphics::Texture> s_WhiteTexture;
 			static Ref<graphics::Texture> s_BlueNormalTexture;
 			static Ref<graphics::Texture> s_BlackTexture;
-			static std::map<std::string, Ref<Material>> s_LoadedMaterials;
 
 			typedef graphics::UniformBufferStructures::PBRConstants PBRConstantsUB;
 			Ref<graphics::Uniformbuffer<PBRConstantsUB>> m_UB;
@@ -59,26 +57,12 @@ namespace gear
 			void CreateDefaultColourTextures();
 
 		public:
-			void LoadFromAssetFile(const core::AssetFile& inAssetFile);
-			void SaveToAssetFile(core::AssetFile& outAssetFile);
-
 			inline std::map<TextureType, Ref<graphics::Texture>>& GetTextures() { return m_CI.pbrTextures; }
 			inline const std::map<TextureType, Ref<graphics::Texture>>& GetTextures() const { return m_CI.pbrTextures; }
 			inline const Ref<graphics::Uniformbuffer<PBRConstantsUB>>& GetUB() const { return m_UB; }
 			inline std::string GetDebugName() const { return "GEAR_CORE_Material: " + m_CI.debugName; }
 			inline static graphics::GammaSpace GetGammaSpacePerTextureType(const TextureType& type) { return (type == TextureType::ALBEDO ? graphics::GammaSpace::SRGB : graphics::GammaSpace::LINEAR); }
 			inline static bool IsTextureTypeLinear(const TextureType& type) { return (GetGammaSpacePerTextureType(type) == graphics::GammaSpace::LINEAR); }
-
-			inline static void AddMaterial(std::string name, const Ref<Material>& material) { s_LoadedMaterials.insert({ name, material }); }
-			inline static Ref<Material> FindMaterial(const std::string& name)
-			{
-				std::map<std::string, Ref<Material>>::iterator it = s_LoadedMaterials.find(name);
-				if (it != s_LoadedMaterials.end())
-					return it->second;
-				else
-					return nullptr;
-			}
-			inline void static ClearLoadedMaterials() { s_LoadedMaterials.clear(); }
 		};
 	}
 }

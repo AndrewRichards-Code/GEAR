@@ -106,7 +106,7 @@ void Text::GenerateLine(size_t lineIndex, bool update)
 	if (!update)
 		meshData.pMaterial = CreateRef<Material>(&fontMaterialCI);
 	else
-		meshData.pMaterial = line.model->m_CI.pMesh->GetModelData().meshes.back().pMaterial; //Grab old one!
+		meshData.pMaterial = line.model->m_CI.mesh->GetModelData().meshes.back().pMaterial; //Grab old one!
 	
 	//Make space for background quad
 	meshData.vertices.push_back({});
@@ -247,18 +247,18 @@ void Text::GenerateLine(size_t lineIndex, bool update)
 	Mesh::CreateInfo textMeshCI;
 	textMeshCI.debugName = "GEAR_CORE_FontRenderer: " + line.text;
 	textMeshCI.device = m_CI.device;
-	textMeshCI.modelData = modelData;
+	textMeshCI.modelData = CreateRef<utils::ModelLoader::ModelData>(modelData);
 	if (!update || line.model == nullptr)
 	{
 		Model::CreateInfo textModelCI;
 		textModelCI.debugName = "GEAR_CORE_FontRenderer: " + line.text;
 		textModelCI.device = m_CI.device;
-		textModelCI.pMesh = CreateRef<Mesh>(&textMeshCI);
+		textModelCI.mesh = CreateRef<Mesh>(&textMeshCI);
 		textModelCI.renderPipelineName = "Text";
 		line.model = CreateRef<Model>(&textModelCI);
 	}
 	else
 	{
-		line.model->m_CI.pMesh = CreateRef<Mesh>(&textMeshCI);
+		line.model->m_CI.mesh = CreateRef<Mesh>(&textMeshCI);
 	}
 }
