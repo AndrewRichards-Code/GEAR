@@ -28,7 +28,7 @@ namespace gear
 			~Entity() = default;
 
 			template<typename T>
-			bool HasComponent()
+			bool HasComponent() const
 			{
 				return m_CI.pScene->m_Registry.all_of<T>(m_Entity);
 			}
@@ -52,7 +52,7 @@ namespace gear
 			}
 
 			template<typename T>
-			T& GetComponent()
+			T& GetComponent() const
 			{
 				if (!HasComponent<T>())
 				{
@@ -83,7 +83,7 @@ namespace gear
 			{
 				return static_cast<uint32_t>(m_Entity) != ~0;
 			}
-			const core::UUID& GetUUID()
+			const core::UUID& GetUUID() const
 			{
 				return GetComponent<UUIDComponent>().uuid;
 			}

@@ -7,6 +7,7 @@
 #include "Objects/Skybox.h"
 #include "Objects/Text.h"
 #include "Objects/Transform.h"
+#include "ARC/External/json/json.hpp"
 
 namespace gear
 {
@@ -20,20 +21,10 @@ namespace gear
 		class Entity;
 		class NativeScript;
 
-		struct LoadSaveParameters
-		{
-			scene::Scene* scene;
-			nlohmann::json& entity;
-			nlohmann::json& references;
-			const Ref<graphics::Window>& window;
-		};
-
 		#define GEAR_SCENE_COMPONENTS_DEFAULTS_DECLARATION(_struct)	\
 		_struct() = default;										\
 		_struct(const _struct&) = default;							\
 		virtual ~##_struct() = default;								\
-		void Load(LoadSaveParameters&);								\
-		void Save(LoadSaveParameters&);								\
 		static const std::string s_StructName;
 
 		#define GEAR_SCENE_COMPONENTS_DEFAULTS_DEFINITION(_struct)	\
@@ -89,6 +80,7 @@ namespace gear
 			CameraComponent(objects::Camera::CreateInfo* pCreateInfo) : camera(CreateRef<objects::Camera>(pCreateInfo)) {}
 
 			objects::Camera::CreateInfo& GetCreateInfo() { return camera->m_CI; }
+			const objects::Camera::CreateInfo& GetCreateInfo() const { return camera->m_CI; }
 
 			operator Ref<objects::Camera>& () { return camera; }
 		};
@@ -103,6 +95,7 @@ namespace gear
 			LightComponent(objects::Light::CreateInfo* pCreateInfo) : light(CreateRef<objects::Light>(pCreateInfo)) {}
 
 			objects::Light::CreateInfo& GetCreateInfo() { return light->m_CI; }
+			const objects::Light::CreateInfo& GetCreateInfo() const { return light->m_CI; }
 
 			operator Ref<objects::Light>& () { return light; }
 		};
@@ -117,6 +110,7 @@ namespace gear
 			ModelComponent(objects::Model::CreateInfo* pCreateInfo) : model(CreateRef<objects::Model>(pCreateInfo)) {}
 
 			objects::Model::CreateInfo& GetCreateInfo() { return model->m_CI; }
+			const objects::Model::CreateInfo& GetCreateInfo() const { return model->m_CI; }
 
 			operator Ref<objects::Model>& () { return model; }
 		};
@@ -131,6 +125,7 @@ namespace gear
 			SkyboxComponent(objects::Skybox::CreateInfo* pCreateInfo) : skybox(CreateRef<objects::Skybox>(pCreateInfo)) {}
 
 			objects::Skybox::CreateInfo& GetCreateInfo() { return skybox->m_CI; }
+			const objects::Skybox::CreateInfo& GetCreateInfo() const { return skybox->m_CI; }
 
 			operator Ref<objects::Skybox>& () { return skybox; }
 		};
@@ -160,11 +155,5 @@ namespace gear
 
 			operator NativeScript* () { return pNativeScript; }
 		};
-
-		template<typename T>
-		bool JsonHasComponent(nlohmann::json& entity)
-		{
-			return !(entity[T::s_StructName].empty());
-		}
 	}
 }

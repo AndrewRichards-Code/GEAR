@@ -40,7 +40,7 @@ namespace gear
 		struct TextComponent;
 		struct NativeScriptComponent;
 
-		class GEAR_API Scene
+		class GEAR_API Scene : public asset::Asset
 		{
 		public:
 			struct CreateInfo
@@ -65,7 +65,7 @@ namespace gear
 			Entity CreateEntity();
 			void DestroyEntity(Entity entity);
 
-			void OnUpdate(Ref<graphics::rendering::Renderer>& m_Renderer, core::Timer& timer);
+			void OnUpdate(Ref<graphics::rendering::Renderer> m_Renderer, core::Timer& timer);
 
 			entt::registry& GetRegistry();
 			inline void ClearEntities() { m_Registry.clear(); }
@@ -73,22 +73,14 @@ namespace gear
 			void LoadNativeScriptLibrary();
 			void UnloadNativeScriptLibrary();
 
-			void LoadEntity(nlohmann::json& references, nlohmann::json& entity, Entity entityID, const Ref<graphics::Window>& window);
-			void LoadFromFile(const std::string& filepath, const Ref<graphics::Window>& window);
-
-			void SaveEntity(nlohmann::json& references, nlohmann::json& entity, Entity entityID);
-			void SaveToFile(const std::string& filepath);
-
 			inline const State& GetState() const { return m_State; }
 			inline void Play() { m_State = State::PLAY; }
 			inline void Stop() { m_State = State::STOP; }
-			inline const std::string& GetFilepath() const { return m_Filepath; }
 
 		private:
 			core::UUID m_UUID;
 			entt::registry m_Registry;
 			State m_State = State::STOP;
-			std::string m_Filepath;
 
 		public:
 			std::map<core::UUID, Ref<objects::Mesh>> s_Meshes;
