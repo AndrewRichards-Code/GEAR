@@ -24,8 +24,8 @@ void ShadowPasses::Main(Renderer& renderer, Ref<Light> light)
 	const Ref<Probe>& probe = light->GetProbe();
 	bool omni = probe->m_CI.directionType == Probe::DirectionType::OMNI;
 	bool shadowCascades = probe->m_CI.shadowCascades > 1;
-	const uint32_t& width = probe->m_DepthTexture->GetCreateInfo().data.width;
-	const uint32_t& height = probe->m_DepthTexture->GetCreateInfo().data.height;
+	const uint32_t& width = probe->m_DepthTexture->GetCreateInfo().width;
+	const uint32_t& height = probe->m_DepthTexture->GetCreateInfo().height;
 	const uint32_t& arrayLayers = probe->m_DepthTexture->GetCreateInfo().arrayLayers;
 
 	for (const auto& model : renderer.GetModelQueue())
@@ -66,8 +66,10 @@ void ShadowPasses::DebugShowDepth(Renderer& renderer, Ref<Light> light)
 			Texture::CreateInfo tCI;
 			tCI.debugName = "GEAR_CORE_Texture_Probe_DebugTexture: " + probe->m_CI.debugName;
 			tCI.device = renderer.GetDevice();
-			tCI.dataType = Texture::DataType::DATA;
-			tCI.data = { nullptr, 0, 256, 256, 1 };
+			tCI.imageData = {};
+			tCI.width = 256;
+			tCI.height = 256;
+			tCI.depth = 1;
 			tCI.mipLevels = 1;
 			tCI.arrayLayers = Probe::MaxShadowCascades;
 			tCI.type = Image::Type::TYPE_2D_ARRAY;
@@ -79,8 +81,8 @@ void ShadowPasses::DebugShowDepth(Renderer& renderer, Ref<Light> light)
 			debugShowDepthTexture = CreateRef<Texture>(&tCI);
 		}
 		bool omni = probe->m_CI.directionType == Probe::DirectionType::OMNI;
-		const uint32_t& width = debugShowDepthTexture->GetCreateInfo().data.width;
-		const uint32_t& height = debugShowDepthTexture->GetCreateInfo().data.height;
+		const uint32_t& width = debugShowDepthTexture->GetCreateInfo().width;
+		const uint32_t& height = debugShowDepthTexture->GetCreateInfo().height;
 
 		std::string renderPipelineName = omni ? "DebugShowDepthCubemap" : "DebugShowDepth";
 

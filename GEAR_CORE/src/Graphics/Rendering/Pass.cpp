@@ -74,6 +74,7 @@ void Pass::ExecuteTask(RenderGraph* renderGraph, miru::base::CommandBufferRef cm
 		{
 			cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
 		}
+		barriers.clear();
 	}
 
 	if (m_BeginRendering)
@@ -123,6 +124,7 @@ void Pass::ExecuteTransfer(RenderGraph* renderGraph, miru::base::CommandBufferRe
 	//Transition resource pairs
 	CommandBuffer::DependencyInfo dependencyInfo = { DependencyBit::NONE_BIT, {} };
 	std::vector<Barrier2Ref>& barriers = dependencyInfo.barriers;
+	barriers.clear();
 	for (auto& [src, dst, rcr] : passParameters->GetResourceViewsPairs())
 	{
 		const auto& srcBarriers = TransitionResource(renderGraph, src);
@@ -131,6 +133,7 @@ void Pass::ExecuteTransfer(RenderGraph* renderGraph, miru::base::CommandBufferRe
 		barriers.insert(barriers.end(), dstBarriers.begin(), dstBarriers.end());
 	}
 	cmdBuffer->PipelineBarrier2(frameIndex, dependencyInfo);
+	barriers.clear();
 
 	//Transfer resources
 	for (auto& [src, dst, rcr] : passParameters->GetResourceViewsPairs())

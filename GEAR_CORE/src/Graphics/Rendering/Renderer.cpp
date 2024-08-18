@@ -15,6 +15,7 @@
 
 #include "UI/UIContext.h"
 #include "Objects/Probe.h"
+#include "Core/DataBuffer.h"
 #include "ARC/src/StringConversion.h"
 
 using namespace gear;
@@ -176,12 +177,10 @@ void Renderer::InitialiseDefaultObjects()
 	Texture::CreateInfo texCI;
 	texCI.debugName = "GEAR_CORE_Texture_Renderer: Black Texture 2D";
 	texCI.device = m_Device;
-	texCI.dataType = Texture::DataType::DATA;
-	texCI.data.data = dataBlack2D;
-	texCI.data.size = 4;
-	texCI.data.width = 1;
-	texCI.data.height = 1;
-	texCI.data.depth = 1;
+	texCI.imageData = core::DataBuffer(dataBlack2D, 4);
+	texCI.width = 1;
+	texCI.height = 1;
+	texCI.depth = 1;
 	texCI.mipLevels = 1;
 	texCI.arrayLayers = 1;
 	texCI.type = miru::base::Image::Type::TYPE_2D;
@@ -197,8 +196,7 @@ void Renderer::InitialiseDefaultObjects()
 		0x00, 0x00, 0x00, 0xFF
 	};
 	texCI.debugName = "GEAR_CORE_Texture_Renderer: Black Texture 2D Array";
-	texCI.data.data = dataBlack2DArray;
-	texCI.data.size = 8;
+	texCI.imageData = core::DataBuffer(dataBlack2DArray, 8);
 	texCI.arrayLayers = 2;
 	texCI.type = miru::base::Image::Type::TYPE_2D_ARRAY;
 	s_DefaultObjects.black2DArrayTexture = CreateRef<Texture>(&texCI);
@@ -212,8 +210,7 @@ void Renderer::InitialiseDefaultObjects()
 		0x00, 0x00, 0x00, 0xFF
 	};
 	texCI.debugName = "GEAR_CORE_Texture_Renderer: Black Texture Cube";
-	texCI.data.data = dataBlackCube;
-	texCI.data.size = 24;
+	texCI.imageData = core::DataBuffer(dataBlackCube, 24);
 	texCI.arrayLayers = 6;
 	texCI.type = miru::base::Image::Type::TYPE_CUBE;
 	s_DefaultObjects.blackCubeTexture = CreateRef<Texture>(&texCI);
@@ -233,8 +230,7 @@ void Renderer::InitialiseDefaultObjects()
 		0x00, 0x00, 0x00, 0xFF
 	};
 	texCI.debugName = "GEAR_CORE_Texture_Renderer: Black Texture Cube Array";
-	texCI.data.data = dataBlackCubeArray;
-	texCI.data.size = 48;
+	texCI.imageData = core::DataBuffer(dataBlackCubeArray, 48);
 	texCI.arrayLayers = 12;
 	texCI.type = miru::base::Image::Type::TYPE_CUBE_ARRAY;
 	s_DefaultObjects.blackCubeArrayTexture = CreateRef<Texture>(&texCI);

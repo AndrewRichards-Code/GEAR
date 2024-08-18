@@ -52,7 +52,7 @@ BoundingBox Picker::GetAABB(const Ref<Model>& model)
 		)
 	};
 
-	for (const auto& modelMesh : mesh->m_CI.modelData.meshes)
+	for (const auto& modelMesh : mesh->m_CI.modelData->meshes)
 	{
 		for (const auto& vertex : modelMesh.vertices)
 		{
@@ -115,7 +115,7 @@ float Picker::RayIntersectsModelGeometry(const Ref<Model>& model, const Ray& ray
 	const Ref<Mesh>& mesh = model->GetMesh();
 	const float4x4& modl = model->GetModlMatrix();
 
-	for (const auto& modelMesh : mesh->m_CI.modelData.meshes)
+	for (const auto& modelMesh : mesh->m_CI.modelData->meshes)
 	{
 		for (size_t i = 0; i < modelMesh.indices.size(); i = i + 3)
 		{
