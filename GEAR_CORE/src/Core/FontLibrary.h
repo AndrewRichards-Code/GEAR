@@ -2,6 +2,8 @@
 #include "gear_core_common.h"
 #include "Graphics/Texture.h"
 
+#include "Asset/AssetDataBuffer.h"
+
 typedef struct FT_LibraryRec_* FT_Library;
 
 namespace gear
@@ -56,7 +58,7 @@ namespace gear
 			Ref<Font> GenerateFont(const GenerateInfo& GI);
 			Ref<Font> LoadGeneratedFont(const GenerateInfo& GI);
 			void SaveGeneratedFont(const std::vector<uint8_t>& img_data, const std::array<GlyphInfo, s_NumCaracters>& glyphInfos, const GenerateInfo& GI);
-			Ref<graphics::Texture> GenerateTextureAtlas(const GenerateInfo& GI, const graphics::Texture::DataTypeDataParameters& data);
+			Ref<graphics::Texture> GenerateTextureAtlas(const GenerateInfo& GI, const asset::ImageAssetDataBuffer& data);
 		};
 	}
 }

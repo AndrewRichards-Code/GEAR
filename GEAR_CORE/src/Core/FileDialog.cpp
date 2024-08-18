@@ -4,10 +4,10 @@
 
 #include <shobjidl.h>
 
-std::string gear::core::FileDialog_Open(const char* filterName, const char* filterSpec)
+std::filesystem::path gear::core::FileDialog_Open(const char* filterName, const char* filterSpec)
 {
 #if defined(_WIN32)
-	std::string path = "";
+	std::filesystem::path path = "";
 
 	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 	if (SUCCEEDED(hr))
@@ -48,10 +48,10 @@ std::string gear::core::FileDialog_Open(const char* filterName, const char* filt
 	return std::string();
 #endif
 }
-std::string gear::core::FileDialog_Save(const char* filterName, const char* filterSpec)
+std::filesystem::path gear::core::FileDialog_Save(const char* filterName, const char* filterSpec)
 {
 #if defined(_WIN32)
-	std::string path = "";
+	std::filesystem::path path = "";
 
 	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 	if (SUCCEEDED(hr))
@@ -93,10 +93,10 @@ std::string gear::core::FileDialog_Save(const char* filterName, const char* filt
 #endif
 }
 
-std::string gear::core::FolderDialog_Browse()
+std::filesystem::path gear::core::FolderDialog_Browse()
 {
 #if defined(_WIN32)
-	std::string path = "";
+	std::filesystem::path path = "";
 
 	HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 	if (SUCCEEDED(hr))

@@ -1,7 +1,6 @@
 #include "gear_core_common.h"
 
 #include "stb/stb_image.h"
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb/stb_image_write.h"
 
 #include "Core/FontLibrary.h"
@@ -113,12 +112,11 @@ Ref<FontLibrary::Font> FontLibrary::GenerateFont(const GenerateInfo& GI)
 		png_data[i * 4 + 2] |= pixels[i];
 		png_data[i * 4 + 3] = 0xff;
 	}
-	
+
 	SaveGeneratedFont(png_data, glyphInfos, GI);
 
-	Texture::DataTypeDataParameters data;
-	data.data = png_data.data();
-	data.size = png_data.size();
+	asset::ImageAssetDataBuffer data;
+	data.Data = png_data;
 	data.width = GI.generatedTextureSize;
 	data.height = GI.generatedTextureSize;
 	data.depth = 1;
@@ -141,7 +139,7 @@ Ref<FontLibrary::Font> FontLibrary::LoadGeneratedFont(const GenerateInfo& GI)
 	if (std::filesystem::exists(filepathPNG) && std::filesystem::exists(filepathBIN))
 	{
 		result = CreateRef<Font>();
-		Texture::DataTypeDataParameters data;
+		asset::ImageAssetDataBuffer data;
 
 		std::ifstream stream(filepathBIN, std::ios::binary);
 		if (stream.is_open())
@@ -176,13 +174,15 @@ Ref<FontLibrary::Font> FontLibrary::LoadGeneratedFont(const GenerateInfo& GI)
 			stream.read((char*)_filepath, filepath_size);
 
 			uint32_t bpp;
-			data.data = stbi_load(filepathPNG.c_str(), (int*)&data.width, (int*)&data.height, (int*)&bpp, 4);
-			data.size = data.width * data.height * 4;
+			uint8_t* imgdata = stbi_load(filepathPNG.c_str(), (int*)&data.width, (int*)&data.height, (int*)&bpp, 4);
+			size_t size = data.width * data.height * 4;
+
+			data.Data = DataBuffer(imgdata, size);
 			data.depth = 1;
 			result->textureAtlas = GenerateTextureAtlas(GI, data);
 			result->fontHeightPx = GI.fontHeightPx;
 
-			stbi_image_free((void*)data.data);
+			stbi_image_free((void*)imgdata);
 		}
 		stream.close();
 	}
@@ -241,13 +241,15 @@ void FontLibrary::SaveGeneratedFont(const std::vector<uint8_t>& img_data, const 
 	}
 }
 
-Ref<Texture> FontLibrary::GenerateTextureAtlas(const GenerateInfo& GI, const Texture::DataTypeDataParameters& data)
+Ref<Texture> FontLibrary::GenerateTextureAtlas(const GenerateInfo& GI, const asset::ImageAssetDataBuffer& data)
 {
 	Texture::CreateInfo texCI;
 	texCI.debugName = "GEAR_CORE_FontLibrary_Font_TextureAtlas: " + GI.filepath;
 	texCI.device = AllocatorManager::GetCreateInfo().pContext->GetDevice();
-	texCI.dataType = Texture::DataType::DATA;
-	texCI.data = data;
+	texCI.imageData = data.Data;
+	texCI.width = data.width;
+	texCI.height = data.height;
+	texCI.depth = data.depth;
 	texCI.mipLevels = 1;
 	texCI.arrayLayers = 1;
 	texCI.type = Image::Type::TYPE_2D;
