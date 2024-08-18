@@ -52,7 +52,7 @@ namespace gear
 				std::vector<Node>	children;
 			};
 
-			struct ModelData
+			struct ModelData : public asset::Asset
 			{
 				std::vector<MeshData>				meshes;
 				std::vector<animation::Animation>	animations;
@@ -60,7 +60,7 @@ namespace gear
 			};
 
 		public:
-			static ModelData LoadModelData(const std::string& filepath);
+			static ModelData LoadModelData(const std::filesystem::path& filepath);
 
 			inline static void SetDevice(void* device) { m_Device = device; }
 			inline constexpr static size_t GetSizeOfVertex() { return sizeof(Vertex); }

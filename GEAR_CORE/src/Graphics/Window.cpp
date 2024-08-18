@@ -214,7 +214,7 @@ bool Window::Init()
 	}
 
 	GLFWimage icon[1];
-	std::string iconFilepath = !m_CI.iconFilepath.empty() ? m_CI.iconFilepath : "../Branding/GEAR_logo_dark.png";
+	std::string iconFilepath = !m_CI.iconFilepath.generic_string().empty() ? m_CI.iconFilepath.generic_string() : "../Branding/GEAR_logo_dark.png";
 	icon[0].pixels = stbi_load(iconFilepath.c_str(), &icon->width, &icon->height, 0, 4);
 	glfwSetWindowIcon(m_Window, 1, icon);
 
@@ -352,7 +352,7 @@ void Window::drop_callback(GLFWwindow* window, int pathCount, const char** paths
 	Window* win = (Window*)glfwGetWindowUserPointer(window);
 	if (win->m_DropCallback)
 	{
-		std::vector<std::string> _paths;
+		std::vector<std::filesystem::path> _paths;
 		for (size_t i = 0; i < pathCount; i++)
 		{
 			_paths.push_back(paths[i]);

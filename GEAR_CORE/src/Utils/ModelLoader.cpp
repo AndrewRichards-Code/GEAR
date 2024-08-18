@@ -5,6 +5,9 @@
 #include "Objects/Material.h"
 #include "Objects/Transform.h"
 
+#include "Asset/EditorAssetManager.h"
+#include "UI/UIContext.h"
+
 #include "ASSIMP/include/assimp/Importer.hpp"
 #include "ASSIMP/include/assimp/scene.h"
 #include "ASSIMP/include/assimp/postprocess.h"
@@ -24,7 +27,7 @@ static void Convert_aiMatrix4x4ToFloat4x4(const aiMatrix4x4& in, mars::float4x4&
 	memcpy_s((void* const)out.GetData(), out.GetSize(), &in.a1, sizeof(aiMatrix4x4));
 }
 
-ModelLoader::ModelData ModelLoader::LoadModelData(const std::string& filepath)
+ModelLoader::ModelData ModelLoader::LoadModelData(const std::filesystem::path& filepath)
 {
 	bool calculateTangentsAndBiNormals = true;
 	bool flipUVs = true;
@@ -35,7 +38,7 @@ ModelLoader::ModelData ModelLoader::LoadModelData(const std::string& filepath)
 		flags |= aiProcess_CalcTangentSpace;
 	if (flipUVs)
 		flags |= aiProcess_FlipUVs;
-	const aiScene* scene = importer.ReadFile(filepath, flags);
+	const aiScene* scene = importer.ReadFile(filepath.generic_string(), flags);
 
 	if (!scene || arc::BitwiseCheck(scene->mFlags, (unsigned int)AI_SCENE_FLAGS_INCOMPLETE) || !scene->mRootNode)
 	{
@@ -48,8 +51,6 @@ ModelLoader::ModelData ModelLoader::LoadModelData(const std::string& filepath)
 
 	ModelData modelData;
 	BuildNodeGraph(scene, scene->mRootNode, modelData.nodeGraph, modelData);
-
-	Material::ClearLoadedMaterials();
 
 	return modelData;
 }
@@ -179,22 +180,11 @@ std::vector<ModelLoader::MeshData> ModelLoader::ProcessMeshes(aiNode* node, cons
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 		aiString materialName;
 		material->Get(AI_MATKEY_NAME, materialName);
-
-		Ref<Material> mat = Material::FindMaterial(materialName.C_Str());
-		if (mat != nullptr)
-		{
-			meshData.pMaterial = mat;
-		}
-		else
-		{
-			Material::CreateInfo materialCI;
-			materialCI.debugName = materialName.C_Str();
-			materialCI.device = m_Device;
-			FillOutMaterialCreateInfo(material, materialCI);
-			meshData.pMaterial = CreateRef<Material>(&materialCI);
-
-			Material::AddMaterial(materialName.C_Str(), meshData.pMaterial);
-		}
+		Material::CreateInfo materialCI;
+		materialCI.debugName = materialName.C_Str();
+		materialCI.device = m_Device;
+		FillOutMaterialCreateInfo(material, materialCI);
+		meshData.pMaterial = CreateRef<Material>(&materialCI);
 		meshes.push_back(meshData);
 	}
 	return meshes;
@@ -302,15 +292,19 @@ void ModelLoader::FillOutMaterialCreateInfo(aiMaterial* aiMaterial, Material::Cr
 	auto LoadTexture = [](std::map<Material::TextureType, Ref<Texture>>& textures, const Material::TextureType& type, aiString _filepath)
 	{
 		std::string filepath = std::string(_filepath.C_Str());
+		const Ref<asset::EditorAssetManager>& editorAssetManager = ui::UIContext::GetUIContext()->GetEditorAssetManager();
 
 		if (std::filesystem::exists(filepath))
 		{
+			Ref<asset::ImageAssetDataBuffer> imageData = editorAssetManager->Import<asset::ImageAssetDataBuffer>(asset::Asset::Type::EXTERNAL_FILE, filepath);
 			bool linear = Material::IsTextureTypeLinear(type);
 			graphics::Texture::CreateInfo textureCI;
 			textureCI.debugName = filepath;
 			textureCI.device = m_Device;
-			textureCI.dataType = graphics::Texture::DataType::FILE;
-			textureCI.file.filepaths.push_back(filepath);
+			textureCI.imageData = imageData->Data;
+			textureCI.width = imageData->width;
+			textureCI.height = imageData->height;
+			textureCI.depth = imageData->depth;
 			textureCI.mipLevels = graphics::Texture::MaxMipLevel;
 			textureCI.arrayLayers = 1;
 			textureCI.type = miru::base::Image::Type::TYPE_2D;

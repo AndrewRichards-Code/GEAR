@@ -19,7 +19,7 @@ namespace gear
 		class GEAR_API Window
 		{
 		public:
-			typedef void(*DropCallback)(const std::vector<std::string>& paths);
+			typedef void(*DropCallback)(const std::vector<std::filesystem::path>& paths);
 
 			struct CreateInfo
 			{
@@ -31,7 +31,7 @@ namespace gear
 				bool										maximised;
 				bool										vSync;
 				miru::base::Image::SampleCountBit			samples;
-				std::string									iconFilepath;
+				std::filesystem::path						iconFilepath;
 			};
 
 		private:
