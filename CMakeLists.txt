@@ -5,6 +5,7 @@ project(GEAR)
 message(STATUS "GEAR")
 
 include("External/MIRU/External/ARC/src/CMakeFunctions.cmake")
+include(FetchContent)
 
 #External Downloads
 #ENTT
@@ -82,13 +83,30 @@ else()
 	message(STATUS "Found GLFW.")
 endif()
 
+#YAML-CPP
+set(YAML_CPP_BUILD_TOOLS OFF)
+set(YAML_CPP_BUILD_TESTS OFF)
+set(YAML_CPP_INSTALL OFF)
+set(YAML_CPP_BUILD_CONTRIB OFF)
+set(YAML_BUILD_SHARED_LIBS OFF)
+set_property(GLOBAL PROPERTY CTEST_TARGETS_ADDED 1)
+FetchContent_Declare(
+	yaml-cpp
+	GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+	GIT_TAG master
+	SOURCE_DIR yaml-cpp
+)
+FetchContent_MakeAvailable(yaml-cpp)
+message(STATUS "Fetch Content YAML-CPP.")
+set_target_properties(yaml-cpp PROPERTIES FOLDER "External/YAML-CPP")
+
 #Project Folders
 message(STATUS "Adding ASSIMP.")
 set(ASSIMP_INSTALL OFF)
 set(ASSIMP_INSTALL_PDB OFF)
 set(ASSIMP_BUILD_TESTS OFF)
 add_subdirectory(External/ASSIMP)
-SET(CMAKE_DEBUG_POSTFIX "")
+set(CMAKE_DEBUG_POSTFIX "")
 message(STATUS "Finished ASSIMP.")
 
 set_target_properties(assimp PROPERTIES FOLDER "External/ASSIMP")

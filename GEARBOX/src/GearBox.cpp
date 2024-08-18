@@ -15,6 +15,7 @@ using namespace core;
 using namespace graphics;
 using namespace rendering;
 using namespace objects;
+using namespace project;
 using namespace scene;
 using namespace ui;
 using namespace panels;
@@ -73,11 +74,6 @@ void GEARBOX::Run()
 	mbmCI.defaultBlockSize = Allocator::BlockSize::BLOCK_SIZE_128MB;
 	mbmCI.forceInitialisation = true;
 	AllocatorManager::Initialise(&mbmCI);
-
-	Scene::CreateInfo sceneCI;
-	sceneCI.debugName = "DefaultScene";
-	sceneCI.nativeScriptDir = std::filesystem::current_path() / "res/scripts/";
-	Ref<Scene> activeScene = CreateRef<Scene>(&sceneCI);
 	
 	Renderer::CreateInfo mainRendererCI;
 	mainRendererCI.window = mainWindow;
@@ -139,8 +135,12 @@ void GEARBOX::Run()
 		}
 		case Panel::Type::SCENE_HIERARCHY:
 		{
-			SceneHierarchyPanel::CreateInfo sceneHierarchyPanelCI = { activeScene };
+			Scene::CreateInfo sceneCI;
+			sceneCI.debugName = "Default Scene";
+			sceneCI.nativeScriptDir = std::filesystem::current_path() / "res/scripts/";
+			SceneHierarchyPanel::CreateInfo sceneHierarchyPanelCI = { CreateRef<Scene>(&sceneCI) };
 			editorPanels.emplace_back(CreateRef<SceneHierarchyPanel>(&sceneHierarchyPanelCI));
+			ref_cast<SceneHierarchyPanel>(editorPanels.back())->UpdateWindowTitle();
 			break;
 		}
 		case Panel::Type::VIEWPORT:
@@ -165,9 +165,9 @@ void GEARBOX::Run()
 
 		for (auto& panel : uiContext->GetEditorPanelsByType<ViewportPanel>())
 		{
-			if (panel && panel->GetCreateInfo().renderer != mainRenderer)
+			if (panel && panel->GetRenderer() != mainRenderer)
 			{
-				panel->GetCreateInfo().renderer->Execute();
+				panel->GetRenderer()->Execute();
 			}
 		}
 
