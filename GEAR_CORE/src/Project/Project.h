@@ -3,6 +3,11 @@
 
 namespace gear
 {
+	namespace asset
+	{
+		class AssetManager;
+		class EditorAssetManager;
+	}
 	namespace graphics
 	{
 		class Window;
@@ -11,7 +16,7 @@ namespace gear
 	{
 		class Scene;
 	}
-	namespace build
+	namespace project
 	{
 		class GEAR_API Project
 		{
@@ -21,7 +26,6 @@ namespace gear
 			{
 				Ref<graphics::Window>	window;
 				std::filesystem::path	folderPath;
-				bool					createDirectories;
 			};
 
 			//Methods
@@ -29,9 +33,17 @@ namespace gear
 			Project(CreateInfo* pCreateInfo);
 			~Project();
 
+			void Load();
+			void Save() const;
+
 			void AddScene(const Ref<scene::Scene>& scene);
 			void RemoveScene(const Ref<scene::Scene>& scene);
 			inline std::vector<Ref<scene::Scene>>& GetScenes() { return m_Scenes; }
+			
+			inline const CreateInfo& GetCreateInfo() { return m_CI; }
+			inline static Project* GetActiveProject() { return s_ActiveProject; }
+			static Ref<asset::AssetManager> GetAssetManager();
+			static Ref<asset::EditorAssetManager> GetEditorAssetManager();
 
 			//Can return nullptr.
 			inline Ref<scene::Scene> GetSelectedScene()
@@ -55,11 +67,17 @@ namespace gear
 				m_SelectedScene = scene;
 			}
 
+			const std::filesystem::path GetProjectFolderPath() const;
+			const std::filesystem::path GetProjectFilepath() const;
+			const std::filesystem::path GetProjectAssetRegistryFilepath() const;
+
 			//Members
 		private:
 			CreateInfo m_CI;
 			std::vector<Ref<scene::Scene>> m_Scenes;
 			Ref<scene::Scene> m_SelectedScene = nullptr;
+			static Project* s_ActiveProject;
+			static Ref<asset::AssetManager> s_AssetManager;
 		};
 	}
 }
