@@ -4,12 +4,14 @@
 #include "UI/UIContext.h"
 #include "Graphics/RenderPipeline.h"
 #include "Objects/Material.h"
+#include "Asset/EditorAssetManager.h"
 
 using namespace gear;
 using namespace scene;
 using namespace objects;
 using namespace graphics;
 using namespace core;
+using namespace asset;
 
 using namespace ui;
 using namespace componentui;
@@ -52,7 +54,7 @@ void gear::ui::componentui::DrawMaterialUI(Ref<Material>& material, UIContext* u
 		{
 			ImGui::PushID(texture.get());
 
-			ImTextureID textureID = GetTextureID(texture->GetImageView(), uiContext, false);
+			ImTextureID textureID = uiContext->AddTextureID(texture->GetImageView());
 			std::string textureTypeStr = MaterialTextureTypeToString(type);
 
 			BeginColumnLabel(textureTypeStr, width);
@@ -79,11 +81,16 @@ void gear::ui::componentui::DrawMaterialUI(Ref<Material>& material, UIContext* u
 					if (std::filesystem::exists(filepath))
 					{
 						bool linear = Material::IsTextureTypeLinear(type);
+						const Ref<asset::EditorAssetManager>& editorAssetManager = UIContext::GetUIContext()->GetEditorAssetManager();
+						Ref<ImageAssetDataBuffer> imageData = editorAssetManager->Import<ImageAssetDataBuffer>(asset::Asset::Type::EXTERNAL_FILE, filepath);
+
 						Texture::CreateInfo textureCI;
 						textureCI.debugName = filepath;
 						textureCI.device = uiContext->GetDevice();
-						textureCI.dataType = Texture::DataType::FILE;
-						textureCI.file.filepaths.push_back(filepath);
+						textureCI.imageData = imageData->Data;
+						textureCI.width = imageData->width;
+						textureCI.height = imageData->height;
+						textureCI.depth = imageData->depth;
 						textureCI.mipLevels = Texture::MaxMipLevel;
 						textureCI.arrayLayers = 1;
 						textureCI.type = Image::Type::TYPE_2D;
@@ -123,6 +130,7 @@ void gear::ui::componentui::DrawMaterialUI(Ref<Material>& material, UIContext* u
 
 		material->Update();
 
+#if 0
 		if (fileFunctions)
 		{
 			DrawStaticText("Filepath", material->m_CI.filepath);
@@ -160,8 +168,13 @@ void gear::ui::componentui::DrawMaterialUI(Ref<Material>& material, UIContext* u
 				}
 			}
 		}
+#endif
 		EndDrawTreeNode();
 	}
+}
+
+void gear::ui::componentui::DrawTextureUI(Ref<graphics::Texture>& texture)
+{
 }
 
 void gear::ui::componentui::DrawRenderPipelineUI(Ref<RenderPipeline>& renderPipeline)

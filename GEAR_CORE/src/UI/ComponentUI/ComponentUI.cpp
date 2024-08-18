@@ -2,13 +2,9 @@
 #include "ComponentUI.h"
 #include "UI/UIContext.h"
 
-#include "d3d12/D3D12Image.h"
-#include "vulkan/VKImage.h"
-
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
 #include "imgui/misc/cpp/imgui_stdlib.h"
-#include "imgui/backends/imgui_impl_vulkan.h"
 
 using namespace gear;
 using namespace scene;
@@ -298,61 +294,4 @@ ComponentSettingsBit gear::ui::componentui::DrawComponentSetting()
 	}
 
 	return result;
-}
-
-ImTextureID gear::ui::componentui::GetTextureID(const miru::base::ImageViewRef& imageView, UIContext* uiContext, bool resized)
-{
-
-	bool found = uiContext->m_TextureIDs.find(imageView) != uiContext->m_TextureIDs.end();
-	if (found && !resized)
-	{
-		return uiContext->m_TextureIDs[imageView];
-	}
-	else
-	{
-		ImTextureID& ImageID = uiContext->m_TextureIDs[imageView];
-		if (GraphicsAPI::IsD3D12())
-		{
-			const miru::d3d12::ImageRef& d3d12ColourImage = ref_cast<miru::d3d12::Image>(imageView->GetCreateInfo().image);
-			const miru::d3d12::ImageViewRef& d3d12ColourImageView = ref_cast<miru::d3d12::ImageView>(imageView);
-
-			ID3D12Device* device = (ID3D12Device*)uiContext->GetDevice();
-			UINT handleIncrement = 0;
-
-			//Reuse old heap location
-			if (found && resized)
-			{
-				handleIncrement = uiContext->m_D3D12GPUHandleHeapOffsets[ImageID];
-			}
-			else
-			{
-				handleIncrement = (device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)) * uiContext->m_GPUHandleHeapIndex;
-				uiContext->m_GPUHandleHeapIndex++;
-			}
-
-			D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;
-			cpuHandle.ptr = uiContext->m_D3D12DescriptorHeapSRV->GetCPUDescriptorHandleForHeapStart().ptr + handleIncrement;
-			device->CreateShaderResourceView(d3d12ColourImage->m_Image, &d3d12ColourImageView->m_SRVDesc, cpuHandle);
-			D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle;
-			gpuHandle.ptr = uiContext->m_D3D12DescriptorHeapSRV->GetGPUDescriptorHandleForHeapStart().ptr + handleIncrement;
-
-			ImageID = (ImTextureID)(gpuHandle.ptr);
-			uiContext->m_D3D12GPUHandleHeapOffsets[ImageID] = handleIncrement;
-
-		}
-		else
-		{
-			VkDevice device = *(VkDevice*)uiContext->GetDevice();
-			const miru::vulkan::ImageViewRef& vkColourImageView = ref_cast<miru::vulkan::ImageView>(imageView);
-
-			//Free old descriptor set
-			if (found && resized)
-			{
-				vkFreeDescriptorSets(device, uiContext->m_VulkanDescriptorPool, 1, (VkDescriptorSet*)&ImageID);
-			}
-
-			ImageID = (ImTextureID)ImGui_ImplVulkan_AddTexture(uiContext->m_VulkanSampler, vkColourImageView->m_ImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		}
-		return ImageID;
-	}
 }

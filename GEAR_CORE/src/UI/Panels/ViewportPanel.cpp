@@ -10,12 +10,16 @@
 #include "Graphics/Picker.h"
 #include "Graphics/Window.h"
 
+#include "Asset/EditorAssetManager.h"
+#include "Project/Project.h"
+
 #include "ImGuizmo/ImGuizmo.h"
 
 using namespace gear;
 using namespace ui;
 using namespace panels;
 using namespace objects;
+using namespace project;
 
 using namespace miru::base;
 
@@ -54,7 +58,6 @@ void ViewportPanel::Draw()
 		}
 
 		//Check for resize.
-		bool resized = false;
 		ImVec2 size = ImGui::GetContentRegionAvail();
 		if ((size.x != m_CurrentSize.x) || (size.y != m_CurrentSize.y))
 		{
@@ -65,8 +68,6 @@ void ViewportPanel::Draw()
 			m_CurrentSize.y = std::max(size.y, 1.0f);
 
 			m_CI.renderer->GetRenderSurface()->Resize((uint32_t)m_CurrentSize.x, (uint32_t)m_CurrentSize.y);
-			
-			resized = true;
 		}
 
 		//Draw main view.
@@ -75,8 +76,8 @@ void ViewportPanel::Draw()
 		uint32_t width = colourImageView->GetCreateInfo().image->GetCreateInfo().width;
 		uint32_t height = colourImageView->GetCreateInfo().image->GetCreateInfo().height;
 		
-		m_ImageID = componentui::GetTextureID(colourImageView, UIContext::GetUIContext(), resized);
-		ImGui::Image(m_ImageID, ImVec2(static_cast<float>(width), static_cast<float>(height)));
+		ImTextureID imageID = UIContext::GetUIContext()->AddTextureID(colourImageView);
+		ImGui::Image(imageID, ImVec2(static_cast<float>(width), static_cast<float>(height)));
 
 		DrawGuizmos();
 
@@ -86,13 +87,15 @@ void ViewportPanel::Draw()
 			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(".gsf");
 			if (payload)
 			{
-				std::string filepath = (char*)payload->Data;
+				std::filesystem::path filepath = (char*)payload->Data;
 				if (std::filesystem::exists(filepath))
 				{
 					Ref<SceneHierarchyPanel> sceneHierarchyPanel = UIContext::GetUIContext()->GetEditorPanelsByType<SceneHierarchyPanel>()[0];
 					if (sceneHierarchyPanel)
 					{
-						sceneHierarchyPanel->GetScene()->LoadFromFile(filepath, UIContext::GetUIContext()->GetWindow());
+						Ref<asset::EditorAssetManager> editorAssetManager = UIContext::GetUIContext()->GetEditorAssetManager();
+
+						sceneHierarchyPanel->SetScene(editorAssetManager->Import<scene::Scene>(asset::Asset::Type::SCENE, filepath));
 						sceneHierarchyPanel->UpdateWindowTitle();
 					}
 				}

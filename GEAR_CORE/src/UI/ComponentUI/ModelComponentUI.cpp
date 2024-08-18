@@ -9,11 +9,15 @@
 #include "Graphics/Rendering/Renderer.h"
 #include "Scene/Entity.h"
 
+#include "Asset/EditorAssetManager.h"
+#include "Project/Project.h"
+
 using namespace gear;
 using namespace scene;
 using namespace objects;
 using namespace graphics;
 using namespace rendering;
+using namespace project;
 
 using namespace ui;
 using namespace panels;
@@ -27,7 +31,7 @@ void gear::ui::componentui::DrawModelComponentUI(Entity entity)
 	Model::CreateInfo& CI = model->m_CI;
 	
 	DrawInputText("Name", CI.debugName);
-	DrawMeshUI(CI.pMesh);
+	DrawMeshUI(CI.mesh);
 	DrawFloat("Scaling X", CI.materialTextureScaling.x, 0.0f);
 	DrawFloat("Scaling Y", CI.materialTextureScaling.y, 0.0f);
 	DrawInputText("Render Pipeline", CI.renderPipelineName);
@@ -35,8 +39,8 @@ void gear::ui::componentui::DrawModelComponentUI(Entity entity)
 	Ref<ViewportPanel> viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
 	if (viewportPanel)
 	{
-		Ref<Renderer>& renderer = viewportPanel->GetCreateInfo().renderer;
-		Ref<RenderPipeline>& renderPipeline = renderer->GetRenderPipelines()[CI.renderPipelineName];
+		Ref<Renderer> renderer = viewportPanel->GetRenderer();
+		Ref<RenderPipeline> renderPipeline = renderer->GetRenderPipelines()[CI.renderPipelineName];
 
 		Ref<MaterialPanel> materialPanel = UIContext::GetUIContext()->GetEditorPanelsByType<MaterialPanel>()[0];
 		if (materialPanel)
@@ -53,14 +57,16 @@ void gear::ui::componentui::AddModelComponent(Entity entity, void* device)
 {
 	if (!entity.HasComponent<ModelComponent>())
 	{
+		Ref<asset::EditorAssetManager> editorAssetManager = UIContext::GetUIContext()->GetEditorAssetManager();
+
 		Mesh::CreateInfo meshCI;
 		meshCI.debugName = "Mesh-Cube";
 		meshCI.device = device;
-		meshCI.filepath = "res/obj/cube.fbx";
+		meshCI.modelData = editorAssetManager->Import<utils::ModelLoader::ModelData>(asset::Asset::Type::EXTERNAL_FILE, "res/obj/cube.fbx"); //TODO: Change this!
 		Model::CreateInfo modelCI;
 		modelCI.debugName = "Model-Cube";
 		modelCI.device = device;
-		modelCI.pMesh = CreateRef<Mesh>(&meshCI);
+		modelCI.mesh = CreateRef<Mesh>(&meshCI);
 		modelCI.renderPipelineName = "PBROpaque";
 		entity.AddComponent<ModelComponent>(&modelCI);
 
@@ -77,6 +83,7 @@ void gear::ui::componentui::DrawMeshUI(Ref<Mesh>& mesh)
 
 	if (DrawTreeNode("Mesh", false))
 	{
+#if 0 //TODO
 		DrawInputText("Filepath", CI.filepath);
 		if (ImGui::BeginDragDropTarget())
 		{
@@ -90,6 +97,7 @@ void gear::ui::componentui::DrawMeshUI(Ref<Mesh>& mesh)
 				}
 			}
 		}
+#endif
 		auto& data = mesh->GetModelData();
 		
 		size_t id = 1;

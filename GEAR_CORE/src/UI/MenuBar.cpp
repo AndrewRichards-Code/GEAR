@@ -7,19 +7,20 @@
 #include "Core/Application.h"
 #include "Core/ConfigFile.h"
 #include "Core/FileDialog.h"
-#include "Core/JsonFileHelper.h"
 
 #include "Graphics/Rendering/Renderer.h"
 #include "Graphics/Window.h"
 
-#include "Build/Project.h"
+#include "Project/Project.h"
 
 #include "GLFW/include/GLFW/glfw3.h"
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include "GLFW/include/GLFW/glfw3native.h"
 
+#include "Asset/EditorAssetManager.h"
+
 using namespace gear;
-using namespace build;
+using namespace project;
 using namespace core;
 using namespace graphics;
 using namespace rendering;
@@ -237,23 +238,25 @@ void MenuBar::DrawMenuHelp()
 
 void MenuBar::DrawItemNewProject()
 {
-	std::string folderPath = FolderDialog_Browse();
+	std::filesystem::path folderPath = FolderDialog_Browse();
 	if (!folderPath.empty())
 	{
-		Project::CreateInfo projectCI = { UIContext::GetUIContext()->GetWindow(), std::filesystem::path(folderPath), true };
+		Project::CreateInfo projectCI = { UIContext::GetUIContext()->GetWindow(), folderPath };
 		Ref<Project> project = CreateRef<Project>(&projectCI);
 		UIContext::GetUIContext()->SetProject(project);
+		UIContext::GetUIContext()->SetContentBrowserPanelsFolderpath(folderPath);
 	}
 }
 
 void MenuBar::DrawItemOpenProject()
 {
-	std::string folderPath = FolderDialog_Browse();
+	std::filesystem::path folderPath = FolderDialog_Browse();
 	if (!folderPath.empty())
 	{
-		Project::CreateInfo projectCI = { UIContext::GetUIContext()->GetWindow(), std::filesystem::path(folderPath), false };
+		Project::CreateInfo projectCI = { UIContext::GetUIContext()->GetWindow(), folderPath };
 		Ref<Project> project = CreateRef<Project>(&projectCI);
 		UIContext::GetUIContext()->SetProject(project);
+		UIContext::GetUIContext()->SetContentBrowserPanelsFolderpath(folderPath);
 	}
 }
 
@@ -263,7 +266,7 @@ void MenuBar::DrawItemNewScene()
 	if (sceneHierarchyPanel)
 	{
 		Scene::CreateInfo sceneCI;
-		sceneCI.debugName = "DefaultScene";
+		sceneCI.debugName = "New Scene";
 		sceneCI.nativeScriptDir = "res/scripts/";
 		sceneHierarchyPanel->SetScene(CreateRef<scene::Scene>(&sceneCI));
 		sceneHierarchyPanel->UpdateWindowTitle();
@@ -275,11 +278,11 @@ void MenuBar::DrawItemOpenScene()
 	Ref<SceneHierarchyPanel> sceneHierarchyPanel = UIContext::GetUIContext()->GetEditorPanelsByType<SceneHierarchyPanel>()[0];
 	if (sceneHierarchyPanel)
 	{
-		std::string filepath = FileDialog_Open("GEAR Scene file", "*.gsf");
+		std::filesystem::path filepath = FileDialog_Open("GEAR Scene file", "*.gsf");
 
 		if (!filepath.empty())
 		{
-			sceneHierarchyPanel->GetScene()->LoadFromFile(filepath, UIContext::GetUIContext()->GetWindow());
+			sceneHierarchyPanel->SetScene(UIContext::GetUIContext()->GetEditorAssetManager()->Import<Scene>(asset::Asset::Type::SCENE, filepath));
 			sceneHierarchyPanel->UpdateWindowTitle();
 		}
 	}
@@ -290,9 +293,12 @@ void MenuBar::DrawItemSaveScene()
 	Ref<SceneHierarchyPanel> sceneHierarchyPanel = UIContext::GetUIContext()->GetEditorPanelsByType<SceneHierarchyPanel>()[0];
 	if (sceneHierarchyPanel)
 	{
-		if (!sceneHierarchyPanel->GetScene()->GetFilepath().empty())
+		const Ref<Scene>& scene = sceneHierarchyPanel->GetScene();
+		Ref<asset::EditorAssetManager> editorAssetManager = UIContext::GetUIContext()->GetEditorAssetManager();
+
+		if (!editorAssetManager->GetFilepath(scene->handle).empty())
 		{
-			sceneHierarchyPanel->GetScene()->SaveToFile("");
+			editorAssetManager->Export<Scene>(scene);
 			sceneHierarchyPanel->UpdateWindowTitle();
 		}
 		else
@@ -307,11 +313,14 @@ void MenuBar::DrawItemSaveSceneAs()
 	Ref<SceneHierarchyPanel> sceneHierarchyPanel = UIContext::GetUIContext()->GetEditorPanelsByType<SceneHierarchyPanel>()[0];
 	if (sceneHierarchyPanel)
 	{
-		std::string filepath = FileDialog_Save("GEAR Scene file", "*.gsf");
+		std::filesystem::path filepath = FileDialog_Save("GEAR Scene file", "*.gsf");
+
+		const Ref<Scene>& scene = sceneHierarchyPanel->GetScene();
+		Ref<asset::EditorAssetManager> editorAssetManager = UIContext::GetUIContext()->GetEditorAssetManager();
 
 		if (!filepath.empty())
 		{
-			sceneHierarchyPanel->GetScene()->SaveToFile(filepath);
+			editorAssetManager->Export<Scene>(scene, filepath);
 			sceneHierarchyPanel->UpdateWindowTitle();
 		}
 	}
@@ -451,7 +460,7 @@ void MenuBar::DrawItemRecompileRenderPipelineShaders()
 	Ref<ViewportPanel> viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
 	if (viewportPanel)
 	{
-		viewportPanel->GetCreateInfo().renderer->RecompileRenderPipelineShaders();
+		viewportPanel->GetRenderer()->RecompileRenderPipelineShaders();
 	}
 }
 
@@ -460,6 +469,6 @@ void MenuBar::DrawItemReloadRenderPipelines()
 	Ref<ViewportPanel> viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
 	if (viewportPanel)
 	{
-		viewportPanel->GetCreateInfo().renderer->ReloadRenderPipelines();
+		viewportPanel->GetRenderer()->ReloadRenderPipelines();
 	}
 }

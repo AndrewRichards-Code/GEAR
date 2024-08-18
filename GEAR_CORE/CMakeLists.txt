@@ -26,6 +26,49 @@ set(Animation_SRC_CPP_FILES
 target_sources(GEAR_CORE PRIVATE ${Animation_SRC_CPP_FILES} ${Animation_SRC_HEADERS})
 source_group("src\\Animation" FILES ${Animation_SRC_CPP_FILES} ${Animation_SRC_HEADERS})
 
+#Asset
+set(Asset_SRC_HEADERS
+	"src/Asset/Asset.h"
+	"src/Asset/AssetDataBuffer.h"
+	"src/Asset/AssetFile.h"
+	"src/Asset/AssetManager.h"
+	"src/Asset/AssetMetadata.h"
+	"src/Asset/AssetRegistry.h"
+	"src/Asset/EditorAssetManager.h"
+)
+set(Asset_SRC_CPP_FILES
+	"src/Asset/Asset.cpp"
+	"src/Asset/AssetFile.cpp"
+	"src/Asset/AssetManager.cpp"
+	"src/Asset/AssetRegistry.cpp"
+	"src/Asset/EditorAssetManager.cpp"
+)
+
+target_sources(GEAR_CORE PRIVATE ${Asset_SRC_CPP_FILES} ${Asset_SRC_HEADERS})
+source_group("src\\Asset" FILES ${Asset_SRC_CPP_FILES} ${Asset_SRC_HEADERS})
+set(Asset_ImporterExporter_SRC_HEADERS
+	"src/Asset/Serialiser/AssetSerialiser.h"
+	"src/Asset/Serialiser/AudioSerialiser.h"
+	"src/Asset/Serialiser/ExternalFileSerialiser.h"
+	"src/Asset/Serialiser/FontSerialiser.h"
+	"src/Asset/Serialiser/MaterialSerialiser.h"
+	"src/Asset/Serialiser/MeshSerialiser.h"
+	"src/Asset/Serialiser/SceneSerialiser.h"
+	"src/Asset/Serialiser/TextureSerialiser.h"
+)
+set(Asset_ImporterExporter_SRC_CPP_FILES
+	"src/Asset/Serialiser/AssetSerialiser.cpp"
+	"src/Asset/Serialiser/AudioSerialiser.cpp"
+	"src/Asset/Serialiser/ExternalFileSerialiser.cpp"
+	"src/Asset/Serialiser/FontSerialiser.cpp"
+	"src/Asset/Serialiser/MaterialSerialiser.cpp"
+	"src/Asset/Serialiser/MeshSerialiser.cpp"
+	"src/Asset/Serialiser/SceneSerialiser.cpp"
+	"src/Asset/Serialiser/TextureSerialiser.cpp"
+)
+target_sources(GEAR_CORE PRIVATE ${Asset_ImporterExporter_SRC_CPP_FILES} ${Asset_ImporterExporter_SRC_HEADERS})
+source_group("src\\Asset\\Serialiser" FILES ${Asset_ImporterExporter_SRC_CPP_FILES} ${Asset_ImporterExporter_SRC_HEADERS})
+
 #Audio
 set(Audio_SRC_HEADERS
 	"src/Audio/AudioInterfaces.h"
@@ -40,23 +83,13 @@ set(Audio_SRC_CPP_FILES
 target_sources(GEAR_CORE PRIVATE ${Audio_SRC_CPP_FILES} ${Audio_SRC_HEADERS})
 source_group("src\\Audio" FILES ${Audio_SRC_CPP_FILES} ${Audio_SRC_HEADERS})
 
-#Build
-set(Build_SRC_HEADERS
-	"src/Build/Project.h"
-)
-set(Build_SRC_CPP_FILES
-	"src/Build/Project.cpp"
-)
-target_sources(GEAR_CORE PRIVATE ${Build_SRC_CPP_FILES} ${Build_SRC_HEADERS})
-source_group("src\\Build" FILES ${Build_SRC_CPP_FILES} ${Build_SRC_HEADERS})
-
 #Core
 set(Core_SRC_HEADERS
 	"src/Core/Application.h"
 	"src/Core/ApplicationContext.h"
-	"src/Core/AssetFile.h"
 	"src/Core/CommandLineOptions.h"
 	"src/Core/ConfigFile.h"
+	"src/Core/DataBuffer.h"
 	"src/Core/EntryPoint.h"
 	"src/Core/FileDialog.h"
 	"src/Core/FontLibrary.h"
@@ -72,7 +105,6 @@ set(Core_SRC_HEADERS
 set(Core_SRC_CPP_FILES
 	"src/Core/Application.cpp"
 	"src/Core/ApplicationContext.cpp"
-	"src/Core/AssetFile.cpp"
 	"src/Core/ConfigFile.cpp"
 	"src/Core/FileDialog.cpp"
 	"src/Core/FontLibrary.cpp"
@@ -196,6 +228,16 @@ set(Objects_SRC_CPP_FILES
 target_sources(GEAR_CORE PRIVATE ${Objects_SRC_CPP_FILES} ${Objects_SRC_HEADERS})
 source_group("src\\Objects" FILES ${Objects_SRC_CPP_FILES} ${Objects_SRC_HEADERS})
 
+#Project
+set(Project_SRC_HEADERS
+	"src/Project/Project.h"
+)
+set(Project_SRC_CPP_FILES
+	"src/Project/Project.cpp"
+)
+target_sources(GEAR_CORE PRIVATE ${Project_SRC_CPP_FILES} ${Project_SRC_HEADERS})
+source_group("src\\Project" FILES ${Project_SRC_CPP_FILES} ${Project_SRC_HEADERS})
+
 #Scene
 set(Scene_SRC_HEADERS
 	"src/Scene/Components.h"
@@ -239,13 +281,14 @@ set(UI_ComponentUI_SRC_HEADERS
 	"src/UI/ComponentUI/ModelComponentUI.h"
 	"src/UI/ComponentUI/NameComponentUI.h"
 	"src/UI/ComponentUI/SkyboxComponentUI.h"
+	"src/UI/ComponentUI/TextureComponentUI.h"
 	"src/UI/ComponentUI/TransformComponentUI.h"
-)
-set(UI_SRC_CPP_FILES
+	)
+	set(UI_SRC_CPP_FILES
 	"src/UI/MenuBar.cpp"
 	"src/UI/UIContext.cpp"
-)
-set(UI_Panels_SRC_CPP_FILES
+	)
+	set(UI_Panels_SRC_CPP_FILES
 	"src/UI/Panels/ContentBrowserPanel.cpp"
 	"src/UI/Panels/ContentEditorPanel.cpp"
 	"src/UI/Panels/MaterialPanel.cpp"
@@ -255,8 +298,8 @@ set(UI_Panels_SRC_CPP_FILES
 	"src/UI/Panels/RendererPropertiesPanel.cpp"
 	"src/UI/Panels/SceneHierarchyPanel.cpp"
 	"src/UI/Panels/ViewportPanel.cpp"
-)
-set(UI_ComponentUI_SRC_CPP_FILES
+	)
+	set(UI_ComponentUI_SRC_CPP_FILES
 	"src/UI/ComponentUI/CameraComponentUI.cpp"
 	"src/UI/ComponentUI/ComponentUI.cpp"
 	"src/UI/ComponentUI/LightComponentUI.cpp"
@@ -264,6 +307,7 @@ set(UI_ComponentUI_SRC_CPP_FILES
 	"src/UI/ComponentUI/ModelComponentUI.cpp"
 	"src/UI/ComponentUI/NameComponentUI.cpp"
 	"src/UI/ComponentUI/SkyboxComponentUI.cpp"
+	"src/UI/ComponentUI/TextureComponentUI.cpp"
 	"src/UI/ComponentUI/TransformComponentUI.cpp"
 )
 target_sources(GEAR_CORE PRIVATE ${UI_SRC_CPP_FILES} ${UI_SRC_HEADERS})
@@ -354,8 +398,14 @@ target_link_libraries(GEAR_CORE PRIVATE
 	glfw3.lib
 )
 
+#IMGUI
 target_include_directories(GEAR_CORE PRIVATE 
 	"${CMAKE_CURRENT_SOURCE_DIR}/../External/imgui/"
+)
+
+#YAML-CPP
+target_link_libraries(GEAR_CORE PRIVATE
+	yaml-cpp::yaml-cpp
 )
 
 #MIRU - D3D12 and Vulkan

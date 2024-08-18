@@ -20,7 +20,7 @@ using namespace mars;
 void gear::ui::componentui::DrawCameraComponentUI(Entity entity)
 {
 	Ref<ViewportPanel> viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
-	const float& screenRatio = viewportPanel->GetCreateInfo().renderer->GetRenderSurface()->GetRatio();
+	const float& screenRatio = viewportPanel->GetRenderer()->GetRenderSurface()->GetRatio();
 
 	Ref<Camera>& camera = entity.GetComponent<CameraComponent>().camera;
 	Camera::CreateInfo& CI = camera->m_CI;
@@ -64,7 +64,7 @@ void gear::ui::componentui::AddCameraComponent(Entity entity, void* device)
 	if (!entity.HasComponent<CameraComponent>())
 	{
 		Ref<ViewportPanel> viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
-		const float& screenRatio = viewportPanel->GetCreateInfo().renderer->GetRenderSurface()->GetRatio();
+		const float& screenRatio = viewportPanel->GetRenderer()->GetRenderSurface()->GetRatio();
 
 		Camera::CreateInfo cameraCI;
 		cameraCI.debugName = entity.GetComponent<NameComponent>();

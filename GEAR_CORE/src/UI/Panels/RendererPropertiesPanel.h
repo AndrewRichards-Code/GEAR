@@ -23,6 +23,7 @@ namespace gear
 			private:
 				void DrawRenderGraph();
 				void DrawPostProcessingUI();
+				void DrawUIContextTextureIDsUI();
 
 				static std::string PipelineStageBitToString(miru::base::PipelineStageBit pipelingStages);
 

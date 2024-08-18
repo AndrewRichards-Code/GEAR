@@ -43,10 +43,12 @@ void SwapchinUIPasses::ExternalUI(Renderer& renderer, ui::UIContext* uiContext)
 	const ImageViewRef& swapchainImageView = window->GetSwapchain()->m_SwapchainImageViews[renderer.GetSwapchainImageIndex()];
 
 	Ref<TaskPassParameters> externalUIPassParameters = CreateRef<TaskPassParameters>(renderer.GetRenderPipelines()["DebugCopy"]);
-	for (const auto& textureID : uiContext->m_TextureIDs)
+	for (const auto& textureID : uiContext->m_TextureIDs_PF)
 	{
 		externalUIPassParameters->AddResourceViewAtPipelineStage(ResourceView(textureID.first, Resource::State::SHADER_READ_ONLY), PipelineStageBit::FRAGMENT_SHADER_BIT);
 	}
+	uiContext->m_TextureIDs_PF.clear();
+
 	externalUIPassParameters->AddAttachment(0, ResourceView(swapchainImageView, Resource::State::COLOUR_ATTACHMENT), RenderPass::AttachmentLoadOp::CLEAR, RenderPass::AttachmentStoreOp::STORE, { 0.25f, 0.25f, 0.25f, 1.0f });
 	externalUIPassParameters->SetRenderArea(TaskPassParameters::CreateScissor(width, height));
 

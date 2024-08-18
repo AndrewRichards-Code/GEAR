@@ -169,8 +169,6 @@ namespace gear
 					}
 				}
 			}
-
-			ImTextureID GetTextureID(const miru::base::ImageViewRef& imageView, gear::ui::UIContext* uiContext, bool resized);
 		}
 	}
 }

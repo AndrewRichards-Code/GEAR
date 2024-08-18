@@ -37,7 +37,7 @@ void RendererPropertiesPanel::Draw()
 	{
 		if (m_ViewportPanel)
 		{
-			Ref<Renderer>& renderer = m_ViewportPanel->GetCreateInfo().renderer;
+			const Ref<Renderer>& renderer = m_ViewportPanel->GetRenderer();
 			const RenderGraph& renderGraph = renderer->GetRenderGraph();
 			
 
@@ -126,6 +126,8 @@ void RendererPropertiesPanel::Draw()
 			ImGui::Separator();
 
 			DrawPostProcessingUI();
+
+			DrawUIContextTextureIDsUI();
 		}
 	}
 	ImGui::End();
@@ -318,7 +320,7 @@ void RendererPropertiesPanel::DrawRenderGraph()
 {
 	if (m_ViewportPanel)
 	{
-		Ref<Renderer>& renderer = m_ViewportPanel->GetCreateInfo().renderer;
+		Ref<Renderer> renderer = m_ViewportPanel->GetRenderer();
 		const RenderGraph& renderGraph = renderer->GetRenderGraph();
 
 		rged.Initialise(renderer, renderGraph);
@@ -334,12 +336,11 @@ void RendererPropertiesPanel::DrawPostProcessingUI()
 	if (!m_ViewportPanel)
 		return;
 
-	Ref<Renderer>& renderer = m_ViewportPanel->GetCreateInfo().renderer;
+	const Ref<Renderer>& renderer = m_ViewportPanel->GetRenderer();
 	Renderer::PostProcessingInfo& postProcessingInfo = renderer->GetPostProcessingInfo();
 
 	if (DrawTreeNode("Post Processing", true))
 	{
-		//Bloom
 		if (DrawTreeNode("Bloom", true))
 		{
 			Ref<Uniformbuffer<UniformBufferStructures::BloomInfo>>& bloomInfoUB = postProcessingInfo.bloom.UB;
@@ -360,6 +361,26 @@ void RendererPropertiesPanel::DrawPostProcessingUI()
 				DrawDropDownMenu("Colour Space", (ColourSpace&)hdrSettingsUB->gammaSpace);
 			}
 			EndDrawTreeNode();
+		}
+
+		EndDrawTreeNode();
+	}
+}
+
+void RendererPropertiesPanel::DrawUIContextTextureIDsUI()
+{
+	if (DrawTreeNode("UIContext TextureIDs", true))
+	{
+		const auto& textureIDs = UIContext::GetUIContext()->m_TextureIDs;
+		for (const auto& textureID : textureIDs)
+		{
+			DrawStaticText("Name", textureID.first->GetCreateInfo().debugName);
+			DrawStaticNumber("Count", textureID.first.use_count());
+			char buffer[19];
+			snprintf(buffer, 19, "0x%p", (void*)textureID.first.get());
+			DrawStaticText("Address", buffer);
+
+			ImGui::Separator();
 		}
 
 		EndDrawTreeNode();

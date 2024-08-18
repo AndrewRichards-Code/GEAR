@@ -34,7 +34,7 @@ void SceneHierarchyPanel::Update(Timer timer)
 {
 	Ref<ViewportPanel> viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
 	if (viewportPanel)
-		m_CI.scene->OnUpdate(viewportPanel->GetCreateInfo().renderer, timer);
+		m_CI.scene->OnUpdate(viewportPanel->GetRenderer(), timer);
 }
 
 void SceneHierarchyPanel::Draw()
@@ -84,7 +84,7 @@ void SceneHierarchyPanel::Draw()
 			Ref<ViewportPanel> viewportPanel = UIContext::GetUIContext()->GetEditorPanelsByType<ViewportPanel>()[0];
 			if (viewportPanel)
 			{
-				void* device = viewportPanel->GetCreateInfo().renderer->GetDevice();
+				void* device = viewportPanel->GetRenderer()->GetDevice();
 				entt::registry& reg = scene->GetRegistry();
 				const bool& foundCamera = !reg.view<CameraComponent>().empty();
 

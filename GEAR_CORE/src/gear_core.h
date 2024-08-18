@@ -4,18 +4,23 @@
 #include "Animation/Animation.h"
 #include "Animation/Animator.h"
 
+//Asset
+#include "Asset/Asset.h"
+#include "Asset/AssetDataBuffer.h"
+#include "Asset/AssetFile.h"
+#include "Asset/AssetManager.h"
+#include "Asset/AssetMetadata.h"
+#include "Asset/AssetRegistry.h"
+#include "Asset/EditorAssetManager.h"
+
 //Audio
 #include "Audio/AudioInterfaces.h"
 #include "Audio/AudioSource.h"
 #include "Audio/AudioListener.h"
 
-//Build
-#include "Build/Project.h"
-
 //Core
 #include "Core/Application.h"
 #include "Core/ApplicationContext.h"
-#include "Core/AssetFile.h"
 #include "Core/CommandLineOptions.h"
 #include "Core/ConfigFile.h"
 #include "Core/FileDialog.h"
@@ -62,6 +67,9 @@
 #include "Objects/Skybox.h"
 #include "Objects/Text.h"
 #include "Objects/Transform.h"
+
+//Project
+#include "Project/Project.h"
 
 //Scene
 #include "Scene/Components.h"

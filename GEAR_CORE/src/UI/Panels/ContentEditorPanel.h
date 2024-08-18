@@ -1,8 +1,13 @@
 #pragma once
 #include "UI/Panels/BasePanel.h"
+#include "Asset/Asset.h"
 
 namespace gear
 {
+	namespace graphics
+	{
+		class Texture;
+	}
 	namespace objects
 	{
 		class Material;
@@ -40,6 +45,8 @@ namespace gear
 				{
 					std::filesystem::path	currentFilepathFull;
 					std::string				filepathExt;
+					asset::Asset::Handle	handle;
+					bool					readWrite = false;
 				};
 
 				//Methods
@@ -62,7 +69,8 @@ namespace gear
 				bool read = true;
 				std::string output;
 
-				Ref<objects::Material> material;
+				Ref<graphics::Texture> texture = nullptr;
+				Ref<objects::Material> material = nullptr;
 
 			};
 		}

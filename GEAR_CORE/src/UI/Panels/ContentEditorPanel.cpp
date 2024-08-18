@@ -1,12 +1,17 @@
 #include "gear_core_common.h"
 #include "UI/Panels/ContentEditorPanel.h"
+#include "UI/Panels/ViewportPanel.h"
 
 #include "UI/UIContext.h"
 #include "UI/ComponentUI/ComponentUI.h"
 #include "UI/ComponentUI/ModelComponentUI.h"
 #include "UI/ComponentUI/MaterialComponentUI.h"
+#include "UI/ComponentUI/TextureComponentUI.h"
 
-#include "Core/AssetFile.h"
+#include "Asset/AssetFile.h"
+#include "Asset/AssetManager.h"
+#include "Project/Project.h"
+#include "Graphics/Rendering/Renderer.h"
 #include "Core/FileDialog.h"
 
 #include "Objects/Material.h"
@@ -32,6 +37,7 @@ ContentEditorPanel::ContentEditorPanel(CreateInfo* pCreateInfo)
 
 ContentEditorPanel::~ContentEditorPanel()
 {
+	texture = nullptr;
 }
 
 void ContentEditorPanel::Draw()
@@ -91,6 +97,45 @@ void ContentEditorPanel::Draw()
 				ImGui::TextUnformatted(output.c_str());
 		}
 
+		if (contentType == ContentType::IMAGE && open)
+		{
+			Ref<asset::AssetManager> assetManager = project::Project::GetAssetManager();
+			Ref<asset::ImageAssetDataBuffer> asset = assetManager->GetAsset<asset::ImageAssetDataBuffer>(m_CI.handle);
+
+			if (!texture && asset)
+			{
+				UIContext* uiContext = UIContext::GetUIContext();
+
+				graphics::Texture::CreateInfo textureCI;
+				textureCI.debugName = "TestTexture";
+				textureCI.device = uiContext->GetDevice();
+				textureCI.imageData = asset->Data;
+				textureCI.width = asset->width;
+				textureCI.height = asset->height;
+				textureCI.depth = asset->depth;
+				textureCI.mipLevels = graphics::Texture::MaxMipLevel;
+				textureCI.arrayLayers = 1;
+				textureCI.type = miru::base::Image::Type::TYPE_2D;
+				textureCI.format = asset->format;
+				textureCI.samples = miru::base::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+				textureCI.usage = miru::base::Image::UsageBit(0);
+				textureCI.generateMipMaps = true;
+				textureCI.gammaSpace = graphics::GammaSpace::SRGB;
+				texture = CreateRef<graphics::Texture>(&textureCI);
+
+				for (const auto& panel : uiContext->GetEditorPanelsByType<ViewportPanel>())
+				{
+					if (panel)
+					{
+						panel->GetRenderer()->SubmitTexturesForUpload({ texture });
+						break;
+					}
+				}
+			}
+			DrawTextureComponentUI(texture);
+		}
+
+#if 0
 		if (contentType == ContentType::GEAR_ASSET)
 		{
 			if (open)
@@ -120,7 +165,7 @@ void ContentEditorPanel::Draw()
 				DrawMaterialUI(material, UIContext::GetUIContext(), false);
 		}
 			
-		/*if (ImGui::BeginDragDropTarget())
+		if (ImGui::BeginDragDropTarget())
 		{
 			const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(".hdr");
 			if (payload)
@@ -131,7 +176,8 @@ void ContentEditorPanel::Draw()
 					m_CI.currentFilepath = filepath;
 				}
 			}
-		}*/
+		}
+#endif
 	}
 	ImGui::End();
 

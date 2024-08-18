@@ -58,12 +58,13 @@ namespace gear
 	{
 		OK = 0x00000000,
 		ANIMATION,
+		ASSET,
 		AUDIO,
-		BUILD,
 		CORE,
 		GRAPHICS,
 		INPUT,
 		OBJECTS,
+		PROJECT,
 		SCENE,
 		UI,
 		UTILS,
@@ -93,10 +94,10 @@ namespace gear
 			str += "OK"; break;
 		case ErrorCode::ANIMATION:
 			str += "ANIMATION"; break;
+		case ErrorCode::ASSET:
+			str += "ASSET"; break;
 		case ErrorCode::AUDIO:
 			str += "AUDIO"; break;
-		case ErrorCode::BUILD:
-			str += "BUILD"; break;
 		case ErrorCode::CORE:
 			str += "CORE"; break;
 		case ErrorCode::GRAPHICS:
@@ -105,6 +106,8 @@ namespace gear
 			str += "INPUT"; break;
 		case ErrorCode::OBJECTS:
 			str += "OBJECTS"; break;
+		case ErrorCode::PROJECT:
+			str += "PROJECT"; break;
 		case ErrorCode::SCENE:
 			str += "SCENE"; break;
 		case ErrorCode::UI:

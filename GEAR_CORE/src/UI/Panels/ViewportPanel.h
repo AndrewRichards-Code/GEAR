@@ -48,6 +48,7 @@ namespace gear
 
 			public:
 				inline CreateInfo& GetCreateInfo() { return m_CI; }
+				inline Ref<graphics::rendering::Renderer> GetRenderer() { return m_CI.renderer; }
 
 				//Members
 			private:
@@ -56,7 +57,6 @@ namespace gear
 				static uint32_t s_ViewportPanelCount;
 				uint32_t m_ViewID; //0 is invalid;
 
-				void* m_ImageID = nullptr;
 				mars::float2 m_CurrentSize;
 
 				//Camera Control

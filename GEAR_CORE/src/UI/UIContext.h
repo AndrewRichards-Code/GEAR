@@ -13,11 +13,15 @@ typedef uint32_t UINT;
 
 namespace gear
 {
+	namespace asset
+	{
+		class EditorAssetManager;
+	}
 	namespace core
 	{
 		class Timer;
 	}
-	namespace build
+	namespace project
 	{
 		class Project;
 	}
@@ -45,14 +49,42 @@ namespace gear
 
 			void Update(core::Timer timer);
 			void Draw();
+			void RenderDrawData(const miru::base::CommandBufferRef& cmdBuffer, uint32_t frameIndex);
 
-			inline void* GetDevice();
-			inline miru::base::ContextRef GetContext();
-			inline Ref<graphics::Window> GetWindow() { return m_CI.window; }
+			ImTextureID AddTextureID(const miru::base::ImageViewRef& imageView);
+			std::map<miru::base::ImageViewRef, ImTextureID>::iterator RemoveTextureID(const miru::base::ImageViewRef& imageView);
+			std::map<miru::base::ImageViewRef, ImTextureID>::iterator RemoveTextureID(const std::map<miru::base::ImageViewRef, ImTextureID>::iterator& it);
+
+			void* GetDevice();
+			miru::base::ContextRef GetContext();
+			static std::filesystem::path GetSourceDirectory();
+
+		private:
+			void Initialise(Ref<graphics::Window>& window);
+			void ShutDown();
+
+			void BeginFrame();
+			void EndFrame();
+
+			void BeginDockspace();
+			void EndDockspace();
+
+			ID3D12GraphicsCommandList* GetID3D12GraphicsCommandList(const miru::base::CommandBufferRef cmdBuffer, uint32_t index);
+			VkCommandBuffer GetVkCommandBuffer(const miru::base::CommandBufferRef cmdBuffer, uint32_t index);
+
+			void SetDarkTheme();
+
+		public:
+			void SetContentBrowserPanelsFolderpath(const std::filesystem::path& folderpath);
+
 			inline const CreateInfo& GetCreateInfo() { return m_CI; }
+			inline Ref<graphics::Window> GetWindow() { return m_CI.window; }
 			inline std::vector<Ref<panels::Panel>>& GetEditorPanels() { return m_EditorPanels; };
-			inline Ref<build::Project> GetProject() { return m_Project; }
-			inline void SetProject(const Ref<build::Project>& project) { m_Project = project; }
+			inline Ref<project::Project> GetProject() { return m_Project; }
+			inline void SetProject(const Ref<project::Project>& project) { m_Project = project; }
+			inline Ref<asset::EditorAssetManager> GetEditorAssetManager() { return m_AssetManager; }
+			
+			static inline UIContext* GetUIContext() { return s_UIContext; }
 
 			template<typename T>
 			std::vector<Ref<T>> GetEditorPanelsByType()
@@ -136,27 +168,7 @@ namespace gear
 				std::string uid_str = label + std::string("##") + std::to_string(structHash) + "_" + std::to_string(idx);
 				return uid_str;
 			}
-
-		private:
-			void Initialise(Ref<graphics::Window>& window);
-			void ShutDown();
-
-			void BeginFrame();
-			void EndFrame();
-
-			void BeginDockspace();
-			void EndDockspace();
-
-		public:
-			void RenderDrawData(const miru::base::CommandBufferRef& cmdBuffer, uint32_t frameIndex);
-			static UIContext* GetUIContext() { return s_UIContext; }
-
-		private:
-			void SetDarkTheme();
-
-			ID3D12GraphicsCommandList* GetID3D12GraphicsCommandList(const miru::base::CommandBufferRef cmdBuffer, uint32_t index);
-			VkCommandBuffer GetVkCommandBuffer(const miru::base::CommandBufferRef cmdBuffer, uint32_t index);
-
+	
 			//Members
 		private:
 			CreateInfo m_CI;
@@ -164,20 +176,22 @@ namespace gear
 			miru::base::GraphicsAPI::API m_API;
 			std::vector<Ref<panels::Panel>> m_EditorPanels;
 			Ref<MenuBar> m_MenuBar;
-			Ref<build::Project> m_Project;
-
+			Ref<asset::EditorAssetManager> m_AssetManager;
+			Ref<project::Project> m_Project;
+			
 			static UIContext* s_UIContext;
 
 		public:
 			VkDescriptorPool m_VulkanDescriptorPool;
 			VkSampler m_VulkanSampler;
+			uint32_t m_VulkanDescriptorCount = 0;
 			
-
 			ID3D12DescriptorHeap* m_D3D12DescriptorHeapSRV;
 			std::map<ImTextureID, UINT> m_D3D12GPUHandleHeapOffsets;
 			UINT m_GPUHandleHeapIndex = 1;
 
 			std::map<miru::base::ImageViewRef, ImTextureID> m_TextureIDs;
+			std::map<miru::base::ImageViewRef, ImTextureID> m_TextureIDs_PF;
 		};
 	}
 }

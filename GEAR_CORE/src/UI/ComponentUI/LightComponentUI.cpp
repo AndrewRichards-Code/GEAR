@@ -62,6 +62,8 @@ void gear::ui::componentui::AddLightComponent(Entity entity, void* device)
 
 void gear::ui::componentui::DrawProbeComponentUI(Ref<Probe> probe)
 {
+	UIContext* uiContext = UIContext::GetUIContext();
+	
 	size_t id = 1;
 	if (DrawTreeNode("Probe", true, (void*)id++))
 	{
@@ -140,7 +142,7 @@ void gear::ui::componentui::DrawProbeComponentUI(Ref<Probe> probe)
 					static uint32_t idx = 0;
 					DrawDropDownMenu("Shadow Cascade", { "0", "1", "2", "3" }, idx);
 					idx = std::min(idx, (CI.shadowCascades - 1));
-					const ImTextureID& id = GetTextureID(debugImageViews[idx], UIContext::GetUIContext(), false);
+					const ImTextureID& id = uiContext->AddTextureID(debugImageViews[idx]);
 					ImGui::Image(id, ImVec2(width, height));
 
 					debugProbeInfo->proj = probe->GetUB()->proj[idx];
@@ -152,7 +154,7 @@ void gear::ui::componentui::DrawProbeComponentUI(Ref<Probe> probe)
 				auto GetMousePositionInViewport = [&]() -> float2
 					{
 						double mousePosition_x, mousePosition_y;
-						UIContext::GetUIContext()->GetWindow()->GetMousePosition(mousePosition_x, mousePosition_y);
+						uiContext->GetWindow()->GetMousePosition(mousePosition_x, mousePosition_y);
 
 						return float2((float)mousePosition_x, (float)mousePosition_y);
 					};

@@ -3,13 +3,18 @@
 #include "UI/UIContext.h"
 #include "Graphics/Window.h"
 
+#include "Core/FileDialog.h"
+#include "Asset/EditorAssetManager.h"
+
 #include "MIRU/MIRU_CORE/src/vulkan/VKContext.h"
 #include "MIRU/MIRU_CORE/src/vulkan/VKCommandPoolBuffer.h"
 #include "MIRU/MIRU_CORE/src/vulkan/VKDescriptorPoolSet.h"
+#include "MIRU/MIRU_CORE/src/vulkan/VKImage.h"
 #include "MIRU/MIRU_CORE/src/vulkan/VKPipeline.h"
 
 #include "MIRU/MIRU_CORE/src/d3d12/D3D12Context.h"
 #include "MIRU/MIRU_CORE/src/d3d12/D3D12CommandPoolBuffer.h"
+#include "MIRU/MIRU_CORE/src/d3d12/D3D12Image.h"
 #include "MIRU/MIRU_CORE/src/d3d12/D3D12Swapchain.h"
 
 #include "imgui/imgui.h"
@@ -40,8 +45,9 @@ UIContext::~UIContext()
 	ShutDown();
 }
 
-void UIContext::Update(gear::core::Timer timer)
+void UIContext::Update(core::Timer timer)
 {
+	//Update panels
 	for (auto& panel : m_EditorPanels)
 	{
 		panel->Update(timer);
@@ -51,7 +57,7 @@ void UIContext::Update(gear::core::Timer timer)
 	for (auto it = m_TextureIDs.begin(); it != m_TextureIDs.end();)
 	{
 		if (it->first.use_count() == 1)
-			it = m_TextureIDs.erase(it);
+			it = RemoveTextureID(it);
 		else
 			it++;
 	}
@@ -84,14 +90,129 @@ void* UIContext::GetDevice()
 	return m_CI.window->GetDevice();
 }
 
-miru::base::ContextRef UIContext::GetContext()
+ContextRef UIContext::GetContext()
 {
 	return m_CI.window->GetContext();
 }
 
-void UIContext::Initialise(Ref<gear::graphics::Window>& window)
+void UIContext::RenderDrawData(const CommandBufferRef& cmdBuffer, uint32_t frameIndex)
+{
+	ImDrawData* drawData = ImGui::GetDrawData();
+	if (drawData)
+	{
+		// Record ImGui commands to the buffer/list
+		if (m_API == GraphicsAPI::API::VULKAN)
+		{
+			ImGui_ImplVulkan_RenderDrawData(drawData, GetVkCommandBuffer(cmdBuffer, frameIndex));
+		}
+		else if (m_API == GraphicsAPI::API::D3D12)
+		{
+			ID3D12GraphicsCommandList* cmdList = GetID3D12GraphicsCommandList(cmdBuffer, frameIndex);
+			cmdList->SetDescriptorHeaps(1, &(m_D3D12DescriptorHeapSRV));
+			ImGui_ImplDX12_RenderDrawData(drawData, cmdList);
+
+			//Reset previous Descriptor Heaps.
+			d3d12::CommandBuffer::RenderingResource& renderingResource = ref_cast<d3d12::CommandBuffer>(cmdBuffer)->m_RenderingResources[frameIndex];
+			ID3D12DescriptorHeap* heaps[2] = { renderingResource.CBV_SRV_UAV_DescriptorHeap, renderingResource.SAMPLER_DescriptorHeap };
+			cmdList->SetDescriptorHeaps(2, heaps);
+		}
+		else
+		{
+			GEAR_FATAL(gear::ErrorCode::UI | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
+		}
+	}
+
+	// Update and Render additional Platform Windows
+	ImGuiIO& io = ImGui::GetIO();
+	if (arc::BitwiseCheck(ImGuiConfigFlags_(io.ConfigFlags), ImGuiConfigFlags_ViewportsEnable))
+	{
+		ImGui::UpdatePlatformWindows();
+		ImGui::RenderPlatformWindowsDefault();
+	}
+}
+
+ImTextureID UIContext::AddTextureID(const miru::base::ImageViewRef& imageView)
+{
+	ImTextureID ResultImageID;
+	if (m_TextureIDs.find(imageView) != m_TextureIDs.end())
+	{
+		ResultImageID = m_TextureIDs[imageView];
+	}
+	else
+	{
+		ImTextureID& ImageID = m_TextureIDs[imageView];
+		if (GraphicsAPI::IsD3D12())
+		{
+			const miru::d3d12::ImageRef& d3d12ColourImage = ref_cast<miru::d3d12::Image>(imageView->GetCreateInfo().image);
+			const miru::d3d12::ImageViewRef& d3d12ColourImageView = ref_cast<miru::d3d12::ImageView>(imageView);
+
+			ID3D12Device* device = (ID3D12Device*)GetDevice();
+			UINT handleIncrement = (device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)) * m_GPUHandleHeapIndex;
+			m_GPUHandleHeapIndex = (m_GPUHandleHeapIndex + 1) % 1000;
+
+			D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;
+			cpuHandle.ptr = m_D3D12DescriptorHeapSRV->GetCPUDescriptorHandleForHeapStart().ptr + handleIncrement;
+			device->CreateShaderResourceView(d3d12ColourImage->m_Image, &d3d12ColourImageView->m_SRVDesc, cpuHandle);
+			D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle;
+			gpuHandle.ptr = m_D3D12DescriptorHeapSRV->GetGPUDescriptorHandleForHeapStart().ptr + handleIncrement;
+
+			ImageID = (ImTextureID)(gpuHandle.ptr);
+			m_D3D12GPUHandleHeapOffsets[ImageID] = handleIncrement;
+
+		}
+		else
+		{
+			VkDevice device = *(VkDevice*)GetDevice();
+			const miru::vulkan::ImageViewRef& vkColourImageView = ref_cast<miru::vulkan::ImageView>(imageView);
+			ImageID = (ImTextureID)ImGui_ImplVulkan_AddTexture(m_VulkanSampler, vkColourImageView->m_ImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			m_VulkanDescriptorCount++;
+		}
+		ResultImageID = ImageID;
+	}
+
+	m_TextureIDs_PF[imageView] = ResultImageID;
+
+	return ResultImageID;
+}
+
+std::map<miru::base::ImageViewRef, ImTextureID>::iterator UIContext::RemoveTextureID(const miru::base::ImageViewRef& imageView)
+{
+	auto it = m_TextureIDs.find(imageView);
+	if (it != m_TextureIDs.end())
+	{
+		it = RemoveTextureID(it);
+	}
+	return it;
+}
+
+std::map<miru::base::ImageViewRef, ImTextureID>::iterator UIContext::RemoveTextureID(const std::map<miru::base::ImageViewRef, ImTextureID>::iterator& it)
+{
+	const ImTextureID& ImageID = it->second;
+	if (GraphicsAPI::IsD3D12())
+	{
+		m_D3D12GPUHandleHeapOffsets[ImageID] = 0;
+	}
+	else
+	{
+		ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)ImageID);
+		m_VulkanDescriptorCount--;
+	}
+	return m_TextureIDs.erase(it);
+}
+
+std::filesystem::path UIContext::GetSourceDirectory()
+{
+	return std::filesystem::path(SOURCE_DIR);
+}
+
+void UIContext::Initialise(Ref<graphics::Window>& window)
 {
 	m_API = window->GetApplicationContext().GetCommandLineOptions().api;
+
+	asset::AssetRegistry::CreateInfo assetRegCI;
+	assetRegCI.filepath = GetSourceDirectory() / std::filesystem::path("GEARBOX/GEARBOX.gar");
+	assetRegCI.fileType = asset::AssetRegistry::FileType::TEXT;
+	m_AssetManager = CreateRef<asset::EditorAssetManager>(&assetRegCI);
 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -105,7 +226,8 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 	//io.ConfigViewportsNoAutoMerge = true;
 	//io.ConfigViewportsNoTaskBarIcon = true;
 
-	std::filesystem::path fontFilepath = std::filesystem::current_path() / std::filesystem::path("res/fonts/electrolize/Electrolize-Regular.ttf");
+	
+	std::filesystem::path fontFilepath = GetSourceDirectory() / std::filesystem::path("GEARBOX/res/fonts/electrolize/Electrolize-Regular.ttf");
 	io.FontDefault = io.Fonts->AddFontFromFileTTF(fontFilepath.string().c_str(), 15.0f);
 
 	// Setup Dear ImGui style
@@ -129,23 +251,13 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 		
 		VkDescriptorPoolSize poolSizes[] =
 		{
-			{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
-			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
-			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-			{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 }
 		};
 		VkDescriptorPoolCreateInfo descriptorPoolCI;
 		descriptorPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		descriptorPoolCI.pNext = nullptr;
 		descriptorPoolCI.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-		descriptorPoolCI.maxSets = 1000 * IM_ARRAYSIZE(poolSizes);
+		descriptorPoolCI.maxSets = 1000;
 		descriptorPoolCI.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes);
 		descriptorPoolCI.pPoolSizes = poolSizes;
 		VkResult res = vkCreateDescriptorPool(vkContext->m_Device, &descriptorPoolCI, nullptr, &m_VulkanDescriptorPool);
@@ -178,13 +290,26 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 		imGuiVulkanInitInfo.Instance = vkContext->m_Instance;
 		imGuiVulkanInitInfo.PhysicalDevice = vkContext->m_PhysicalDevices.m_PDIs[0].m_PhysicalDevice;
 		imGuiVulkanInitInfo.Device = vkContext->m_Device;
+		imGuiVulkanInitInfo.QueueFamily = 0;
 		imGuiVulkanInitInfo.Queue = vkContext->m_Queues[0][0];
 		imGuiVulkanInitInfo.DescriptorPool = m_VulkanDescriptorPool;
 		imGuiVulkanInitInfo.MinImageCount = 2;
 		imGuiVulkanInitInfo.ImageCount = window->GetSwapchain()->GetCreateInfo().swapchainCount;
 		imGuiVulkanInitInfo.UseDynamicRendering = true;
-		imGuiVulkanInitInfo.ColorAttachmentFormat = static_cast<VkFormat>(window->GetSwapchain()->m_SwapchainImages[0]->GetCreateInfo().format);
-		ImGui_ImplVulkan_Init(&imGuiVulkanInitInfo, nullptr);
+		VkFormat format = static_cast<VkFormat>(window->GetSwapchain()->m_SwapchainImages[0]->GetCreateInfo().format);
+		imGuiVulkanInitInfo.PipelineRenderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+		imGuiVulkanInitInfo.PipelineRenderingCreateInfo.pNext = nullptr;
+		imGuiVulkanInitInfo.PipelineRenderingCreateInfo.viewMask = 0;
+		imGuiVulkanInitInfo.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
+		imGuiVulkanInitInfo.PipelineRenderingCreateInfo.pColorAttachmentFormats = &format;
+		imGuiVulkanInitInfo.PipelineRenderingCreateInfo.depthAttachmentFormat = VK_FORMAT_UNDEFINED;
+		imGuiVulkanInitInfo.PipelineRenderingCreateInfo.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
+		imGuiVulkanInitInfo.CheckVkResultFn = [](VkResult result) 
+			{
+				if (result != VK_SUCCESS)
+					ARC_DEBUG_BREAK; 
+			};
+		ImGui_ImplVulkan_Init(&imGuiVulkanInitInfo);
 	}
 	else if (m_API == GraphicsAPI::API::D3D12)
 	{
@@ -216,38 +341,13 @@ void UIContext::Initialise(Ref<gear::graphics::Window>& window)
 	// Upload Fonts for Vulkan only
 	if (m_API == GraphicsAPI::API::VULKAN)
 	{
-		CommandPool::CreateInfo cmdPoolCI;
-		cmdPoolCI.debugName = "GEARBOX: ImGui: CommandPool";
-		cmdPoolCI.context = window->GetContext();
-		cmdPoolCI.flags = CommandPool::FlagBit::RESET_COMMAND_BUFFER_BIT;
-		cmdPoolCI.queueType = CommandPool::QueueType::GRAPHICS;
-		CommandPoolRef cmdPool = CommandPool::Create(&cmdPoolCI);
-
-		CommandBuffer::CreateInfo cmdBufferCI;
-		cmdBufferCI.debugName = "GEARBOX: ImGui: CommandBuffer";
-		cmdBufferCI.commandPool = cmdPool;
-		cmdBufferCI.level = CommandBuffer::Level::PRIMARY;
-		cmdBufferCI.commandBufferCount = 1;
-		CommandBufferRef cmdBuffer = CommandBuffer::Create(&cmdBufferCI);
-		
-		cmdBuffer->Reset(0, false);
-		cmdBuffer->Begin(0, CommandBuffer::UsageBit::ONE_TIME_SUBMIT);
-
-		ImGui_ImplVulkan_CreateFontsTexture(GetVkCommandBuffer(cmdBuffer, 0));
-
-		cmdBuffer->End(0);
-
-		CommandBuffer::SubmitInfo si = { {0}, {}, {}, {}, {}, {} };
-		cmdBuffer->Submit({ si }, nullptr);
-
-		window->GetContext()->DeviceWaitIdle();
-		ImGui_ImplVulkan_DestroyFontUploadObjects();
+		ImGui_ImplVulkan_CreateFontsTexture();
 	}
 
-	window->SetDropCallback([](const std::vector<std::string>& paths)
+	window->SetDropCallback([](const std::vector<std::filesystem::path>& paths)
 		{
 			for(const auto& path : paths)
-				GEAR_INFO(1, path.c_str());
+				GEAR_INFO(1, path.generic_string().c_str());
 		});
 }
 
@@ -383,42 +483,6 @@ void UIContext::EndDockspace()
 	ImGui::End();
 }
 
-void UIContext::RenderDrawData(const CommandBufferRef& cmdBuffer, uint32_t frameIndex)
-{
-	ImDrawData* drawData = ImGui::GetDrawData();
-	if (drawData)
-	{
-		// Record ImGui commands to the buffer/list
-		if (m_API == GraphicsAPI::API::VULKAN)
-		{
-			ImGui_ImplVulkan_RenderDrawData(drawData, GetVkCommandBuffer(cmdBuffer, frameIndex));
-		}
-		else if (m_API == GraphicsAPI::API::D3D12)
-		{
-			ID3D12GraphicsCommandList* cmdList = GetID3D12GraphicsCommandList(cmdBuffer, frameIndex);
-			cmdList->SetDescriptorHeaps(1, &(m_D3D12DescriptorHeapSRV));
-			ImGui_ImplDX12_RenderDrawData(drawData, cmdList);
-
-			//Reset previous Descriptor Heaps.
-			d3d12::CommandBuffer::RenderingResource& renderingResource = ref_cast<d3d12::CommandBuffer>(cmdBuffer)->m_RenderingResources[frameIndex];
-			ID3D12DescriptorHeap* heaps[2] = { renderingResource.CBV_SRV_UAV_DescriptorHeap, renderingResource.SAMPLER_DescriptorHeap };
-			cmdList->SetDescriptorHeaps(2, heaps);
-		}
-		else
-		{
-			GEAR_FATAL(gear::ErrorCode::UI | gear::ErrorCode::INIT_FAILED, "GEARBOX: Unknown API.");
-		}
-	}
-
-	// Update and Render additional Platform Windows
-	ImGuiIO& io = ImGui::GetIO();
-	if (arc::BitwiseCheck(ImGuiConfigFlags_(io.ConfigFlags), ImGuiConfigFlags_ViewportsEnable))
-	{
-		ImGui::UpdatePlatformWindows();
-		ImGui::RenderPlatformWindowsDefault();
-	}
-}
-
 ID3D12GraphicsCommandList* UIContext::GetID3D12GraphicsCommandList(const CommandBufferRef cmdBuffer, uint32_t index)
 {
 	return reinterpret_cast<ID3D12GraphicsCommandList*>(ref_cast<d3d12::CommandBuffer>(cmdBuffer)->m_CmdBuffers[index]);
@@ -478,4 +542,12 @@ void UIContext::SetDarkTheme()
 	colours[ImGuiCol_TitleBg] = Grey_Active;
 	colours[ImGuiCol_TitleBgActive] = Grey_Active;
 	colours[ImGuiCol_TitleBgCollapsed] = Grey_Active;
+}
+
+void UIContext::SetContentBrowserPanelsFolderpath(const std::filesystem::path& folderpath)
+{
+	for (const Ref<ContentBrowserPanel> panel : GetEditorPanelsByType<ContentBrowserPanel>())
+	{
+		panel->SetCurrentPath(folderpath);
+	}
 }

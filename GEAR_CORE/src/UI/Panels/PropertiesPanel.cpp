@@ -56,8 +56,8 @@ void PropertiesPanel::Draw()
 				entity = sceneHierarchyPanel->GetSelectedEntity();
 			}
 
-			void* device = viewportPanel->GetCreateInfo().renderer->GetDevice();
-			const float& screenRatio = viewportPanel->GetCreateInfo().renderer->GetRenderSurface()->GetRatio();
+			void* device = viewportPanel->GetRenderer()->GetDevice();
+			const float& screenRatio = viewportPanel->GetRenderer()->GetRenderSurface()->GetRatio();
 			if (entity)
 			{
 				DrawComponentUI<NameComponent>("Name", entity, true, DrawNameComponentUI, entity);
