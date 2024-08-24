@@ -176,6 +176,7 @@ void ContentEditorPanel::Draw()
 					m_CI.currentFilepath = filepath;
 				}
 			}
+			ImGui::EndDragDropTarget();
 		}
 #endif
 	}

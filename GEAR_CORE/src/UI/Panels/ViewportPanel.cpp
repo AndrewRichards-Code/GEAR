@@ -100,6 +100,7 @@ void ViewportPanel::Draw()
 					}
 				}
 			}
+			ImGui::EndDragDropTarget();
 		}
 
 		//Set the RendererPropertiesPanel's viewport.

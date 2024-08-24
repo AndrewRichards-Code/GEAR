@@ -96,6 +96,7 @@ void gear::ui::componentui::DrawMeshUI(Ref<Mesh>& mesh)
 					CI.filepath = filepath;
 				}
 			}
+			ImGui::EndDragDropTarget();
 		}
 #endif
 		auto& data = mesh->GetModelData();

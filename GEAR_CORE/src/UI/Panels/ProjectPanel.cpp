@@ -82,6 +82,7 @@ void ProjectPanel::Draw()
 						project->AddScene(scene);
 					}
 				}
+				ImGui::EndDragDropTarget();
 			}
 			if (ImGui::Button("Add Scene"))
 			{

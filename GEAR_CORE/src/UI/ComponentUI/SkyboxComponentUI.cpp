@@ -37,6 +37,7 @@ void gear::ui::componentui::DrawSkyboxComponentUI(Entity entity)
 			if (std::filesystem::exists(filepath))
 				CI.textureData = editorAssetManager->Import<asset::ImageAssetDataBuffer>(asset::Asset::Type::EXTERNAL_FILE, filepath);
 		}
+		ImGui::EndDragDropTarget();
 	}
 	DrawUint32("Cubemap Size", CI.generatedCubemapSize, 16, 2048, true);
 	

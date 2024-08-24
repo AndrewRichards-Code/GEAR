@@ -102,6 +102,7 @@ void gear::ui::componentui::DrawMaterialUI(Ref<Material>& material, UIContext* u
 						texture = CreateRef<Texture>(&textureCI);
 					}
 				}
+				ImGui::EndDragDropTarget();
 			}
 			ImGui::PopID();
 		};
@@ -146,6 +147,7 @@ void gear::ui::componentui::DrawMaterialUI(Ref<Material>& material, UIContext* u
 						material->LoadFromAssetFile(assetFile);
 					}
 				}
+				ImGui::EndDragDropTarget();
 			}
 			if (ImGui::Button("Open"))
 			{
