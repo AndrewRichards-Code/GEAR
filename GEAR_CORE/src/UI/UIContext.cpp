@@ -140,6 +140,11 @@ ImTextureID UIContext::AddTextureID(const miru::base::ImageViewRef& imageView)
 	}
 	else
 	{
+		if (s_MaxDescriptors <= m_DescriptorCount)
+		{
+			GEAR_FATAL(ErrorCode::UI | ErrorCode::INVALID_STATE, "Exceeded max descriptors of %u in UI.", s_MaxDescriptors);
+		}
+
 		ImTextureID& ImageID = m_TextureIDs[imageView];
 		if (GraphicsAPI::IsD3D12())
 		{
@@ -147,26 +152,26 @@ ImTextureID UIContext::AddTextureID(const miru::base::ImageViewRef& imageView)
 			const miru::d3d12::ImageViewRef& d3d12ColourImageView = ref_cast<miru::d3d12::ImageView>(imageView);
 
 			ID3D12Device* device = (ID3D12Device*)GetDevice();
-			UINT handleIncrement = (device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)) * m_GPUHandleHeapIndex;
-			m_GPUHandleHeapIndex = (m_GPUHandleHeapIndex + 1) % 1000;
+			size_t GPUHandleHeapIndex = std::distance(m_D3D12DescriptorHeapFreeList.begin(), std::ranges::find_first_of(m_D3D12DescriptorHeapFreeList, std::array<bool, 1>({false }))) ;
+			UINT handleIncrement = (device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)) * (GPUHandleHeapIndex + 1);
 
 			D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;
 			cpuHandle.ptr = m_D3D12DescriptorHeapSRV->GetCPUDescriptorHandleForHeapStart().ptr + handleIncrement;
 			device->CreateShaderResourceView(d3d12ColourImage->m_Image, &d3d12ColourImageView->m_SRVDesc, cpuHandle);
 			D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle;
 			gpuHandle.ptr = m_D3D12DescriptorHeapSRV->GetGPUDescriptorHandleForHeapStart().ptr + handleIncrement;
-
 			ImageID = (ImTextureID)(gpuHandle.ptr);
-			m_D3D12GPUHandleHeapOffsets[ImageID] = handleIncrement;
 
+			m_D3D12GPUHandleHeapIndices[ImageID] = GPUHandleHeapIndex;
+			m_D3D12DescriptorHeapFreeList[GPUHandleHeapIndex] = true;
 		}
 		else
 		{
 			VkDevice device = *(VkDevice*)GetDevice();
 			const miru::vulkan::ImageViewRef& vkColourImageView = ref_cast<miru::vulkan::ImageView>(imageView);
 			ImageID = (ImTextureID)ImGui_ImplVulkan_AddTexture(m_VulkanSampler, vkColourImageView->m_ImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-			m_VulkanDescriptorCount++;
 		}
+		m_DescriptorCount++;
 		ResultImageID = ImageID;
 	}
 
@@ -190,13 +195,15 @@ std::map<miru::base::ImageViewRef, ImTextureID>::iterator UIContext::RemoveTextu
 	const ImTextureID& ImageID = it->second;
 	if (GraphicsAPI::IsD3D12())
 	{
-		m_D3D12GPUHandleHeapOffsets[ImageID] = 0;
+		size_t GPUHandleHeapIndex = m_D3D12GPUHandleHeapIndices[ImageID];
+		m_D3D12DescriptorHeapFreeList[GPUHandleHeapIndex] = false;
+		m_D3D12GPUHandleHeapIndices.erase(ImageID);
 	}
 	else
 	{
 		ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)ImageID);
-		m_VulkanDescriptorCount--;
 	}
+	m_DescriptorCount--;
 	return m_TextureIDs.erase(it);
 }
 
@@ -251,13 +258,13 @@ void UIContext::Initialise(Ref<graphics::Window>& window)
 		
 		VkDescriptorPoolSize poolSizes[] =
 		{
-			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 }
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, s_MaxDescriptors }
 		};
 		VkDescriptorPoolCreateInfo descriptorPoolCI;
 		descriptorPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		descriptorPoolCI.pNext = nullptr;
 		descriptorPoolCI.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-		descriptorPoolCI.maxSets = 1000;
+		descriptorPoolCI.maxSets = s_MaxDescriptors;
 		descriptorPoolCI.poolSizeCount = (uint32_t)IM_ARRAYSIZE(poolSizes);
 		descriptorPoolCI.pPoolSizes = poolSizes;
 		VkResult res = vkCreateDescriptorPool(vkContext->m_Device, &descriptorPoolCI, nullptr, &m_VulkanDescriptorPool);
@@ -307,7 +314,7 @@ void UIContext::Initialise(Ref<graphics::Window>& window)
 		imGuiVulkanInitInfo.CheckVkResultFn = [](VkResult result) 
 			{
 				if (result != VK_SUCCESS)
-					ARC_DEBUG_BREAK; 
+					ARC_DEBUG_BREAK;
 			};
 		ImGui_ImplVulkan_Init(&imGuiVulkanInitInfo);
 	}
@@ -320,7 +327,7 @@ void UIContext::Initialise(Ref<graphics::Window>& window)
 
 		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 		desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		desc.NumDescriptors = 1000;
+		desc.NumDescriptors = s_MaxDescriptors;
 		desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 		HRESULT res = d3d12Context->m_Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_D3D12DescriptorHeapSRV));
 		GEAR_FATAL(res, "GEARBOX: Failed to Create ID3D12DescriptorHeap for ImGui.");

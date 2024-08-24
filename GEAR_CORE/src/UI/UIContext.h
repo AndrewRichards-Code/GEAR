@@ -181,15 +181,17 @@ namespace gear
 			
 			static UIContext* s_UIContext;
 
-		public:
+			static constexpr uint32_t s_MaxDescriptors = 1024 * 512;
+			uint32_t m_DescriptorCount = 0;
+
 			VkDescriptorPool m_VulkanDescriptorPool;
 			VkSampler m_VulkanSampler;
-			uint32_t m_VulkanDescriptorCount = 0;
 			
 			ID3D12DescriptorHeap* m_D3D12DescriptorHeapSRV;
-			std::map<ImTextureID, UINT> m_D3D12GPUHandleHeapOffsets;
-			UINT m_GPUHandleHeapIndex = 1;
+			std::array<bool, s_MaxDescriptors> m_D3D12DescriptorHeapFreeList = {0};
+			std::map<ImTextureID, size_t> m_D3D12GPUHandleHeapIndices;
 
+		public:
 			std::map<miru::base::ImageViewRef, ImTextureID> m_TextureIDs;
 			std::map<miru::base::ImageViewRef, ImTextureID> m_TextureIDs_PF;
 		};
