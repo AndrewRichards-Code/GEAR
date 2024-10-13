@@ -25,6 +25,12 @@ namespace gear
 				m_CI = *pCreateInfo;
 				m_Entity = m_CI.pScene->m_Registry.create();
 			}
+			Entity(const CreateInfo& createInfo, entt::entity _entity)
+			{
+				m_CI = createInfo;
+				m_Entity = _entity;
+			}
+
 			~Entity() = default;
 
 			template<typename T>

@@ -39,7 +39,7 @@ Texture::Texture(CreateInfo* pCreateInfo)
 	imageUploadBufferCI.device = m_CI.device;
 	imageUploadBufferCI.usage = Buffer::UsageBit::TRANSFER_SRC_BIT | Buffer::UsageBit::TRANSFER_DST_BIT;
 	imageUploadBufferCI.imageDimension = { m_CI.width, m_CI.height, std::max(m_CI.depth, m_CI.arrayLayers), Image::GetFormatSize(m_CI.format) };
-	imageUploadBufferCI.size = m_CI.imageData.size();
+	imageUploadBufferCI.size = std::max(m_CI.imageData.size(), imageUploadBufferCI.imageDimension.GetTotalSize<size_t>());
 	imageUploadBufferCI.data = m_CI.imageData.data();
 	imageUploadBufferCI.allocator = AllocatorManager::GetCPUAllocator();
 	m_ImageUploadBuffer = Buffer::Create(&imageUploadBufferCI);

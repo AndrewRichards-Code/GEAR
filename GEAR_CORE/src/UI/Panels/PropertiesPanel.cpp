@@ -37,19 +37,26 @@ void PropertiesPanel::Draw()
 			
 			if (!m_UseSelectedEntity)
 			{
+				std::vector<std::string> entityNames;
+				std::vector<size_t> entityIDs;
 				Ref<Scene>& scene = sceneHierarchyPanel->GetCreateInfo().scene;
 				entt::registry& reg = scene->GetRegistry();
 				reg.each([&](entt::entity entityID)
 					{
-						Entity _entity;
-						_entity.m_CI = { scene.get() };
-						_entity.m_Entity = entityID;
-
+						Entity _entity({ scene.get() }, entityID);
 						const std::string& name = _entity.GetComponent<NameComponent>().name;
-						ImGui::Text("%s", name.c_str());
-						if (ImGui::IsItemClicked())
-							entity = _entity;
+						entityNames.push_back(name);
+						entityIDs.push_back(static_cast<size_t>(entityID));
 					});
+
+
+				static size_t entityListIndex = 0;
+				DrawDropDownMenu<size_t>("Entities", entityNames, entityListIndex);
+
+				entity = sceneHierarchyPanel->GetSelectedEntity();
+				entity.m_CI = { scene.get() };
+				entity.m_Entity = static_cast<entt::entity>(entityIDs[entityListIndex]);
+				
 			}
 			else
 			{
