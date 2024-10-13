@@ -4,6 +4,7 @@
 #include "Asset/AssetRegistry.h"
 #include "Asset/EditorAssetManager.h"
 #include "Asset/Serialiser/AssetSerialiser.h"
+#include "Graphics/Window.h"
 #include "Scene/Scene.h"
 #include "yaml-cpp/yaml.h"
 #include <fstream>
@@ -24,7 +25,10 @@ Project::Project(CreateInfo* pCreateInfo)
 	asset::AssetRegistry::CreateInfo assetRegCI;
 	assetRegCI.filepath = GetProjectAssetRegistryFilepath();
 	assetRegCI.fileType = asset::AssetRegistry::FileType::TEXT;
-	s_AssetManager = CreateRef<asset::EditorAssetManager>(&assetRegCI);
+	asset::AssetManager::CreateInfo assetManagerCI;
+	assetManagerCI.pAssetRegistryCreateInfo = &assetRegCI;
+	assetManagerCI.device = m_CI.window->GetDevice();
+	s_AssetManager = CreateRef<asset::EditorAssetManager>(&assetManagerCI);
 
 	if (!s_ActiveProject)
 		s_ActiveProject = this;

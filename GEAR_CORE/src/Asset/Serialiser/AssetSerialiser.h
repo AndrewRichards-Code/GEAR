@@ -22,6 +22,7 @@ namespace gear
 				static Ref<asset::AssetManager> GetAssetManager() { return project::Project::GetAssetManager(); }
 				static Ref<asset::EditorAssetManager> GetEditorAssetManager() { return ui::UIContext::GetUIContext()->GetEditorAssetManager(); }
 
+				static void SetDevice(void* device);
 				static void* GetDevice();
 
 			private:
@@ -30,6 +31,8 @@ namespace gear
 
 				typedef void(*AssetSerialiseFunctions)(Ref<Asset>, const AssetMetadata&);
 				static std::map<Asset::Type, AssetSerialiseFunctions> s_AssetSerialiseFunctions;
+
+				static inline void* s_Device = nullptr;
 			};
 
 

@@ -219,7 +219,10 @@ void UIContext::Initialise(Ref<graphics::Window>& window)
 	asset::AssetRegistry::CreateInfo assetRegCI;
 	assetRegCI.filepath = GetSourceDirectory() / std::filesystem::path("GEARBOX/GEARBOX.gar");
 	assetRegCI.fileType = asset::AssetRegistry::FileType::TEXT;
-	m_AssetManager = CreateRef<asset::EditorAssetManager>(&assetRegCI);
+	asset::AssetManager::CreateInfo assetManagerCI;
+	assetManagerCI.pAssetRegistryCreateInfo = &assetRegCI;
+	assetManagerCI.device = window->GetDevice();
+	m_AssetManager = CreateRef<asset::EditorAssetManager>(&assetManagerCI);
 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();

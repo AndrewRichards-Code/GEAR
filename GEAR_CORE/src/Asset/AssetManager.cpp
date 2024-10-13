@@ -4,9 +4,10 @@
 using namespace gear::asset;
 using namespace serialiser;
 
-AssetManager::AssetManager(AssetRegistry::CreateInfo* pCreateInfo)
-	: m_AssetRegistry(pCreateInfo)
+AssetManager::AssetManager(CreateInfo* pCreateInfo)
+	: m_AssetRegistry(pCreateInfo->pAssetRegistryCreateInfo)
 {
+	AssetSerialiser::SetDevice(pCreateInfo->device);
 }
 
 AssetManager::~AssetManager()
@@ -53,7 +54,6 @@ void AssetManager::RemoveAsset(Asset::Handle handle)
 		m_AssetRegistry.RemoveAsset(handle);
 	}
 }
-
 
 const AssetMetadata& AssetManager::GetMetadata(Asset::Handle handle)
 {

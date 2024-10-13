@@ -10,11 +10,17 @@ namespace gear
 		{
 			//enum/struct
 		public:
+			struct CreateInfo
+			{
+				AssetRegistry::CreateInfo* pAssetRegistryCreateInfo;
+				void* device;
+			};
+
 			typedef std::map<Asset::Handle, Ref<Asset>> AssetMap;
 
 			//Method
 		public:
-			AssetManager(AssetRegistry::CreateInfo* pCreateInfo);
+			AssetManager(CreateInfo* pCreateInfo);
 			virtual ~AssetManager();
 
 			operator const AssetMap& () const

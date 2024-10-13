@@ -15,9 +15,14 @@ using namespace gear;
 using namespace asset;
 using namespace serialiser;
 
+void AssetSerialiser::SetDevice(void* device)
+{
+	s_Device = device;
+}
+
 void* AssetSerialiser::GetDevice()
 { 
-	return project::Project::GetActiveProject()->GetCreateInfo().window->GetDevice();
+	return s_Device;
 }
 
 std::map<Asset::Type, AssetSerialiser::AssetDeserialiseFunction> AssetSerialiser::s_AssetDeserialiseFunctions = {

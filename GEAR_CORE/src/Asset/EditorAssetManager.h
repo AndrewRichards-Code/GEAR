@@ -11,7 +11,7 @@ namespace gear
 		{
 			//Method
 		public:
-			EditorAssetManager(AssetRegistry::CreateInfo* pCreateInfo);
+			EditorAssetManager(CreateInfo* pCreateInfo);
 			~EditorAssetManager();
 
 			template<typename T>

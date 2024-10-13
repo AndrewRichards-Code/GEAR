@@ -4,7 +4,7 @@
 using namespace gear::asset;
 using namespace serialiser;
 
-EditorAssetManager::EditorAssetManager(AssetRegistry::CreateInfo* pCreateInfo)
+EditorAssetManager::EditorAssetManager(CreateInfo* pCreateInfo)
 	: AssetManager(pCreateInfo)
 {
 }
@@ -24,7 +24,7 @@ Ref<Asset> EditorAssetManager::Import(Asset::Type type, const std::filesystem::p
 	const AssetRegistry::AssetMetadataMap& assetRegistryMap = m_AssetRegistry;
 	for (auto it = assetRegistryMap.begin(); it != assetRegistryMap.end(); it++)
 	{
-		if (it->second.filepath.generic_string() == filepath.generic_string())
+		if (it->second.filepath == filepath)
 			return GetAsset(it->first);
 	}
 
