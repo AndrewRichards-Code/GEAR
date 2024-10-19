@@ -79,7 +79,9 @@ namespace gear
 
 			inline const CreateInfo& GetCreateInfo() { return m_CI; }
 			inline Ref<graphics::Window> GetWindow() { return m_CI.window; }
-			inline std::vector<Ref<panels::Panel>>& GetEditorPanels() { return m_EditorPanels; };
+			inline std::vector<Ref<panels::Panel>>& GetEditorPanels() { return m_EditorPanels; }
+			inline void AddEditorPanel(const Ref<panels::Panel>& panel) { m_EditorPanelsToAdd.push_back(panel); }
+			inline void AddEditorPanels(const std::vector<Ref<panels::Panel>>& panels) { m_EditorPanelsToAdd.insert(m_EditorPanelsToAdd.end(), panels.begin(), panels.end()); }
 			inline Ref<project::Project> GetProject() { return m_Project; }
 			inline void SetProject(const Ref<project::Project>& project) { m_Project = project; }
 			inline Ref<asset::EditorAssetManager> GetEditorAssetManager() { return m_AssetManager; }
@@ -175,6 +177,7 @@ namespace gear
 
 			miru::base::GraphicsAPI::API m_API;
 			std::vector<Ref<panels::Panel>> m_EditorPanels;
+			std::vector<Ref<panels::Panel>> m_EditorPanelsToAdd;
 			Ref<MenuBar> m_MenuBar;
 			Ref<asset::EditorAssetManager> m_AssetManager;
 			Ref<project::Project> m_Project;

@@ -47,6 +47,10 @@ UIContext::~UIContext()
 
 void UIContext::Update(core::Timer timer)
 {
+	//Add in new panels
+	m_EditorPanels.insert(m_EditorPanels.end(), m_EditorPanelsToAdd.begin(), m_EditorPanelsToAdd.end());
+	m_EditorPanelsToAdd.clear();
+
 	//Update panels
 	for (auto& panel : m_EditorPanels)
 	{

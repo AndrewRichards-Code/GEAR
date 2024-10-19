@@ -44,7 +44,6 @@ namespace gear
 				struct CreateInfo
 				{
 					std::filesystem::path	currentFilepathFull;
-					std::string				filepathExt;
 					asset::Asset::Handle	handle;
 					bool					readWrite = false;
 				};
@@ -56,9 +55,16 @@ namespace gear
 
 				void Draw() override;
 
+				void DrawText();
+				void DrawImage();
+				void DrawMaterial();
+				void DrawMesh();
+
+			private:
+				ContentType GetContextTypeFromExtension(const std::filesystem::path& fileExtension);
+			
 			public:
 				inline CreateInfo& GetCreateInfo() { return m_CI; }
-				ContentType GetContextTypeFromExtension(const std::string& fileExtension);
 
 				//Members
 			private:

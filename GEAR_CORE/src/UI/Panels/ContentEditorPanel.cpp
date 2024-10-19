@@ -43,7 +43,7 @@ ContentEditorPanel::~ContentEditorPanel()
 void ContentEditorPanel::Draw()
 {
 	std::string id = UIContext::GetUIContext()->GetUniqueIDString("Content Editor", this);
-	if (ImGui::Begin(id.c_str(), &m_Open))
+	if (ImGui::Begin(id.c_str(), &m_Open), ImGuiWindowFlags_HorizontalScrollbar)
 	{
 		open = ImGui::Button("Open");
 		if (open)
@@ -59,80 +59,15 @@ void ContentEditorPanel::Draw()
 		ImGui::SameLine();
 		ImGui::Text(m_CI.currentFilepathFull.string().c_str());
 
-		if (m_CI.filepathExt.empty())
-			m_CI.filepathExt = m_CI.currentFilepathFull.extension().string();
-
-		ContentType contentType = GetContextTypeFromExtension(m_CI.filepathExt);
+		ContentType contentType = GetContextTypeFromExtension(m_CI.currentFilepathFull.extension());
 		if (contentType == ContentType::TEXT)
 		{
-			if (open)
-			{
-				std::fstream stream;
-				if (!stream.is_open())
-					stream.open(m_CI.currentFilepathFull.string(), std::ios::ate | std::ios::in);
-
-				if (stream.is_open() && read)
-				{
-					size_t fileSize = static_cast<size_t>(stream.tellg());
-					stream.seekg(0, std::fstream::beg);
-					std::string line;
-					while (!stream.eof())
-					{
-						std::getline(stream, line);
-						output.append(line + "\n");
-					}
-					stream.close();
-					read = false;
-				}
-				
-				if (close)
-				{
-					output.clear();
-					open = close = false;
-					read = true;
-				}
-			}
-
-			if (!output.empty())
-				ImGui::TextUnformatted(output.c_str());
+			DrawText();
 		}
 
-		if (contentType == ContentType::IMAGE && open)
+		if (contentType == ContentType::IMAGE)
 		{
-			Ref<asset::AssetManager> assetManager = project::Project::GetAssetManager();
-			Ref<asset::ImageAssetDataBuffer> asset = assetManager->GetAsset<asset::ImageAssetDataBuffer>(m_CI.handle);
-
-			if (!texture && asset)
-			{
-				UIContext* uiContext = UIContext::GetUIContext();
-
-				graphics::Texture::CreateInfo textureCI;
-				textureCI.debugName = "TestTexture";
-				textureCI.device = uiContext->GetDevice();
-				textureCI.imageData = asset->Data;
-				textureCI.width = asset->width;
-				textureCI.height = asset->height;
-				textureCI.depth = asset->depth;
-				textureCI.mipLevels = graphics::Texture::MaxMipLevel;
-				textureCI.arrayLayers = 1;
-				textureCI.type = miru::base::Image::Type::TYPE_2D;
-				textureCI.format = asset->format;
-				textureCI.samples = miru::base::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
-				textureCI.usage = miru::base::Image::UsageBit(0);
-				textureCI.generateMipMaps = true;
-				textureCI.gammaSpace = graphics::GammaSpace::SRGB;
-				texture = CreateRef<graphics::Texture>(&textureCI);
-
-				for (const auto& panel : uiContext->GetEditorPanelsByType<ViewportPanel>())
-				{
-					if (panel)
-					{
-						panel->GetRenderer()->SubmitTexturesForUpload({ texture });
-						break;
-					}
-				}
-			}
-			DrawTextureComponentUI(texture);
+			DrawImage();
 		}
 
 #if 0
@@ -186,7 +121,92 @@ void ContentEditorPanel::Draw()
 		this->~ContentEditorPanel();
 }
 
-ContentEditorPanel::ContentType ContentEditorPanel::GetContextTypeFromExtension(const std::string& fileExtension)
+
+void ContentEditorPanel::DrawText()
+{
+	if (!open)
+		return;
+	
+	std::fstream stream;
+	if (!stream.is_open())
+		stream.open(m_CI.currentFilepathFull.string(), std::ios::ate | std::ios::in);
+
+	if (stream.is_open() && read)
+	{
+		size_t fileSize = static_cast<size_t>(stream.tellg());
+		stream.seekg(0, std::fstream::beg);
+		std::string line;
+		while (!stream.eof())
+		{
+			std::getline(stream, line);
+			output.append(line + "\n");
+		}
+		stream.close();
+		read = false;
+	}
+
+	if (close)
+	{
+		output.clear();
+		open = close = false;
+		read = true;
+	}
+
+	if (!output.empty())
+		ImGui::TextUnformatted(output.c_str());
+}
+
+void ContentEditorPanel::DrawImage()
+{
+	if (!open)
+		return;
+
+	Ref<asset::AssetManager> assetManager = project::Project::GetAssetManager();
+	Ref<asset::ImageAssetDataBuffer> asset = assetManager->GetAsset<asset::ImageAssetDataBuffer>(m_CI.handle);
+
+	if (!texture && asset)
+	{
+		UIContext* uiContext = UIContext::GetUIContext();
+
+		graphics::Texture::CreateInfo textureCI;
+		textureCI.debugName = "TestTexture";
+		textureCI.device = uiContext->GetDevice();
+		textureCI.imageData = asset->Data;
+		textureCI.width = asset->width;
+		textureCI.height = asset->height;
+		textureCI.depth = asset->depth;
+		textureCI.mipLevels = graphics::Texture::MaxMipLevel;
+		textureCI.arrayLayers = 1;
+		textureCI.type = miru::base::Image::Type::TYPE_2D;
+		textureCI.format = asset->format;
+		textureCI.samples = miru::base::Image::SampleCountBit::SAMPLE_COUNT_1_BIT;
+		textureCI.usage = miru::base::Image::UsageBit(0);
+		textureCI.generateMipMaps = true;
+		textureCI.gammaSpace = graphics::GammaSpace::SRGB;
+		texture = CreateRef<graphics::Texture>(&textureCI);
+
+		for (const auto& panel : uiContext->GetEditorPanelsByType<ViewportPanel>())
+		{
+			if (panel)
+			{
+				panel->GetRenderer()->SubmitTexturesForUpload({ texture });
+				break;
+			}
+		}
+		}
+	DrawTextureComponentUI(texture);
+}
+
+void ContentEditorPanel::DrawMaterial()
+{
+}
+
+void ContentEditorPanel::DrawMesh()
+{
+}
+
+
+ContentEditorPanel::ContentType ContentEditorPanel::GetContextTypeFromExtension(const std::filesystem::path& fileExtension)
 {
 	ContentType contentType;
 

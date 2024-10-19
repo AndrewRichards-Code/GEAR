@@ -283,12 +283,12 @@ set(UI_ComponentUI_SRC_HEADERS
 	"src/UI/ComponentUI/SkyboxComponentUI.h"
 	"src/UI/ComponentUI/TextureComponentUI.h"
 	"src/UI/ComponentUI/TransformComponentUI.h"
-	)
-	set(UI_SRC_CPP_FILES
+)
+set(UI_SRC_CPP_FILES
 	"src/UI/MenuBar.cpp"
 	"src/UI/UIContext.cpp"
-	)
-	set(UI_Panels_SRC_CPP_FILES
+)
+set(UI_Panels_SRC_CPP_FILES
 	"src/UI/Panels/ContentBrowserPanel.cpp"
 	"src/UI/Panels/ContentEditorPanel.cpp"
 	"src/UI/Panels/MaterialPanel.cpp"
@@ -298,8 +298,8 @@ set(UI_ComponentUI_SRC_HEADERS
 	"src/UI/Panels/RendererPropertiesPanel.cpp"
 	"src/UI/Panels/SceneHierarchyPanel.cpp"
 	"src/UI/Panels/ViewportPanel.cpp"
-	)
-	set(UI_ComponentUI_SRC_CPP_FILES
+)
+set(UI_ComponentUI_SRC_CPP_FILES
 	"src/UI/ComponentUI/CameraComponentUI.cpp"
 	"src/UI/ComponentUI/ComponentUI.cpp"
 	"src/UI/ComponentUI/LightComponentUI.cpp"

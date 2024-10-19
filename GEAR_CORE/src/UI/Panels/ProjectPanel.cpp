@@ -104,6 +104,7 @@ void ProjectPanel::Draw()
 				for (const auto& metadata : metadataMap)
 				{
 					asset::Asset::Handle handle = metadata.first;
+					ImGui::PushID(handle);
 
 					ui::componentui::DrawStaticNumber("Handle", handle);
 					ui::componentui::DrawStaticText("Type", asset::Asset::ToString(assetManager->GetType(handle)));
@@ -111,10 +112,9 @@ void ProjectPanel::Draw()
 					if(ImGui::Button("View"))
 					{
 						ContentEditorPanel::CreateInfo contentEditorCI;
-						contentEditorCI.currentFilepathFull = assetManager->GetFilepath(handle).generic_string();
-						contentEditorCI.filepathExt = assetManager->GetFilepath(handle).extension().generic_string();
+						contentEditorCI.currentFilepathFull = assetManager->GetFilepath(handle);
 						contentEditorCI.handle = handle;
-						UIContext::GetUIContext()->GetEditorPanels().emplace_back(CreateRef<ContentEditorPanel>(&contentEditorCI));
+						UIContext::GetUIContext()->AddEditorPanel(CreateRef<ContentEditorPanel>(&contentEditorCI));
 					}
 					ImGui::SameLine();
 					if (ImGui::Button("Remove"))
@@ -122,6 +122,8 @@ void ProjectPanel::Draw()
 						assetManager->RemoveAsset(handle);
 						break;
 					}
+
+					ImGui::PopID();
 				}
 				EndDrawTreeNode();
 			}

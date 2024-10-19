@@ -237,8 +237,7 @@ void ContentBrowserPanel::DrawIcon(const std::filesystem::directory_entry& direc
 		{
 			ContentEditorPanel::CreateInfo contentEditorCI;
 			contentEditorCI.currentFilepathFull = directory.path();
-			contentEditorCI.filepathExt = pathExtStr;
-			UIContext::GetUIContext()->GetEditorPanels().emplace_back(CreateRef<ContentEditorPanel>(&contentEditorCI));
+			UIContext::GetUIContext()->AddEditorPanel(CreateRef<ContentEditorPanel>(&contentEditorCI));
 		}
 	}
 
