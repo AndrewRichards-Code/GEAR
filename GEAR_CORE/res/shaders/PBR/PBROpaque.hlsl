@@ -98,7 +98,7 @@ float3 GetEmissive(PS_IN IN)
 float ShadowPCF(float2 shadowTextureCoords, uint shadowCascadeIndex, float lightSpaceZ)
 {
 	float shadowStrength = 0.0;
-	float bias = 0.00001;
+	float bias = 0.0001;
 	int range = 2;
 	int size = 2 * range + 1;
 	int count = size * size;
@@ -154,23 +154,27 @@ float GetShadowStrength(float4 worldPosition, float viewPositionZ, Light light)
 	{
 		float3 lightDirection = worldPosition.xyz - light.position.xyz;
 		uint faceID = UVWToFaceIndex(lightDirection);
-		float3 lightSpaceProjectedPosition = PerspectiveDivide(worldPosition, probeInfo.view[faceID], probeInfo.proj[0]);
+		float4 lightSpaceProjectedPosition = PerspectiveDivide(worldPosition, probeInfo.view[faceID], probeInfo.proj[0]);
 		lightSpaceZ = lightSpaceProjectedPosition.z;
 		shadowDepth = shadowMapCube_ImageCIS.SampleLevel(shadowMapCube_SamplerCIS, lightDirection, 0.0).x;
 	}
 	else if (type == 1.0) //DIRECTIONAL
 	{
-		float3 lightSpaceProjectedPosition = PerspectiveDivide(worldPosition, probeInfo.view[shadowCascadeIndex], probeInfo.proj[shadowCascadeIndex]);
+		float4 lightSpaceProjectedPosition = PerspectiveDivide(worldPosition, probeInfo.view[shadowCascadeIndex], probeInfo.proj[shadowCascadeIndex]);
 		float2 shadowTextureCoords = (lightSpaceProjectedPosition.xy / 2.0) + float2(0.5, 0.5);
 		lightSpaceZ = lightSpaceProjectedPosition.z;
-		return ShadowPCF(shadowTextureCoords, shadowCascadeIndex, lightSpaceZ);
+		
+		if (lightSpaceProjectedPosition.w > 0.0 && lightSpaceProjectedPosition.z > -1.0 && lightSpaceProjectedPosition.z < 1.0)
+			return ShadowPCF(shadowTextureCoords, shadowCascadeIndex, lightSpaceZ);
+		else
+			return shadowStrength;
 		
 		if (viewPositionZ > probeInfo.farPlanes[probeInfo.shadowCascades - 1]) //Beyond furthest cascade
 			return shadowStrength;
 	}	
 	else if (type == 2.0) //SPOT
 	{
-		float3 lightSpaceProjectedPosition = PerspectiveDivide(worldPosition, probeInfo.view[0], probeInfo.proj[0]);
+		float4 lightSpaceProjectedPosition = PerspectiveDivide(worldPosition, probeInfo.view[0], probeInfo.proj[0]);
 		float2 shadowTextureCoords = (lightSpaceProjectedPosition.xy / 2.0) + float2(0.5, 0.5);
 		lightSpaceZ = lightSpaceProjectedPosition.z;
 		shadowDepth = shadowMap2DArray_ImageCIS.SampleLevel(shadowMap2DArray_SamplerCIS, float3(shadowTextureCoords, 0), 0.0).x;
