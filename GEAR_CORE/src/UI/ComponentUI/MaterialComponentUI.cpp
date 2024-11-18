@@ -21,7 +21,7 @@ using namespace base;
 
 using namespace mars;
 
-void gear::ui::componentui::DrawMaterialUI(Ref<Material>& material, UIContext* uiContext, bool fileFunctions)
+void gear::ui::componentui::DrawMaterialComponentUI(Ref<Material>& material, UIContext* uiContext, bool fileFunctions)
 {
 	if (DrawTreeNode("Material", false))
 	{
@@ -175,11 +175,7 @@ void gear::ui::componentui::DrawMaterialUI(Ref<Material>& material, UIContext* u
 	}
 }
 
-void gear::ui::componentui::DrawTextureUI(Ref<graphics::Texture>& texture)
-{
-}
-
-void gear::ui::componentui::DrawRenderPipelineUI(Ref<RenderPipeline>& renderPipeline)
+void gear::ui::componentui::DrawRenderPipelineComponentUI(Ref<RenderPipeline>& renderPipeline)
 {
 	if (DrawTreeNode("Render Pipeline", false))
 	{

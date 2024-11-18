@@ -26,8 +26,8 @@ void MaterialPanel::Draw()
 	{
 		if (m_SelectedMaterial)
 		{
-			DrawMaterialUI(m_SelectedMaterial, UIContext::GetUIContext());
-			DrawRenderPipelineUI(m_SelectedRenderPipeline);
+			DrawMaterialComponentUI(m_SelectedMaterial, UIContext::GetUIContext());
+			DrawRenderPipelineComponentUI(m_SelectedRenderPipeline);
 		}
 	}
 	ImGui::End();

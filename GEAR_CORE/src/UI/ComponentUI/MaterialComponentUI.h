@@ -17,9 +17,8 @@ namespace gear
 
 		namespace componentui
 		{
-			void DrawMaterialUI(Ref<objects::Material>& material, UIContext* uiContext, bool fileFunctions = true);
-			void DrawTextureUI(Ref<graphics::Texture>& texture);
-			void DrawRenderPipelineUI(Ref<graphics::RenderPipeline>& renderPipeline);
+			void DrawMaterialComponentUI(Ref<objects::Material>& material, UIContext* uiContext, bool fileFunctions = true);
+			void DrawRenderPipelineComponentUI(Ref<graphics::RenderPipeline>& renderPipeline);
 		}
 	}
 }
