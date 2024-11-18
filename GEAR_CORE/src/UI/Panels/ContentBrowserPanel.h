@@ -22,6 +22,14 @@ namespace gear
 					std::filesystem::path AssetFolderPath;
 				};
 
+				enum class FileState : uint8_t
+				{
+					NORMAL = 0,
+					CUT,
+					COPY,
+					RENAME
+				};
+
 				//Methods
 			public:
 				ContentBrowserPanel(CreateInfo* pCreateInfo);
@@ -32,11 +40,12 @@ namespace gear
 				bool DrawTopBar();
 				void DrawIcons();
 				void DrawIcon(const std::filesystem::directory_entry& directory);
-				void DrawIconContextMenu(const std::filesystem::directory_entry& directory);
+				void DrawIconContextMenu(const std::filesystem::directory_entry& directory, bool hovered);
 				void DrawContextMenu();
 
-				std::filesystem::path CreateFileDialog(const std::filesystem::path& filename, const std::filesystem::path& extension);
-				void ImportAssetDialog(const std::filesystem::path& impotFilepath);
+				void CreateFileDialog();
+				void RenameFileDialog();
+				void ImportAssetDialog();
 
 				inline CreateInfo& GetCreateInfo() { return m_CI; }
 
@@ -53,10 +62,11 @@ namespace gear
 				const std::filesystem::path m_FolderTextureFilepath = "GEARBOX/res/icons/icons8-folder-512.png";
 				const std::filesystem::path m_FileTextureFilepath = "GEARBOX/res/icons/icons8-file-512.png";
 
-				typedef void(ContentBrowserPanel::* PFN_PopupWindowFunction)(const std::filesystem::path&);
-				PFN_PopupWindowFunction m_PopupWindowFunction = nullptr;
+				std::function<void(const std::filesystem::path&)> m_PopupWindowCloseCallback = nullptr;
+				std::function<void()> m_PopupWindowFunction = nullptr;
 				std::filesystem::path m_PopupWindowFilepath = "";
 
+				std::unordered_map<std::filesystem::path, FileState> m_ModifyingFiles;
 
 				struct FileExtTexture
 				{
