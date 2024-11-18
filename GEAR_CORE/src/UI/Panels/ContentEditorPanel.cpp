@@ -26,6 +26,8 @@ using namespace componentui;
 using namespace core;
 using namespace objects;
 
+using namespace asset;
+
 using namespace miru;
 using namespace base;
 
@@ -68,6 +70,15 @@ void ContentEditorPanel::Draw()
 		if (contentType == ContentType::IMAGE)
 		{
 			DrawImage();
+		}
+
+		if (contentType == ContentType::GEAR_ASSET)
+		{
+			const Ref<AssetManager>& assetManager = project::Project::GetAssetManager();
+			AssetMetadata metadata = assetManager->GetMetadata(m_CI.handle);
+
+			if (metadata.type == Asset::Type::MATERIAL)
+				DrawMaterial();
 		}
 
 #if 0
@@ -161,8 +172,8 @@ void ContentEditorPanel::DrawImage()
 	if (!open)
 		return;
 
-	Ref<asset::AssetManager> assetManager = project::Project::GetAssetManager();
-	Ref<asset::ImageAssetDataBuffer> asset = assetManager->GetAsset<asset::ImageAssetDataBuffer>(m_CI.handle);
+	Ref<AssetManager> assetManager = project::Project::GetAssetManager();
+	Ref<ImageAssetDataBuffer> asset = assetManager->GetAsset<ImageAssetDataBuffer>(m_CI.handle);
 
 	if (!texture && asset)
 	{
@@ -193,12 +204,20 @@ void ContentEditorPanel::DrawImage()
 				break;
 			}
 		}
-		}
+	}
+
 	DrawTextureComponentUI(texture);
 }
 
 void ContentEditorPanel::DrawMaterial()
 {
+	if (!open)
+		return;
+
+	Ref<AssetManager> assetManager = project::Project::GetAssetManager();
+	Ref<Material> asset = assetManager->GetAsset<Material>(m_CI.handle);
+
+	//DrawMaterialComponentUI();
 }
 
 void ContentEditorPanel::DrawMesh()
