@@ -58,40 +58,23 @@ void MenuBar::Draw()
 		(this->*m_PopupWindowFunction)();
 }
 
-bool MenuBar::ShortcutPressed(const std::vector<uint32_t>& keycodes)
-{
-	Ref<Window> window = UIContext::GetUIContext()->GetWindow();
-	window->Update();
-
-	std::vector<uint32_t> _keycodes = keycodes;
-	std::vector<uint32_t> pressedKeycodes;
-	for (uint32_t i = 0; i < MAX_KEYS; i++)
-	{
-		if (window->IsKeyPressed(static_cast<unsigned int>(i)))
-			pressedKeycodes.push_back(i);
-	}
-	std::sort(pressedKeycodes.begin(), pressedKeycodes.end());
-	std::sort(_keycodes.begin(), _keycodes.end());
-	return pressedKeycodes == _keycodes;
-}
-
 void MenuBar::ProcessShortcuts()
 {
-	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_N }))
+	if (UIContext::ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_N }))
 		DrawItemNewScene();
-	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_O }))
+	if (UIContext::ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_O }))
 		DrawItemOpenScene();
-	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_S }))
+	if (UIContext::ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_S }))
 		DrawItemSaveScene();
-	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_S }) || m_SaveToSaveAs)
+	if (UIContext::ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_S }) || m_SaveToSaveAs)
 		DrawItemSaveSceneAs();
-	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_N }))
+	if (UIContext::ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_N }))
 		DrawItemNewProject();
-	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_O }))
+	if (UIContext::ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_O }))
 		DrawItemOpenProject();
-	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_R }))
+	if (UIContext::ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_R }))
 		DrawItemRecompileRenderPipelineShaders();
-	if (ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_R }))
+	if (UIContext::ShortcutPressed({ GLFW_KEY_LEFT_CONTROL, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_R }))
 		DrawItemReloadRenderPipelines();
 }
 

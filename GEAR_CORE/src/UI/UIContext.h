@@ -57,6 +57,9 @@ namespace gear
 
 			void* GetDevice();
 			miru::base::ContextRef GetContext();
+
+			static bool ShortcutPressed(const std::vector<uint32_t>& keycodes);
+
 			static std::filesystem::path GetSourceDirectory();
 
 		private:

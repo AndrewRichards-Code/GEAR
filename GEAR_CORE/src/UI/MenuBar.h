@@ -18,8 +18,6 @@ namespace gear
 			void Draw();
 
 		private:
-			bool ShortcutPressed(const std::vector<uint32_t>& keycodes);
-
 			void ProcessShortcuts();
 
 			void DrawMenuFile();

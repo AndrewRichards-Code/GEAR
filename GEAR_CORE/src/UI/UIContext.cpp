@@ -211,6 +211,23 @@ std::map<miru::base::ImageViewRef, ImTextureID>::iterator UIContext::RemoveTextu
 	return m_TextureIDs.erase(it);
 }
 
+bool UIContext::ShortcutPressed(const std::vector<uint32_t>& keycodes)
+{
+	Ref<graphics::Window> window = UIContext::GetUIContext()->GetWindow();
+	window->Update();
+
+	std::vector<uint32_t> _keycodes = keycodes;
+	std::vector<uint32_t> pressedKeycodes;
+	for (uint32_t i = 0; i < MAX_KEYS; i++)
+	{
+		if (window->IsKeyPressed(static_cast<unsigned int>(i)))
+			pressedKeycodes.push_back(i);
+	}
+	std::sort(pressedKeycodes.begin(), pressedKeycodes.end());
+	std::sort(_keycodes.begin(), _keycodes.end());
+	return pressedKeycodes == _keycodes;
+}
+
 std::filesystem::path UIContext::GetSourceDirectory()
 {
 	return std::filesystem::path(SOURCE_DIR);
