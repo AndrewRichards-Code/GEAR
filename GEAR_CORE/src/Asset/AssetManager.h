@@ -32,7 +32,7 @@ namespace gear
 				return m_AssetRegistry;
 			}
 
-			template<typename T>
+			template<typename T, std::enable_if_t<std::is_base_of<Asset, T>::value>* = nullptr>
 			Ref<T> GetAsset(Asset::Handle handle)
 			{
 				return ref_cast<T>(GetAsset(handle));
