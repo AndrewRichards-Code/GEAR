@@ -4,7 +4,7 @@
 //TODO: Find better place to put this!
 extern "C"\
 {\
-__declspec(dllexport) extern const unsigned int D3D12SDKVersion = 614; \
+__declspec(dllexport) extern const unsigned int D3D12SDKVersion = 615; \
 __declspec(dllexport) extern const char* D3D12SDKPath = ".\\D3D12\\"; \
 }
 
@@ -65,7 +65,7 @@ void GEARBOX::Run()
 	std::string configFilepath = (std::filesystem::current_path() / std::filesystem::path("config.gbcf")).string();
 	ConfigFile configFile;
 	if (configFile.Load(configFilepath))
-		configFile.UpdateWindowCreateInfo(mainWindowCI);
+		Window::UpdateWindowCreateInfo(configFile, mainWindowCI);
 
 	Ref<Window> mainWindow = CreateRef<Window>(&mainWindowCI);
 
@@ -85,7 +85,7 @@ void GEARBOX::Run()
 	UIContext::CreateInfo uiContextCI;
 	uiContextCI.window = mainWindow;
 	Scope<UIContext> uiContext = CreateScope<UIContext>(&uiContextCI);
-	mainRenderer->SubmitUIContext(uiContext.get());
+	mainRenderer->SubmitUIContext(uiContext.get(), &UIContext::SetPassParameters, &UIContext::RenderDrawData);
 
 	for (const Panel::Type& panelType : configFile.GetPanels())
 	{

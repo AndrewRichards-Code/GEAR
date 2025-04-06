@@ -1,0 +1,20 @@
+{
+	"fileType": "GEAR_RENDER_PIPELINE_FILE",
+	"debugName": "Mipmap",
+	"shaders": [
+		{
+			"debugName": "Mipmap_cs_6_4_mipmap.spv",
+			"stageAndEntryPoints": [
+				{
+					"stage": "COMPUTE_BIT",
+					"entryPoint": "mipmap"
+				}
+			],
+			"binaryFilepath": "$BUILD_DIR/shaderbin/Mipmap_cs_6_4_mipmap.spv",
+			"recompileArguments": {
+				"rafFilepath": "$SOURCE_DIR/GEAR_CORE/Resources/Shaders/Mipmap.json",
+				"index": 0
+			}
+		}
+	]
+}

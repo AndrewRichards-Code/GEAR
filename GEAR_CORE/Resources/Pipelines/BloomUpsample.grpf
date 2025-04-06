@@ -1,0 +1,20 @@
+{
+	"fileType": "GEAR_RENDER_PIPELINE_FILE",
+	"debugName": "BloomUpsample",
+	"shaders": [
+		{
+			"debugName": "Bloom_cs_6_4_upsample.spv",
+			"stageAndEntryPoints": [
+				{
+					"stage": "COMPUTE_BIT",
+					"entryPoint": "upsample"
+				}
+			],
+			"binaryFilepath": "$BUILD_DIR/shaderbin/Bloom_cs_6_4_upsample.spv",
+			"recompileArguments": {
+				"rafFilepath": "$SOURCE_DIR/GEAR_CORE/Resources/Shaders/PostProcess/Bloom.json",
+				"index": 2
+			}
+		}
+	]
+}

@@ -1,0 +1,20 @@
+{
+	"fileType": "GEAR_RENDER_PIPELINE_FILE",
+	"debugName": "BloomPreFilter",
+	"shaders": [
+		{
+			"debugName": "Bloom_cs_6_4_prefilter.spv",
+			"stageAndEntryPoints": [
+				{
+					"stage": "COMPUTE_BIT",
+					"entryPoint": "prefilter"
+				}
+			],
+			"binaryFilepath": "$BUILD_DIR/shaderbin/Bloom_cs_6_4_prefilter.spv",
+			"recompileArguments": {
+				"rafFilepath": "$SOURCE_DIR/GEAR_CORE/Resources/Shaders/PostProcess/Bloom.json",
+				"index": 1
+			}
+		}
+	]
+}

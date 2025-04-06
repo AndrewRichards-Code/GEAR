@@ -120,6 +120,8 @@ set_target_properties(ARC PROPERTIES FOLDER "External/MIRU/External")
 set_target_properties(MIRU_CORE PROPERTIES FOLDER "External/MIRU")
 set_target_properties(MIRU_SHADER_COMPILER PROPERTIES FOLDER "External/MIRU")
 
+set(GEAR_SOURCE_DIR "${CMAKE_SOURCE_DIR}")
+
 add_subdirectory(GEAR_CORE)
 add_subdirectory(GEAR_NATIVE_SCRIPT)
 #add_subdirectory(GEAR_TEST)

@@ -1,0 +1,20 @@
+{
+  "fileType": "GEAR_RENDER_PIPELINE_FILE",
+  "debugName": "DiffuseIrradiance",
+  "shaders": [
+    {
+      "debugName": "DiffuseIrradiance_cs_6_4_main.spv",
+      "stageAndEntryPoints": [
+        {
+          "stage": "COMPUTE_BIT",
+          "entryPoint": "main"
+        }
+      ],
+      "binaryFilepath": "$BUILD_DIR/shaderbin/DiffuseIrradiance_cs_6_4_main.spv",
+      "recompileArguments": {
+        "rafFilepath": "$SOURCE_DIR/GEAR_CORE/Resources/Shaders/PBR/DiffuseIrradiance.json",
+        "index": 0
+      }
+    }
+  ]
+}

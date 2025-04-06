@@ -1,0 +1,116 @@
+{
+	"fileType": "GEAR_RENDER_PIPELINE_FILE",
+	"debugName": "ShadowSingle",
+	"shaders": [
+		{
+			"debugName": "Shadow_vs_6_4_vs_main_single.spv",
+			"stageAndEntryPoints": [
+				{
+					"stage": "VERTEX_BIT",
+					"entryPoint": "vs_main_single"
+				}
+			],
+			"binaryFilepath": "$BUILD_DIR/shaderbin/Shadow_vs_6_4_vs_main_single.spv",
+			"recompileArguments": {
+				"rafFilepath": "$SOURCE_DIR/GEAR_CORE/Resources/Shaders/Shadow.json",
+				"index": 0
+			}
+		},
+		{
+			"debugName": "Shadow_ps_6_4_ps_main.spv",
+			"stageAndEntryPoints": [
+				{
+					"stage": "FRAGMENT_BIT",
+					"entryPoint": "ps_main"
+				}
+			],
+			"binaryFilepath": "$BUILD_DIR/shaderbin/Shadow_ps_6_4_ps_main.spv",
+			"recompileArguments": {
+				"rafFilepath": "$SOURCE_DIR/GEAR_CORE/Resources/Shaders/Shadow.json",
+				"index": 2
+			}
+		}
+	],
+	"inputAssemblyState": {
+		"topology": "TRIANGLE_LIST",
+		"primitiveRestartEnable": false
+	},
+	"viewportState": {
+		"viewports": [
+			{
+				"x": 0.0,
+				"y": 0.0,
+				"width": 0.0,
+				"height": 0.0,
+				"minDepth": 0.0,
+				"maxDepth": 1.0
+			}
+		],
+		"scissors": [
+			{
+				"x": 0.0,
+				"y": 0.0,
+				"width": 0.0,
+				"height": 0.0
+			}
+		]
+	},
+	"rasterisationState": {
+		"depthClampEnable": false,
+		"rasteriserDiscardEnable": false,
+		"polygonMode": "FILL",
+		"cullMode": "NONE_BIT",
+		"frontFace": "CLOCKWISE",
+		"depthBiasEnable": false,
+		"depthBiasConstantFactor": 0.0,
+		"depthBiasClamp": 0.0,
+		"depthBiasSlopeFactor": 0.0,
+		"lineWidth": 1.0
+	},
+	"multisampleState": {
+		"rasterisationSamples": "SAMPLE_COUNT_1_BIT",
+		"sampleShadingEnable": false,
+		"minSampleShading": 1.0,
+		"sampleMask": 4294967295,
+		"alphaToCoverageEnable": false,
+		"alphaToOneEnable": false
+	},
+	"depthStencilState": {
+		"depthTestEnable": true,
+		"depthWriteEnable": true,
+		"depthCompareOp": "GREATER",
+		"depthBoundsTestEnable": false,
+		"stencilTestEnable": false,
+		"front": {
+			"failOp": "",
+			"passOp": "",
+			"depthFailOp": "",
+			"compareOp": "",
+			"compareMask": "",
+			"writeMask": "",
+			"reference": ""
+		},
+		"back": {
+			"failOp": "",
+			"passOp": "",
+			"depthFailOp": "",
+			"compareOp": "",
+			"compareMask": "",
+			"writeMask": "",
+			"reference": ""
+		},
+		"minDepthBounds": 0.0,
+		"maxDepthBounds": 1.0
+	},
+	"colourBlendState": {
+		"logicOpEnable": false,
+		"logicOp": "CLEAR",
+		"attachments": [],
+		"blendConstants": [
+			0.0,
+			0.0,
+			0.0,
+			0.0
+		]
+	}
+}
