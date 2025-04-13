@@ -6,11 +6,11 @@
 
 using namespace nlohmann;
 
-void gear::core::LoadJsonFile(const std::string& filepath, const std::string& fileExt, const std::string& fileTypeString, json& jsonData)
+void gear::core::LoadJsonFile(const std::filesystem::path& filepath, const std::filesystem::path& fileExt, const std::string& fileTypeString, json& jsonData)
 {
-	std::string _filepath = filepath;
-	if (_filepath.find(fileExt) == std::string::npos)
-		_filepath += fileExt;
+	std::filesystem::path _filepath = filepath;
+	if (_filepath.extension() != fileExt)
+		_filepath /= fileExt;
 
 	std::ifstream file(_filepath, std::ios::binary);
 	if (file.is_open())
@@ -36,13 +36,13 @@ void gear::core::LoadJsonFile(const std::string& filepath, const std::string& fi
 	}
 }
 
-void gear::core::SaveJsonFile(const std::string& filepath, const std::string& fileExt, const std::string& fileTypeString, json& jsonData)
+void gear::core::SaveJsonFile(const std::filesystem::path& filepath, const std::filesystem::path& fileExt, const std::string& fileTypeString, json& jsonData)
 {
 	jsonData["fileType"] = fileTypeString;
 
-	std::string _filepath = filepath;
-	if (_filepath.find(fileExt) == std::string::npos)
-		_filepath += fileExt;
+	std::filesystem::path _filepath = filepath;
+	if (_filepath.extension() != fileExt)
+		_filepath /= fileExt;
 
 	const std::filesystem::path& folder = std::filesystem::path(_filepath).parent_path();
 	if (!std::filesystem::exists(folder))

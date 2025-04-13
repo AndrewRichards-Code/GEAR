@@ -54,6 +54,10 @@ target_include_directories(${TARGET_NAME} PRIVATE
 #Defines
 target_compile_definitions(${TARGET_NAME} PRIVATE GEAR_CORE_BUILD_DLL)
 
+#Set up BUILD_DIR and SOURCE_DIR
+target_compile_definitions(${TARGET_NAME} PUBLIC "BUILD_DIR=\"${CMAKE_BINARY_DIR}\"")
+target_compile_definitions(${TARGET_NAME} PUBLIC "SOURCE_DIR=\"${CMAKE_SOURCE_DIR}\"")
+
 #Links
 target_link_libraries(${TARGET_NAME} PRIVATE
 	MIRU_CORE

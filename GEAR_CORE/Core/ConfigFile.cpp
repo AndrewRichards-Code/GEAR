@@ -5,7 +5,7 @@
 using namespace gear;
 using namespace core;
 
-bool ConfigFile::Load(std::string& filepath)
+bool ConfigFile::Load(const std::filesystem::path& filepath)
 {
 	if (std::filesystem::exists(filepath))
 	{

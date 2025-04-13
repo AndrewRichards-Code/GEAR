@@ -12,7 +12,7 @@ namespace gear
 			ConfigFile() = default;
 			~ConfigFile() = default;
 
-			bool Load(std::string& filepath);
+			bool Load(const std::filesystem::path& filepath);
 			void Save();
 
 			template<typename T>
@@ -35,7 +35,7 @@ namespace gear
 
 			
 		private:
-			std::string m_Filepath;
+			std::filesystem::path m_Filepath;
 			nlohmann::json m_Data;
 		};
 	}
