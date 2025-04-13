@@ -35,6 +35,7 @@ namespace gear
 					".jpg",
 					".exr",
 					".hdr",
+					".ico",
 				};
 				return arc::FindInVector(ImageExtensions, extension);
 			}

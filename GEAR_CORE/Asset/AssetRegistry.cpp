@@ -10,7 +10,7 @@ AssetRegistry::AssetRegistry(CreateInfo* pCreateInfo)
 	:m_CI(*pCreateInfo)
 {
 	if (!std::filesystem::exists(m_CI.filepath))
-		Create();
+		Save();
 	else
 		Load();
 }
@@ -41,12 +41,6 @@ void AssetRegistry::RemoveAsset(Asset::Handle handle)
 const AssetMetadata& AssetRegistry::GetMetadata(Asset::Handle handle)
 {
 	return m_AssetRegistry.at(handle);
-}
-
-void AssetRegistry::Create()
-{
-	std::ofstream stream(m_CI.filepath);
-	stream.close();
 }
 
 void AssetRegistry::Save() const

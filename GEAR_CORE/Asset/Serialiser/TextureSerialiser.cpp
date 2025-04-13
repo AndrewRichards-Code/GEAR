@@ -1,5 +1,5 @@
 #include "TextureSerialiser.h"
-#include "Asset/Manager/EditorAssetManager.h"
+#include "Asset/AssetDataBuffer.h"
 
 #include "Graphics/Texture.h"
 

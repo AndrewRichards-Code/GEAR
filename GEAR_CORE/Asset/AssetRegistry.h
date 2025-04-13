@@ -43,7 +43,6 @@ namespace gear
 
 			const AssetMetadata& GetMetadata(Asset::Handle handle);
 
-			void Create();
 			void Save() const;
 			void Load();
 

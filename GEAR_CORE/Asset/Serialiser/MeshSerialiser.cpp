@@ -1,5 +1,4 @@
 #include "MeshSerialiser.h"
-#include "Asset/Manager/EditorAssetManager.h"
 
 #include "Objects/Material.h"
 #include "Objects/Mesh.h"
