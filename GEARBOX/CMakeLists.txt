@@ -1,27 +1,31 @@
 cmake_minimum_required(VERSION 3.27)
 
-#GEAR_CORE_Asset
+#GEARBOX
 set(TARGET_NAME GEARBOX)
 message(STATUS "${TARGET_NAME}")
 
 #Files
 set(SRC_HEADERS
-	"src/GearBox.h"
-	"src/GearBox_common.h"
-	)
-	set(SRC_CPP_FILES
-	"src/gearbox.cpp"
-	"src/gearbox_common.cpp"
+	"Source/gearbox.h"
+	"Source/gearbox_common.h"
 )
-set(OTHER_FILES
-	config.gbcf
-	imgui.ini
+set(SRC_CPP_FILES
+	"Source/gearbox.cpp"
+	"Source/gearbox_common.cpp"
+)
+set(CONFIG_FILES
+	"Config/config.gbcf"
+)
+set(ASSET_REGISTRY_FILES
+	"AssetRegistry/GEARBOX.gar"
 )
 
 add_executable(${TARGET_NAME})
-target_sources(${TARGET_NAME} PRIVATE ${SRC_CPP_FILES} ${SRC_HEADERS} ${OTHER_FILES})
+target_sources(${TARGET_NAME} PRIVATE ${SRC_CPP_FILES} ${SRC_HEADERS} ${CONFIG_FILES} ${ASSET_REGISTRY_FILES})
 
-source_group("src" FILES ${SRC_CPP_FILES} ${SRC_HEADERS})
+source_group("AssetRegistry" FILES ${ASSET_REGISTRY_FILES})
+source_group("Config" FILES ${CONFIG_FILES})
+source_group("Source" FILES ${SRC_CPP_FILES} ${SRC_HEADERS})
 
 target_include_directories(${TARGET_NAME} PRIVATE 
 	"${CMAKE_CURRENT_SOURCE_DIR}/src"

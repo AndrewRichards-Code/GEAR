@@ -10,6 +10,7 @@ __declspec(dllexport) extern const char* D3D12SDKPath = ".\\D3D12\\"; \
 
 using namespace gear;
 using namespace animation;
+using namespace asset;
 using namespace audio;
 using namespace core;
 using namespace graphics;
@@ -25,16 +26,17 @@ using namespace base;
 
 using namespace mars;
 
+static std::string s_ConfigFilepath = (std::filesystem::current_path() / std::filesystem::path("Config/config.gbcf")).string();
+
 Ref<Application> CreateApplication(int argc, char** argv)
 {
 	ApplicationContext::CreateInfo applicationCI;
 	applicationCI.applicationName = "GEARBOX";
 	applicationCI.extensions = ApplicationContext::DefaultExtensions();
 	applicationCI.commandLineOptions = CommandLineOptions::GetCommandLineOptions(argc, argv).SetWorkingDirectory();
-
-	std::string configFilepath = (std::filesystem::current_path() / std::filesystem::path("config.gbcf")).string();
+	
 	ConfigFile configFile;
-	if (configFile.Load(configFilepath))
+	if (configFile.Load(s_ConfigFilepath))
 	{
 		if (applicationCI.commandLineOptions.api == GraphicsAPI::API::UNKNOWN)
 			applicationCI.commandLineOptions.api = configFile.GetOption<miru::base::GraphicsAPI::API>("api");
@@ -52,21 +54,27 @@ GEARBOX::GEARBOX(const ApplicationContext& context)
 
 void GEARBOX::Run()
 {
+	AssetRegistry::CreateInfo assetRegCI;
+	assetRegCI.filepath = UIContext::GetSourceDirectory() / std::filesystem::path("GEARBOX/AssetRegistry/GEARBOX.gar");
+	assetRegCI.fileType = AssetRegistry::FileType::TEXT;
+	manager::AssetManager::CreateInfo assetManagerCI;
+	assetManagerCI.pAssetRegistryCreateInfo = &assetRegCI;
+	assetManagerCI.device = m_ApplicationContext.GetContext()->GetDevice();
+	Ref<manager::EditorAssetManager> editorAssetManager = CreateRef<manager::EditorAssetManager>(&assetManagerCI);
+
 	Window::CreateInfo mainWindowCI;
 	mainWindowCI.applicationContext = m_ApplicationContext;
 	mainWindowCI.width = 1920;
 	mainWindowCI.height = 1080;
-	mainWindowCI.fullscreen = false;
 	mainWindowCI.fullscreenMonitorIndex = 0;
+	mainWindowCI.fullscreen = false;
 	mainWindowCI.maximised = true;
 	mainWindowCI.vSync = true;
 	mainWindowCI.samples = Image::SampleCountBit::SAMPLE_COUNT_4_BIT;
-
-	std::string configFilepath = (std::filesystem::current_path() / std::filesystem::path("config.gbcf")).string();
+	mainWindowCI.iconData = editorAssetManager->Import<ImageAssetDataBuffer>(Asset::Type::EXTERNAL_FILE, UIContext::GetSourceDirectory() / "GEARBOX/Resources/Icons/GEAR_logo_dark.ico");
 	ConfigFile configFile;
-	if (configFile.Load(configFilepath))
+	if (configFile.Load(s_ConfigFilepath))
 		Window::UpdateWindowCreateInfo(configFile, mainWindowCI);
-
 	Ref<Window> mainWindow = CreateRef<Window>(&mainWindowCI);
 
 	AllocatorManager::CreateInfo mbmCI;
@@ -74,6 +82,12 @@ void GEARBOX::Run()
 	mbmCI.defaultBlockSize = Allocator::BlockSize::BLOCK_SIZE_128MB;
 	mbmCI.forceInitialisation = true;
 	AllocatorManager::Initialise(&mbmCI);
+
+	UIContext::CreateInfo uiContextCI;
+	uiContextCI.window = mainWindow;
+	uiContextCI.editorAssetManager = editorAssetManager;
+	uiContextCI.configFilepath = s_ConfigFilepath;
+	Scope<UIContext> uiContext = CreateScope<UIContext>(&uiContextCI);
 	
 	Renderer::CreateInfo mainRendererCI;
 	mainRendererCI.window = mainWindow;
@@ -81,10 +95,6 @@ void GEARBOX::Run()
 	mainRendererCI.shouldDrawExternalUI = true;
 	mainRendererCI.shouldPresent = true;
 	Ref<Renderer> mainRenderer = CreateRef<Renderer>(&mainRendererCI);
-
-	UIContext::CreateInfo uiContextCI;
-	uiContextCI.window = mainWindow;
-	Scope<UIContext> uiContext = CreateScope<UIContext>(&uiContextCI);
 	mainRenderer->SubmitUIContext(uiContext.get(), &UIContext::SetPassParameters, &UIContext::RenderDrawData);
 
 	for (const Panel::Type& panelType : configFile.GetPanels())
@@ -137,7 +147,6 @@ void GEARBOX::Run()
 		{
 			Scene::CreateInfo sceneCI;
 			sceneCI.debugName = "Default Scene";
-			sceneCI.nativeScriptDir = std::filesystem::current_path() / "res/scripts/";
 			SceneHierarchyPanel::CreateInfo sceneHierarchyPanelCI = { CreateRef<Scene>(&sceneCI) };
 			editorPanels.emplace_back(CreateRef<SceneHierarchyPanel>(&sceneHierarchyPanelCI));
 			ref_cast<SceneHierarchyPanel>(editorPanels.back())->UpdateWindowTitle();
@@ -179,7 +188,7 @@ void GEARBOX::Run()
 	mainWindow->GetContext()->DeviceWaitIdle();
 	AllocatorManager::Uninitialise();
 
-	if (configFile.Load(configFilepath))
+	if (configFile.Load(s_ConfigFilepath))
 	{
 		auto& configPanels = configFile.GetPanels();
 		configPanels.clear();
