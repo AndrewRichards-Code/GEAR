@@ -30,6 +30,8 @@ target_compile_definitions(${TARGET_NAME} PRIVATE GEAR_PROJECT_BUILD_DLL)
 
 #Links
 target_link_libraries(${TARGET_NAME} PRIVATE
+	GEAR_CORE_Scripting
+	GEAR_CORE_Scene
 	GEAR_CORE_AssetManager
 	GEAR_CORE_Core
 	MIRU_CORE

@@ -18,7 +18,7 @@
 
 namespace gear
 {
-	namespace scene
+	namespace scripting
 	{
 		class GEAR_SCRIPT_API NativeScript
 		{
@@ -30,14 +30,14 @@ namespace gear
 			virtual void OnDestroy() {}
 			virtual void OnUpdate(float deltaTime) {}
 
-			Entity& GetEntity() { return m_Entity; }
+			gear::scene::Entity& GetEntity() { return m_Entity; }
 
 		private:
 			//This function can not be called by a GEAR_NATIVE_SCRIPT.dll
-			void SetEntity(const Entity& entity) { m_Entity = entity; }
+			void SetEntity(const gear::scene::Entity& entity) { m_Entity = entity; }
 
 		private:
-			Entity m_Entity;
+			gear::scene::Entity m_Entity;
 
 			friend class gear::scene::Scene;
 		};

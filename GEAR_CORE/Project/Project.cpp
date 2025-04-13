@@ -5,6 +5,7 @@
 #include "Asset/Manager/EditorAssetManager.h"
 #include "Asset/Serialiser/AssetSerialiser.h"
 #include "Scene/Scene.h"
+#include "Scripting/NativeScriptManager.h"
 #include "yaml-cpp/yaml.h"
 #include <fstream>
 
@@ -52,10 +53,15 @@ Project::Project(CreateInfo* pCreateInfo)
 
 		Save();
 	}
+
+	scripting::NativeScriptManager::Build(m_CI.folderPath / "Assets/Scripts");
+	Scene::GetNativeScriptLibrary() = scripting::NativeScriptManager::Load();
 }
 
 Project::~Project()
 {
+	scripting::NativeScriptManager::Unload(Scene::GetNativeScriptLibrary());
+
 	Save();
 	m_Scenes.clear();
 }

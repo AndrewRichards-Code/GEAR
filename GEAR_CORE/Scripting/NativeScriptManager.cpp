@@ -1,5 +1,5 @@
 #include "gear_core_common.h"
-#include "Scene/NativeScriptManager.h"
+#include "NativeScriptManager.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -9,7 +9,7 @@
 
 using namespace arc;
 using namespace gear;
-using namespace scene;
+using namespace scripting;
 
 #ifdef _DEBUG
 std::filesystem::path NativeScriptManager::s_BuildScriptPath = std::filesystem::path(BUILD_DIR) / "bin/Debug/";
@@ -19,13 +19,13 @@ std::filesystem::path NativeScriptManager::s_BuildScriptPath = std::filesystem::
 static bool debug = false;
 #endif
 
-void NativeScriptManager::Build(const std::string& nativeScriptDir)
+void NativeScriptManager::Build(const std::filesystem::path& nativeScriptDirectory)
 {
 	std::filesystem::path msBuildPath = GetMSBuildPath();
 	std::filesystem::path vcxprojPath = std::filesystem::path(BUILD_DIR) / "GEAR_NATIVE_SCRIPT/";
 	std::filesystem::path solutionPath = std::filesystem::path(BUILD_DIR);
 	std::filesystem::path sourcePath = std::filesystem::path(SOURCE_DIR);
-	std::filesystem::path nativeScriptPath = nativeScriptDir;
+	std::filesystem::path nativeScriptPath = nativeScriptDirectory;
 
 	if (!CheckPath(s_BuildScriptPath) && !CheckPath(msBuildPath) && !CheckPath(vcxprojPath) && !CheckPath(solutionPath) && !CheckPath(nativeScriptPath))
 		return;
@@ -89,8 +89,8 @@ DynamicLibrary::LibraryHandle NativeScriptManager::Load()
 	if (!CheckPath(s_BuildScriptPath))
 		return DynamicLibrary::LibraryHandle(0);
 
-	std::string dllFullpath = s_BuildScriptPath.generic_string() + "GEAR_NATIVE_SCRIPT.dll";
-	return DynamicLibrary::Load(dllFullpath.c_str());
+	const std::filesystem::path& dllFullpath = s_BuildScriptPath / "GEAR_NATIVE_SCRIPT.dll";
+	return DynamicLibrary::Load(dllFullpath);
 }
 
 void NativeScriptManager::Unload(DynamicLibrary::LibraryHandle& libraryHandle)

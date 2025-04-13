@@ -3,14 +3,14 @@
 
 namespace gear
 {
-	namespace scene
+	namespace scripting
 	{
 		class NativeScript;
 
-		class GEAR_SCENE_API NativeScriptManager
+		class GEAR_SCRIPTING_API NativeScriptManager
 		{
 		public:
-			static void Build(const std::string& nativeScriptDir);
+			static void Build(const std::filesystem::path& nativeScriptDirectory);
 			static arc::DynamicLibrary::LibraryHandle Load();
 			static void Unload(arc::DynamicLibrary::LibraryHandle& libraryHandle);
 

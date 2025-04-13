@@ -13,17 +13,17 @@ namespace gear
 	{
 		class Timer;
 	}
-	namespace graphics
-	{ 
-		namespace rendering
-		{
-			class Renderer;
-		}
+	namespace graphics::rendering
+	{
+		class Renderer;
+	}
+	namespace scripting
+	{
+		class NativeScript;
 	}
 	namespace scene
 	{
 		class Entity;
-		class NativeScript;
 
 		struct UUIDComponent;
 		struct NameComponent;
@@ -41,7 +41,6 @@ namespace gear
 			struct CreateInfo
 			{
 				std::string debugName;
-				std::filesystem::path nativeScriptDir;
 			};
 			enum class State : uint32_t
 			{
@@ -65,17 +64,22 @@ namespace gear
 			entt::registry& GetRegistry();
 			inline void ClearEntities() { m_Registry.clear(); }
 
-			void LoadNativeScriptLibrary();
-			void UnloadNativeScriptLibrary();
-
 			inline const State& GetState() const { return m_State; }
 			inline void Play() { m_State = State::PLAY; }
 			inline void Stop() { m_State = State::STOP; }
+
+			inline static arc::DynamicLibrary::LibraryHandle& GetNativeScriptLibrary() { return s_NativeScriptLibrary; }
+
+		private:
+			void LoadNativeScripts();
+			void UnloadNativeScripts();
 
 		private:
 			core::UUID m_UUID;
 			entt::registry m_Registry;
 			State m_State = State::STOP;
+
+			static arc::DynamicLibrary::LibraryHandle s_NativeScriptLibrary;
 
 			friend class Entity;
 		};

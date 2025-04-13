@@ -76,9 +76,11 @@
 //Scene
 #include "Scene/Components.h"
 #include "Scene/Entity.h"
-#include "Scene/NativeScript.h"
-#include "Scene/NativeScriptManager.h"
 #include "Scene/Scene.h"
+
+//Scripting
+#include "Scripting/NativeScript.h"
+#include "Scripting/NativeScriptManager.h"
 
 //UI
 #include "UI/MenuBar.h"

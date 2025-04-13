@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.27)
 
-#GEAR_CORE_Asset
+#GEAR_CORE_UI
 set(TARGET_NAME GEAR_CORE_UI)
 message(STATUS "${TARGET_NAME}")
 
@@ -107,10 +107,6 @@ target_include_directories(${TARGET_NAME} PRIVATE
 	"${GEAR_SOURCE_DIR}/External/imgui/"
 )
 
-#Set up post-build compile command
-target_compile_definitions(${TARGET_NAME} PRIVATE "BUILD_DIR=\"${CMAKE_BINARY_DIR}\"")
-target_compile_definitions(${TARGET_NAME} PRIVATE "SOURCE_DIR=\"${CMAKE_SOURCE_DIR}\"")
-
 #Includes
 target_include_directories(${TARGET_NAME} PRIVATE 
 	"${GEAR_CORE_SOURCE_DIR}"
@@ -124,6 +120,7 @@ target_compile_definitions(${TARGET_NAME} PRIVATE GEAR_UI_BUILD_DLL)
 #Links
 target_link_libraries(${TARGET_NAME} PRIVATE 
 	GEAR_CORE_Project
+	GEAR_CORE_Scripting
 	GEAR_CORE_Scene
 	GEAR_CORE_ImGui
 	GEAR_CORE_AssetManager

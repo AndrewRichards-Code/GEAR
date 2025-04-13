@@ -15,11 +15,14 @@ namespace gear
 	{
 		class Window;
 	}
+	namespace scripting
+	{
+		class NativeScript;
+	}
 	namespace scene
 	{
 		class Scene;
 		class Entity;
-		class NativeScript;
 
 		#define GEAR_SCENE_COMPONENTS_DEFAULTS_DECLARATION(_struct)	\
 		_struct() = default;										\
@@ -146,14 +149,14 @@ namespace gear
 
 		struct GEAR_SCENE_API NativeScriptComponent
 		{
-			NativeScript* pNativeScript = nullptr;
+			scripting::NativeScript* pNativeScript = nullptr;
 			std::string nativeScriptName;
 			Entity* entity = nullptr;
 
 			NativeScriptComponent(const std::string& _nativeScriptName)
 				:nativeScriptName(_nativeScriptName) {}
 
-			operator NativeScript* () { return pNativeScript; }
+			operator scripting::NativeScript* () { return pNativeScript; }
 		};
 	}
 }

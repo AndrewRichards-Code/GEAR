@@ -2,13 +2,12 @@
 #include "Scene/Scene.h"
 #include "Scene/Entity.h"
 #include "Scene/Components.h"
-#include "Scene/NativeScriptManager.h"
-#include "Scene/NativeScript.h"
+#include "Scripting/NativeScriptManager.h"
+#include "Scripting/NativeScript.h"
 
 #include "Core/Timer.h"
 #include "Core/JsonFileHelper.h"
 #include "Rendering/Renderer.h"
-
 
 using namespace gear;
 using namespace graphics;
@@ -16,21 +15,18 @@ using namespace rendering;
 using namespace core;
 using namespace scene;
 using namespace objects;
+using namespace scripting;
 
-using namespace arc;
-
-static DynamicLibrary::LibraryHandle s_NativeScriptLibrary = 0;
+arc::DynamicLibrary::LibraryHandle Scene::s_NativeScriptLibrary = 0;
 
 Scene::Scene(CreateInfo* pCreateInfo)
 {
 	m_CI = *pCreateInfo;
-
-	LoadNativeScriptLibrary();
 }
 
 Scene::~Scene()
 {
-	UnloadNativeScriptLibrary();
+	UnloadNativeScripts();
 }
 
 Entity Scene::CreateEntity()
@@ -54,21 +50,13 @@ void Scene::OnUpdate(Ref<Renderer> renderer, Timer& timer)
 {
 	if (m_State == State::PLAY)
 	{
+		LoadNativeScripts();
+
 		const auto& vNativeScriptComponents = m_Registry.view<NativeScriptComponent>();
 		for (auto& entity : vNativeScriptComponents)
 		{
 			NativeScriptComponent& nativeScriptComponent = vNativeScriptComponents.get<NativeScriptComponent>(entity);
-			NativeScript*& nativeScript = nativeScriptComponent.pNativeScript;
-			if (!nativeScript && s_NativeScriptLibrary)
-			{
-				nativeScript = NativeScriptManager::LoadScript(s_NativeScriptLibrary, nativeScriptComponent.nativeScriptName);
-				if (nativeScript)
-				{
-					nativeScript->SetEntity(*nativeScriptComponent.entity);
-					nativeScript->OnCreate();
-				}
-			}
-
+			NativeScript* nativeScript = nativeScriptComponent.pNativeScript;
 			if (nativeScript)
 			{
 				nativeScript->OnUpdate(timer);
@@ -133,16 +121,26 @@ entt::registry& Scene::GetRegistry()
 	return m_Registry;
 }
 
-void Scene::LoadNativeScriptLibrary()
+void Scene::LoadNativeScripts()
 {
-	if (!s_NativeScriptLibrary)
+	const auto& vNativeScriptComponents = m_Registry.view<NativeScriptComponent>();
+	for (auto& entity : vNativeScriptComponents)
 	{
-		NativeScriptManager::Build(m_CI.nativeScriptDir.string());
-		s_NativeScriptLibrary = NativeScriptManager::Load();
+		NativeScriptComponent& nativeScriptComponent = vNativeScriptComponents.get<NativeScriptComponent>(entity);
+		NativeScript*& nativeScript = nativeScriptComponent.pNativeScript;
+		if (!nativeScript && s_NativeScriptLibrary)
+		{
+			nativeScript = NativeScriptManager::LoadScript(s_NativeScriptLibrary, nativeScriptComponent.nativeScriptName);
+			if (nativeScript)
+			{
+				nativeScript->SetEntity(*nativeScriptComponent.entity);
+				nativeScript->OnCreate();
+			}
+		}
 	}
 }
 
-void Scene::UnloadNativeScriptLibrary()
+void Scene::UnloadNativeScripts()
 {
 	const auto& vNativeScriptComponents = m_Registry.view<NativeScriptComponent>();
 	for (auto& entity : vNativeScriptComponents)
@@ -155,7 +153,4 @@ void Scene::UnloadNativeScriptLibrary()
 			NativeScriptManager::UnloadScript(s_NativeScriptLibrary, nativeScriptComponent.nativeScriptName, nativeScript);
 		}
 	}
-
-	if (s_NativeScriptLibrary)
-		NativeScriptManager::Unload(s_NativeScriptLibrary);
 }
