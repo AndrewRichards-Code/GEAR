@@ -249,14 +249,6 @@ void UIContext::Initialise(Ref<graphics::Window>& window)
 {
 	m_API = window->GetApplicationContext().GetCommandLineOptions().api;
 
-	asset::AssetRegistry::CreateInfo assetRegCI;
-	assetRegCI.filepath = GetSourceDirectory() / std::filesystem::path("GEARBOX/GEARBOX.gar");
-	assetRegCI.fileType = asset::AssetRegistry::FileType::TEXT;
-	asset::manager::AssetManager::CreateInfo assetManagerCI;
-	assetManagerCI.pAssetRegistryCreateInfo = &assetRegCI;
-	assetManagerCI.device = window->GetDevice();
-	m_AssetManager = CreateRef<asset::manager::EditorAssetManager>(&assetManagerCI);
-
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -269,8 +261,8 @@ void UIContext::Initialise(Ref<graphics::Window>& window)
 	//io.ConfigViewportsNoAutoMerge = true;
 	//io.ConfigViewportsNoTaskBarIcon = true;
 
-	
-	std::filesystem::path fontFilepath = GetSourceDirectory() / std::filesystem::path("GEARBOX/res/fonts/electrolize/Electrolize-Regular.ttf");
+	//TODO: Can't reference GEARBOX filepath here!
+	const std::filesystem::path& fontFilepath = GetSourceDirectory() / std::filesystem::path("GEARBOX/Resources/Fonts/electrolize/Electrolize-Regular.ttf");
 	io.FontDefault = io.Fonts->AddFontFromFileTTF(fontFilepath.string().c_str(), 15.0f);
 
 	// Setup Dear ImGui style
@@ -517,6 +509,7 @@ void UIContext::BeginDockspace()
 	if (!m_MenuBar)
 	{
 		m_MenuBar = CreateRef<MenuBar>();
+		m_MenuBar->SetConfigFilepath(m_CI.configFilepath);
 	}
 	m_MenuBar->Draw();
 }

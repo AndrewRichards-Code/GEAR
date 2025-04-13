@@ -17,6 +17,8 @@ namespace gear
 
 			void Draw();
 
+			inline void SetConfigFilepath(const std::filesystem::path& configFilepath) { m_ConfigFilepath = configFilepath; }
+
 		private:
 			void ProcessShortcuts();
 
@@ -45,6 +47,8 @@ namespace gear
 			PFN_PopupWindowFunction m_PopupWindowFunction = nullptr;
 
 			bool m_SaveToSaveAs = false;
+
+			std::filesystem::path m_ConfigFilepath;
 		};
 	}
 }

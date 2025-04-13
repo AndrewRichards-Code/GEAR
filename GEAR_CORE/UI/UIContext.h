@@ -44,7 +44,9 @@ namespace gear
 		public:
 			struct CreateInfo
 			{
-				Ref<graphics::Window> window;
+				Ref<graphics::Window>					window;
+				Ref<asset::manager::EditorAssetManager> editorAssetManager;
+				std::filesystem::path					configFilepath;
 			};
 
 			//Methods
@@ -94,8 +96,8 @@ namespace gear
 			inline void AddEditorPanels(const std::vector<Ref<panels::Panel>>& panels) { m_EditorPanelsToAdd.insert(m_EditorPanelsToAdd.end(), panels.begin(), panels.end()); }
 			inline Ref<project::Project> GetProject() { return m_Project; }
 			inline void SetProject(const Ref<project::Project>& project) { m_Project = project; }
-			inline Ref<asset::manager::EditorAssetManager> GetEditorAssetManager() { return m_AssetManager; }
-			
+			inline Ref<asset::manager::EditorAssetManager> GetEditorAssetManager() { return m_CI.editorAssetManager; }
+
 			static inline UIContext* GetUIContext() { return s_UIContext; }
 
 			template<typename T>
@@ -189,7 +191,6 @@ namespace gear
 			std::vector<Ref<panels::Panel>> m_EditorPanels;
 			std::vector<Ref<panels::Panel>> m_EditorPanelsToAdd;
 			Ref<MenuBar> m_MenuBar;
-			Ref<asset::manager::EditorAssetManager> m_AssetManager;
 			Ref<project::Project> m_Project;
 			
 			static UIContext* s_UIContext;

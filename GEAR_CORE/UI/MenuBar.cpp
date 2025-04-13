@@ -160,7 +160,6 @@ void MenuBar::DrawMenuWindows()
 		{
 			Scene::CreateInfo sceneCI;
 			sceneCI.debugName = "DefaultScene";
-			sceneCI.nativeScriptDir = "res/scripts/";
 			Ref<scene::Scene> activeScene = CreateRef<scene::Scene>(&sceneCI);
 
 			SceneHierarchyPanel::CreateInfo sceneHierarchyPanelCI = { activeScene };
@@ -250,7 +249,6 @@ void MenuBar::DrawItemNewScene()
 	{
 		Scene::CreateInfo sceneCI;
 		sceneCI.debugName = "New Scene";
-		sceneCI.nativeScriptDir = "res/scripts/";
 		sceneHierarchyPanel->SetScene(CreateRef<scene::Scene>(&sceneCI));
 		sceneHierarchyPanel->UpdateWindowTitle();
 	}
@@ -382,21 +380,20 @@ void MenuBar::DrawItemGEARBOXOptions()
 		static uint32_t fullscreenMonitorIndex;
 		static bool maximised;
 
-		std::string configFilepath = (std::filesystem::current_path() / std::filesystem::path("config.gbcf")).string();
 		ConfigFile config;
 		static bool loaded = false;
-		if (config.Load(configFilepath) && !loaded)
+		if (!m_ConfigFilepath.empty() && config.Load(m_ConfigFilepath) && !loaded)
 		{
-			api						= config.GetOption<GraphicsAPI::API>("api");
-			graphicsDebugger		= config.GetOption<debug::GraphicsDebugger::DebuggerType>("graphicsDebugger");
-			windowedWidth			= config.GetOption<uint32_t>("windowedWidth");
-			windowedHeight			= config.GetOption<uint32_t>("windowedHeight");
-			fullscreen				= config.GetOption<bool>("fullscreen");
-			fullscreenMonitorIndex	= config.GetOption<uint32_t>("fullscreenMonitorIndex");
-			maximised				= config.GetOption<bool>("maximised");
-			loaded					= true;
+			api = config.GetOption<GraphicsAPI::API>("api");
+			graphicsDebugger = config.GetOption<debug::GraphicsDebugger::DebuggerType>("graphicsDebugger");
+			windowedWidth = config.GetOption<uint32_t>("windowedWidth");
+			windowedHeight = config.GetOption<uint32_t>("windowedHeight");
+			fullscreen = config.GetOption<bool>("fullscreen");
+			fullscreenMonitorIndex = config.GetOption<uint32_t>("fullscreenMonitorIndex");
+			maximised = config.GetOption<bool>("maximised");
+			loaded = true;
 		}
-
+		
 		DrawDropDownMenu("API", api, 130.0f);
 		DrawDropDownMenu("Graphics Debugger", graphicsDebugger, 130.0f);
 		DrawUint32("Windowed Width", windowedWidth, 0, 3840, false ,130.0f);

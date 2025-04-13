@@ -35,7 +35,7 @@ ContentBrowserPanel::ContentBrowserPanel(CreateInfo* pCreateInfo)
 	m_CI = *pCreateInfo;
 	
 	m_CurrentPath = m_CI.AssetFolderPath;
-	const std::filesystem::path& sourceDir = UIContext::GetUIContext()->GetSourceDirectory();
+	const std::filesystem::path& sourceDir = UIContext::GetSourceDirectory() / "GEARBOX/Resources/Icons/"; //TODO: Can't reference GEARBOX filepath here!
 
 	const Ref<manager::EditorAssetManager>& editorAssetManager = UIContext::GetUIContext()->GetEditorAssetManager();
 	Ref<ImageAssetDataBuffer> imageData = nullptr;
