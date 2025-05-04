@@ -17,13 +17,12 @@ set(CONFIG_FILES
 	"Config/config.gbcf"
 )
 set(ASSET_REGISTRY_FILES
-	"AssetRegistry/GEARBOX.gar"
+	"GEARBOX.gar"
 )
 
 add_executable(${TARGET_NAME})
 target_sources(${TARGET_NAME} PRIVATE ${SRC_CPP_FILES} ${SRC_HEADERS} ${CONFIG_FILES} ${ASSET_REGISTRY_FILES})
 
-source_group("AssetRegistry" FILES ${ASSET_REGISTRY_FILES})
 source_group("Config" FILES ${CONFIG_FILES})
 source_group("Source" FILES ${SRC_CPP_FILES} ${SRC_HEADERS})
 

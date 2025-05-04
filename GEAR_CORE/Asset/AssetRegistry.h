@@ -38,6 +38,11 @@ namespace gear
 				return m_CI.filepath;
 			}
 
+			const std::filesystem::path GetAssetRegistryFolderpath() const
+			{
+				return m_CI.filepath.parent_path();
+			}
+
 			void AddAsset(Asset::Handle handle, const AssetMetadata& assetMetadata);
 			void RemoveAsset(Asset::Handle handle);
 

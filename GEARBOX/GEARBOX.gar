@@ -1,0 +1,223 @@
+AssetRegistry:
+  - Handle: 94423358286077239
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-folder-512.png
+  - Handle: 107710791113367454
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512.png
+  - Handle: 731827390470617359
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-py.png
+  - Handle: 832795884707388729
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-cpp.png
+  - Handle: 992843078143166376
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-wav.png
+  - Handle: 996557114821856378
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-sln.png
+  - Handle: 1104777538015429736
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-psd.png
+  - Handle: 1708295310208502630
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-png.png
+  - Handle: 1800200277205910219
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-cs.png
+  - Handle: 1906558557890132118
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Images/kloppenheim_06_2k.hdr
+  - Handle: 2110536482165586636
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-a.png
+  - Handle: 2233489406395781944
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-ilk.png
+  - Handle: 2561985571143616680
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-ixx.png
+  - Handle: 2587204216000666161
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-cso.png
+  - Handle: 2773645702890749374
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-html.png
+  - Handle: 3145610784848995024
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-cmake.png
+  - Handle: 3208834287205464722
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-mp4.png
+  - Handle: 3589452239825587825
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-dll.png
+  - Handle: 3815471358514012684
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-yml.png
+  - Handle: 4029028941975500700
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-vcxproj.png
+  - Handle: 4256009677590478390
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-java.png
+  - Handle: 4784636294073131180
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-wmv.png
+  - Handle: 5166260742485505688
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-mp3.png
+  - Handle: 5396834473200857686
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-c.png
+  - Handle: 5486380139204564551
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-pdf.png
+  - Handle: 5573494529642673232
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-iobj.png
+  - Handle: 5871555902434941398
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-cxx.png
+  - Handle: 6388983740145456989
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-zip.png
+  - Handle: 6900491410423373328
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-exr.png
+  - Handle: 6955904773421192271
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-ico.png
+  - Handle: 7202151755988941311
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-avi.png
+  - Handle: 7687772846060262321
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-pch.png
+  - Handle: 8289698964238273280
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-rar.png
+  - Handle: 8568821910598548105
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-iso.png
+  - Handle: 8634722168352256942
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-exp.png
+  - Handle: 9031858791130169043
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-lnk.png
+  - Handle: 9091226683102383563
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-tga.png
+  - Handle: 9170061566891465599
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-idb.png
+  - Handle: 9450123557015975975
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-bin.png
+  - Handle: 9609178523268516695
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-pdb.png
+  - Handle: 9898064812950547467
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-ini.png
+  - Handle: 10578458082771649350
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/GEAR_logo_dark.ico
+  - Handle: 11000419033317088963
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-o.png
+  - Handle: 11007930257775882326
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-sh.png
+  - Handle: 11132331102812926716
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-jpg.png
+  - Handle: 11133362064641605562
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-ogg.png
+  - Handle: 11268115143146026983
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-h.png
+  - Handle: 11328264951826675869
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Meshes/Cube.fbx
+  - Handle: 11403677663789564952
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-log.png
+  - Handle: 12158707212293398323
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-txt.png
+  - Handle: 12265550032497372049
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-svg.png
+  - Handle: 12265774750028486944
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-json.png
+  - Handle: 12901824351368750902
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-wma.png
+  - Handle: 13052296509592140393
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-aif.png
+  - Handle: 13163960317060353531
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-lib.png
+  - Handle: 13578341026298629864
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-hlsl.png
+  - Handle: 14279687956735154630
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-ttf.png
+  - Handle: 14457537363820516779
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-icf.png
+  - Handle: 14485117293638727897
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-xml.png
+  - Handle: 14541764473961319840
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-bat.png
+  - Handle: 14571075289201351614
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-midi.png
+  - Handle: 15126018672454022644
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-filters.png
+  - Handle: 15295570241930363888
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-inl.png
+  - Handle: 15524857670488549681
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-dmp.png
+  - Handle: 15628202195586291418
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-user.png
+  - Handle: 16115339712811148885
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-md.png
+  - Handle: 16399138589331417505
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-hpp.png
+  - Handle: 16538658513060664799
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-obj.png
+  - Handle: 16678130818059253832
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-hdr.png
+  - Handle: 16774642984761117347
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-exe.png
+  - Handle: 17117237213499319063
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-fbx.png
+  - Handle: 18015172443670414207
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-spv.png
+  - Handle: 18084179331853130561
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-ipdb.png
+  - Handle: 18287728572203187383
+    Type: EXTERNAL_FILE
+    Filepath: Resources/Icons/icons8-file-512-bak.png

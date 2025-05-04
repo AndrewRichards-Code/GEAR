@@ -108,7 +108,7 @@ void AssetRegistry::SaveText() const
 				{
 					file << Key << s_KeyHandle << Value << handle;
 					file << Key << s_KeyType << Value << Asset::ToString(metadata.type);
-					file << Key << s_KeyFilepath << Value << metadata.filepath.generic_string();
+					file << Key << s_KeyFilepath << Value << metadata.filepath.lexically_relative(GetAssetRegistryFolderpath()).generic_string();
 				}
 				file << EndMap; //Metadata
 			}
@@ -141,7 +141,7 @@ void AssetRegistry::LoadText()
 			const Asset::Handle& handle = entryNode[s_KeyHandle].as<uint64_t>();
 			AssetMetadata& metadata = m_AssetRegistry[handle];
 			metadata.type = Asset::FromString(entryNode[s_KeyType].as<std::string>());
-			metadata.filepath = entryNode[s_KeyFilepath].as<std::string>();
+			metadata.filepath = GetAssetRegistryFolderpath() / entryNode[s_KeyFilepath].as<std::string>();
 		}
 	}
 }

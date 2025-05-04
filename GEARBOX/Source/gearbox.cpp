@@ -55,7 +55,7 @@ GEARBOX::GEARBOX(const ApplicationContext& context)
 void GEARBOX::Run()
 {
 	AssetRegistry::CreateInfo assetRegCI;
-	assetRegCI.filepath = UIContext::GetSourceDirectory() / std::filesystem::path("GEARBOX/AssetRegistry/GEARBOX.gar");
+	assetRegCI.filepath = UIContext::GetSourceDirectory() / std::filesystem::path("GEARBOX/GEARBOX.gar");
 	assetRegCI.fileType = AssetRegistry::FileType::TEXT;
 	manager::AssetManager::CreateInfo assetManagerCI;
 	assetManagerCI.pAssetRegistryCreateInfo = &assetRegCI;
