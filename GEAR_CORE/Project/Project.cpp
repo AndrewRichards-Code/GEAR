@@ -47,7 +47,7 @@ Project::Project(CreateInfo* pCreateInfo)
 		std::filesystem::create_directory(m_CI.folderPath / "Assets/Audio");
 		std::filesystem::create_directory(m_CI.folderPath / "Assets/Fonts");
 		std::filesystem::create_directory(m_CI.folderPath / "Assets/Images");
-		std::filesystem::create_directory(m_CI.folderPath / "Assets/Models");
+		std::filesystem::create_directory(m_CI.folderPath / "Assets/Meshes");
 		std::filesystem::create_directory(m_CI.folderPath / "Assets/Scripts");
 		std::filesystem::create_directory(m_CI.folderPath / "Scenes");
 
