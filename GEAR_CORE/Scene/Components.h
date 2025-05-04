@@ -3,6 +3,7 @@
 #include "Core/UUID.h"
 #include "Objects/Camera.h"
 #include "Objects/Light.h"
+#include "Objects/Mesh.h"
 #include "Objects/Model.h"
 #include "Objects/Skybox.h"
 #include "Objects/Text.h"

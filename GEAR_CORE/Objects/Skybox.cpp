@@ -1,6 +1,9 @@
 #include "gear_core_common.h"
-#include "Objects/Material.h"
+#include "Asset/AssetDataBuffer.h"
+#include "Graphics/Texture.h"
 #include "Objects/Skybox.h"
+#include "Objects/Model.h"
+#include "Objects/Mesh.h"
 
 using namespace gear;
 using namespace graphics;
@@ -96,19 +99,11 @@ Skybox::Skybox(CreateInfo* pCreateInfo)
 	textureCI.generateMipMaps = false;
 	m_GeneratedSpecularBRDF_LUT = CreateRef<Texture>(&textureCI);
 
-	Material::CreateInfo materialCI;
-	materialCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
-	materialCI.device = m_CI.device;
-	materialCI.pbrTextures = { {Material::TextureType::ALBEDO, m_HDRTexture} };
-	m_Material = CreateRef<Material>(&materialCI);
-
 	Mesh::CreateInfo meshCI;
 	meshCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;
 	meshCI.device = m_CI.device;
-	//TODO: Fix me!
-	//meshCI.modelData = ui::UIContext::GetUIContext()->GetEditorAssetManager()->Import<utils::ModelLoader::ModelData>(Asset::Type::EXTERNAL_FILE, "res/obj/cube.fbx"); //TODO: Change this!
+	meshCI.modelData = m_CI.modelData;
 	m_Mesh = CreateRef<Mesh>(&meshCI);
-	m_Mesh->SetOverrideMaterial(0, m_Material);
 
 	Model::CreateInfo modelCI;
 	modelCI.debugName = "GEAR_CORE_Skybox: " + m_CI.debugName;

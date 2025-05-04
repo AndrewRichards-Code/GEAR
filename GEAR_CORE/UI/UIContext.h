@@ -71,6 +71,8 @@ namespace gear
 
 			static std::filesystem::path GetSourceDirectory();
 
+			std::filesystem::path GetResourceDirectory();
+
 		private:
 			void Initialise(Ref<graphics::Window>& window);
 			void ShutDown();
@@ -192,7 +194,7 @@ namespace gear
 			std::vector<Ref<panels::Panel>> m_EditorPanelsToAdd;
 			Ref<MenuBar> m_MenuBar;
 			Ref<project::Project> m_Project;
-			
+
 			static UIContext* s_UIContext;
 
 			static constexpr uint32_t s_MaxDescriptors = 1024 * 512;

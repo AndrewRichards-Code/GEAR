@@ -1,21 +1,28 @@
 #pragma once
 #include "Objects/ObjectInterface.h"
-#include "Objects/Model.h"
-#include "Objects/Mesh.h"
-#include "Graphics/Texture.h"
-#include "Asset/AssetDataBuffer.h"
 
 namespace gear
 {
+	namespace asset
+	{
+		struct ImageAssetDataBuffer;
+	}
+	namespace graphics
+	{
+		class Texture;
+	}
 	namespace objects
 	{
-
+		class ModelData;
+		class Model;
+		class Mesh;
 
 		class GEAR_OBJECTS_API Skybox : public ObjectInterface, public asset::Asset
 		{
 		public:
 			struct CreateInfo : public ObjectInterface::CreateInfo
 			{
+				Ref<ModelData>						modelData;
 				Ref<asset::ImageAssetDataBuffer>	textureData;
 				uint32_t							generatedCubemapSize;
 			};
@@ -23,7 +30,6 @@ namespace gear
 		private:
 			Ref<Model> m_Model;
 			Ref<Mesh> m_Mesh;
-			Ref<Material> m_Material;
 			Ref<asset::ImageAssetDataBuffer> m_TextureData;
 
 			Ref<graphics::Texture> m_HDRTexture;

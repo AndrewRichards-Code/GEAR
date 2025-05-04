@@ -245,6 +245,11 @@ std::filesystem::path UIContext::GetSourceDirectory()
 	return std::filesystem::path(SOURCE_DIR);
 }
 
+std::filesystem::path UIContext::GetResourceDirectory()
+{
+	return m_CI.editorAssetManager->GetAssetRegistry().GetAssetRegistryFilepath().parent_path() / "Resources";
+}
+
 void UIContext::Initialise(Ref<graphics::Window>& window)
 {
 	m_API = window->GetApplicationContext().GetCommandLineOptions().api;
@@ -262,7 +267,7 @@ void UIContext::Initialise(Ref<graphics::Window>& window)
 	//io.ConfigViewportsNoTaskBarIcon = true;
 
 	//TODO: Can't reference GEARBOX filepath here!
-	const std::filesystem::path& fontFilepath = GetSourceDirectory() / std::filesystem::path("GEARBOX/Resources/Fonts/electrolize/Electrolize-Regular.ttf");
+	const std::filesystem::path& fontFilepath = GetResourceDirectory() / std::filesystem::path("Fonts/electrolize/Electrolize-Regular.ttf");
 	io.FontDefault = io.Fonts->AddFontFromFileTTF(fontFilepath.string().c_str(), 15.0f);
 
 	// Setup Dear ImGui style

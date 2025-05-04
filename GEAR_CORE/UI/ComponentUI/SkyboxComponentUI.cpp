@@ -57,7 +57,8 @@ void gear::ui::componentui::AddSkyboxComponent(Entity entity, void* device)
 		Skybox::CreateInfo skyboxCI;
 		skyboxCI.debugName = "Skybox-HDR";
 		skyboxCI.device = device;
-		skyboxCI.textureData = editorAssetManager->Import<asset::ImageAssetDataBuffer>(asset::Asset::Type::EXTERNAL_FILE, "res/img/kloppenheim_06_2k.hdr"); //TODO: fix me
+		skyboxCI.modelData = editorAssetManager->Import<ModelData>(asset::Asset::Type::EXTERNAL_FILE, UIContext::GetUIContext()->GetResourceDirectory() / "Meshes/Cube.fbx"); //TODO: Change this!
+		skyboxCI.textureData = editorAssetManager->Import<asset::ImageAssetDataBuffer>(asset::Asset::Type::EXTERNAL_FILE, UIContext::GetUIContext()->GetResourceDirectory() / "Images/kloppenheim_06_2k.hdr");
 		skyboxCI.generatedCubemapSize = 1024;
 		entity.AddComponent<SkyboxComponent>(&skyboxCI);
 

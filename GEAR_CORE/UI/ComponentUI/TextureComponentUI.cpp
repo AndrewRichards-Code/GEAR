@@ -1,5 +1,6 @@
 #include "gear_core_common.h"
 #include "TextureComponentUI.h"
+#include "Graphics/Texture.h"
 #include "UI/ComponentUI/ComponentUI.h"
 #include "UI/UIContext.h"
 

@@ -1,6 +1,7 @@
 #include "SceneSerialiser.h"
 
 #include "Asset/Manager/AssetManager.h"
+#include "Asset/AssetDataBuffer.h"
 
 #include "Scene/Scene.h"
 #include "Scene/Entity.h"
@@ -152,6 +153,7 @@ void SceneSerialiser::DeserialiseEntity(const Node& data, Ref<Scene>& scene)
 		Skybox::CreateInfo skyboxCI;
 		skyboxCI.device = device;
 		ToType(skyboxCI.debugName, skyboxComponentNode["debugName"]);
+		skyboxCI.modelData = ToAsset<ModelData>(modelComponentNode["modelDataHandle"]);
 		skyboxCI.textureData = ToAsset<ImageAssetDataBuffer>(modelComponentNode["textureDataHandle"]);
 		ToType(skyboxCI.generatedCubemapSize, modelComponentNode["generatedCubemapSize"]);
 		entity.AddComponent<SkyboxComponent>(&skyboxCI);
@@ -267,6 +269,7 @@ void SceneSerialiser::SerialiseEntity(Emitter& data, Entity& entity)
 				const SkyboxComponent& skyboxComponent = entity.GetComponent<SkyboxComponent>();
 				const Skybox::CreateInfo& skyboxCI = skyboxComponent.GetCreateInfo();
 				data << Key << "debugName" << Value << skyboxCI.debugName;
+				data << Key << "modelDataHandle" << Value << skyboxCI.modelData->handle;
 				data << Key << "textureDataHandle" << Value << skyboxCI.textureData->handle;
 				data << Key << "generatedCubemapSize" << Value << skyboxCI.generatedCubemapSize;
 			}

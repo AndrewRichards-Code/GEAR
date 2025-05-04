@@ -7,6 +7,7 @@
 #include "Objects/Light.h"
 #include "Objects/Skybox.h"
 #include "Objects/Material.h"
+#include "Objects/Mesh.h"
 #include "Objects/Model.h"
 
 namespace gear
